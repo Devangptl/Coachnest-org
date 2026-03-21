@@ -1,0 +1,475 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum SubStatus {
+  ACTIVE
+  CANCELLED
+  EXPIRED
+  TRIAL
+}
+
+enum LessonType {
+  VIDEO
+  TEXT
+  QUIZ
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+  PENDING_REVIEW
+}
+
+enum DiscountType {
+  PERCENTAGE
+  FIXED
+}
+
+enum NotifType {
+  COURSE_UPDATE
+  PURCHASE
+  REVIEW
+  REMINDER
+  OFFER
+  SYSTEM
+}
+
+// ─── Organization (Multi-tenant) ──────────────────────────────────────────────
+
+model Organization {
+  id          String    @id @default(cuid())
+  name        String
+  slug        String    @unique
+  logo        String?
+  website     String?
+  plan        PlanType  @default(FREE)
+  trialEndsAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members OrganizationMember[]
+  courses Course[]
+  coupons Coupon[]
+  payouts Payout[]
+
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  userId         String
+  organizationId String
+  role           Role     @default(STUDENT)
+  joinedAt       DateTime @default(now())
+
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@id([userId, organizationId])
+  @@map("organization_members")
+}
+
+// ─── User ─────────────────────────────────────────────────────────────────────
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  avatar    String?
+  bio       String?  @db.Text
+  headline  String?
+  website   String?
+  role      Role     @default(STUDENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organizations  OrganizationMember[]
+  courses        Course[]             @relation("CourseInstructor")
+  enrollments    Enrollment[]
+  orders         Order[]
+  subscription   Subscription?
+  reviews        Review[]
+  wishlist       Wishlist[]
+  notifications  Notification[]
+  certificates   Certificate[]
+  quizAttempts   QuizAttempt[]
+  lessonProgress LessonProgress[]
+  couponUses     CouponUse[]
+
+  @@map("users")
+}
+
+// ─── Category & Tag ───────────────────────────────────────────────────────────
+
+model Category {
+  id      String   @id @default(cuid())
+  name    String   @unique
+  slug    String   @unique
+  icon    String?
+  color   String?
+  courses Course[]
+
+  @@map("categories")
+}
+
+model Tag {
+  id      String      @id @default(cuid())
+  name    String      @unique
+  slug    String      @unique
+  courses CourseTag[]
+
+  @@map("tags")
+}
+
+model CourseTag {
+  courseId String
+  tagId    String
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([courseId, tagId])
+  @@map("course_tags")
+}
+
+// ─── Course ───────────────────────────────────────────────────────────────────
+
+model Course {
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  shortDesc     String?
+  thumbnail     String?
+  previewVideo  String?
+  status        ContentStatus @default(DRAFT)
+  price         Decimal?      @db.Decimal(10, 2)
+  discountPrice Decimal?      @db.Decimal(10, 2)
+  isFree        Boolean       @default(false)
+  level         String        @default("beginner")
+  language      String        @default("English")
+  totalDuration Int           @default(0)
+  totalLessons  Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  categoryId     String?
+  createdById    String
+  organizationId String?
+
+  category     Category?     @relation(fields: [categoryId], references: [id])
+  createdBy    User          @relation("CourseInstructor", fields: [createdById], references: [id])
+  organization Organization? @relation(fields: [organizationId], references: [id])
+
+  sections     Section[]
+  lessons      Lesson[]
+  enrollments  Enrollment[]
+  reviews      Review[]
+  tags         CourseTag[]
+  orders       Order[]
+  wishlist     Wishlist[]
+  certificates Certificate[]
+
+  @@fulltext([title, description])
+  @@map("courses")
+}
+
+// ─── Section ──────────────────────────────────────────────────────────────────
+
+model Section {
+  id       String @id @default(cuid())
+  title    String
+  order    Int
+  courseId String
+
+  course  Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  lessons Lesson[]
+
+  @@map("sections")
+}
+
+// ─── Lesson ───────────────────────────────────────────────────────────────────
+
+model Lesson {
+  id          String     @id @default(cuid())
+  title       String
+  description String?    @db.Text
+  type        LessonType @default(TEXT)
+  content     String?    @db.LongText
+  order       Int
+  duration    Int?
+  isFree      Boolean    @default(false)
+  publishAt   DateTime?  // drip: null = immediately available
+
+  courseId  String
+  sectionId String?
+
+  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  section  Section?         @relation(fields: [sectionId], references: [id])
+  progress LessonProgress[]
+  quiz     Quiz?
+
+  @@map("lessons")
+}
+
+// ─── Enrollment ───────────────────────────────────────────────────────────────
+
+model Enrollment {
+  id           String    @id @default(cuid())
+  userId       String
+  courseId     String
+  enrolledAt   DateTime  @default(now())
+  completedAt  DateTime?
+  lastLessonId String?
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("enrollments")
+}
+
+// ─── Lesson Progress ──────────────────────────────────────────────────────────
+
+model LessonProgress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  completed   Boolean   @default(false)
+  completedAt DateTime?
+  watchedSecs Int       @default(0)
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, lessonId])
+  @@map("lesson_progress")
+}
+
+// ─── Quiz & Assessments ───────────────────────────────────────────────────────
+
+model Quiz {
+  id        String @id @default(cuid())
+  lessonId  String @unique
+  title     String
+  passMark  Int    @default(70)
+  timeLimit Int?
+
+  lesson    Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions Question[]
+  attempts  QuizAttempt[]
+
+  @@map("quizzes")
+}
+
+model Question {
+  id      String @id @default(cuid())
+  quizId  String
+  text    String @db.Text
+  options Json
+  order   Int
+  points  Int    @default(1)
+
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("questions")
+}
+
+model QuizAttempt {
+  id        String   @id @default(cuid())
+  userId    String
+  quizId    String
+  score     Int
+  passed    Boolean
+  answers   Json
+  timeTaken Int?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz Quiz @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_attempts")
+}
+
+// ─── Review ───────────────────────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  courseId  String
+  rating    Int
+  comment   String?  @db.Text
+  helpful   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("reviews")
+}
+
+// ─── Wishlist ─────────────────────────────────────────────────────────────────
+
+model Wishlist {
+  userId    String
+  courseId  String
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@id([userId, courseId])
+  @@map("wishlists")
+}
+
+// ─── Payment & Subscriptions ──────────────────────────────────────────────────
+
+model Order {
+  id                String      @id @default(cuid())
+  userId            String
+  courseId          String?
+  amount            Decimal     @db.Decimal(10, 2)
+  currency          String      @default("INR")
+  status            OrderStatus @default(PENDING)
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  razorpaySignature String?
+  couponId          String?
+  discountAmount    Decimal?    @db.Decimal(10, 2)
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  user   User    @relation(fields: [userId], references: [id])
+  course Course? @relation(fields: [courseId], references: [id])
+  coupon Coupon? @relation(fields: [couponId], references: [id])
+
+  @@map("orders")
+}
+
+model Subscription {
+  id            String    @id @default(cuid())
+  userId        String    @unique
+  plan          PlanType
+  status        SubStatus @default(ACTIVE)
+  startDate     DateTime  @default(now())
+  endDate       DateTime?
+  trialEndsAt   DateTime?
+  razorpaySubId String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("subscriptions")
+}
+
+model Payout {
+  id             String    @id @default(cuid())
+  organizationId String
+  amount         Decimal   @db.Decimal(10, 2)
+  currency       String    @default("INR")
+  status         String    @default("PENDING")
+  processedAt    DateTime?
+  createdAt      DateTime  @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+
+  @@map("payouts")
+}
+
+// ─── Coupon ───────────────────────────────────────────────────────────────────
+
+model Coupon {
+  id             String       @id @default(cuid())
+  code           String       @unique
+  description    String?
+  discountType   DiscountType @default(PERCENTAGE)
+  discount       Decimal      @db.Decimal(10, 2)
+  maxUses        Int?
+  uses           Int          @default(0)
+  expiresAt      DateTime?
+  courseId       String?
+  organizationId String?
+  createdAt      DateTime     @default(now())
+
+  organization Organization? @relation(fields: [organizationId], references: [id])
+  orders       Order[]
+  couponUses   CouponUse[]
+
+  @@map("coupons")
+}
+
+model CouponUse {
+  userId   String
+  couponId String
+  usedAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id])
+  coupon Coupon @relation(fields: [couponId], references: [id])
+
+  @@id([userId, couponId])
+  @@map("coupon_uses")
+}
+
+// ─── Certificate ──────────────────────────────────────────────────────────────
+
+model Certificate {
+  id             String   @id @default(cuid())
+  userId         String
+  courseId       String
+  certificateUrl String?
+  issuedAt       DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, courseId])
+  @@map("certificates")
+}
+
+// ─── Notification ─────────────────────────────────────────────────────────────
+
+model Notification {
+  id        String    @id @default(cuid())
+  userId    String
+  title     String
+  body      String    @db.Text
+  type      NotifType @default(SYSTEM)
+  read      Boolean   @default(false)
+  link      String?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("notifications")
+}
