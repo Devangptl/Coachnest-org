@@ -4,6 +4,7 @@
  * Server Component: fetches data; delegates animations to client components.
  */
 import Link from "next/link";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import CourseCard from "@/components/CourseCard";
 import GlassCard from "@/components/GlassCard";
@@ -21,36 +22,46 @@ import {
   MessageSquare, HeartHandshake, ChevronRight, Star,
 } from "lucide-react";
 
-async function getFeaturedCourses() {
-  return prisma.course.findMany({
-    where: { status: "PUBLISHED" },
-    take: 6,
-    include: {
-      createdBy: { select: { name: true } },
-      _count: { select: { lessons: true, enrollments: true } },
-      reviews: { select: { rating: true } },
-    },
-    orderBy: { enrollments: { _count: "desc" } },
-  });
-}
+const getFeaturedCourses = unstable_cache(
+  () =>
+    prisma.course.findMany({
+      where: { status: "PUBLISHED" },
+      take: 6,
+      include: {
+        createdBy: { select: { name: true } },
+        _count: { select: { lessons: true, enrollments: true } },
+        reviews: { select: { rating: true } },
+      },
+      orderBy: { enrollments: { _count: "desc" } },
+    }),
+  ["landing-featured-courses"],
+  { revalidate: 300 }
+);
 
-async function getCategories() {
-  return prisma.category.findMany({
-    include: { _count: { select: { courses: true } } },
-    orderBy: { courses: { _count: "desc" } },
-    take: 8,
-  });
-}
+const getCategories = unstable_cache(
+  () =>
+    prisma.category.findMany({
+      include: { _count: { select: { courses: true } } },
+      orderBy: { courses: { _count: "desc" } },
+      take: 8,
+    }),
+  ["landing-categories"],
+  { revalidate: 300 }
+);
 
-async function getStats() {
-  const [courseCount, studentCount, enrollmentCount, reviewCount] = await Promise.all([
-    prisma.course.count({ where: { status: "PUBLISHED" } }),
-    prisma.user.count({ where: { role: "STUDENT" } }),
-    prisma.enrollment.count(),
-    prisma.review.count(),
-  ]);
-  return { courseCount, studentCount, enrollmentCount, reviewCount };
-}
+const getStats = unstable_cache(
+  async () => {
+    const [courseCount, studentCount, enrollmentCount, reviewCount] = await Promise.all([
+      prisma.course.count({ where: { status: "PUBLISHED" } }),
+      prisma.user.count({ where: { role: "STUDENT" } }),
+      prisma.enrollment.count(),
+      prisma.review.count(),
+    ]);
+    return { courseCount, studentCount, enrollmentCount, reviewCount };
+  },
+  ["landing-stats"],
+  { revalidate: 300 }
+);
 
 const CATEGORY_ICONS: Record<string, typeof Code> = {
   "web-development": Globe,
