@@ -124,11 +124,11 @@ export default function NavbarClient({ session }: Props) {
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
   const initials = session
     ? session.name
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
+      .split(" ")
+      .map((w) => w[0])
+      .join("")
+      .toUpperCase()
+      .slice(0, 2)
     : "";
 
   return (
@@ -136,9 +136,7 @@ export default function NavbarClient({ session }: Props) {
       <div
         className={cn(
           "max-w-7xl mx-auto flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all duration-500 border",
-          scrolled
-            ? "backdrop-blur-xl bg-black/40 border-white/15 shadow-2xl shadow-black/20"
-            : "backdrop-blur-lg bg-white/10 border-white/20 shadow-lg"
+          "backdrop-blur-lg bg-white/10 border-white/20 shadow-lg"
         )}
       >
         {/* ── Logo ────────────────────────────────────────────── */}

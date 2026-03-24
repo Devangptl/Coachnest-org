@@ -48,7 +48,20 @@ export default function CourseContent({
   reviewCount,
 }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
-  const completedCount = lessons.filter((l) => l.completed).length;
+
+  // Live completion state — shared between progress bar, viewer, and overview
+  const [completedMap, setCompletedMap] = useState<Record<string, boolean>>(
+    () => Object.fromEntries(lessons.map((l) => [l.id, l.completed]))
+  );
+  const completedCount = Object.values(completedMap).filter(Boolean).length;
+
+  // Callback for CourseViewer to notify completion changes
+  function handleCompletionChange(lessonId: string, value: boolean) {
+    setCompletedMap((prev) => ({ ...prev, [lessonId]: value }));
+  }
+
+  // Derive lessons with live completion status
+  const liveLessons = lessons.map((l) => ({ ...l, completed: completedMap[l.id] ?? l.completed }));
 
   return (
     <div className="space-y-6">
@@ -128,7 +141,7 @@ export default function CourseContent({
                 })()}{" "}
                 total
               </p>
-              <CurriculumPreview lessons={lessons} />
+              <CurriculumPreview lessons={liveLessons} />
             </div>
           </motion.div>
         )}
@@ -141,7 +154,7 @@ export default function CourseContent({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <CourseViewer lessons={lessons} isEnrolled={isEnrolled} />
+            <CourseViewer lessons={liveLessons} isEnrolled={isEnrolled} onCompletionChange={handleCompletionChange} />
           </motion.div>
         )}
 

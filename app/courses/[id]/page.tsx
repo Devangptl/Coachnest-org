@@ -8,6 +8,7 @@ import { getSession } from "@/lib/auth";
 import CourseHero from "./CourseHero";
 import CourseContent from "./CourseContent";
 import CourseSidebar from "./CourseSidebar";
+import CourseLayout from "./CourseLayout";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -80,7 +81,7 @@ export default async function CourseDetailPage({ params }: Props) {
   const discountNum = course.discountPrice ? Number(course.discountPrice) : null;
 
   return (
-    <div className="pb-20">
+    <div className="pb-10">
       {/* ── Hero section ───────────────────────────────────── */}
       <CourseHero
         title={course.title}
@@ -98,42 +99,35 @@ export default async function CourseDetailPage({ params }: Props) {
         isFree={course.isFree}
       />
 
-      {/* ── Main content: two-column layout ────────────────── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Left: tabbed content */}
-          <div className="flex-1 min-w-0">
-            <CourseContent
-              courseId={course.id}
-              description={course.description}
-              lessons={lessonsWithCompletion}
-              isEnrolled={isEnrolled || session?.role === "ADMIN" || session?.role === "INSTRUCTOR"}
-              isLoggedIn={Boolean(session)}
-              reviewCount={course._count.reviews}
-            />
-          </div>
-
-          {/* Right: sticky sidebar */}
-          <aside className="lg:w-[360px] flex-shrink-0">
-            <div className="sticky top-24">
-              <CourseSidebar
-                courseId={course.id}
-                price={priceNum}
-                discountPrice={discountNum}
-                isFree={course.isFree}
-                isEnrolled={isEnrolled}
-                isWishlisted={isWishlisted}
-                isLoggedIn={Boolean(session)}
-                userRole={session?.role ?? null}
-                lessonCount={course.lessons.length}
-                totalDuration={totalDuration}
-                language={course.language}
-                level={course.level}
-              />
-            </div>
-          </aside>
-        </div>
-      </div>
+      {/* ── Main content: two-column layout with toggleable sidebar ── */}
+      <CourseLayout
+        isEnrolled={isEnrolled || session?.role === "ADMIN" || session?.role === "INSTRUCTOR"}
+        sidebar={
+          <CourseSidebar
+            courseId={course.id}
+            price={priceNum}
+            discountPrice={discountNum}
+            isFree={course.isFree}
+            isEnrolled={isEnrolled}
+            isWishlisted={isWishlisted}
+            isLoggedIn={Boolean(session)}
+            userRole={session?.role ?? null}
+            lessonCount={course.lessons.length}
+            totalDuration={totalDuration}
+            language={course.language}
+            level={course.level}
+          />
+        }
+      >
+        <CourseContent
+          courseId={course.id}
+          description={course.description}
+          lessons={lessonsWithCompletion}
+          isEnrolled={isEnrolled || session?.role === "ADMIN" || session?.role === "INSTRUCTOR"}
+          isLoggedIn={Boolean(session)}
+          reviewCount={course._count.reviews}
+        />
+      </CourseLayout>
     </div>
   );
 }

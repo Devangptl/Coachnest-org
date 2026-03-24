@@ -51,13 +51,13 @@ export default function CourseHero({
       <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-transparent to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-purple-600/10" />
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-10">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-6">
         {/* Breadcrumb */}
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="flex items-center gap-2 text-sm text-white/40 mb-6"
+          className="flex items-center gap-2 text-xs text-white/40 mb-4"
         >
           <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
           <ChevronRight className="w-3.5 h-3.5" />
@@ -70,7 +70,7 @@ export default function CourseHero({
           )}
         </motion.nav>
 
-        <div className="flex flex-col lg:flex-row gap-8 lg:gap-12">
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           {/* Left: Course info */}
           <motion.div
             className="flex-1 min-w-0"
@@ -79,7 +79,7 @@ export default function CourseHero({
             transition={{ duration: 0.5 }}
           >
             {/* Badges */}
-            <div className="flex flex-wrap gap-2 mb-4">
+            <div className="flex flex-wrap gap-1.5 mb-3">
               <Badge variant={lvl.variant}>
                 <Signal className="w-3 h-3" />
                 {lvl.icon}
@@ -93,17 +93,17 @@ export default function CourseHero({
             </div>
 
             {/* Title */}
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight mb-4">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mb-3">
               {title}
             </h1>
 
             {/* Description */}
-            <p className="text-white/60 text-base sm:text-lg leading-relaxed mb-6 max-w-2xl">
+            <p className="text-white/55 text-sm sm:text-base leading-relaxed mb-4 max-w-2xl">
               {description}
             </p>
 
             {/* Rating + meta */}
-            <div className="flex flex-wrap items-center gap-4 mb-6">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
               {avgRating > 0 && (
                 <div className="flex items-center gap-2">
                   <span className="text-amber-400 font-bold text-lg">{avgRating.toFixed(1)}</span>
@@ -131,25 +131,25 @@ export default function CourseHero({
             </div>
 
             {/* Instructor */}
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
                 {instructorName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-white/40 text-xs">Created by</p>
-                <p className="text-white font-medium text-sm">{instructorName}</p>
+                <p className="text-white/40 text-[10px]">Created by</p>
+                <p className="text-white font-medium text-xs">{instructorName}</p>
               </div>
             </div>
           </motion.div>
 
           {/* Right: Thumbnail preview */}
           <motion.div
-            className="lg:w-[420px] flex-shrink-0"
+            className="lg:w-[360px] flex-shrink-0"
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="relative aspect-video rounded-2xl overflow-hidden bg-gradient-to-br from-violet-600/30 to-purple-800/30 border border-white/10 shadow-2xl shadow-purple-500/10 group">
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-violet-600/30 to-purple-800/30 border border-white/10 shadow-xl shadow-purple-500/10 group">
               {thumbnail ? (
                 <Image
                   src={thumbnail}
@@ -171,25 +171,25 @@ export default function CourseHero({
             </div>
 
             {/* Quick stats under thumbnail */}
-            <div className="grid grid-cols-3 gap-3 mt-4">
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-center">
-                <BookOpen className="w-4 h-4 text-purple-400 mx-auto mb-1" />
-                <p className="text-white font-semibold text-sm">{lessonCount}</p>
-                <p className="text-white/40 text-[10px]">Lessons</p>
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center">
+                <BookOpen className="w-3.5 h-3.5 text-purple-400 mx-auto mb-0.5" />
+                <p className="text-white font-semibold text-xs">{lessonCount}</p>
+                <p className="text-white/40 text-[9px]">Lessons</p>
               </div>
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-center">
-                <Clock className="w-4 h-4 text-blue-400 mx-auto mb-1" />
-                <p className="text-white font-semibold text-sm">
+              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center">
+                <Clock className="w-3.5 h-3.5 text-blue-400 mx-auto mb-0.5" />
+                <p className="text-white font-semibold text-xs">
                   {totalDuration > 60
                     ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`
                     : `${totalDuration}m`}
                 </p>
-                <p className="text-white/40 text-[10px]">Duration</p>
+                <p className="text-white/40 text-[9px]">Duration</p>
               </div>
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-center">
-                <Users className="w-4 h-4 text-green-400 mx-auto mb-1" />
-                <p className="text-white font-semibold text-sm">{enrollmentCount}</p>
-                <p className="text-white/40 text-[10px]">Students</p>
+              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center">
+                <Users className="w-3.5 h-3.5 text-green-400 mx-auto mb-0.5" />
+                <p className="text-white font-semibold text-xs">{enrollmentCount}</p>
+                <p className="text-white/40 text-[9px]">Students</p>
               </div>
             </div>
           </motion.div>

@@ -1,20 +1,21 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { BookOpen, ListChecks, Star, MessageSquare } from "lucide-react";
+import { BookOpen, ListChecks, MessageSquare } from "lucide-react";
 
 interface Tab {
   id: string;
   label: string;
   icon: React.ElementType;
+  color: string;
+  activeColor: string;
 }
 
 const TABS: Tab[] = [
-  { id: "overview", label: "Overview", icon: BookOpen },
-  { id: "curriculum", label: "Curriculum", icon: ListChecks },
-  { id: "reviews", label: "Reviews", icon: MessageSquare },
+  { id: "overview", label: "Overview", icon: BookOpen, color: "text-blue-400", activeColor: "from-blue-500/20 to-violet-500/20 border-blue-400/25" },
+  { id: "curriculum", label: "Curriculum", icon: ListChecks, color: "text-purple-400", activeColor: "from-violet-500/20 to-purple-500/20 border-purple-400/25" },
+  { id: "reviews", label: "Reviews", icon: MessageSquare, color: "text-amber-400", activeColor: "from-amber-500/15 to-orange-500/15 border-amber-400/20" },
 ];
 
 interface Props {
@@ -26,7 +27,7 @@ interface Props {
 
 export default function CourseTabs({ activeTab, onTabChange, reviewCount, lessonCount }: Props) {
   return (
-    <div className="flex items-center gap-1 backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-1.5">
+    <div className="flex items-center backdrop-blur-xl bg-white/[0.04] border border-white/10 rounded-xl p-1">
       {TABS.map((tab) => {
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
@@ -40,24 +41,32 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "relative flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors",
-              isActive ? "text-white" : "text-white/50 hover:text-white/70"
+              "relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200",
+              isActive ? "text-white" : "text-white/40 hover:text-white/65"
             )}
           >
             {isActive && (
               <motion.div
-                layoutId="course-tab"
-                className="absolute inset-0 bg-white/10 border border-white/15 rounded-xl"
-                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                layoutId="course-tab-bg"
+                className={cn(
+                  "absolute inset-0 bg-gradient-to-r border rounded-xl",
+                  tab.activeColor
+                )}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
               />
             )}
             <span className="relative flex items-center gap-2">
-              <Icon className="w-4 h-4" />
-              {tab.label}
+              <Icon className={cn(
+                "w-[18px] h-[18px] transition-all duration-200",
+                isActive ? tab.color : "text-current"
+              )} />
+              <span className="font-semibold">{tab.label}</span>
               {count !== undefined && count > 0 && (
                 <span className={cn(
-                  "text-[10px] px-1.5 py-0.5 rounded-full",
-                  isActive ? "bg-purple-500/30 text-purple-300" : "bg-white/10 text-white/40"
+                  "text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full font-bold transition-all",
+                  isActive
+                    ? `${tab.color} bg-white/10`
+                    : "bg-white/[0.06] text-white/30"
                 )}>
                   {count}
                 </span>
