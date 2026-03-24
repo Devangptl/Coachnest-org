@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -17,6 +17,12 @@ import {
   Eye,
   BookOpen,
   LayoutList,
+  Copy,
+  Check,
+  Code2,
+  Hash,
+  List,
+  Type,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -316,11 +322,7 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
                     />
                   </div>
                 ) : activeLesson.content ? (
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 sm:px-10 py-8 sm:py-10">
-                    <div className="max-w-3xl mx-auto text-white/85 text-base sm:text-lg leading-[2] whitespace-pre-wrap font-sans tracking-wide first-letter:text-4xl first-letter:font-bold first-letter:text-purple-400 first-letter:mr-1 first-letter:float-left first-letter:leading-[0.8]">
-                      {activeLesson.content}
-                    </div>
-                  </div>
+                  <LessonContent content={activeLesson.content} />
                 ) : (
                   <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
                     <FileText className="w-14 h-14 text-white/10 mx-auto mb-4" />
@@ -381,6 +383,259 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
             <p className="text-white/40 text-lg">No lessons in this course yet.</p>
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+// ── Rich content renderer ────────────────────────────────────────────────────
+
+type Block =
+  | { type: "h1"; text: string }
+  | { type: "h2"; text: string }
+  | { type: "h3"; text: string }
+  | { type: "code"; lang: string; code: string }
+  | { type: "list"; items: string[] }
+  | { type: "numlist"; items: string[] }
+  | { type: "paragraph"; text: string };
+
+function parseContent(raw: string): Block[] {
+  const lines = raw.split("\n");
+  const blocks: Block[] = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Fenced code block
+    if (line.trimStart().startsWith("```")) {
+      const lang = line.trim().replace(/^```/, "").trim();
+      const codeLines: string[] = [];
+      i++;
+      while (i < lines.length && !lines[i].trimStart().startsWith("```")) {
+        codeLines.push(lines[i]);
+        i++;
+      }
+      i++; // skip closing ```
+      blocks.push({ type: "code", lang: lang || "code", code: codeLines.join("\n") });
+      continue;
+    }
+
+    // Headings
+    if (line.startsWith("### ")) {
+      blocks.push({ type: "h3", text: line.slice(4).trim() });
+      i++;
+      continue;
+    }
+    if (line.startsWith("## ")) {
+      blocks.push({ type: "h2", text: line.slice(3).trim() });
+      i++;
+      continue;
+    }
+    if (line.startsWith("# ")) {
+      blocks.push({ type: "h1", text: line.slice(2).trim() });
+      i++;
+      continue;
+    }
+
+    // Bullet list (•, -, *)
+    if (/^[\s]*[•\-\*]\s/.test(line)) {
+      const items: string[] = [];
+      while (i < lines.length && /^[\s]*[•\-\*]\s/.test(lines[i])) {
+        items.push(lines[i].replace(/^[\s]*[•\-\*]\s+/, "").trim());
+        i++;
+      }
+      blocks.push({ type: "list", items });
+      continue;
+    }
+
+    // Numbered list
+    if (/^\d+[\.\)]\s/.test(line.trim())) {
+      const items: string[] = [];
+      while (i < lines.length && /^\d+[\.\)]\s/.test(lines[i].trim())) {
+        items.push(lines[i].replace(/^\s*\d+[\.\)]\s+/, "").trim());
+        i++;
+      }
+      blocks.push({ type: "numlist", items });
+      continue;
+    }
+
+    // Empty line → skip
+    if (line.trim() === "") {
+      i++;
+      continue;
+    }
+
+    // Paragraph — collect consecutive non-empty, non-special lines
+    const paraLines: string[] = [];
+    while (
+      i < lines.length &&
+      lines[i].trim() !== "" &&
+      !lines[i].startsWith("#") &&
+      !lines[i].trimStart().startsWith("```") &&
+      !/^[\s]*[•\-\*]\s/.test(lines[i]) &&
+      !/^\d+[\.\)]\s/.test(lines[i].trim())
+    ) {
+      paraLines.push(lines[i]);
+      i++;
+    }
+    if (paraLines.length > 0) {
+      blocks.push({ type: "paragraph", text: paraLines.join(" ") });
+    }
+  }
+
+  return blocks;
+}
+
+function renderInline(text: string) {
+  // Split on inline code `...`
+  const parts = text.split(/(`[^`]+`)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("`") && part.endsWith("`")) {
+      return (
+        <code
+          key={i}
+          className="px-1.5 py-0.5 rounded-md bg-purple-500/15 text-purple-300 text-[0.85em] font-mono border border-purple-400/10"
+        >
+          {part.slice(1, -1)}
+        </code>
+      );
+    }
+    // Bold **text**
+    const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
+    return boldParts.map((bp, j) => {
+      if (bp.startsWith("**") && bp.endsWith("**")) {
+        return <strong key={`${i}-${j}`} className="font-semibold text-white">{bp.slice(2, -2)}</strong>;
+      }
+      return <span key={`${i}-${j}`}>{bp}</span>;
+    });
+  });
+}
+
+function CodeBlock({ lang, code }: { lang: string; code: string }) {
+  const [copied, setCopied] = useState(false);
+
+  async function handleCopy() {
+    await navigator.clipboard.writeText(code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-1">
+      {/* Header bar */}
+      <div className="flex items-center justify-between px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
+        <div className="flex items-center gap-2">
+          <Code2 className="w-3.5 h-3.5 text-emerald-400" />
+          <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider">{lang}</span>
+        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/60 transition-colors px-2 py-1 rounded-md hover:bg-white/[0.05]"
+        >
+          {copied ? (
+            <>
+              <Check className="w-3 h-3 text-emerald-400" />
+              <span className="text-emerald-400">Copied</span>
+            </>
+          ) : (
+            <>
+              <Copy className="w-3 h-3" />
+              Copy
+            </>
+          )}
+        </button>
+      </div>
+      {/* Code body with line numbers */}
+      <div className="overflow-x-auto">
+        <pre className="p-4 text-sm leading-relaxed">
+          {code.split("\n").map((line, i) => (
+            <div key={i} className="flex">
+              <span className="select-none text-white/15 text-right w-8 mr-4 flex-shrink-0 font-mono text-xs leading-relaxed">
+                {i + 1}
+              </span>
+              <code className="font-mono text-emerald-300/80">{line || " "}</code>
+            </div>
+          ))}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
+function LessonContent({ content }: { content: string }) {
+  const blocks = useMemo(() => parseContent(content), [content]);
+
+  return (
+    <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+      {/* Article header */}
+      <div className="bg-white/[0.02] border-b border-white/[0.06] px-6 sm:px-8 py-3 flex items-center gap-2">
+        <Type className="w-3.5 h-3.5 text-purple-400" />
+        <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Lesson Content</span>
+      </div>
+
+      {/* Content body */}
+      <div className="px-6 sm:px-8 py-6 sm:py-8 bg-white/[0.015]">
+        <div className="max-w-3xl mx-auto space-y-5">
+          {blocks.map((block, i) => {
+            switch (block.type) {
+              case "h1":
+                return (
+                  <h1 key={i} className="text-2xl font-bold text-white flex items-center gap-3 pt-2 pb-1">
+                    <Hash className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                    {block.text}
+                  </h1>
+                );
+              case "h2":
+                return (
+                  <h2
+                    key={i}
+                    className="text-lg font-semibold text-white/90 border-l-2 border-purple-500/50 pl-3 pt-3"
+                  >
+                    {block.text}
+                  </h2>
+                );
+              case "h3":
+                return (
+                  <h3 key={i} className="text-base font-semibold text-white/80 pt-2">
+                    {block.text}
+                  </h3>
+                );
+              case "code":
+                return <CodeBlock key={i} lang={block.lang} code={block.code} />;
+              case "list":
+                return (
+                  <ul key={i} className="space-y-2 pl-1">
+                    {block.items.map((item, j) => (
+                      <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
+                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400/60 flex-shrink-0" />
+                        <span>{renderInline(item)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                );
+              case "numlist":
+                return (
+                  <ol key={i} className="space-y-2 pl-1">
+                    {block.items.map((item, j) => (
+                      <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
+                        <span className="flex-shrink-0 w-5 h-5 rounded-md bg-purple-500/15 text-purple-300 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                          {j + 1}
+                        </span>
+                        <span>{renderInline(item)}</span>
+                      </li>
+                    ))}
+                  </ol>
+                );
+              case "paragraph":
+                return (
+                  <p key={i} className="text-white/65 text-sm leading-[1.85] tracking-wide">
+                    {renderInline(block.text)}
+                  </p>
+                );
+            }
+          })}
+        </div>
       </div>
     </div>
   );
