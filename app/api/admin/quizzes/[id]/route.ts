@@ -38,12 +38,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
     const { id } = await params;
     const body = await req.json();
-    const { title, passMark, timeLimit } = body;
+    const { title, passMark, timeLimit, questions } = body;
 
     const update: any = {};
     if (title !== undefined) update.title = title;
     if (passMark !== undefined) update.passMark = passMark;
     if (timeLimit !== undefined) update.timeLimit = timeLimit;
+    if (questions !== undefined) update.questions = questions;
 
     const quiz = await updateQuiz(id, update);
     return NextResponse.json({ data: quiz }, { status: 200 });

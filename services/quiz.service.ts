@@ -280,7 +280,13 @@ export async function updateQuiz(
   data: {
     title?: string;
     passMark?: number;
-    timeLimit?: number;
+    timeLimit?: number | null;
+    questions?: Array<{
+      text: string;
+      options: Array<{ text: string; correct: boolean }>;
+      points: number;
+      order: number;
+    }>;
   }
 ) {
   const update: any = {};
@@ -288,10 +294,61 @@ export async function updateQuiz(
   if (data.passMark !== undefined) update.passMark = data.passMark;
   if (data.timeLimit !== undefined) update.timeLimit = data.timeLimit;
 
-  return prisma.quiz.update({
+  const quiz = await prisma.quiz.update({
     where: { id: quizId },
     data: update,
   });
+
+  // If questions are provided, replace all existing questions
+  if (data.questions) {
+    await prisma.question.deleteMany({ where: { quizId } });
+    for (const q of data.questions) {
+      await prisma.question.create({
+        data: {
+          quizId,
+          text: q.text,
+          options: q.options.map((o) => ({
+            id: crypto.randomUUID(),
+            text: o.text,
+            isCorrect: o.correct,
+          })),
+          order: q.order,
+          points: q.points,
+        },
+      });
+    }
+  }
+
+  return quiz;
+}
+
+// ─── Get Quiz by Lesson ID (admin, includes correct answers) ────────────
+
+export async function getQuizByLessonId(lessonId: string) {
+  const quiz = await prisma.quiz.findUnique({
+    where: { lessonId },
+    include: {
+      questions: {
+        orderBy: { order: "asc" },
+      },
+    },
+  });
+
+  if (!quiz) return null;
+
+  return {
+    id: quiz.id,
+    title: quiz.title,
+    passMark: quiz.passMark,
+    timeLimit: quiz.timeLimit,
+    questions: quiz.questions.map((q) => ({
+      id: q.id,
+      text: q.text,
+      options: q.options as Array<{ id: string; text: string; isCorrect: boolean }>,
+      points: q.points,
+      order: q.order,
+    })),
+  };
 }
 
 // ─── Delete Quiz ──────────────────────────────────────────────────────────
