@@ -7,15 +7,19 @@
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, Users, PlusCircle, BarChart3 } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, PlusCircle, BarChart3, GraduationCap, Ticket, ShoppingCart, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNav = [
-  { label: "Overview",   href: "/admin",               icon: LayoutDashboard },
-  { label: "Analytics",  href: "/admin/analytics",      icon: BarChart3 },
-  { label: "All Courses", href: "/admin/courses",       icon: BookOpen },
-  { label: "New Course", href: "/admin/courses/new",    icon: PlusCircle },
-  { label: "Students",   href: "/admin/students",       icon: Users },
+  { label: "Overview",      href: "/admin",                 icon: LayoutDashboard },
+  { label: "Analytics",     href: "/admin/analytics",       icon: BarChart3 },
+  { label: "All Courses",   href: "/admin/courses",         icon: BookOpen },
+  { label: "New Course",    href: "/admin/courses/new",     icon: PlusCircle },
+  { label: "Students",      href: "/admin/students",        icon: Users },
+  { label: "Enrollments",   href: "/admin/enrollments",     icon: GraduationCap },
+  { label: "Coupons",       href: "/admin/coupons",         icon: Ticket },
+  { label: "Orders",        href: "/admin/orders",          icon: ShoppingCart },
+  { label: "Quizzes",       href: "/admin/quizzes",         icon: HelpCircle },
 ];
 
 export default function AdminSidebar() {

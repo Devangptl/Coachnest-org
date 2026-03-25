@@ -1,0 +1,90 @@
+/**
+ * Admin Enrollments Page — List all student enrollments
+ */
+import { getSession } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import GlassCard from "@/components/GlassCard";
+import { getEnrollmentsList, getEnrollmentStats } from "@/services/enrollment.service";
+import { formatDate } from "@/lib/utils";
+import Link from "next/link";
+import { Users, GraduationCap, TrendingUp } from "lucide-react";
+import EnrollmentFiltersBar from "./EnrollmentFiltersBar";
+import EnrollmentTable from "./EnrollmentTable";
+
+async function getInitialData() {
+  const [enrollments, stats] = await Promise.all([
+    getEnrollmentsList({}),
+    getEnrollmentStats(),
+  ]);
+  return { enrollments, stats };
+}
+
+export default async function AdminEnrollmentsPage() {
+  const session = await getSession();
+
+  if (!session || session.role !== "ADMIN") {
+    redirect("/login");
+  }
+
+  const { enrollments, stats } = await getInitialData();
+
+  return (
+    <div>
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-white">
+          Student Enrollments
+        </h1>
+        <p className="text-white/50 mt-1">
+          Track student progress across courses and manage enrollments.
+        </p>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+        {[
+          { label: "Total Enrollments", value: stats.totalEnrollments, icon: Users, color: "text-blue-400" },
+          { label: "Active", value: stats.activeEnrollments, icon: TrendingUp, color: "text-emerald-400" },
+          { label: "Completed", value: stats.completedEnrollments, icon: GraduationCap, color: "text-violet-400" },
+          { label: "Inactive (30d+)", value: stats.droppedEnrollments, icon: Users, color: "text-amber-400" },
+        ].map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <GlassCard key={stat.label} className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+                <Icon className={`w-6 h-6 ${stat.color}`} />
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-white/50 text-sm">{stat.label}</div>
+              </div>
+            </GlassCard>
+          );
+        })}
+      </div>
+
+      {/* Filters */}
+      <div className="mb-8">
+        <EnrollmentFiltersBar />
+      </div>
+
+      {/* Table */}
+      <GlassCard padding="sm">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <h2 className="text-white font-semibold">Enrollments</h2>
+          <span className="text-white/40 text-sm">{enrollments.length} total</span>
+        </div>
+
+        <EnrollmentTable enrollments={enrollments} />
+
+        {enrollments.length === 0 && (
+          <div className="text-center py-12 text-white/40">
+            <p className="mb-4">No enrollments found.</p>
+            <Link href="/admin/courses" className="text-purple-400 hover:text-purple-300">
+              View Courses
+            </Link>
+          </div>
+        )}
+      </GlassCard>
+    </div>
+  );
+}

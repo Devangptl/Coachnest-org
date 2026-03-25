@@ -7,7 +7,8 @@
       "Bash(npm install:*)",
       "Bash(npx next:*)",
       "Bash(npx vercel:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(grep -r \"btn-primary\\\\|btn-ghost\\\\|input-glass\\\\|label\\\\|stat-card\" /d/Devang/Claude/learning/styles /d/Devang/Claude/learning/app --include=*.css --include=*.scss)"
     ]
   }
 }
