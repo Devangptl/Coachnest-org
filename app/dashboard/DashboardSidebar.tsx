@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Heart, Award, BookOpen } from "lucide-react";
+import { LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "My Courses",   href: "/dashboard",               icon: LayoutDashboard },
-  { label: "Wishlist",     href: "/dashboard/wishlist",       icon: Heart },
-  { label: "Certificates", href: "/dashboard/certificates",   icon: Award },
+  { label: "My Courses",    href: "/dashboard",                icon: LayoutDashboard },
+  { label: "Wishlist",      href: "/dashboard/wishlist",       icon: Heart },
+  { label: "Certificates",  href: "/dashboard/certificates",   icon: Award },
+  { label: "Order History", href: "/dashboard/orders",         icon: ShoppingCart },
+  { label: "Notifications", href: "/dashboard/notifications",  icon: Bell },
 ];
 
 export default function DashboardSidebar() {

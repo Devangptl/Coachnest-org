@@ -25,6 +25,7 @@ import {
   Type,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import QuizPlayer from "@/components/QuizPlayer";
 
 interface Lesson {
   id: string;
@@ -311,7 +312,14 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
 
               {/* Content body */}
               <div className="px-6 sm:px-8 py-6 sm:py-8">
-                {activeLesson.type === "VIDEO" && activeLesson.content ? (
+                {activeLesson.type === "QUIZ" ? (
+                  <QuizLoader
+                    lessonId={activeLesson.id}
+                    onComplete={() => {
+                      if (!completed[activeLesson.id]) toggleComplete(activeLesson.id);
+                    }}
+                  />
+                ) : activeLesson.type === "VIDEO" && activeLesson.content ? (
                   <div className="relative aspect-video rounded-xl overflow-hidden bg-black/60 border border-white/5 shadow-xl shadow-black/30">
                     <iframe
                       src={activeLesson.content}
@@ -560,6 +568,51 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
         </pre>
       </div>
     </div>
+  );
+}
+
+// ── Quiz loader (fetches quiz by lesson ID then renders QuizPlayer) ──────────
+
+function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: () => void }) {
+  const [quiz, setQuiz] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    setQuiz(null);
+    fetch(`/api/lessons/${lessonId}/quiz`)
+      .then((r) => (r.ok ? r.json() : r.json().then((d) => Promise.reject(d.error))))
+      .then(setQuiz)
+      .catch((e) => setError(typeof e === "string" ? e : "Failed to load quiz"))
+      .finally(() => setLoading(false));
+  }, [lessonId]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="w-8 h-8 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (error || !quiz) {
+    return (
+      <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
+        <HelpCircle className="w-14 h-14 text-white/10 mx-auto mb-4" />
+        <p className="text-white/30 text-base">{error || "No quiz available for this lesson."}</p>
+      </div>
+    );
+  }
+
+  return (
+    <QuizPlayer
+      quiz={quiz}
+      onComplete={(score, passed) => {
+        if (passed) onComplete();
+      }}
+    />
   );
 }
 
