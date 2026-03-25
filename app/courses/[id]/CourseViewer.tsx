@@ -23,9 +23,12 @@ import {
   Hash,
   List,
   Type,
+  Award,
+  Download,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuizPlayer from "@/components/QuizPlayer";
+import toast from "react-hot-toast";
 
 interface Lesson {
   id: string;
@@ -38,6 +41,7 @@ interface Lesson {
 }
 
 interface Props {
+  courseId: string;
   lessons: Lesson[];
   isEnrolled: boolean;
   onCompletionChange?: (lessonId: string, completed: boolean) => void;
@@ -49,7 +53,7 @@ const typeConfig = {
   QUIZ:  { icon: HelpCircle, color: "text-amber-400", bg: "bg-amber-500/15", border: "border-amber-400/20", label: "Quiz" },
 };
 
-export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }: Props) {
+export default function CourseViewer({ courseId, lessons, isEnrolled, onCompletionChange }: Props) {
   const [activeLessonId, setActiveLessonId] = useState<string>(() => {
     if (isEnrolled) return lessons[0]?.id ?? "";
     const firstFree = lessons.find((l) => l.isFree);
@@ -60,6 +64,7 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
   );
   const [marking, setMarking] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
+  const [downloadingCert, setDownloadingCert] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const activeLesson = lessons.find((l) => l.id === activeLessonId);
@@ -67,6 +72,31 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
   const prev = lessons[activeIndex - 1];
   const next = lessons[activeIndex + 1];
   const completedCount = Object.values(completed).filter(Boolean).length;
+  const allComplete = isEnrolled && lessons.length > 0 && completedCount === lessons.length;
+
+  async function downloadCertificate() {
+    if (downloadingCert) return;
+    setDownloadingCert(true);
+    try {
+      const res = await fetch(`/api/certificates/${courseId}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to generate certificate");
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `certificate-${courseId}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Certificate downloaded!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Download failed");
+    } finally {
+      setDownloadingCert(false);
+    }
+  }
 
   async function toggleComplete(lessonId: string) {
     if (!isEnrolled || marking) return;
@@ -388,6 +418,44 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
                     </div>
                   )}
                 </div>
+
+                {/* Get Certificate banner — appears when all lessons are complete */}
+                {allComplete && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 12, scale: 0.98 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.2 }}
+                    className="mt-6 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
+                  >
+                    {/* Shimmer */}
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent"
+                      animate={{ x: ["-100%", "200%"] }}
+                      transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                    />
+                    <div className="relative flex items-center gap-4">
+                      <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/10">
+                        <Award className="w-6 h-6 text-amber-400" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="text-white font-bold text-sm">🎉 Course Completed!</h3>
+                        <p className="text-white/40 text-xs mt-0.5">You&apos;ve finished all lessons. Claim your certificate now!</p>
+                      </div>
+                      <button
+                        onClick={downloadCertificate}
+                        disabled={downloadingCert}
+                        className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
+                      >
+                        {downloadingCert ? (
+                          <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                        ) : (
+                          <Download className="w-4 h-4" />
+                        )}
+                        {downloadingCert ? "Generating..." : "Get Certificate"}
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
 
                 {/* Keyboard shortcut hint */}
                 <p className="text-white/15 text-[10px] text-center mt-4 hidden lg:block">

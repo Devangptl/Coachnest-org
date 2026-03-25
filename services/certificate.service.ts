@@ -6,7 +6,7 @@ import { generateCertificatePDF } from "@/lib/pdf";
 import { sendCertificateEmail } from "@/lib/email";
 
 /** Check if a student has completed all lessons in a course. */
-async function isCourseCompleted(userId: string, courseId: string): Promise<boolean> {
+export async function isCourseCompleted(userId: string, courseId: string): Promise<boolean> {
   const [totalLessons, completedLessons] = await Promise.all([
     prisma.lesson.count({ where: { courseId } }),
     prisma.lessonProgress.count({
@@ -16,17 +16,8 @@ async function isCourseCompleted(userId: string, courseId: string): Promise<bool
   return totalLessons > 0 && completedLessons >= totalLessons;
 }
 
-/** Issue a certificate if not already issued and course is completed. */
-export async function issueCertificate(userId: string, courseId: string) {
-  // Check if already issued
-  const existing = await prisma.certificate.findUnique({
-    where: { userId_courseId: { userId, courseId } },
-  });
-  if (existing) return existing;
-
-  const completed = await isCourseCompleted(userId, courseId);
-  if (!completed) throw new Error("Course not yet completed");
-
+/** Generate a PDF buffer for a certificate (works for both new and existing certs). */
+async function buildPDF(certId: string, userId: string, courseId: string) {
   const [user, course] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId }, select: { name: true, email: true } }),
     prisma.course.findUnique({
@@ -36,22 +27,39 @@ export async function issueCertificate(userId: string, courseId: string) {
   ]);
   if (!user || !course) throw new Error("User or course not found");
 
-  // Create DB record first (get the ID for the cert)
-  const cert = await prisma.certificate.create({
-    data: { userId, courseId },
-  });
-
-  // Generate PDF
   const pdfBuffer = await generateCertificatePDF({
     recipientName:  user.name,
     courseTitle:    course.title,
     instructorName: course.createdBy.name,
     issuedAt:       new Date(),
-    certificateId:  cert.id,
+    certificateId:  certId,
   });
 
-  // In production you'd upload pdfBuffer to S3/Cloudinary and save the URL.
-  // For now we just return the buffer; the route handler streams it.
+  return { pdfBuffer, user, course };
+}
+
+/** Issue a certificate if not already issued and course is completed. */
+export async function issueCertificate(userId: string, courseId: string) {
+  // Check if already issued — regenerate PDF for re-download
+  const existing = await prisma.certificate.findUnique({
+    where: { userId_courseId: { userId, courseId } },
+  });
+  if (existing) {
+    const { pdfBuffer } = await buildPDF(existing.id, userId, courseId);
+    return { cert: existing, pdfBuffer };
+  }
+
+  const completed = await isCourseCompleted(userId, courseId);
+  if (!completed) throw new Error("Course not yet completed");
+
+  // Create DB record first (get the ID for the cert)
+  const cert = await prisma.certificate.create({
+    data: { userId, courseId },
+  });
+
+  const { pdfBuffer, user, course } = await buildPDF(cert.id, userId, courseId);
+
+  // Send email notification (fire-and-forget)
   sendCertificateEmail(
     user.email,
     user.name,
@@ -62,11 +70,42 @@ export async function issueCertificate(userId: string, courseId: string) {
   return { cert, pdfBuffer };
 }
 
+/** Generate PDF for any certificate (admin use — no ownership check). */
+export async function generateCertificatePDFForAdmin(certId: string) {
+  const cert = await prisma.certificate.findUnique({
+    where: { id: certId },
+  });
+  if (!cert) throw new Error("Certificate not found");
+
+  const { pdfBuffer } = await buildPDF(cert.id, cert.userId, cert.courseId);
+  return pdfBuffer;
+}
+
 /** List all certificates for a user. */
 export async function getUserCertificates(userId: string) {
   return prisma.certificate.findMany({
     where: { userId },
     include: { course: { select: { id: true, title: true, thumbnail: true } } },
+    orderBy: { issuedAt: "desc" },
+  });
+}
+
+/** List all certificates (admin). */
+export async function getAllCertificates(search?: string) {
+  return prisma.certificate.findMany({
+    where: search
+      ? {
+          OR: [
+            { user: { name: { contains: search } } },
+            { user: { email: { contains: search } } },
+            { course: { title: { contains: search } } },
+          ],
+        }
+      : undefined,
+    include: {
+      user: { select: { id: true, name: true, email: true, avatar: true } },
+      course: { select: { id: true, title: true, thumbnail: true } },
+    },
     orderBy: { issuedAt: "desc" },
   });
 }

@@ -154,7 +154,7 @@ export default function CourseContent({
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
           >
-            <CourseViewer lessons={liveLessons} isEnrolled={isEnrolled} onCompletionChange={handleCompletionChange} />
+            <CourseViewer courseId={courseId} lessons={liveLessons} isEnrolled={isEnrolled} onCompletionChange={handleCompletionChange} />
           </motion.div>
         )}
 

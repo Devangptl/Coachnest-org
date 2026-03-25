@@ -4,16 +4,17 @@
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
 import Link from "next/link";
-import { BookOpen, Users, GraduationCap, TrendingUp, ArrowRight, PlusCircle } from "lucide-react";
+import { BookOpen, Users, GraduationCap, TrendingUp, ArrowRight, PlusCircle, Award } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import { getSession } from "@/lib/auth";
 
 async function getStats() {
-  const [totalCourses, totalStudents, totalEnrollments, recentCourses] =
+  const [totalCourses, totalStudents, totalEnrollments, totalCertificates, recentCourses] =
     await Promise.all([
       prisma.course.count(),
       prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.enrollment.count(),
+      prisma.certificate.count(),
       prisma.course.findMany({
         take: 5,
         orderBy: { createdAt: "desc" },
@@ -21,12 +22,12 @@ async function getStats() {
       }),
     ]);
 
-  return { totalCourses, totalStudents, totalEnrollments, recentCourses };
+  return { totalCourses, totalStudents, totalEnrollments, totalCertificates, recentCourses };
 }
 
 export default async function AdminOverviewPage() {
   const session = await getSession();
-  const { totalCourses, totalStudents, totalEnrollments, recentCourses } =
+  const { totalCourses, totalStudents, totalEnrollments, totalCertificates, recentCourses } =
     await getStats();
 
   return (
@@ -41,11 +42,12 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
           { label: "Total Courses", value: totalCourses, icon: BookOpen, color: "text-violet-400" },
           { label: "Students", value: totalStudents, icon: Users, color: "text-blue-400" },
           { label: "Enrollments", value: totalEnrollments, icon: GraduationCap, color: "text-emerald-400" },
+          { label: "Certificates", value: totalCertificates, icon: Award, color: "text-amber-400" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
