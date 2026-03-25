@@ -50,9 +50,11 @@ const typeConfig = {
 };
 
 export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }: Props) {
-  const [activeLessonId, setActiveLessonId] = useState<string>(
-    lessons[0]?.id ?? ""
-  );
+  const [activeLessonId, setActiveLessonId] = useState<string>(() => {
+    if (isEnrolled) return lessons[0]?.id ?? "";
+    const firstFree = lessons.find((l) => l.isFree);
+    return firstFree?.id ?? lessons[0]?.id ?? "";
+  });
   const [completed, setCompleted] = useState<Record<string, boolean>>(
     Object.fromEntries(lessons.map((l) => [l.id, l.completed]))
   );
@@ -137,15 +139,20 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
             const config = typeConfig[lesson.type] ?? typeConfig.TEXT;
             const Icon = config.icon;
 
+            const isLocked = !isEnrolled && !lesson.isFree;
+
             return (
               <button
                 key={lesson.id}
                 onClick={() => {
+                  if (isLocked) return;
                   selectLesson(lesson.id);
                   setShowSidebar(false);
                 }}
+                disabled={isLocked}
                 className={cn(
                   "flex items-center gap-3 w-full px-5 py-3.5 text-left transition-all",
+                  isLocked && "opacity-50 cursor-not-allowed",
                   isActive
                     ? "bg-purple-500/10 border-l-[3px] border-l-purple-500"
                     : "border-l-[3px] border-l-transparent hover:bg-white/[0.04]",
@@ -155,13 +162,17 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
                 {/* Number / status */}
                 <div className={cn(
                   "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs",
-                  isCompleted
+                  isLocked
+                    ? "bg-white/[0.04]"
+                    : isCompleted
                     ? "bg-emerald-500/20"
                     : isActive
                     ? "bg-purple-500/20 border border-purple-400/30"
                     : "bg-white/[0.04]"
                 )}>
-                  {isCompleted ? (
+                  {isLocked ? (
+                    <Lock className="w-3.5 h-3.5 text-white/20" />
+                  ) : isCompleted ? (
                     <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                   ) : isActive ? (
                     <div className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse" />
@@ -223,7 +234,7 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
 
       {/* ── Right: Content area ── */}
       <div className="flex-1 min-w-0">
-        {!isEnrolled ? (
+        {!isEnrolled && !activeLesson?.isFree ? (
           <div className="flex flex-col items-center justify-center py-28 px-6 text-center">
             <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
               <Lock className="w-12 h-12 text-white/15" />
@@ -284,8 +295,8 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
                   </div>
                 </div>
 
-                {/* Mark complete */}
-                <button
+                {/* Mark complete — only for enrolled users */}
+                {isEnrolled && <button
                   onClick={() => toggleComplete(activeLesson.id)}
                   disabled={marking}
                   className={cn(
@@ -307,7 +318,7 @@ export default function CourseViewer({ lessons, isEnrolled, onCompletionChange }
                     <Circle className="w-4.5 h-4.5" />
                   )}
                   {completed[activeLesson.id] ? "Completed" : "Mark Complete"}
-                </button>
+                </button>}
               </div>
 
               {/* Content body */}

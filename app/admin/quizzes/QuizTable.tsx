@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Eye, BarChart3, Trash2, Pencil, Copy, Loader2 } from "lucide-react";
+import { Eye, BarChart3, Trash2, Pencil, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import QuizAttemptsModal from "./QuizAttemptsModal";
 import QuizAnalyticsModal from "./QuizAnalyticsModal";
@@ -96,6 +97,11 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
 
             {/* Actions */}
             <div className="col-span-4 flex items-center justify-end gap-1">
+              <Link href={`/admin/quizzes/${quiz.id}/edit`}>
+                <Button size="icon" variant="ghost" title="Edit Quiz">
+                  <Pencil className="w-4 h-4" />
+                </Button>
+              </Link>
               <Button
                 size="icon"
                 variant="ghost"

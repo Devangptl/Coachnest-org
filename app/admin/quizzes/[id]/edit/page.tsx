@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
-import { ArrowLeft, PlusCircle, Trash2, GripVertical, Check, HelpCircle, X } from "lucide-react";
+import { ArrowLeft, PlusCircle, Trash2, GripVertical, Check, Loader2, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -19,54 +19,49 @@ interface Question {
   points: number;
 }
 
-interface LessonOption {
-  id: string;
-  title: string;
-  type: string;
-  courseId: string;
-  courseTitle: string;
-  hasQuiz: boolean;
-}
-
-export default function NewQuizPage() {
+export default function EditQuizPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [lessons, setLessons] = useState<LessonOption[]>([]);
-  const [lessonsLoading, setLessonsLoading] = useState(true);
+  const params = useParams();
+  const quizId = params.id as string;
 
-  const [lessonId, setLessonId] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [quizInfo, setQuizInfo] = useState<any>(null);
+
   const [title, setTitle] = useState("");
   const [passMark, setPassMark] = useState(70);
   const [timeLimit, setTimeLimit] = useState("");
   const [questions, setQuestions] = useState<Question[]>([]);
 
-  // Fetch lessons without quizzes
+  // Load existing quiz data
   useEffect(() => {
-    fetch("/api/lessons?noQuiz=true")
+    fetch(`/api/admin/quizzes/${quizId}`)
       .then((res) => res.json())
-      .then((data) => setLessons(data.data || []))
-      .catch(() => setLessons([]))
-      .finally(() => setLessonsLoading(false));
-  }, []);
-
-  // Group lessons by course for the dropdown
-  const grouped = lessons.reduce<Record<string, { courseTitle: string; lessons: LessonOption[] }>>((acc, l) => {
-    if (!acc[l.courseId]) acc[l.courseId] = { courseTitle: l.courseTitle, lessons: [] };
-    acc[l.courseId].lessons.push(l);
-    return acc;
-  }, {});
+      .then(({ data }) => {
+        if (!data) { toast.error("Quiz not found"); router.push("/admin/quizzes"); return; }
+        setQuizInfo(data);
+        setTitle(data.title || data.lessonTitle || "");
+        setPassMark(data.passMark);
+        setTimeLimit(data.timeLimit?.toString() || "");
+        setQuestions(
+          (data.questions || []).map((q: any) => {
+            const opts = (q.options || []) as Array<{ id: string; text: string; isCorrect?: boolean }>;
+            return {
+              text: q.text,
+              options: opts.map((o) => ({ text: o.text, correct: o.isCorrect ?? false })),
+              points: q.points,
+            };
+          })
+        );
+      })
+      .catch(() => toast.error("Failed to load quiz"))
+      .finally(() => setLoading(false));
+  }, [quizId, router]);
 
   const addQuestion = () => {
     setQuestions([
       ...questions,
-      {
-        text: "",
-        options: [
-          { text: "", correct: true },
-          { text: "", correct: false },
-        ],
-        points: 1,
-      },
+      { text: "", options: [{ text: "", correct: true }, { text: "", correct: false }], points: 1 },
     ]);
   };
 
@@ -95,18 +90,15 @@ export default function NewQuizPage() {
   const updateOption = (qIdx: number, oIdx: number, field: string, value: any) => {
     const updated = [...questions];
     if (field === "correct" && value === true) {
-      updated[qIdx].options.forEach((o, i) => {
-        o.correct = i === oIdx;
-      });
+      updated[qIdx].options.forEach((o, i) => { o.correct = i === oIdx; });
     } else {
       (updated[qIdx].options[oIdx] as any)[field] = value;
     }
     setQuestions(updated);
   };
 
-  const handleSubmit = async () => {
-    if (!lessonId) return toast.error("Please select a lesson.");
-    if (!title) return toast.error("Please enter a quiz title.");
+  const handleSave = async () => {
+    if (!title) return toast.error("Quiz title is required.");
     if (questions.length === 0) return toast.error("Add at least one question.");
 
     for (let i = 0; i < questions.length; i++) {
@@ -117,28 +109,19 @@ export default function NewQuizPage() {
         return toast.error(`Question ${i + 1} needs a correct answer.`);
       for (let j = 0; j < q.options.length; j++) {
         if (!q.options[j].text.trim())
-          return toast.error(`Question ${i + 1}, option ${j + 1} is empty.`);
+          return toast.error(`Q${i + 1} option ${j + 1} is empty.`);
       }
     }
 
-    setLoading(true);
+    setSaving(true);
     try {
-      // 1. Update the lesson type to QUIZ
-      await fetch(`/api/lessons/${lessonId}`, {
+      const res = await fetch(`/api/admin/quizzes/${quizId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: "QUIZ", content: null }),
-      });
-
-      // 2. Create the quiz
-      const res = await fetch("/api/admin/quizzes", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          lessonId,
           title,
           passMark,
-          timeLimit: timeLimit ? Number(timeLimit) : undefined,
+          timeLimit: timeLimit ? Number(timeLimit) : null,
           questions: questions.map((q, idx) => ({
             text: q.text,
             options: q.options,
@@ -149,17 +132,25 @@ export default function NewQuizPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) return toast.error(data.error || "Failed to create quiz.");
+      if (!res.ok) return toast.error(data.error || "Failed to update quiz.");
 
-      toast.success("Quiz created successfully!");
+      toast.success("Quiz updated successfully!");
       router.push("/admin/quizzes");
       router.refresh();
     } catch {
       toast.error("Something went wrong.");
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-24">
+        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -170,8 +161,14 @@ export default function NewQuizPage() {
         >
           <ArrowLeft className="w-4 h-4" /> Back to Quizzes
         </Link>
-        <h1 className="text-3xl font-bold text-white">Create Quiz</h1>
-        <p className="text-white/50 mt-1">Build a new quiz with questions and options.</p>
+        <h1 className="text-3xl font-bold text-white">Edit Quiz</h1>
+        <p className="text-white/50 mt-1">
+          {quizInfo?.courseTitle && <span>{quizInfo.courseTitle} &middot; </span>}
+          {quizInfo?.title || ""}
+          {quizInfo?.attemptCount > 0 && (
+            <span className="text-amber-400 ml-2">({quizInfo.attemptCount} existing attempts)</span>
+          )}
+        </p>
       </div>
 
       <div className="max-w-3xl space-y-6">
@@ -179,39 +176,6 @@ export default function NewQuizPage() {
         <GlassCard padding="md">
           <h3 className="text-white font-semibold mb-4">Quiz Details</h3>
           <div className="space-y-4">
-            <div>
-              <label className="label">Lesson</label>
-              {lessonsLoading ? (
-                <div className="input-glass w-full flex items-center text-white/30 text-sm">Loading lessons...</div>
-              ) : lessons.length === 0 ? (
-                <div className="bg-amber-500/10 border border-amber-400/20 rounded-xl px-4 py-3 text-amber-400 text-sm">
-                  <HelpCircle className="w-4 h-4 inline mr-2" />
-                  All lessons already have quizzes. Create a new lesson with QUIZ type from the course editor instead.
-                </div>
-              ) : (
-                <select
-                  className="input-glass w-full"
-                  value={lessonId}
-                  onChange={(e) => setLessonId(e.target.value)}
-                >
-                  <option value="">Select a lesson...</option>
-                  {Object.entries(grouped).map(([courseId, group]) => (
-                    <optgroup key={courseId} label={group.courseTitle}>
-                      {group.lessons.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.title} ({l.type})
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              )}
-              {lessonId && (
-                <p className="text-white/30 text-xs mt-1">
-                  The lesson type will be automatically changed to QUIZ when you create this quiz.
-                </p>
-              )}
-            </div>
             <div>
               <label className="label">Quiz Title</label>
               <input
@@ -239,7 +203,7 @@ export default function NewQuizPage() {
                 <input
                   type="number"
                   className="input-glass w-full"
-                  placeholder="e.g. 15"
+                  placeholder="No limit"
                   value={timeLimit}
                   onChange={(e) => setTimeLimit(e.target.value)}
                   min={0}
@@ -348,25 +312,25 @@ export default function NewQuizPage() {
           {questions.length === 0 && (
             <GlassCard padding="md">
               <div className="text-center py-6 text-white/40">
-                <p className="mb-2">No questions added yet.</p>
+                <p className="mb-2">No questions. All questions were removed.</p>
                 <Button variant="primary" size="sm" onClick={addQuestion}>
-                  <PlusCircle className="w-4 h-4 mr-1" /> Add First Question
+                  <PlusCircle className="w-4 h-4 mr-1" /> Add Question
                 </Button>
               </div>
             </GlassCard>
           )}
         </div>
 
-        {/* Submit */}
+        {/* Save */}
         <div className="flex gap-3 pt-4">
           <Button
             variant="primary"
-            loading={loading}
-            onClick={handleSubmit}
-            disabled={!lessonId || !title || questions.length === 0}
+            loading={saving}
+            onClick={handleSave}
+            disabled={!title || questions.length === 0}
             className="flex-1"
           >
-            Create Quiz ({questions.length} questions)
+            Save Changes ({questions.length} questions)
           </Button>
           <Link href="/admin/quizzes">
             <Button variant="ghost">Cancel</Button>

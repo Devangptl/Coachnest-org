@@ -105,9 +105,9 @@ export default function CourseSidebar({
         ) : null}
 
         {/* Action buttons */}
-        <div className="mt-3 space-y-2">
+        <div className="mt-3 space-y-4">
           {userRole === "STUDENT" && (
-            <div className={!isEnrolled ? "cta-glow rounded-xl" : ""}>
+            <div className={!isEnrolled ? " rounded-xl" : ""}>
               <EnrollButton
                 courseId={courseId}
                 isEnrolled={isEnrolled}

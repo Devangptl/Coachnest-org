@@ -26,12 +26,22 @@ interface FeedbackItem {
   selectedOption: string;
   options: Option[];
 }
+interface PreviousAttempt {
+  id: string;
+  score: number;
+  passed: boolean;
+  timeTaken: number | null;
+  createdAt: string;
+}
 interface Quiz {
   id: string;
   title: string;
   passMark: number;
   timeLimit: number | null;
   questions: Question[];
+  previousAttempts?: PreviousAttempt[];
+  bestScore?: number | null;
+  hasPassed?: boolean;
 }
 
 interface Props {
@@ -162,6 +172,56 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
             </div>
           </div>
 
+          {/* Previous attempts */}
+          {quiz.previousAttempts && quiz.previousAttempts.length > 0 && (
+            <div className={cn(
+              "border rounded-xl p-4 text-left",
+              quiz.hasPassed
+                ? "bg-emerald-500/5 border-emerald-400/20"
+                : "bg-white/5 border-white/10"
+            )}>
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-white/70 text-sm font-medium">Previous Attempts</p>
+                {quiz.hasPassed && (
+                  <span className="text-emerald-400 text-xs font-semibold flex items-center gap-1">
+                    <CheckCircle className="w-3 h-3" /> Passed
+                  </span>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                {quiz.previousAttempts.slice(0, 3).map((a, i) => (
+                  <div key={a.id} className="flex items-center gap-3 text-xs">
+                    <span className="text-white/30 w-4">#{quiz.previousAttempts!.length - i}</span>
+                    <span className={cn(
+                      "font-semibold w-10",
+                      a.passed ? "text-emerald-400" : "text-red-400"
+                    )}>
+                      {a.score}%
+                    </span>
+                    <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div
+                        className={cn("h-full rounded-full", a.passed ? "bg-emerald-500" : "bg-red-500")}
+                        style={{ width: `${a.score}%` }}
+                      />
+                    </div>
+                    {a.timeTaken && (
+                      <span className="text-white/20 flex items-center gap-0.5">
+                        <Clock className="w-2.5 h-2.5" />
+                        {Math.floor(a.timeTaken / 60)}m {a.timeTaken % 60}s
+                      </span>
+                    )}
+                  </div>
+                ))}
+              </div>
+              {quiz.bestScore !== null && quiz.bestScore !== undefined && (
+                <p className="text-white/40 text-xs mt-2">
+                  Best score: <span className="text-white font-semibold">{quiz.bestScore}%</span>
+                  {" · "}{quiz.previousAttempts.length} attempt{quiz.previousAttempts.length !== 1 ? "s" : ""}
+                </p>
+              )}
+            </div>
+          )}
+
           <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left space-y-2">
             <p className="text-white/70 text-sm font-medium">Instructions:</p>
             <ul className="text-white/50 text-xs space-y-1">
@@ -176,7 +236,9 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
           </div>
 
           <Button onClick={startQuiz} className="w-full">
-            Start Quiz
+            {quiz.previousAttempts && quiz.previousAttempts.length > 0
+              ? quiz.hasPassed ? "Retake Quiz" : "Try Again"
+              : "Start Quiz"}
           </Button>
         </div>
       </div>

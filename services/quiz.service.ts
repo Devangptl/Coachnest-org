@@ -187,12 +187,11 @@ export async function getQuizAnalytics(quizId: string) {
   const avgTimeTaken =
     quiz.attempts.reduce((sum, a) => sum + (a.timeTaken || 0), 0) / totalAttempts;
 
-  // Score distribution
+  // Score distribution (score is already a percentage 0-100)
   const buckets = [0, 0, 0, 0, 0]; // 0-20%, 20-40%, 40-60%, 60-80%, 80-100%
   quiz.attempts.forEach((attempt) => {
-    const percentage = (attempt.score / 100) * 100; // Assuming 100 is max
-    const bucketIndex = Math.floor(percentage / 20);
-    if (bucketIndex < buckets.length) buckets[bucketIndex]++;
+    const bucketIndex = Math.min(Math.floor(attempt.score / 20), 4);
+    buckets[bucketIndex]++;
   });
 
   const scoreDistribution = [
@@ -246,7 +245,7 @@ export async function createQuiz(data: {
   timeLimit?: number;
   questions: Array<{
     text: string;
-    options: any[];
+    options: Array<{ text: string; correct: boolean }>;
     points: number;
     order: number;
   }>;
@@ -260,16 +259,20 @@ export async function createQuiz(data: {
     },
   });
 
-  // Create questions
-  if (data.questions.length > 0) {
-    await prisma.question.createMany({
-      data: data.questions.map((q) => ({
+  // Create questions with properly formatted options (id + isCorrect)
+  for (const q of data.questions) {
+    await prisma.question.create({
+      data: {
         quizId: quiz.id,
         text: q.text,
-        options: q.options,
+        options: q.options.map((o) => ({
+          id: crypto.randomUUID(),
+          text: o.text,
+          isCorrect: o.correct,
+        })),
         points: q.points,
         order: q.order,
-      })),
+      },
     });
   }
 
