@@ -153,7 +153,7 @@ export async function getQuizAnalytics(quizId: string) {
   const quiz = await prisma.quiz.findUnique({
     where: { id: quizId },
     include: {
-      questions: { select: { id: true, text: true, points: true } },
+      questions: { select: { id: true, text: true, points: true, options: true } },
       attempts: {
         select: {
           id: true,
@@ -203,12 +203,15 @@ export async function getQuizAnalytics(quizId: string) {
     { range: "80-100%", count: buckets[4] },
   ];
 
-  // Question-level analytics (requires parsing answers JSON)
+  // Question-level analytics
+  // Answer format: { [questionId]: optionId } — compare with correct option
   const questionAnalytics = quiz.questions.map((question) => {
+    const opts = question.options as unknown as Array<{ id: string; text: string; isCorrect: boolean }>;
+    const correctOpt = opts?.find((o) => o.isCorrect);
     let correctCount = 0;
     quiz.attempts.forEach((attempt) => {
-      const answers = attempt.answers as any;
-      if (answers && answers[question.id] && answers[question.id].correct) {
+      const answers = attempt.answers as Record<string, string>;
+      if (answers && correctOpt && answers[question.id] === correctOpt.id) {
         correctCount++;
       }
     });
@@ -220,7 +223,7 @@ export async function getQuizAnalytics(quizId: string) {
       attempts: totalAttempts,
       correctCount,
       correctPercentage: Math.round((correctCount / totalAttempts) * 100),
-      difficulty: 100 - Math.round((correctCount / totalAttempts) * 100), // Inverted: higher = harder
+      difficulty: 100 - Math.round((correctCount / totalAttempts) * 100),
     };
   });
 

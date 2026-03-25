@@ -9,6 +9,7 @@ const navItems = [
   { label: "My Courses",    href: "/dashboard",                icon: LayoutDashboard },
   { label: "Wishlist",      href: "/dashboard/wishlist",       icon: Heart },
   { label: "Certificates",  href: "/dashboard/certificates",   icon: Award },
+  { label: "Quiz History",  href: "/dashboard/quizzes",        icon: HelpCircle },
   { label: "Order History", href: "/dashboard/orders",         icon: ShoppingCart },
   { label: "Notifications", href: "/dashboard/notifications",  icon: Bell },
 ];

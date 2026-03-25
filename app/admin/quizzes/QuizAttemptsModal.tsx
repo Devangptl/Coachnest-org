@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
-import { X, Loader2 } from "lucide-react";
+import { X, Loader2, ChevronDown, CheckCircle, XCircle } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 function formatDuration(seconds: number | null) {
   if (!seconds) return "—";
@@ -21,23 +22,40 @@ export default function QuizAttemptsModal({
 }) {
   const [attempts, setAttempts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [quizDetail, setQuizDetail] = useState<any>(null);
 
   useEffect(() => {
-    fetch(`/api/admin/quizzes/${quiz.id}/attempts`)
-      .then((res) => res.json())
-      .then((data) => setAttempts(data.data || []))
-      .catch(() => setAttempts([]))
+    Promise.all([
+      fetch(`/api/admin/quizzes/${quiz.id}/attempts`).then((r) => r.json()),
+      fetch(`/api/admin/quizzes/${quiz.id}`).then((r) => r.json()),
+    ])
+      .then(([attemptsData, quizData]) => {
+        setAttempts(attemptsData.data || []);
+        setQuizDetail(quizData.data || null);
+      })
+      .catch(() => { setAttempts([]); setQuizDetail(null); })
       .finally(() => setLoading(false));
   }, [quiz.id]);
 
+  const toggleExpand = (id: string) => {
+    setExpandedId((prev) => (prev === id ? null : id));
+  };
+
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-3xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-white/10">
+    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center" onClick={onClose}>
+      <div
+        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-4xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-white/10"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-xl font-bold text-white">Quiz Attempts</h2>
-            <p className="text-white/50 text-sm">{quiz.title} &middot; {quiz.courseTitle}</p>
+            <p className="text-white/50 text-sm">
+              {quiz.title} &middot; {quiz.courseTitle}
+              {attempts.length > 0 && <span className="ml-2">· {attempts.length} attempt{attempts.length !== 1 ? "s" : ""}</span>}
+            </p>
           </div>
           <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
             <X className="w-5 h-5" />
@@ -55,6 +73,27 @@ export default function QuizAttemptsModal({
             </div>
           ) : (
             <>
+              {/* Summary stats */}
+              <div className="grid grid-cols-4 gap-3 mb-6">
+                {(() => {
+                  const avgScore = Math.round(attempts.reduce((s, a) => s + a.score, 0) / attempts.length);
+                  const passCount = attempts.filter((a) => a.passed).length;
+                  const passRate = Math.round((passCount / attempts.length) * 100);
+                  const avgTime = Math.round(attempts.reduce((s, a) => s + (a.timeTaken || 0), 0) / attempts.length);
+                  return [
+                    { label: "Total", value: attempts.length },
+                    { label: "Avg Score", value: `${avgScore}%` },
+                    { label: "Pass Rate", value: `${passRate}%` },
+                    { label: "Avg Time", value: avgTime > 0 ? formatDuration(avgTime) : "—" },
+                  ].map((s) => (
+                    <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                      <p className="text-lg font-bold text-white">{s.value}</p>
+                      <p className="text-white/40 text-xs">{s.label}</p>
+                    </div>
+                  ));
+                })()}
+              </div>
+
               {/* Table Header */}
               <div className="grid grid-cols-12 gap-4 px-3 py-2 text-xs text-white/40 font-semibold uppercase tracking-wider border-b border-white/10 mb-1">
                 <div className="col-span-3">Student</div>
@@ -65,33 +104,94 @@ export default function QuizAttemptsModal({
               </div>
 
               <div className="divide-y divide-white/5">
-                {attempts.map((attempt) => (
-                  <div
-                    key={attempt.id}
-                    className="grid grid-cols-12 gap-4 items-center px-3 py-3 hover:bg-white/5 transition-colors rounded"
-                  >
-                    <div className="col-span-3 min-w-0">
-                      <p className="text-white text-sm font-medium truncate">
-                        {attempt.studentName}
-                      </p>
-                      <p className="text-white/40 text-xs truncate">{attempt.studentEmail}</p>
+                {attempts.map((attempt) => {
+                  const isExpanded = expandedId === attempt.id;
+                  const answers = attempt.answers as Record<string, string> || {};
+                  const questions = quizDetail?.questions || [];
+
+                  return (
+                    <div key={attempt.id}>
+                      <button
+                        onClick={() => toggleExpand(attempt.id)}
+                        className="grid grid-cols-12 gap-4 items-center px-3 py-3 hover:bg-white/5 transition-colors rounded w-full text-left"
+                      >
+                        <div className="col-span-3 min-w-0">
+                          <p className="text-white text-sm font-medium truncate">
+                            {attempt.studentName}
+                          </p>
+                          <p className="text-white/40 text-xs truncate">{attempt.studentEmail}</p>
+                        </div>
+                        <div className="col-span-2 text-white font-semibold text-sm">
+                          {attempt.score}%
+                        </div>
+                        <div className="col-span-2">
+                          <Badge variant={attempt.passed ? "green" : "red"}>
+                            {attempt.passed ? "Passed" : "Failed"}
+                          </Badge>
+                        </div>
+                        <div className="col-span-2 text-sm text-white/70">
+                          {formatDuration(attempt.timeTaken)}
+                        </div>
+                        <div className="col-span-3 flex items-center justify-between">
+                          <span className="text-xs text-white/50">{formatDate(attempt.createdAt)}</span>
+                          <ChevronDown className={cn(
+                            "w-4 h-4 text-white/30 transition-transform",
+                            isExpanded && "rotate-180"
+                          )} />
+                        </div>
+                      </button>
+
+                      {/* Expanded: per-question answer breakdown */}
+                      {isExpanded && questions.length > 0 && (
+                        <div className="px-3 pb-4 pt-1">
+                          <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2">
+                            <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">
+                              Answer Breakdown
+                            </p>
+                            {questions.map((q: any, qIdx: number) => {
+                              const opts = (q.options || []) as Array<{ id: string; text: string; isCorrect?: boolean }>;
+                              const correctOpt = opts.find((o) => o.isCorrect);
+                              const selectedId = answers[q.id];
+                              const selectedOpt = opts.find((o) => o.id === selectedId);
+                              const isCorrect = correctOpt && selectedId === correctOpt.id;
+
+                              return (
+                                <div key={q.id} className={cn(
+                                  "flex items-start gap-2.5 p-2.5 rounded-lg",
+                                  isCorrect ? "bg-emerald-500/5" : "bg-red-500/5"
+                                )}>
+                                  <span className={cn(
+                                    "w-5 h-5 rounded flex items-center justify-center flex-shrink-0 mt-0.5",
+                                    isCorrect ? "bg-emerald-500/20" : "bg-red-500/20"
+                                  )}>
+                                    {isCorrect
+                                      ? <CheckCircle className="w-3 h-3 text-emerald-400" />
+                                      : <XCircle className="w-3 h-3 text-red-400" />}
+                                  </span>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-white/70 text-xs">
+                                      <span className="text-white/30">Q{qIdx + 1}.</span> {q.text}
+                                    </p>
+                                    {!isCorrect && (
+                                      <div className="mt-1 space-y-0.5">
+                                        <p className="text-red-400/70 text-[11px]">
+                                          Answered: {selectedOpt?.text || "—"}
+                                        </p>
+                                        <p className="text-emerald-400/70 text-[11px]">
+                                          Correct: {correctOpt?.text || "—"}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="col-span-2 text-white font-semibold text-sm">
-                      {attempt.score}%
-                    </div>
-                    <div className="col-span-2">
-                      <Badge variant={attempt.passed ? "green" : "red"}>
-                        {attempt.passed ? "Passed" : "Failed"}
-                      </Badge>
-                    </div>
-                    <div className="col-span-2 text-sm text-white/70">
-                      {formatDuration(attempt.timeTaken)}
-                    </div>
-                    <div className="col-span-3 text-xs text-white/50">
-                      {formatDate(attempt.createdAt)}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </>
           )}
