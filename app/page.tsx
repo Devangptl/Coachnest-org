@@ -4,6 +4,7 @@
  * Server Component: fetches data; delegates animations to client components.
  */
 import Link from "next/link";
+import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import CourseCard from "@/components/CourseCard";
@@ -473,65 +474,159 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          FEATURED COURSES
+          FEATURED COURSES — Premium Compact
       ═══════════════════════════════════════════════════════════════════════════ */}
       {courses.length > 0 && (
-        <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
+        <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-purple-900/5 to-transparent" />
-          <div className="max-w-7xl mx-auto relative">
+          <div className="max-w-6xl mx-auto relative">
+            {/* Section Header */}
             <FadeInSection>
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10 gap-4">
                 <div>
-                  <span className="inline-block text-purple-400 text-sm font-semibold uppercase tracking-widest mb-3">
-                    Popular Courses
-                  </span>
+                  <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-400/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-purple-300 mb-3">
+                    <Sparkles className="w-3.5 h-3.5" /> Trending Now
+                  </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white">
                     Featured courses
                   </h2>
-                  <p className="text-white/40 mt-2">
-                    Hand-picked by our instructors. Start with the most popular.
+                  <p className="text-white/40 mt-2 text-[15px]">
+                    Hand-picked by our instructors — start with the best.
                   </p>
                 </div>
                 <Link
                   href="/courses"
-                  className="text-purple-400 hover:text-purple-300 text-sm flex items-center gap-1 transition-colors"
+                  className="group inline-flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.1] text-white/60 hover:text-white hover:bg-white/[0.1] hover:border-white/[0.2] text-sm font-medium px-4 py-2 rounded-xl transition-all shrink-0"
                 >
-                  View all <ArrowRight className="w-4 h-4" />
+                  View all courses <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
             </FadeInSection>
 
-            <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.08}>
+            {/* Course Grid */}
+            <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" staggerDelay={0.07}>
               {courses.map((course) => {
                 const avg = course.reviews.length
                   ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
                   : 0;
+                const hasDiscount = course.discountPrice != null && course.price != null && Number(course.discountPrice) < Number(course.price);
+                const displayPrice = hasDiscount ? Number(course.discountPrice) : Number(course.price);
+                const levelColor =
+                  course.level === "beginner" ? "text-emerald-400 bg-emerald-500/15 border-emerald-400/25" :
+                  course.level === "intermediate" ? "text-amber-400 bg-amber-500/15 border-amber-400/25" :
+                  course.level === "advanced" ? "text-rose-400 bg-rose-500/15 border-rose-400/25" :
+                  "text-white/50 bg-white/10 border-white/15";
+
                 return (
                   <StaggerItem key={course.id}>
-                    <CourseCard
-                      id={course.id}
-                      title={course.title}
-                      description={course.description}
-                      thumbnail={course.thumbnail}
-                      instructorName={course.createdBy.name}
-                      price={course.price ? Number(course.price) : null}
-                      discountPrice={course.discountPrice ? Number(course.discountPrice) : null}
-                      isFree={course.isFree}
-                      level={course.level}
-                      totalLessons={course._count.lessons}
-                      enrollmentCount={course._count.enrollments}
-                      avgRating={avg}
-                      reviewCount={course.reviews.length}
-                    />
+                    <Link href={`/courses/${course.id}`} className="group block h-full">
+                      <div className="relative h-full rounded-2xl overflow-hidden border border-white/[0.08] bg-white/[0.04] backdrop-blur-md transition-all duration-300 group-hover:border-purple-400/30 group-hover:bg-white/[0.08] group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-purple-500/10">
+                        {/* Gradient border glow on hover */}
+                        <div className="absolute inset-0 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), transparent, rgba(168,85,247,0.06))" }} />
+
+                        {/* Thumbnail */}
+                        <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-violet-600/30 to-purple-900/30">
+                          {course.thumbnail ? (
+                            <Image
+                              src={course.thumbnail}
+                              alt={course.title}
+                              fill
+                              className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            />
+                          ) : (
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <BookOpen className="w-10 h-10 text-white/15" />
+                            </div>
+                          )}
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+
+                          {/* Floating badges on thumbnail */}
+                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
+                            {course.isFree && (
+                              <span className="bg-emerald-500/90 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md backdrop-blur-sm">
+                                Free
+                              </span>
+                            )}
+                            {course.level && (
+                              <span className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-md border backdrop-blur-sm ${levelColor}`}>
+                                {course.level}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Lesson count pill */}
+                          <div className="absolute bottom-2.5 right-2.5">
+                            <span className="flex items-center gap-1 bg-black/50 backdrop-blur-md text-white/80 text-[10px] font-medium px-2 py-0.5 rounded-md border border-white/10">
+                              <BookOpen className="w-2.5 h-2.5" />
+                              {course._count.lessons} lesson{course._count.lessons !== 1 ? "s" : ""}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4 relative flex flex-col">
+                          {/* Title */}
+                          <h3 className="text-white font-semibold text-[15px] leading-snug line-clamp-1 group-hover:text-purple-300 transition-colors">
+                            {course.title}
+                          </h3>
+
+                          {/* Instructor */}
+                          {course.createdBy.name && (
+                            <div className="flex items-center gap-2 mt-2">
+                              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                                <span className="text-white text-[9px] font-bold">
+                                  {course.createdBy.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+                                </span>
+                              </div>
+                              <span className="text-white/40 text-xs truncate">{course.createdBy.name}</span>
+                            </div>
+                          )}
+
+                          {/* Stats & Price Row */}
+                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
+                            <div className="flex items-center gap-3 text-xs text-white/35">
+                              {avg > 0 && (
+                                <span className="flex items-center gap-1 text-amber-400/90">
+                                  <Star className="w-3 h-3 fill-current" />
+                                  <span className="font-semibold">{avg}</span>
+                                  <span className="text-white/20 font-normal">({course.reviews.length})</span>
+                                </span>
+                              )}
+                              {course._count.enrollments > 0 && (
+                                <span className="flex items-center gap-1">
+                                  <Users className="w-3 h-3" />
+                                  {course._count.enrollments.toLocaleString()}
+                                </span>
+                              )}
+                            </div>
+
+                            {/* Price */}
+                            {!course.isFree && course.price != null && (
+                              <div className="flex items-center gap-1.5">
+                                {hasDiscount && (
+                                  <span className="text-white/20 text-[10px] line-through">
+                                    ₹{Number(course.price).toLocaleString("en-IN")}
+                                  </span>
+                                )}
+                                <span className="bg-gradient-to-r from-violet-500/20 to-purple-500/20 border border-violet-400/20 text-white font-bold text-xs px-2 py-0.5 rounded-md">
+                                  ₹{displayPrice.toLocaleString("en-IN")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </Link>
                   </StaggerItem>
                 );
               })}
             </StaggerChildren>
 
+            {/* CTA */}
             {courses.length >= 6 && (
               <FadeInSection>
-                <div className="text-center mt-12">
-                  <Link href="/courses" className="btn-secondary px-8 py-3">
+                <div className="text-center mt-10">
+                  <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-violet-500/15 to-purple-500/15 border border-purple-400/25 text-purple-300 hover:text-white hover:border-purple-400/40 hover:from-violet-500/25 hover:to-purple-500/25 font-medium text-sm px-7 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
                     Browse All Courses <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
