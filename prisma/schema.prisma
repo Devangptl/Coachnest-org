@@ -125,6 +125,8 @@ model User {
   quizAttempts   QuizAttempt[]
   lessonProgress LessonProgress[]
   couponUses     CouponUse[]
+  highlights     Highlight[]
+  blogs          Blog[]           @relation("BlogAuthor")
 
   @@map("users")
 }
@@ -234,10 +236,11 @@ model Lesson {
   courseId  String
   sectionId String?
 
-  course   Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  section  Section?         @relation(fields: [sectionId], references: [id])
-  progress LessonProgress[]
-  quiz     Quiz?
+  course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  section    Section?         @relation(fields: [sectionId], references: [id])
+  progress   LessonProgress[]
+  quiz       Quiz?
+  highlights Highlight[]
 
   @@map("lessons")
 }
@@ -471,4 +474,47 @@ model Notification {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("notifications")
+}
+
+// ─── Blog ────────────────────────────────────────────────────────────────────
+
+model Blog {
+  id          String        @id @default(cuid())
+  title       String
+  slug        String        @unique
+  excerpt     String?       @db.Text
+  content     String        @db.LongText
+  thumbnail   String?
+  status      ContentStatus @default(DRAFT)
+  tags        String?       // comma-separated tags
+  readTime    Int?          // estimated reading time in minutes
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  authorId String
+  author   User @relation("BlogAuthor", fields: [authorId], references: [id])
+
+  @@fulltext([title, content])
+  @@map("blogs")
+}
+
+// ─── Highlight ────────────────────────────────────────────────────────────────
+
+model Highlight {
+  id          String   @id @default(cuid())
+  userId      String
+  lessonId    String
+  text        String   @db.Text
+  blockIndex  Int
+  startOffset Int
+  endOffset   Int
+  color       String   @default("#a855f7")
+  note        String?  @db.Text
+  createdAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@index([userId, lessonId])
+  @@map("highlights")
 }

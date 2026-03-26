@@ -22,6 +22,7 @@ import {
   Award,
   Compass,
   Settings,
+  FileText,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
@@ -35,6 +36,7 @@ interface Props {
 const NAV_LINKS = {
   common: [
     { href: "/courses", label: "Courses", icon: Compass },
+    { href: "/blog", label: "Blog", icon: FileText },
     { href: "/search", label: "Search", icon: Search },
   ],
   STUDENT: [

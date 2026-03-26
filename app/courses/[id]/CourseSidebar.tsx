@@ -179,11 +179,11 @@ export default function CourseSidebar({
         </div>
       </div>
 
-      {/* Share section */}
-      <div className="px-4 pb-4">
+      {/* Share & Download section */}
+      <div className="px-4 pb-4 flex gap-2">
         <button
           onClick={handleCopyLink}
-          className="w-full flex items-center justify-center gap-2 text-white/40 hover:text-white/70 text-[11px] py-2.5 rounded-lg border border-white/[0.06] hover:border-white/15 hover:bg-white/[0.03] transition-all"
+          className="flex-1 flex items-center justify-center gap-2 text-white/40 hover:text-white/70 text-[11px] py-2.5 rounded-lg border border-white/[0.06] hover:border-white/15 hover:bg-white/[0.03] transition-all"
         >
           {copied ? (
             <>
@@ -197,6 +197,15 @@ export default function CourseSidebar({
             </>
           )}
         </button>
+        {(isEnrolled || userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
+          <button
+            onClick={() => { window.location.href = `/api/courses/${courseId}/pdf`; }}
+            title="Download Full Course PDF"
+            className="w-10 flex-shrink-0 flex items-center justify-center text-white/40 hover:text-white/70 py-2.5 rounded-lg border border-white/[0.06] hover:border-white/15 hover:bg-white/[0.03] transition-all"
+          >
+            <Download className="w-4 h-4" />
+          </button>
+        )}
       </div>
     </motion.div>
   );

@@ -10,7 +10,9 @@
       "Bash(npx tsc:*)",
       "Bash(grep -r \"btn-primary\\\\|btn-ghost\\\\|input-glass\\\\|label\\\\|stat-card\" /d/Devang/Claude/learning/styles /d/Devang/Claude/learning/app --include=*.css --include=*.scss)",
       "Bash(ls -la d:/Devang/Claude/learning/app/courses/[id]/)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(head -80 /d/Devang/Claude/learning/app/admin/courses/[id]/edit/page.tsx)",
+      "Bash(head -70 /d/Devang/Claude/learning/app/courses/[id]/page.tsx)"
     ]
   }
 }

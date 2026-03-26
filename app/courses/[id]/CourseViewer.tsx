@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -25,9 +26,13 @@ import {
   Type,
   Award,
   Download,
+  Maximize2,
+  Minimize2,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuizPlayer from "@/components/QuizPlayer";
+import TextHighlighter from "@/components/TextHighlighter";
 import toast from "react-hot-toast";
 
 interface Lesson {
@@ -65,6 +70,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
   const [marking, setMarking] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [downloadingCert, setDownloadingCert] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const activeLesson = lessons.find((l) => l.id === activeLessonId);
@@ -129,121 +135,171 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === "ArrowLeft" && prev) selectLesson(prev.id);
       if (e.key === "ArrowRight" && next) selectLesson(next.id);
+      if (e.key === "Escape" && isFullscreen) setIsFullscreen(false);
+      if ((e.key === "f" || e.key === "F") && isEnrolled && !isFullscreen) setIsFullscreen(true);
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [prev, next, selectLesson]);
+  }, [prev, next, selectLesson, isFullscreen, isEnrolled]);
 
-  return (
-    <div ref={contentRef} className="flex flex-col lg:flex-row gap-0 lg:gap-0 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-md bg-white/[0.03]">
-      {/* ── Left: Lesson sidebar (desktop persistent, mobile toggle) ── */}
-      <div className={cn(
-        "lg:w-[300px] flex-shrink-0 border-r border-white/10 bg-white/[0.02]",
-        "lg:block",
-        showSidebar ? "block" : "hidden lg:block"
-      )}>
-        {/* Sidebar header */}
-        <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/10">
-          <div className="flex items-center gap-2">
-            <LayoutList className="w-4 h-4 text-purple-400" />
-            <span className="text-white font-semibold text-sm">Lessons</span>
-          </div>
+  // Lock body scroll when fullscreen is active
+  useEffect(() => {
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+      return () => { document.body.style.overflow = ""; };
+    }
+  }, [isFullscreen]);
+
+  const sidebarContent = (
+    <>
+      {/* Sidebar header */}
+      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/10 flex-shrink-0">
+        <div className="flex items-center gap-2">
+          <LayoutList className="w-4 h-4 text-purple-400" />
+          <span className="text-white font-semibold text-sm">Lessons</span>
+        </div>
+        <div className="flex items-center gap-2">
           <span className="text-xs text-white/30 bg-white/5 px-2.5 py-1 rounded-full">
             {completedCount}/{lessons.length}
           </span>
-        </div>
-
-        {/* Mini progress bar */}
-        <div className="h-1 bg-white/5">
-          <div
-            className="h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-500"
-            style={{ width: `${lessons.length > 0 ? (completedCount / lessons.length) * 100 : 0}%` }}
-          />
-        </div>
-
-        {/* Lesson list */}
-        <div className="max-h-[500px] lg:max-h-[600px] overflow-y-auto">
-          {lessons.map((lesson, i) => {
-            const isActive = lesson.id === activeLessonId;
-            const isCompleted = completed[lesson.id];
-            const config = typeConfig[lesson.type] ?? typeConfig.TEXT;
-            const Icon = config.icon;
-
-            const isLocked = !isEnrolled && !lesson.isFree;
-
-            return (
-              <button
-                key={lesson.id}
-                onClick={() => {
-                  if (isLocked) return;
-                  selectLesson(lesson.id);
-                  setShowSidebar(false);
-                }}
-                disabled={isLocked}
-                className={cn(
-                  "flex items-center gap-3 w-full px-5 py-3.5 text-left transition-all",
-                  isLocked && "opacity-50 cursor-not-allowed",
-                  isActive
-                    ? "bg-purple-500/10 border-l-[3px] border-l-purple-500"
-                    : "border-l-[3px] border-l-transparent hover:bg-white/[0.04]",
-                  i !== lessons.length - 1 && "border-b border-b-white/[0.04]"
-                )}
-              >
-                {/* Number / status */}
-                <div className={cn(
-                  "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs",
-                  isLocked
-                    ? "bg-white/[0.04]"
-                    : isCompleted
-                    ? "bg-emerald-500/20"
-                    : isActive
-                    ? "bg-purple-500/20 border border-purple-400/30"
-                    : "bg-white/[0.04]"
-                )}>
-                  {isLocked ? (
-                    <Lock className="w-3.5 h-3.5 text-white/20" />
-                  ) : isCompleted ? (
-                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                  ) : isActive ? (
-                    <div className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse" />
-                  ) : (
-                    <span className="text-xs text-white/30 font-medium">{i + 1}</span>
-                  )}
-                </div>
-
-                {/* Info */}
-                <div className="flex-1 min-w-0">
-                  <p className={cn(
-                    "text-xs font-medium leading-tight mb-0.5 truncate",
-                    isActive ? "text-white" : isCompleted ? "text-emerald-300/80" : "text-white/70"
-                  )}>
-                    {lesson.title}
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <Icon className={cn("w-3 h-3", config.color)} />
-                    <span className={cn("text-[10px] font-medium", config.color)}>
-                      {config.label}
-                    </span>
-                    {lesson.duration && (
-                      <span className="text-[10px] text-white/25 flex items-center gap-0.5">
-                        <Clock className="w-2.5 h-2.5" />
-                        {lesson.duration}m
-                      </span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Free badge */}
-                {lesson.isFree && (
-                  <span className="flex-shrink-0 text-[9px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-400/20 font-medium">
-                    Free
-                  </span>
-                )}
-              </button>
-            );
-          })}
+          <button
+            onClick={() => setShowSidebar(false)}
+            className="hidden lg:flex p-1.5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors"
+            title="Close sidebar"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
         </div>
       </div>
+
+      {/* Mini progress bar */}
+      <div className="h-1 bg-white/5 flex-shrink-0">
+        <div
+          className="h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-500"
+          style={{ width: `${lessons.length > 0 ? (completedCount / lessons.length) * 100 : 0}%` }}
+        />
+      </div>
+
+      {/* Lesson list */}
+      <div className="flex-1 overflow-y-auto min-h-0">
+        {lessons.map((lesson, i) => {
+          const isActive = lesson.id === activeLessonId;
+          const isCompleted = completed[lesson.id];
+          const config = typeConfig[lesson.type] ?? typeConfig.TEXT;
+          const Icon = config.icon;
+
+          const isLocked = !isEnrolled && !lesson.isFree;
+
+          return (
+            <button
+              key={lesson.id}
+              onClick={() => {
+                if (isLocked) return;
+                selectLesson(lesson.id);
+              }}
+              disabled={isLocked}
+              className={cn(
+                "flex items-center gap-3 w-full px-5 py-3.5 text-left transition-all",
+                isLocked && "opacity-50 cursor-not-allowed",
+                isActive
+                  ? "bg-purple-500/10 border-l-[3px] border-l-purple-500"
+                  : "border-l-[3px] border-l-transparent hover:bg-white/[0.04]",
+                i !== lessons.length - 1 && "border-b border-b-white/[0.04]"
+              )}
+            >
+              {/* Number / status */}
+              <div className={cn(
+                "flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center text-xs",
+                isLocked
+                  ? "bg-white/[0.04]"
+                  : isCompleted
+                  ? "bg-emerald-500/20"
+                  : isActive
+                  ? "bg-purple-500/20 border border-purple-400/30"
+                  : "bg-white/[0.04]"
+              )}>
+                {isLocked ? (
+                  <Lock className="w-3.5 h-3.5 text-white/20" />
+                ) : isCompleted ? (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                ) : isActive ? (
+                  <div className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse" />
+                ) : (
+                  <span className="text-xs text-white/30 font-medium">{i + 1}</span>
+                )}
+              </div>
+
+              {/* Info */}
+              <div className="flex-1 min-w-0">
+                <p className={cn(
+                  "text-xs font-medium leading-tight mb-0.5 truncate",
+                  isActive ? "text-white" : isCompleted ? "text-emerald-300/80" : "text-white/70"
+                )}>
+                  {lesson.title}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Icon className={cn("w-3 h-3", config.color)} />
+                  <span className={cn("text-[10px] font-medium", config.color)}>
+                    {config.label}
+                  </span>
+                  {lesson.duration && (
+                    <span className="text-[10px] text-white/25 flex items-center gap-0.5">
+                      <Clock className="w-2.5 h-2.5" />
+                      {lesson.duration}m
+                    </span>
+                  )}
+                </div>
+              </div>
+
+              {/* Free badge */}
+              {lesson.isFree && (
+                <span className="flex-shrink-0 text-[9px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-400/20 font-medium">
+                  Free
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </>
+  );
+
+  return (
+    <div ref={contentRef} className="flex flex-col lg:flex-row gap-0 lg:gap-0 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-md bg-white/[0.03]">
+      {/* ── Left: Lesson sidebar ── */}
+      <AnimatePresence initial={false} mode="wait">
+        {showSidebar && (
+          <motion.div
+            key="desktop-sidebar"
+            initial={{ opacity: 0, width: 0 }}
+            animate={{ opacity: 1, width: 300 }}
+            exit={{ opacity: 0, width: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="hidden lg:flex flex-col flex-shrink-0 border-r border-white/10 bg-white/[0.02]"
+          >
+            <div className="w-[300px] flex flex-col h-full max-h-[600px]">
+              {sidebarContent}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence initial={false} mode="wait">
+        {showSidebar && (
+          <motion.div
+            key="mobile-sidebar"
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.35, ease: "easeInOut" }}
+            className="lg:hidden flex flex-col border-b border-white/10 bg-white/[0.02]"
+          >
+            <div className="w-full flex flex-col max-h-[500px]">
+              {sidebarContent}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* ── Mobile toggle ── */}
       <button
@@ -263,9 +319,18 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
       </button>
 
       {/* ── Right: Content area ── */}
-      <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0 flex flex-col relative">
         {!isEnrolled && !activeLesson?.isFree ? (
-          <div className="flex flex-col items-center justify-center py-28 px-6 text-center">
+          <div className="flex flex-col items-center justify-center py-28 px-6 text-center flex-1">
+            {!showSidebar && (
+              <button
+                onClick={() => setShowSidebar(true)}
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all z-10"
+                title="Show Lessons"
+              >
+                <LayoutList className="w-5 h-5" />
+              </button>
+            )}
             <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
               <Lock className="w-12 h-12 text-white/15" />
             </div>
@@ -286,69 +351,89 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               transition={{ duration: 0.2 }}
             >
               {/* Lesson header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 px-6 sm:px-8 py-5 border-b border-white/10">
-                <div className="flex items-center gap-4 min-w-0">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 border-b border-white/10">
+                <div className="flex items-center gap-3.5 min-w-0">
+                  {!showSidebar && (
+                    <button
+                      onClick={() => setShowSidebar(true)}
+                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all flex-shrink-0 z-10"
+                      title="Show Lessons"
+                    >
+                      <LayoutList className="w-5 h-5" />
+                    </button>
+                  )}
                   {/* Type icon */}
                   {(() => {
                     const config = typeConfig[activeLesson.type] ?? typeConfig.TEXT;
                     const Icon = config.icon;
                     return (
                       <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 border",
+                        "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border",
                         config.bg, config.border
                       )}>
-                        <Icon className={cn("w-6 h-6", config.color)} />
+                        <Icon className={cn("w-5 h-5", config.color)} />
                       </div>
                     );
                   })()}
                   <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="text-white/30 text-xs font-medium">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-white/30 text-[10px] font-medium">
                         Lesson {activeIndex + 1} of {lessons.length}
                       </span>
                       {activeLesson.isFree && (
-                        <span className="flex items-center gap-1 text-[10px] text-emerald-400 bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-400/20 font-medium">
-                          <Eye className="w-2.5 h-2.5" />
+                        <span className="flex items-center gap-1 text-[9px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-400/20 font-medium">
+                          <Eye className="w-2 h-2" />
                           Free Preview
                         </span>
                       )}
                       {activeLesson.duration && (
-                        <span className="flex items-center gap-1 text-[10px] text-white/25">
+                        <span className="flex items-center gap-1 text-[9px] text-white/25">
                           <Clock className="w-2.5 h-2.5" />
                           {activeLesson.duration} min
                         </span>
                       )}
                     </div>
-                    <h2 className="text-white font-bold text-lg sm:text-xl leading-tight">
+                    <h2 className="text-white font-bold text-base sm:text-lg leading-tight truncate">
                       {activeLesson.title}
                     </h2>
                   </div>
                 </div>
 
-                {/* Mark complete — only for enrolled users */}
-                {isEnrolled && <button
-                  onClick={() => toggleComplete(activeLesson.id)}
-                  disabled={marking}
-                  className={cn(
-                    "flex items-center gap-2 text-sm px-5 py-2.5 rounded-xl border transition-all flex-shrink-0 font-semibold",
-                    completed[activeLesson.id]
-                      ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                      : "bg-white/5 border-white/15 text-white/50 hover:text-white hover:bg-white/10"
-                  )}
-                >
-                  {completed[activeLesson.id] ? (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                {/* Actions — only for enrolled users */}
+                {isEnrolled && (
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => setIsFullscreen(true)}
+                      className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                      title="Full Screen (F)"
                     >
-                      <CheckCircle2 className="w-4.5 h-4.5" />
-                    </motion.div>
-                  ) : (
-                    <Circle className="w-4.5 h-4.5" />
-                  )}
-                  {completed[activeLesson.id] ? "Completed" : "Mark Complete"}
-                </button>}
+                      <Maximize2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => toggleComplete(activeLesson.id)}
+                      disabled={marking}
+                      className={cn(
+                        "flex items-center gap-2 text-xs px-4 py-2 rounded-xl border transition-all font-semibold",
+                        completed[activeLesson.id]
+                          ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
+                          : "bg-white/5 border-white/15 text-white/50 hover:text-white hover:bg-white/10"
+                      )}
+                    >
+                      {completed[activeLesson.id] ? (
+                        <motion.div
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ type: "spring", stiffness: 400, damping: 15 }}
+                        >
+                          <CheckCircle2 className="w-4 h-4" />
+                        </motion.div>
+                      ) : (
+                        <Circle className="w-4 h-4" />
+                      )}
+                      <span>{completed[activeLesson.id] ? "Completed" : "Mark Complete"}</span>
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* Content body */}
@@ -371,7 +456,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     />
                   </div>
                 ) : activeLesson.content ? (
-                  <LessonContent content={activeLesson.content} />
+                  <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
                 ) : (
                   <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
                     <FileText className="w-14 h-14 text-white/10 mx-auto mb-4" />
@@ -465,12 +550,168 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             </motion.div>
           </AnimatePresence>
         ) : (
-          <div className="text-center py-24 px-6">
+          <div className="text-center py-24 px-6 flex-1 flex flex-col items-center justify-center relative min-h-[400px]">
+            {!showSidebar && (
+              <button
+                onClick={() => setShowSidebar(true)}
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all z-10"
+                title="Show Lessons"
+              >
+                <LayoutList className="w-5 h-5" />
+              </button>
+            )}
             <BookOpen className="w-14 h-14 text-white/10 mx-auto mb-4" />
             <p className="text-white/40 text-lg">No lessons in this course yet.</p>
           </div>
         )}
       </div>
+      {/* ── Fullscreen overlay (portal) ── */}
+      {typeof document !== "undefined" && createPortal(
+        <AnimatePresence>
+          {isFullscreen && activeLesson && (
+            <motion.div
+              key="fullscreen-overlay"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.25 }}
+              className="fixed inset-0 z-[9999] flex flex-col bg-[#0a0a0f]"
+            >
+              {/* ── Top bar ── */}
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/10 bg-white/[0.02] flex-shrink-0">
+                <div className="flex items-center gap-4 min-w-0">
+                  {(() => {
+                    const config = typeConfig[activeLesson.type] ?? typeConfig.TEXT;
+                    const Icon = config.icon;
+                    return (
+                      <div className={cn(
+                        "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border",
+                        config.bg, config.border
+                      )}>
+                        <Icon className={cn("w-5 h-5", config.color)} />
+                      </div>
+                    );
+                  })()}
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <span className="text-white/30 text-xs font-medium">
+                        Lesson {activeIndex + 1} of {lessons.length}
+                      </span>
+                      {activeLesson.duration && (
+                        <span className="flex items-center gap-1 text-[10px] text-white/25">
+                          <Clock className="w-2.5 h-2.5" />
+                          {activeLesson.duration} min
+                        </span>
+                      )}
+                    </div>
+                    <h2 className="text-white font-bold text-lg leading-tight truncate">
+                      {activeLesson.title}
+                    </h2>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 flex-shrink-0">
+                  {/* Mark complete in fullscreen */}
+                  <button
+                    onClick={() => toggleComplete(activeLesson.id)}
+                    disabled={marking}
+                    className={cn(
+                      "flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all font-semibold",
+                      completed[activeLesson.id]
+                        ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
+                        : "bg-white/5 border-white/15 text-white/50 hover:text-white hover:bg-white/10"
+                    )}
+                  >
+                    {completed[activeLesson.id] ? (
+                      <CheckCircle2 className="w-4 h-4" />
+                    ) : (
+                      <Circle className="w-4 h-4" />
+                    )}
+                    <span className="hidden sm:inline">
+                      {completed[activeLesson.id] ? "Completed" : "Mark Complete"}
+                    </span>
+                  </button>
+
+                  {/* Exit fullscreen */}
+                  <button
+                    onClick={() => setIsFullscreen(false)}
+                    className="flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                    title="Exit Full Screen (Esc)"
+                  >
+                    <Minimize2 className="w-4.5 h-4.5" />
+                  </button>
+                </div>
+              </div>
+
+              {/* ── Scrollable content ── */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="max-w-4xl mx-auto px-6 sm:px-10 py-8 sm:py-12">
+                  {activeLesson.type === "QUIZ" ? (
+                    <QuizLoader
+                      lessonId={activeLesson.id}
+                      onComplete={() => {
+                        if (!completed[activeLesson.id]) toggleComplete(activeLesson.id);
+                      }}
+                    />
+                  ) : activeLesson.type === "VIDEO" && activeLesson.content ? (
+                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-black/60 border border-white/5 shadow-2xl shadow-black/40">
+                      <iframe
+                        src={activeLesson.content}
+                        title={activeLesson.title}
+                        className="absolute inset-0 w-full h-full"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowFullScreen
+                      />
+                    </div>
+                  ) : activeLesson.content ? (
+                    <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
+                  ) : (
+                    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
+                      <FileText className="w-14 h-14 text-white/10 mx-auto mb-4" />
+                      <p className="text-white/30 text-base">No content added yet.</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* ── Bottom navigation bar ── */}
+              <div className="flex items-center justify-between gap-4 px-6 py-3 border-t border-white/10 bg-white/[0.02] flex-shrink-0">
+                {prev ? (
+                  <button
+                    onClick={() => selectLesson(prev.id)}
+                    className="flex items-center gap-2 text-white/50 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-white/5 text-sm"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                    <span className="hidden sm:inline truncate max-w-[200px]">{prev.title}</span>
+                    <span className="sm:hidden">Previous</span>
+                  </button>
+                ) : <span />}
+
+                <p className="text-white/15 text-[10px] hidden lg:block">
+                  ← → navigate · Esc exit
+                </p>
+
+                {next ? (
+                  <button
+                    onClick={() => selectLesson(next.id)}
+                    className="flex items-center gap-2 text-purple-300 hover:text-white bg-purple-500/15 border border-purple-400/20 px-3 py-2 rounded-xl hover:bg-purple-500/25 transition-all text-sm"
+                  >
+                    <span className="hidden sm:inline truncate max-w-[200px]">{next.title}</span>
+                    <span className="sm:hidden">Next</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-2 text-emerald-400 text-sm font-semibold">
+                    <Sparkles className="w-4 h-4" />
+                    End of course
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }
@@ -695,7 +936,7 @@ function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: ()
   );
 }
 
-function LessonContent({ content }: { content: string }) {
+function LessonContent({ content, lessonId, isEnrolled }: { content: string; lessonId: string; isEnrolled: boolean }) {
   const blocks = useMemo(() => parseContent(content), [content]);
 
   return (
@@ -708,66 +949,69 @@ function LessonContent({ content }: { content: string }) {
 
       {/* Content body */}
       <div className="px-6 sm:px-8 py-6 sm:py-8 bg-white/[0.015]">
-        <div className="max-w-3xl mx-auto space-y-5">
-          {blocks.map((block, i) => {
-            switch (block.type) {
-              case "h1":
-                return (
-                  <h1 key={i} className="text-2xl font-bold text-white flex items-center gap-3 pt-2 pb-1">
-                    <Hash className="w-5 h-5 text-purple-400 flex-shrink-0" />
-                    {block.text}
-                  </h1>
-                );
-              case "h2":
-                return (
-                  <h2
-                    key={i}
-                    className="text-lg font-semibold text-white/90 border-l-2 border-purple-500/50 pl-3 pt-3"
-                  >
-                    {block.text}
-                  </h2>
-                );
-              case "h3":
-                return (
-                  <h3 key={i} className="text-base font-semibold text-white/80 pt-2">
-                    {block.text}
-                  </h3>
-                );
-              case "code":
-                return <CodeBlock key={i} lang={block.lang} code={block.code} />;
-              case "list":
-                return (
-                  <ul key={i} className="space-y-2 pl-1">
-                    {block.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
-                        <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400/60 flex-shrink-0" />
-                        <span>{renderInline(item)}</span>
-                      </li>
-                    ))}
-                  </ul>
-                );
-              case "numlist":
-                return (
-                  <ol key={i} className="space-y-2 pl-1">
-                    {block.items.map((item, j) => (
-                      <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
-                        <span className="flex-shrink-0 w-5 h-5 rounded-md bg-purple-500/15 text-purple-300 text-[11px] font-bold flex items-center justify-center mt-0.5">
-                          {j + 1}
-                        </span>
-                        <span>{renderInline(item)}</span>
-                      </li>
-                    ))}
-                  </ol>
-                );
-              case "paragraph":
-                return (
-                  <p key={i} className="text-white/65 text-sm leading-[1.85] tracking-wide">
-                    {renderInline(block.text)}
-                  </p>
-                );
-            }
-          })}
-        </div>
+        <TextHighlighter lessonId={lessonId} isEnrolled={isEnrolled}>
+          <div className="max-w-3xl mx-auto space-y-5">
+            {blocks.map((block, i) => {
+              switch (block.type) {
+                case "h1":
+                  return (
+                    <h1 key={i} data-block-index={i} className="text-2xl font-bold text-white flex items-center gap-3 pt-2 pb-1">
+                      <Hash className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                      {block.text}
+                    </h1>
+                  );
+                case "h2":
+                  return (
+                    <h2
+                      key={i}
+                      data-block-index={i}
+                      className="text-lg font-semibold text-white/90 border-l-2 border-purple-500/50 pl-3 pt-3"
+                    >
+                      {block.text}
+                    </h2>
+                  );
+                case "h3":
+                  return (
+                    <h3 key={i} data-block-index={i} className="text-base font-semibold text-white/80 pt-2">
+                      {block.text}
+                    </h3>
+                  );
+                case "code":
+                  return <CodeBlock key={i} lang={block.lang} code={block.code} />;
+                case "list":
+                  return (
+                    <ul key={i} data-block-index={i} className="space-y-2 pl-1">
+                      {block.items.map((item, j) => (
+                        <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
+                          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400/60 flex-shrink-0" />
+                          <span>{renderInline(item)}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  );
+                case "numlist":
+                  return (
+                    <ol key={i} data-block-index={i} className="space-y-2 pl-1">
+                      {block.items.map((item, j) => (
+                        <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-md bg-purple-500/15 text-purple-300 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                            {j + 1}
+                          </span>
+                          <span>{renderInline(item)}</span>
+                        </li>
+                      ))}
+                    </ol>
+                  );
+                case "paragraph":
+                  return (
+                    <p key={i} data-block-index={i} className="text-white/65 text-sm leading-[1.85] tracking-wide">
+                      {renderInline(block.text)}
+                    </p>
+                  );
+              }
+            })}
+          </div>
+        </TextHighlighter>
       </div>
     </div>
   );
