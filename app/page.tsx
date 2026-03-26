@@ -923,7 +923,7 @@ export default async function HomePage() {
                 },
                 {
                   question: "What payment methods do you accept?",
-                  answer: "We accept all major credit/debit cards, UPI, net banking, and wallets through our secure Razorpay payment gateway. All transactions are encrypted and PCI-DSS compliant.",
+                  answer: "We accept all major credit/debit cards, UPI, net banking, and wallets through our secure Stripe payment gateway. All transactions are encrypted and PCI-DSS compliant.",
                 },
                 {
                   question: "Do I get lifetime access to purchased courses?",

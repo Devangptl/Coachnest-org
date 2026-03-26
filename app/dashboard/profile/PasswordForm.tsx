@@ -1,0 +1,146 @@
+"use client";
+
+import { useState, FormEvent } from "react";
+import GlassCard from "@/components/GlassCard";
+import { Button } from "@/components/ui/Button";
+import { Lock, Eye, EyeOff } from "lucide-react";
+
+export default function PasswordForm() {
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showCurrent, setShowCurrent] = useState(false);
+  const [showNew, setShowNew] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+
+    if (newPassword !== confirmPassword) {
+      setMessage({ type: "error", text: "New passwords do not match." });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      setMessage({ type: "error", text: "New password must be at least 6 characters." });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/profile/password", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setMessage({ type: "error", text: data.error || "Failed to change password." });
+      } else {
+        setMessage({ type: "success", text: "Password changed successfully!" });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+      }
+    } catch {
+      setMessage({ type: "error", text: "Something went wrong. Please try again." });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <GlassCard>
+      <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+        <Lock className="w-4 h-4 text-purple-400" /> Change Password
+      </h2>
+
+      <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Current Password */}
+        <div>
+          <label className="text-white/60 text-sm font-medium mb-1.5 block">
+            Current Password
+          </label>
+          <div className="relative">
+            <input
+              type={showCurrent ? "text" : "password"}
+              required
+              value={currentPassword}
+              onChange={(e) => { setCurrentPassword(e.target.value); setMessage(null); }}
+              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 pr-10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+              placeholder="Enter current password"
+            />
+            <button
+              type="button"
+              onClick={() => setShowCurrent(!showCurrent)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+            >
+              {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* New Password */}
+        <div>
+          <label className="text-white/60 text-sm font-medium mb-1.5 block">
+            New Password
+          </label>
+          <div className="relative">
+            <input
+              type={showNew ? "text" : "password"}
+              required
+              value={newPassword}
+              onChange={(e) => { setNewPassword(e.target.value); setMessage(null); }}
+              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 pr-10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+              placeholder="At least 6 characters"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNew(!showNew)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+            >
+              {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Confirm New Password */}
+        <div>
+          <label className="text-white/60 text-sm font-medium mb-1.5 block">
+            Confirm New Password
+          </label>
+          <input
+            type="password"
+            required
+            value={confirmPassword}
+            onChange={(e) => { setConfirmPassword(e.target.value); setMessage(null); }}
+            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            placeholder="Re-enter new password"
+          />
+        </div>
+
+        {/* Message */}
+        {message && (
+          <div
+            className={`text-sm px-4 py-2.5 rounded-xl border ${
+              message.type === "success"
+                ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-300"
+                : "bg-red-500/10 border-red-400/30 text-red-300"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
+
+        <Button type="submit" loading={loading}>
+          Update Password
+        </Button>
+      </form>
+    </GlassCard>
+  );
+}

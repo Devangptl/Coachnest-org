@@ -30,7 +30,7 @@ async function getUserOrders(userId: string) {
     status: order.status,
     couponCode: order.coupon?.code,
     discountAmount: Number(order.discountAmount || 0),
-    razorpayPaymentId: order.razorpayPaymentId,
+    stripePaymentId: order.stripePaymentId,
     createdAt: order.createdAt,
   }));
 }
@@ -124,9 +124,9 @@ export default async function OrderHistoryPage() {
                       Coupon: {order.couponCode}
                     </span>
                   )}
-                  {order.razorpayPaymentId && (
+                  {order.stripePaymentId && (
                     <span className="text-white/30 text-xs font-mono">
-                      #{order.razorpayPaymentId.slice(-8)}
+                      #{order.stripePaymentId.slice(-8)}
                     </span>
                   )}
                 </div>

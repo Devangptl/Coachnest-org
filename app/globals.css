@@ -26,7 +26,7 @@
     --ring: 263 70% 55%;
     --radius: 0.75rem;
   }
-
+/* 063D5D primary color */
   /* Light mode overrides (activated by removing .dark from <html>) */
   .light {
     --background: 0 0% 100%;

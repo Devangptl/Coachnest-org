@@ -110,7 +110,7 @@ const FAQ = [
   { q: "Can I switch plans?",            a: "Yes, upgrade or downgrade at any time. Changes take effect at the next billing cycle." },
   { q: "Is there a free trial?",         a: "Pro plan comes with a 7-day free trial. No credit card required." },
   { q: "How do refunds work?",           a: "We offer a 30-day money-back guarantee on all paid plans." },
-  { q: "What payment methods do you accept?", a: "We accept all major cards, UPI, and net banking via Razorpay." },
+  { q: "What payment methods do you accept?", a: "We accept all major cards, UPI, and net banking via Stripe." },
 ];
 
 export default function PricingPage() {
@@ -125,7 +125,7 @@ export default function PricingPage() {
       toast.success("Our sales team will reach out within 24 hours.");
       return;
     }
-    // In production: initiate Razorpay subscription flow
+    // In production: initiate Stripe subscription flow
     toast.success(`Starting ${plan.name} plan setup...`);
     window.location.href = `/api/payments/create-order?plan=${plan.id}&billing=${billing}`;
   }
@@ -175,7 +175,7 @@ export default function PricingPage() {
         {[
           { icon: Shield, label: "30-day money-back guarantee" },
           { icon: Zap,    label: "Instant access after payment" },
-          { icon: Shield, label: "Secure payments via Razorpay" },
+          { icon: Shield, label: "Secure payments via Stripe" },
         ].map(({ icon: Icon, label }) => (
           <div key={label} className="flex items-center gap-2">
             <Icon className="w-4 h-4 text-purple-400" />

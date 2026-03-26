@@ -74,6 +74,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "courseId is required." }, { status: 400 });
     }
 
+    // Verify user exists (session may reference a deleted user after DB reset)
+    const userExists = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { id: true },
+    });
+    if (!userExists) {
+      return NextResponse.json(
+        { error: "User not found. Please log out and log back in." },
+        { status: 401 }
+      );
+    }
+
     // Verify the course exists and is published
     const course = await prisma.course.findUnique({ where: { id: courseId } });
     if (!course || course.status !== "PUBLISHED") {

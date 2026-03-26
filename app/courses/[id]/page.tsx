@@ -9,6 +9,7 @@ import CourseHero from "./CourseHero";
 import CourseContent from "./CourseContent";
 import CourseSidebar from "./CourseSidebar";
 import CourseLayout from "./CourseLayout";
+import PaymentStatus from "./PaymentStatus";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -82,6 +83,7 @@ export default async function CourseDetailPage({ params }: Props) {
 
   return (
     <div className="pb-10">
+      <PaymentStatus />
       {/* ── Hero section ───────────────────────────────────── */}
       <CourseHero
         title={course.title}

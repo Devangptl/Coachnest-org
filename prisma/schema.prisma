@@ -363,9 +363,8 @@ model Order {
   amount            Decimal     @db.Decimal(10, 2)
   currency          String      @default("INR")
   status            OrderStatus @default(PENDING)
-  razorpayOrderId   String?     @unique
-  razorpayPaymentId String?     @unique
-  razorpaySignature String?
+  stripeSessionId   String?     @unique
+  stripePaymentId   String?     @unique
   couponId          String?
   discountAmount    Decimal?    @db.Decimal(10, 2)
   createdAt         DateTime    @default(now())
@@ -386,7 +385,7 @@ model Subscription {
   startDate     DateTime  @default(now())
   endDate       DateTime?
   trialEndsAt   DateTime?
-  razorpaySubId String?
+  stripeSubId String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

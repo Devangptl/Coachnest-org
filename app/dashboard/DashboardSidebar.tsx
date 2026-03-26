@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle } from "lucide-react";
+import { LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle, UserCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -12,6 +12,7 @@ const navItems = [
   { label: "Quiz History",  href: "/dashboard/quizzes",        icon: HelpCircle },
   { label: "Order History", href: "/dashboard/orders",         icon: ShoppingCart },
   { label: "Notifications", href: "/dashboard/notifications",  icon: Bell },
+  { label: "Profile",       href: "/dashboard/profile",        icon: UserCircle },
 ];
 
 export default function DashboardSidebar() {

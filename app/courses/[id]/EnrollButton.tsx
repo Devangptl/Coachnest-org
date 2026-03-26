@@ -1,6 +1,6 @@
 /**
  * EnrollButton — Client Component for enrolling in a course.
- * Supports free enrollment, paid courses with Razorpay, and coupon code application.
+ * Supports free enrollment, paid courses with Stripe Checkout, and coupon code application.
  */
 "use client";
 
@@ -76,13 +76,13 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
 
     try {
       if (!isFree && price) {
-        // Paid course — create Razorpay order
+        // Paid course — create Stripe Checkout Session and redirect
         const orderRes = await fetch("/api/payments/create-order", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             courseId,
-            couponId: appliedCoupon?.id || undefined,
+            couponCode: appliedCoupon?.code || undefined,
           }),
         });
 
@@ -92,43 +92,14 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
           return;
         }
 
-        const { order } = await orderRes.json();
+        const { url } = await orderRes.json();
 
-        // Open Razorpay checkout
-        const options = {
-          key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-          amount: order.amount,
-          currency: order.currency,
-          name: "Learning Platform",
-          description: "Course Purchase",
-          order_id: order.id,
-          handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
-            // Verify payment
-            const verifyRes = await fetch("/api/payments/verify", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                courseId,
-                razorpayOrderId: response.razorpay_order_id,
-                razorpayPaymentId: response.razorpay_payment_id,
-                razorpaySignature: response.razorpay_signature,
-              }),
-            });
-
-            if (verifyRes.ok) {
-              setEnrolled(true);
-              toast.success("Payment successful! You're now enrolled.");
-              router.refresh();
-            } else {
-              toast.error("Payment verification failed.");
-            }
-          },
-          theme: { color: "#7c3aed" },
-        };
-
-        // @ts-expect-error Razorpay is loaded via script
-        const rzp = new window.Razorpay(options);
-        rzp.open();
+        if (url) {
+          // Redirect to Stripe Checkout
+          window.location.href = url;
+        } else {
+          toast.error("Could not initiate checkout. Please try again.");
+        }
       } else {
         // Free course — direct enrollment
         const res = await fetch("/api/enrollments", {
