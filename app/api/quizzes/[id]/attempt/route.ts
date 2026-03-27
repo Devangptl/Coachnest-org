@@ -6,6 +6,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { awardXp, checkQuizBadges } from "@/lib/gamification";
+import { XP_VALUES } from "@/lib/gamification";
 
 export async function POST(
   req: NextRequest,
@@ -50,6 +52,15 @@ export async function POST(
       },
     });
 
+    // Award XP for quiz
+    let xpGained = 0;
+    if (passed) {
+      xpGained += XP_VALUES.QUIZ_PASS;
+      if (score === 100) xpGained += XP_VALUES.QUIZ_PERFECT_BONUS;
+      await awardXp(session.userId, "QUIZ_PASS", xpGained, { quizId, score });
+    }
+    await checkQuizBadges(session.userId, score, passed);
+
     // Build per-question feedback
     const feedback = quiz.questions.map((q) => {
       const opts    = q.options as Array<{ id: string; text: string; isCorrect: boolean }>;
@@ -64,7 +75,7 @@ export async function POST(
       };
     });
 
-    return NextResponse.json({ attempt, score, passed, passMark: quiz.passMark, feedback });
+    return NextResponse.json({ attempt, score, passed, passMark: quiz.passMark, feedback, xpGained });
   } catch (err) {
     console.error("[POST /api/quizzes/[id]/attempt]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

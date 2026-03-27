@@ -336,72 +336,87 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           HOW IT WORKS — 4-step process
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/15 to-transparent" />
+      <section className="py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/8 to-transparent" />
+        {/* Decorative blobs */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+
         <div className="max-w-6xl mx-auto relative">
           <FadeInSection>
-            <div className="text-center mb-16">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+            <div className="text-center mb-20">
+              <span className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
                 How It Works
               </span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
                 Start learning in{" "}
                 <span className="text-orange-400">4 simple steps</span>
               </h2>
-              <p className="text-muted-foreground/70 max-w-xl mx-auto text-lg">
+              <p className="text-white/40 max-w-xl mx-auto text-lg">
                 From sign-up to certificate — your learning journey made simple.
               </p>
             </div>
           </FadeInSection>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
               {
                 step: "01",
                 icon: Users,
                 title: "Create Account",
                 desc: "Sign up for free in under 30 seconds. No credit card required.",
-                color: "from-orange-600 to-orange-500",
               },
               {
                 step: "02",
                 icon: BookOpen,
                 title: "Browse Courses",
                 desc: "Explore our curated library. Filter by topic, level, and price.",
-                color: "from-blue-500 to-cyan-600",
               },
               {
                 step: "03",
                 icon: Play,
                 title: "Learn at Your Pace",
                 desc: "Watch videos, read lessons, and take quizzes. Track your progress.",
-                color: "from-emerald-500 to-teal-600",
               },
               {
                 step: "04",
                 icon: GraduationCap,
                 title: "Earn Certificate",
                 desc: "Complete the course and download your verified certificate.",
-                color: "from-orange-500 to-pink-600",
               },
             ].map((item, idx) => {
               const Icon = item.icon;
               return (
                 <FadeInSection key={item.step} delay={idx * 0.12}>
-                  <div className="relative text-center group">
-                    {/* Connecting line */}
+                  <div className="relative group h-full">
+                    {/* Connector arrow between cards */}
                     {idx < 3 && (
-                      <div className="hidden lg:block absolute top-10 left-[60%] w-[80%] h-px bg-gradient-to-r from-white/20 to-transparent" />
+                      <div className="hidden lg:flex absolute top-10 -right-3 z-10 items-center justify-center w-6 h-6 rounded-full bg-card border border-border text-white/30">
+                        <ArrowRight className="w-3 h-3" />
+                      </div>
                     )}
-                    {/* Step circle */}
-                    <div className={`w-20 h-20 rounded-lg bg-gradient-to-br ${item.color} flex items-center justify-center mx-auto mb-5 shadow-lg group-hover:scale-110 transition-transform`}>
-                      <Icon className="w-8 h-8 text-white" />
+
+                    <div className="h-full bg-card border border-border rounded-2xl p-6 flex flex-col gap-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/5">
+                      {/* Top row: step number + icon */}
+                      <div className="flex items-start justify-between">
+                        <span className="text-5xl font-black text-white/[0.06] leading-none select-none">
+                          {item.step}
+                        </span>
+                        <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 group-hover:border-orange-500/40 transition-all duration-300">
+                          <Icon className="w-5 h-5 text-orange-400" />
+                        </div>
+                      </div>
+
+                      {/* Text */}
+                      <div>
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="text-[10px] font-bold text-orange-500/70 uppercase tracking-widest">
+                            Step {item.step}
+                          </span>
+                        </div>
+                        <h3 className="text-white font-semibold text-base mb-2">{item.title}</h3>
+                        <p className="text-white/40 text-sm leading-relaxed">{item.desc}</p>
+                      </div>
                     </div>
-                    <span className="text-white/20 text-xs font-bold uppercase tracking-widest">
-                      Step {item.step}
-                    </span>
-                    <h3 className="text-white font-semibold text-lg mt-2 mb-2">{item.title}</h3>
-                    <p className="text-muted-foreground/70 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                 </FadeInSection>
               );
@@ -1112,13 +1127,8 @@ export default async function HomePage() {
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
             {/* Brand */}
             <div>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/20">
-                  <BookOpen className="w-4 h-4 text-white" />
-                </div>
-                <span className="font-bold text-white text-lg tracking-tight">
-                  Learn<span className="text-orange-400">Hub</span>
-                </span>
+              <div className="mb-4">
+                <img src="/logo.png" alt="CoachNest" className="h-5 w-auto object-contain" />
               </div>
               <p className="text-white/30 text-sm leading-relaxed mb-4">
                 The modern learning platform for ambitious developers and designers. Master new skills and advance your career.
@@ -1194,7 +1204,7 @@ export default async function HomePage() {
 
           <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
             <p className="text-white/20 text-xs">
-              &copy; {new Date().getFullYear()} LearnHub. All rights reserved.
+              &copy; {new Date().getFullYear()} CoachNest. All rights reserved.
             </p>
             <p className="text-white/15 text-xs">
               Built with Next.js, Tailwind CSS, and Prisma

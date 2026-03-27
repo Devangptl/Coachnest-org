@@ -6,6 +6,7 @@ import GlassCard from "@/components/GlassCard";
 import { Users, GraduationCap, Award, Star } from "lucide-react";
 import StudentTable from "./StudentTable";
 import StudentSearch from "./StudentSearch";
+import { getLevelForXp } from "@/lib/badges";
 
 async function getStudentsData() {
   const [students, totalStudents, totalEnrollments, totalCertificates] =
@@ -19,6 +20,7 @@ async function getStudentsData() {
           avatar: true,
           headline: true,
           createdAt: true,
+          gameProfile: { select: { xp: true, level: true, streak: true } },
           _count: {
             select: {
               enrollments: true,
@@ -105,7 +107,18 @@ export default async function AdminStudentsPage() {
             <h2 className="text-white font-semibold">All Students</h2>
             <span className="text-muted-foreground/70 text-sm">{students.length} total</span>
           </div>
-          <StudentTable students={students.map(s => ({ ...s, createdAt: s.createdAt.toISOString() }))} />
+          <StudentTable students={students.map(s => {
+            const xp = s.gameProfile?.xp ?? 0;
+            const lvl = getLevelForXp(xp);
+            return {
+              ...s,
+              createdAt: s.createdAt.toISOString(),
+              xp,
+              level: lvl.level,
+              levelLabel: lvl.label,
+              streak: s.gameProfile?.streak ?? 0,
+            };
+          })} />
         </GlassCard>
       )}
     </div>

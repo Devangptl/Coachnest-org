@@ -26,9 +26,9 @@ export default async function AdminOrdersPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Orders & Revenue</h1>
-        <p className="text-muted-foreground mt-1">
+      <div className="mb-6">
+        <h1 className="text-2xl font-bold text-white">Orders & Revenue</h1>
+        <p className="text-muted-foreground text-sm mt-0.5">
           Monitor payments, track revenue, and manage refunds.
         </p>
       </div>
@@ -89,14 +89,13 @@ export default async function AdminOrdersPage() {
         </div>
 
         {/* Header Row */}
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs text-muted-foreground/70 font-semibold uppercase tracking-wider border-b border-white/5">
+        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 border-b border-border">
           <div className="col-span-2">Order ID</div>
-          <div className="col-span-2">Student</div>
-          <div className="col-span-2">Course</div>
+          <div className="col-span-3">Student</div>
+          <div className="col-span-3">Course</div>
           <div className="col-span-1">Amount</div>
           <div className="col-span-1">Status</div>
-          <div className="col-span-1">Date</div>
-          <div className="col-span-3 text-right">Actions</div>
+          <div className="col-span-2 text-right">Actions</div>
         </div>
 
         <OrderTable orders={orders} />

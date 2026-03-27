@@ -50,9 +50,7 @@ export default function SignupPage() {
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-600/15">
-            <BookOpen className="w-7 h-7 text-white" />
-          </div>
+          <img src="/logo.png" alt="CoachNest" className="h-6 w-auto object-contain mx-auto mb-4" />
           <h1 className="text-3xl font-bold text-white">Create account</h1>
           <p className="text-muted-foreground mt-1">Start your learning journey today</p>
         </div>

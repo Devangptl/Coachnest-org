@@ -15,6 +15,10 @@ interface Student {
   avatar: string | null;
   headline: string | null;
   createdAt: string;
+  xp: number;
+  level: number;
+  levelLabel: string;
+  streak: number;
   _count: {
     enrollments: number;
     certificates: number;
@@ -30,12 +34,13 @@ export default function StudentTable({ students }: { students: Student[] }) {
     <>
       {/* Header */}
       <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
-        <div className="col-span-4">Student</div>
+        <div className="col-span-3">Student</div>
         <div className="col-span-1 text-center">Courses</div>
         <div className="col-span-1 text-center">Certs</div>
         <div className="col-span-1 text-center">Reviews</div>
+        <div className="col-span-2 text-center">XP / Level</div>
         <div className="col-span-2 text-center">Joined</div>
-        <div className="col-span-3 text-right">Actions</div>
+        <div className="col-span-2 text-right">Actions</div>
       </div>
 
       <div className="divide-y divide-white/5">
@@ -45,7 +50,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
             className="grid grid-cols-12 gap-4 px-4 py-3.5 items-center hover:bg-secondary transition-colors"
           >
             {/* Avatar + name */}
-            <div className="col-span-4 flex items-center gap-3 min-w-0">
+            <div className="col-span-3 flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-600/40 to-orange-500/40 border border-border flex items-center justify-center flex-shrink-0">
                 {student.avatar ? (
                   <img
@@ -88,6 +93,21 @@ export default function StudentTable({ students }: { students: Student[] }) {
               </Badge>
             </div>
 
+            {/* XP / Level */}
+            <div className="col-span-2 text-center">
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-xs font-bold text-orange-400">
+                  {student.xp > 0 ? `${student.xp.toLocaleString()} XP` : "—"}
+                </span>
+                {student.xp > 0 && (
+                  <span className="text-[10px] text-muted-foreground">
+                    Lv.{student.level} · {student.levelLabel}
+                    {student.streak > 0 && ` · 🔥${student.streak}`}
+                  </span>
+                )}
+              </div>
+            </div>
+
             {/* Joined date */}
             <div className="col-span-2 text-center">
               <span className="text-muted-foreground/70 text-xs">
@@ -96,7 +116,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
             </div>
 
             {/* Actions */}
-            <div className="col-span-3 flex items-center justify-end gap-1">
+            <div className="col-span-2 flex items-center justify-end gap-1">
               <Link href={`/admin/students/${student.id}`}>
                 <Button size="icon" variant="ghost" title="View Profile">
                   <Eye className="w-4 h-4" />

@@ -11,6 +11,9 @@ import CourseCard from "@/components/CourseCard";
 import ProgressBar from "@/components/ProgressBar";
 import { BookOpen, Trophy, Clock, ArrowRight } from "lucide-react";
 import { calcProgress } from "@/lib/utils";
+import { getLevelForXp, xpToNextLevel } from "@/lib/badges";
+import XpProgressBar from "@/components/XpProgressBar";
+import StreakCounter from "@/components/StreakCounter";
 
 async function getDashboardData(userId: string) {
   // Fetch all enrollments with lesson data
@@ -51,11 +54,33 @@ async function getDashboardData(userId: string) {
   return { enrollments: enriched, totalCompleted };
 }
 
+async function getGameData(userId: string) {
+  const [profile, badgeCount] = await Promise.all([
+    prisma.userGameProfile.findUnique({ where: { userId } }),
+    prisma.userBadge.count({ where: { userId } }),
+  ]);
+  const xp = profile?.xp ?? 0;
+  const level = getLevelForXp(xp);
+  return {
+    xp,
+    level: level.level,
+    levelLabel: level.label,
+    levelColor: level.color,
+    streak: profile?.streak ?? 0,
+    longestStreak: profile?.longestStreak ?? 0,
+    nextLevelProgress: xpToNextLevel(xp),
+    badgeCount,
+  };
+}
+
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const { enrollments, totalCompleted } = await getDashboardData(session.userId);
+  const [{ enrollments, totalCompleted }, gameData] = await Promise.all([
+    getDashboardData(session.userId),
+    getGameData(session.userId),
+  ]);
 
   const inProgress = enrollments.filter(
     (e) => e.progress > 0 && e.progress < 100
@@ -117,6 +142,20 @@ export default async function DashboardPage() {
             </GlassCard>
           );
         })}
+      </div>
+
+      {/* ─── Gamification Panel ──────────────────────────────────────────── */}
+      <div className="grid sm:grid-cols-3 gap-4 mb-10">
+        <div className="sm:col-span-2">
+          <XpProgressBar
+            xp={gameData.xp}
+            level={gameData.level}
+            levelLabel={gameData.levelLabel}
+            levelColor={gameData.levelColor}
+            nextLevelProgress={gameData.nextLevelProgress}
+          />
+        </div>
+        <StreakCounter streak={gameData.streak} longestStreak={gameData.longestStreak} />
       </div>
 
       {/* ─── In Progress ─────────────────────────────────────────────────── */}

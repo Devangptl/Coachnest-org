@@ -9,6 +9,7 @@ import { calcProgress } from "@/lib/utils";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import StudentDetail from "./StudentDetail";
+import { getLevelForXp, xpToNextLevel, BADGES } from "@/lib/badges";
 
 async function getStudentData(id: string) {
   const student = await prisma.user.findUnique({
@@ -117,6 +118,46 @@ async function getStudentData(id: string) {
     .filter((o) => o.status === "PAID")
     .reduce((sum, o) => sum + Number(o.amount), 0);
 
+  // Gamification data
+  const [gameProfile, earnedBadges, recentXpEvents] = await Promise.all([
+    prisma.userGameProfile.findUnique({ where: { userId: id } }),
+    prisma.userBadge.findMany({
+      where: { userId: id },
+      select: { badgeKey: true, earnedAt: true },
+      orderBy: { earnedAt: "desc" },
+    }),
+    prisma.xpEvent.findMany({
+      where: { userId: id },
+      orderBy: { createdAt: "desc" },
+      take: 15,
+    }),
+  ]);
+
+  const xp = gameProfile?.xp ?? 0;
+  const levelMeta = getLevelForXp(xp);
+  const earnedKeys = new Set(earnedBadges.map((b) => b.badgeKey));
+  const gamification = {
+    xp,
+    level: levelMeta.level,
+    levelLabel: levelMeta.label,
+    levelColor: levelMeta.color,
+    streak: gameProfile?.streak ?? 0,
+    longestStreak: gameProfile?.longestStreak ?? 0,
+    nextLevelProgress: xpToNextLevel(xp),
+    badges: BADGES.map((b) => ({
+      ...b,
+      earned: earnedKeys.has(b.key),
+      earnedAt: earnedBadges.find((e) => e.badgeKey === b.key)?.earnedAt?.toISOString() ?? null,
+    })),
+    earnedCount: earnedKeys.size,
+    recentXpEvents: recentXpEvents.map((e) => ({
+      id: e.id,
+      action: e.action,
+      xp: e.xp,
+      createdAt: e.createdAt.toISOString(),
+    })),
+  };
+
   return {
     id: student.id,
     name: student.name,
@@ -158,6 +199,7 @@ async function getStudentData(id: string) {
     })),
     counts: student._count,
     totalSpent,
+    gamification,
   };
 }
 

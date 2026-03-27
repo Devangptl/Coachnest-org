@@ -1,18 +1,16 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  BookOpen,
   LayoutDashboard,
   User,
   LogOut,
   Menu,
   X,
   Search,
-  GraduationCap,
   Shield,
   ChevronDown,
   BarChart3,
@@ -20,7 +18,6 @@ import {
   PlusCircle,
   Heart,
   Award,
-  Compass,
   Settings,
   FileText,
 } from "lucide-react";
@@ -31,26 +28,6 @@ import { cn } from "@/lib/utils";
 interface Props {
   session: SessionPayload | null;
 }
-
-// Role-based nav links
-const NAV_LINKS = {
-  common: [
-    { href: "/courses", label: "Courses", icon: Compass },
-    { href: "/blog", label: "Blog", icon: FileText },
-    { href: "/search", label: "Search", icon: Search },
-  ],
-  STUDENT: [
-    { href: "/dashboard", label: "My Learning", icon: GraduationCap },
-  ],
-  INSTRUCTOR: [
-    { href: "/dashboard", label: "My Learning", icon: GraduationCap },
-    { href: "/admin", label: "Instructor Panel", icon: BarChart3 },
-  ],
-  ADMIN: [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/admin", label: "Admin Panel", icon: Shield },
-  ],
-};
 
 // Role-based dropdown menu items
 const DROPDOWN_LINKS = {
@@ -120,8 +97,6 @@ export default function NavbarClient({ session }: Props) {
     router.refresh();
   }
 
-  const roleLinks = session ? NAV_LINKS[session.role] : [];
-  const allLinks = [...NAV_LINKS.common, ...roleLinks];
   const dropdownLinks = session ? DROPDOWN_LINKS[session.role] : [];
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
   const initials = session
@@ -142,47 +117,26 @@ export default function NavbarClient({ session }: Props) {
         )}
       >
         {/* ── Logo ────────────────────────────────────────────── */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/25 group-hover:shadow-orange-500/40 transition-shadow">
-            <BookOpen className="w-4.5 h-4.5 text-white" />
-          </div>
-          <span className="font-bold text-foreground text-lg tracking-tight">
-            Learn<span className="text-orange-400 group-hover:text-orange-300 transition-colors">Hub</span>
-          </span>
+        <Link href="/" className="flex items-center">
+          <img src="/logo.png" alt="CoachNest" className="h-5 w-auto object-contain" />
         </Link>
-
-        {/* ── Desktop nav links ───────────────────────────────── */}
-        <div className="hidden lg:flex items-center gap-1">
-          {allLinks.map((link) => {
-            const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-            const Icon = link.icon;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={cn(
-                  "relative flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl transition-all duration-200",
-                  isActive
-                    ? "text-foreground bg-secondary"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                <Icon className="w-4 h-4" />
-                {link.label}
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-active"
-                    className="absolute inset-0 rounded-lg bg-secondary border border-border"
-                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                  />
-                )}
-              </Link>
-            );
-          })}
-        </div>
 
         {/* ── Right side ──────────────────────────────────────── */}
         <div className="flex items-center gap-2">
+          {/* Search icon */}
+          <Link
+            href="/search"
+            className={cn(
+              "hidden lg:flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
+              pathname === "/search"
+                ? "bg-secondary text-foreground border border-border"
+                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4" />
+          </Link>
+
           {session ? (
             <>
               <NotificationBell />
@@ -335,26 +289,6 @@ export default function NavbarClient({ session }: Props) {
             className="lg:hidden max-w-7xl mx-auto mt-2 overflow-hidden"
           >
             <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/50 p-4 space-y-1">
-              {allLinks.map((link) => {
-                const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
-                const Icon = link.icon;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all",
-                      isActive
-                        ? "text-foreground bg-secondary border border-border"
-                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                    )}
-                  >
-                    <Icon className="w-4.5 h-4.5" />
-                    {link.label}
-                  </Link>
-                );
-              })}
-
               {session && (
                 <>
                   <div className="border-t border-border my-2" />

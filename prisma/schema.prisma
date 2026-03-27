@@ -127,7 +127,9 @@ model User {
   couponUses     CouponUse[]
   highlights     Highlight[]
   blogs          Blog[]           @relation("BlogAuthor")
-  conversations  Conversation[]
+  gameProfile    UserGameProfile?
+  userBadges     UserBadge[]
+  xpEvents       XpEvent[]
 
   @@map("users")
 }
@@ -242,8 +244,6 @@ model Lesson {
   progress   LessonProgress[]
   quiz          Quiz?
   highlights    Highlight[]
-  conversations Conversation[]
-
   @@map("lessons")
 }
 
@@ -500,34 +500,48 @@ model Blog {
   @@map("blogs")
 }
 
-// ─── AI Chat (Tutor) ─────────────────────────────────────────────────────────
+// ─── Gamification ─────────────────────────────────────────────────────────────
 
-model Conversation {
-  id        String   @id @default(cuid())
-  userId    String
-  lessonId  String
-  title     String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model UserGameProfile {
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  xp             Int       @default(0)
+  level          Int       @default(1)
+  streak         Int       @default(0)
+  longestStreak  Int       @default(0)
+  lastActiveDate DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
-  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  lesson   Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  messages Message[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([userId, lessonId])
-  @@map("conversations")
+  @@map("user_game_profiles")
 }
 
-model Message {
-  id             String   @id @default(cuid())
-  conversationId String
-  role           String   // "user" | "assistant"
-  content        String   @db.Text
-  createdAt      DateTime @default(now())
+model UserBadge {
+  id       String   @id @default(cuid())
+  userId   String
+  badgeKey String
+  earnedAt DateTime @default(now())
 
-  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@map("messages")
+  @@unique([userId, badgeKey])
+  @@map("user_badges")
+}
+
+model XpEvent {
+  id        String   @id @default(cuid())
+  userId    String
+  action    String
+  xp        Int
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("xp_events")
 }
 
 // ─── Highlight ────────────────────────────────────────────────────────────────

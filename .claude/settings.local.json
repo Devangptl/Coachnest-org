@@ -14,7 +14,17 @@
       "Bash(head -80 /d/Devang/Claude/learning/app/admin/courses/[id]/edit/page.tsx)",
       "Bash(head -70 /d/Devang/Claude/learning/app/courses/[id]/page.tsx)",
       "WebFetch(domain:claude.ai)",
-      "Bash(grep -r import.*from.*heavy /d/Devang/Claude/learning --include=*.tsx --include=*.ts)"
+      "Bash(grep -r import.*from.*heavy /d/Devang/Claude/learning --include=*.tsx --include=*.ts)",
+      "Bash(wc -l D:/Devang/Claude/learning/app/page.tsx D:/Devang/Claude/learning/components/*.tsx)",
+      "Bash(xargs sed:*)",
+      "Bash(find /d/Devang/Claude/learning/lib -type f \\\\\\(-name *.ts -o -name *.tsx \\\\\\))",
+      "Bash(grep -r \"chatWithTutor\\\\|generateQuizFromLesson\\\\|Gemini\\\\|genai\" /d/Devang/Claude/learning/app --include=*.tsx --include=*.ts)",
+      "Bash(grep -r \"AI\\\\|Tutor\\\\|Chat\\\\|Conversation\" /d/Devang/Claude/learning/app --include=*.tsx --include=*.ts)",
+      "Bash(find /d/Devang/Claude/learning/app -type d -name *ai* -o -name *chat* -o -name *tutor*)",
+      "Bash(rm -f \"D:/Devang/Claude/learning/lib/ai.ts\" \"D:/Devang/Claude/learning/components/AiChatWidget.tsx\" \"D:/Devang/Claude/learning/components/AiQuizGenerator.tsx\")",
+      "Bash(rm -rf \"D:/Devang/Claude/learning/app/api/chat\" \"D:/Devang/Claude/learning/app/api/ai-quiz\" \"D:/Devang/Claude/learning/app/dashboard/doubts\")",
+      "Bash(ls:*)",
+      "Bash(grep -r \"level\\\\|streak\\\\|badge\\\\|reward\" /d/Devang/Claude/learning --include=*.ts --include=*.tsx --include=*.prisma)"
     ]
   }
 }
