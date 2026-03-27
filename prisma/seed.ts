@@ -857,17 +857,17 @@ async function main() {
   ]);
 
   const admin = await prisma.user.upsert({
-    where: { email: "admin@learnhub.dev" },
+    where: { email: "admin@coachnest.dev" },
     update: {},
-    create: { name: "Admin User", email: "admin@learnhub.dev", password: adminPwd, role: Role.ADMIN },
+    create: { name: "Admin User", email: "admin@coachnest.dev", password: adminPwd, role: Role.ADMIN },
   });
 
   const instructor = await prisma.user.upsert({
-    where: { email: "instructor@learnhub.dev" },
+    where: { email: "instructor@coachnest.dev" },
     update: {},
     create: {
       name: "Alex Instructor",
-      email: "instructor@learnhub.dev",
+      email: "instructor@coachnest.dev",
       password: instrPwd,
       role: Role.INSTRUCTOR,
       headline: "Senior Full-Stack Developer & Educator",
@@ -876,11 +876,11 @@ async function main() {
   });
 
   const instructor2 = await prisma.user.upsert({
-    where: { email: "sarah@learnhub.dev" },
+    where: { email: "sarah@coachnest.dev" },
     update: {},
     create: {
       name: "Sarah Chen",
-      email: "sarah@learnhub.dev",
+      email: "sarah@coachnest.dev",
       password: instrPwd,
       role: Role.INSTRUCTOR,
       headline: "Data Scientist & ML Engineer",
@@ -891,7 +891,7 @@ async function main() {
   // Create student users
   const students: Array<{ id: string; name: string }> = [];
   for (let i = 0; i < STUDENT_NAMES.length; i++) {
-    const email = `student${i + 1}@learnhub.dev`;
+    const email = `student${i + 1}@coachnest.dev`;
     const user = await prisma.user.upsert({
       where: { email },
       update: {},
@@ -1116,10 +1116,10 @@ async function main() {
   // ── Done ───────────────────────────────────────────────────────────────────
   console.log("\n✅ Seed complete!\n");
   console.log("  Accounts:");
-  console.log("    Admin      → admin@learnhub.dev        / admin123");
-  console.log("    Instructor → instructor@learnhub.dev   / instructor123");
-  console.log("    Instructor → sarah@learnhub.dev        / instructor123");
-  console.log(`    Students   → student1@learnhub.dev … student${students.length}@learnhub.dev / student123`);
+  console.log("    Admin      → admin@coachnest.dev        / admin123");
+  console.log("    Instructor → instructor@coachnest.dev   / instructor123");
+  console.log("    Instructor → sarah@coachnest.dev        / instructor123");
+  console.log(`    Students   → student1@coachnest.dev … student${students.length}@coachnest.dev / student123`);
   console.log("  Coupons: LAUNCH50 (50%), WELCOME25 (25%)");
   console.log(`  Courses: ${courseIds.length}, Enrollments: ${enrollCount}, Reviews: ${reviewCount}`);
 }

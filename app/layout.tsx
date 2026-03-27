@@ -21,7 +21,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "LearnHub — Modern Learning Platform",
+  title: "CoachNest — Modern Learning Platform",
   description:
     "Master new skills with expert-crafted courses. Learn at your own pace.",
 };

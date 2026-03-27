@@ -51,8 +51,8 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
     page.drawRectangle({ x: cx, y: cy, width: cs, height: cs, color: accent });
   }
 
-  // ── Header: LEARNHUB ──
-  const logoText = "LEARNHUB";
+  // ── Header: COACHNEST ──
+  const logoText = "COACHNEST";
   const logoSize = 28;
   const logoWidth = helveticaBold.widthOfTextAtSize(logoText, logoSize);
   page.drawText(logoText, {
@@ -180,7 +180,7 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
     end: { x: rightX + sigLineWidth, y: sigY },
     thickness: 1, color: accent, opacity: 0.6,
   });
-  const platText = "LearnHub";
+  const platText = "CoachNest";
   const platW = helvetica.widthOfTextAtSize(platText, 10);
   page.drawText(platText, {
     x: rightX + (sigLineWidth - platW) / 2,

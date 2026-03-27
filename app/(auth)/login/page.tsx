@@ -118,8 +118,8 @@ export default function LoginPage() {
           {/* Demo credentials hint */}
           <div className="mt-6 p-4 bg-secondary border border-border rounded-xl text-xs text-muted-foreground/70 space-y-1">
             <p className="font-semibold text-muted-foreground mb-2">Demo accounts</p>
-            <p>Admin: admin@learnhub.dev / admin123</p>
-            <p>Student: student@learnhub.dev / student123</p>
+            <p>Admin: admin@coachnest.dev / admin123</p>
+            <p>Student: student@coachnest.dev / student123</p>
           </div>
         </div>
 

@@ -108,7 +108,7 @@ export default async function AdminCoursesPage() {
                   <span className="text-sm font-semibold text-foreground">
                     {!course.price
                       ? <span className="text-emerald-400 text-xs font-medium">Free</span>
-                      : `₹${course.price.toLocaleString("en-IN")}`}
+                      : `₹${Number(course.price).toLocaleString("en-IN")}`}
                   </span>
                 </div>
 

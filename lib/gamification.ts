@@ -26,7 +26,7 @@ export async function awardXp(
   userId: string,
   action: string,
   xpAmount: number,
-  meta?: Record<string, unknown>
+  meta?: any
 ) {
   const profile = await getOrCreateProfile(userId);
   const newXp = profile.xp + xpAmount;
@@ -39,7 +39,7 @@ export async function awardXp(
       data: { xp: newXp, level: newLevel },
     }),
     prisma.xpEvent.create({
-      data: { userId, action, xp: xpAmount, meta: meta ?? null },
+      data: { userId, action, xp: xpAmount, meta: meta || undefined },
     }),
   ]);
 

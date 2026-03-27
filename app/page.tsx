@@ -22,6 +22,8 @@ const StaggerChildren = dynamic(() => import("@/components/landing/StaggerChildr
 const StaggerItem = dynamic(() =>
   import("@/components/landing/StaggerChildren").then((mod) => ({ default: mod.StaggerItem }))
 );
+const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
+const CompareSection = dynamic(() => import("@/components/landing/CompareSection"));
 import {
   BookOpen, Zap, Users, Award, ArrowRight, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,
@@ -102,108 +104,124 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION
+          HERO SECTION — Split layout: text left, interactive showcase right
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-[100vh] flex items-center justify-center px-4 sm:px-6 lg:px-8 -mt-24 pt-24">
+      <section className="relative min-h-[100vh] flex items-center px-4 sm:px-6 lg:px-8 -mt-24 pt-24">
         <HeroBackground />
 
-        <div className="max-w-6xl mx-auto text-center relative z-10 py-10">
-          {/* ── Announcement badge ────────────────────────────────────── */}
-          <FadeInSection delay={0}>
-            <div className="inline-flex items-center gap-2.5 bg-white/[0.07] border border-white/[0.12] rounded-full pl-2 pr-4 py-1.5 text-sm backdrop-blur-md mb-10 group hover:bg-white/[0.1] hover:border-border transition-all cursor-default">
-              <span className="bg-gradient-to-r from-orange-600 to-orange-500 text-white text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
-                New
-              </span>
-              <span className="text-muted-foreground text-sm">
-                AI-powered course recommendations are here
-              </span>
-              <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/70 group-hover:text-muted-foreground group-hover:translate-x-0.5 transition-all" />
-            </div>
-          </FadeInSection>
+        <div className="max-w-7xl mx-auto w-full relative z-10 py-10">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
+            {/* ── Left: Text Content ────────────────────────────────────── */}
+            <div className="text-left relative max-w-lg">
+              {/* Subtle background glow for the text area */}
+              <div className="absolute -top-10 -left-10 w-48 h-48 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
 
-          {/* ── Main heading with rotating words ─────────────────────── */}
-          <FadeInSection delay={0.1}>
-            <h1 className="text-5xl sm:text-6xl lg:text-7xl xl:text-[5.5rem] font-bold text-white leading-[1.08] mb-8 tracking-tight">
-              Learn{" "}
-              <RotatingWords
-                words={["Development", "Design", "AI & ML", "DevOps", "Data Science"]}
-                className="min-w-[200px] sm:min-w-[280px] lg:min-w-[360px] justify-center"
-              />
-              <br />
-              <span className="hero-gradient-text">
-                without limits
-              </span>
-            </h1>
-          </FadeInSection>
-
-          {/* ── Subheading ───────────────────────────────────────────── */}
-          <FadeInSection delay={0.2}>
-            <p className="text-lg sm:text-xl text-white/45 max-w-2xl mx-auto mb-12 leading-relaxed">
-              Expert-crafted courses with interactive quizzes, progress tracking, and
-              verified certificates. Join thousands of learners accelerating their careers.
-            </p>
-          </FadeInSection>
-
-          {/* ── CTA buttons ──────────────────────────────────────────── */}
-          <FadeInSection delay={0.3}>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-5">
-              <Link
-                href="/courses"
-                className="hero-cta-ring bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold text-base px-10 py-4 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all shadow-xl shadow-orange-600/15 hover:shadow-orange-600/15 hover:-translate-y-0.5 inline-flex items-center justify-center gap-2.5"
-              >
-                Explore Courses <ArrowRight className="w-5 h-5" />
-              </Link>
-              <Link
-                href="/signup"
-                className="backdrop-blur-sm bg-white/[0.07] border border-white/[0.15] text-white/80 hover:text-white font-medium text-base px-10 py-4 rounded-lg hover:bg-white/[0.12] hover:border-white/25 transition-all inline-flex items-center justify-center gap-2.5 hover:-translate-y-0.5"
-              >
-                <Play className="w-5 h-5" /> Start for Free
-              </Link>
-            </div>
-            <p className="text-white/25 text-sm">No credit card required · Free courses available · Cancel anytime</p>
-          </FadeInSection>
-
-          {/* ── Social proof: avatar stack + text ────────────────────── */}
-          <FadeInSection delay={0.45}>
-            <div className="mt-12 flex items-center justify-center gap-4">
-              {/* Avatar stack */}
-              <div className="flex -space-x-2.5">
-                {["S", "R", "A", "P", "M"].map((letter, i) => (
-                  <div
-                    key={i}
-                    className="w-9 h-9 rounded-full border-2 border-[#0f0c29] flex items-center justify-center text-white text-xs font-bold avatar-glow"
-                    style={{
-                      background: [
-                        "linear-gradient(135deg, #7c3aed, #a855f7)",
-                        "linear-gradient(135deg, #2563eb, #06b6d4)",
-                        "linear-gradient(135deg, #ec4899, #f43f5e)",
-                        "linear-gradient(135deg, #10b981, #14b8a6)",
-                        "linear-gradient(135deg, #f59e0b, #ef4444)",
-                      ][i],
-                      animationDelay: `${i * 0.3}s`,
-                    }}
-                  >
-                    {letter}
-                  </div>
-                ))}
-              </div>
-              <div className="text-left">
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className="w-3.5 h-3.5 text-yellow-400 fill-yellow-400" />
-                  ))}
-                  <span className="text-muted-foreground text-xs ml-1">4.9</span>
+              {/* Announcement badge */}
+              <FadeInSection delay={0}>
+                <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] rounded-full p-0.5 pr-3 text-xs backdrop-blur-md mb-5 group hover:bg-white/[0.06] hover:border-white/[0.15] transition-all cursor-pointer shadow-xl shadow-orange-500/5">
+                  <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-inner">
+                    <Sparkles className="w-2.5 h-2.5 inline-block mr-1 -mt-0.5" />
+                    CoachNest 2.0
+                  </span>
+                  <span className="text-white/80 text-xs font-medium">
+                    The ultimate platform for developers
+                  </span>
+                  <ArrowRight className="w-3 h-3 text-white/40 group-hover:text-white/80 group-hover:translate-x-0.5 transition-all" />
                 </div>
-                <p className="text-white/35 text-xs mt-0.5">
-                  Loved by <span className="text-white/55 font-medium">10,000+</span> students
-                </p>
-              </div>
-            </div>
-          </FadeInSection>
+              </FadeInSection>
 
-          {/* ── Stat cards ───────────────────────────────────────────── */}
+              {/* Heading */}
+              <FadeInSection delay={0.1}>
+                <h1 className="text-left font-extrabold text-white leading-[1.1] mb-5 tracking-tight">
+                  <span className="block text-4xl sm:text-5xl lg:text-6xl mb-2 whitespace-nowrap">
+                    <RotatingWords
+                      words={["Engineering", "System Design", "AI & ML", "Full-Stack", "Data Science"]}
+                      className="text-orange-400 drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                    />
+                  </span>
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500 text-2xl sm:text-3xl lg:text-4xl block pb-1">
+                    Accelerate your tech career.
+                  </span>
+                </h1>
+              </FadeInSection>
+
+              {/* Subheading */}
+              <FadeInSection delay={0.2}>
+                <p className="text-sm lg:text-base text-white/50 max-w-md mb-6 leading-relaxed font-light">
+                  Elevate your skills with <strong className="text-white/80 font-medium tracking-wide">CoachNest</strong>. Experience interactive coding environments, expert-led tutorials, and verified certificates.
+                </p>
+              </FadeInSection>
+
+              {/* CTA buttons */}
+              <FadeInSection delay={0.3}>
+                <div className="flex flex-col sm:flex-row gap-3 mb-5">
+                  <Link
+                    href="/courses"
+                    className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 text-white font-semibold text-sm px-6 py-2.5 rounded-lg overflow-hidden shadow-lg shadow-orange-600/20 hover:shadow-orange-600/40 transition-all hover:-translate-y-0.5"
+                  >
+                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
+                    <span className="relative z-10 flex items-center gap-1.5">
+                      Start Exploring <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </span>
+                  </Link>
+                  <Link
+                    href="/signup"
+                    className="group inline-flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.1] text-white/80 hover:text-white font-medium text-sm px-6 py-2.5 rounded-lg hover:bg-white/[0.08] hover:border-white/[0.2] transition-all hover:-translate-y-0.5"
+                  >
+                    <Play className="w-3.5 h-3.5 text-orange-400 group-hover:scale-110 transition-transform" /> View Demo
+                  </Link>
+                </div>
+                <div className="flex flex-wrap items-center gap-3 text-white/30 text-[10px] sm:text-xs font-medium">
+                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> No credit card required</span>
+                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> Lifetime access</span>
+                </div>
+              </FadeInSection>
+
+              {/* Social proof */}
+              <FadeInSection delay={0.45}>
+                <div className="mt-8 flex items-center gap-4 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] w-fit backdrop-blur-sm hover:bg-white/[0.04] transition-colors">
+                  <div className="flex -space-x-2.5">
+                    {[
+                      { l: "D", c: "from-blue-500 to-cyan-500" },
+                      { l: "A", c: "from-emerald-500 to-teal-500" },
+                      { l: "J", c: "from-orange-500 to-red-500" },
+                      { l: "S", c: "from-purple-500 to-pink-500" },
+                    ].map((avatar, i) => (
+                      <div
+                        key={i}
+                        className={`w-7 h-7 rounded-full border border-black/50 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${avatar.c} shadow-md`}
+                        style={{ zIndex: 10 - i }}
+                      >
+                        {avatar.l}
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-left">
+                    <div className="flex items-center gap-1 mb-0.5">
+                      {[1, 2, 3, 4, 5].map((i) => (
+                        <Star key={i} className="w-3 h-3 text-orange-400 fill-orange-400 drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]" />
+                      ))}
+                      <span className="text-white font-semibold text-xs ml-1">4.9/5</span>
+                    </div>
+                    <p className="text-white/40 text-[10px] font-medium">
+                      Trusted by <span className="text-white/80">15,000+</span> devs
+                    </p>
+                  </div>
+                </div>
+              </FadeInSection>
+            </div>
+
+            {/* ── Right: Interactive Showcase ───────────────────────────── */}
+            <FadeInSection delay={0.2} direction="left">
+              <div className="hidden lg:block">
+                <HeroShowcase />
+              </div>
+            </FadeInSection>
+          </div>
+
+          {/* ── Stat cards (below) ──────────────────────────────────────── */}
           <FadeInSection delay={0.55}>
-            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-3xl mx-auto">
+            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
               {[
                 { value: Math.max(stats.courseCount, 50), suffix: "+", label: "Courses", icon: BookOpen, gradient: "from-orange-600/20 to-orange-500/15" },
                 { value: Math.max(stats.studentCount, 10000), suffix: "+", label: "Students", icon: Users, gradient: "from-blue-500/20 to-cyan-500/10" },
@@ -250,14 +268,14 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          WHY LEARNHUB — 6 feature cards
+          WHY COACHNEST — 6 feature cards
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
-                Why LearnHub
+                Why CoachNest
               </span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
                 Everything you need to{" "}
@@ -453,21 +471,21 @@ export default async function HomePage() {
           <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" staggerDelay={0.06}>
             {(categories.length > 0
               ? categories.map((cat) => ({
-                  name: cat.name,
-                  slug: cat.slug,
-                  count: cat._count.courses,
-                  icon: cat.icon,
-                }))
+                name: cat.name,
+                slug: cat.slug,
+                count: cat._count.courses,
+                icon: cat.icon,
+              }))
               : [
-                  { name: "Web Development", slug: "web-development", count: 12, icon: null },
-                  { name: "React & Next.js", slug: "react", count: 8, icon: null },
-                  { name: "UI/UX Design", slug: "design", count: 6, icon: null },
-                  { name: "Databases", slug: "database", count: 5, icon: null },
-                  { name: "Mobile Dev", slug: "mobile", count: 4, icon: null },
-                  { name: "AI & ML", slug: "ai", count: 7, icon: null },
-                  { name: "Data Analytics", slug: "analytics", count: 3, icon: null },
-                  { name: "DevOps", slug: "default", count: 4, icon: null },
-                ]
+                { name: "Web Development", slug: "web-development", count: 12, icon: null },
+                { name: "React & Next.js", slug: "react", count: 8, icon: null },
+                { name: "UI/UX Design", slug: "design", count: 6, icon: null },
+                { name: "Databases", slug: "database", count: 5, icon: null },
+                { name: "Mobile Dev", slug: "mobile", count: 4, icon: null },
+                { name: "AI & ML", slug: "ai", count: 7, icon: null },
+                { name: "Data Analytics", slug: "analytics", count: 3, icon: null },
+                { name: "DevOps", slug: "default", count: 4, icon: null },
+              ]
             ).map((cat) => {
               const IconComponent = CATEGORY_ICONS[cat.slug] ?? CATEGORY_ICONS.default;
               const gradient = CATEGORY_COLORS[cat.slug] ?? CATEGORY_COLORS.default;
@@ -534,9 +552,9 @@ export default async function HomePage() {
                 const displayPrice = hasDiscount ? Number(course.discountPrice) : Number(course.price);
                 const levelColor =
                   course.level === "beginner" ? "text-emerald-400 bg-emerald-500/15 border-emerald-400/25" :
-                  course.level === "intermediate" ? "text-amber-400 bg-amber-500/15 border-amber-400/25" :
-                  course.level === "advanced" ? "text-rose-400 bg-rose-500/15 border-rose-400/25" :
-                  "text-muted-foreground bg-secondary border-border";
+                    course.level === "intermediate" ? "text-amber-400 bg-amber-500/15 border-amber-400/25" :
+                      course.level === "advanced" ? "text-rose-400 bg-rose-500/15 border-rose-400/25" :
+                        "text-muted-foreground bg-secondary border-border";
 
                 return (
                   <StaggerItem key={course.id}>
@@ -746,7 +764,7 @@ export default async function HomePage() {
                     <div className="w-3 h-3 rounded-full bg-red-400/60" />
                     <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
                     <div className="w-3 h-3 rounded-full bg-green-400/60" />
-                    <span className="text-white/30 text-xs ml-2">LearnHub Course Viewer</span>
+                    <span className="text-white/30 text-xs ml-2">CoachNest Course Viewer</span>
                   </div>
                   {/* Video placeholder */}
                   <div className="aspect-video bg-gradient-to-br from-orange-700/30 to-orange-700/30 flex items-center justify-center relative">
@@ -825,14 +843,14 @@ export default async function HomePage() {
               {
                 name: "Priya Sharma",
                 role: "Frontend Developer at Google",
-                comment: "LearnHub's React course completely changed my career. The hands-on projects and quizzes helped me land my dream job. The certificate was a great addition to my LinkedIn profile.",
+                comment: "CoachNest's React course completely changed my career. The hands-on projects and quizzes helped me land my dream job. The certificate was a great addition to my LinkedIn profile.",
                 rating: 5,
                 avatar: "PS",
               },
               {
                 name: "Alex Chen",
                 role: "Full-Stack Engineer",
-                comment: "I've tried many platforms, but LearnHub stands out. The bite-sized lessons fit perfectly into my busy schedule, and the progress tracking keeps me motivated every day.",
+                comment: "I've tried many platforms, but CoachNest stands out. The bite-sized lessons fit perfectly into my busy schedule, and the progress tracking keeps me motivated every day.",
                 rating: 5,
                 avatar: "AC",
               },
@@ -853,14 +871,14 @@ export default async function HomePage() {
               {
                 name: "Emily Davis",
                 role: "Junior Developer",
-                comment: "As a complete beginner, I was nervous about learning to code. LearnHub made it approachable and fun. The free courses are genuinely high quality — no catch.",
+                comment: "As a complete beginner, I was nervous about learning to code. CoachNest made it approachable and fun. The free courses are genuinely high quality — no catch.",
                 rating: 4,
                 avatar: "ED",
               },
               {
                 name: "Michael Torres",
                 role: "CTO at TechStart",
-                comment: "We onboard all new engineers with LearnHub courses. The structured content and certificates make it easy to track team progress. Enterprise plan is worth every penny.",
+                comment: "We onboard all new engineers with CoachNest courses. The structured content and certificates make it easy to track team progress. Enterprise plan is worth every penny.",
                 rating: 5,
                 avatar: "MT",
               },
@@ -902,7 +920,7 @@ export default async function HomePage() {
 
             <FadeInSection direction="left">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
-                Teach on LearnHub
+                Teach on CoachNest
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
                 Share your knowledge,{" "}
@@ -935,71 +953,9 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          COMPARISON TABLE — Why LearnHub vs Others
+          COMPARISON TABLE — Why CoachNest vs Others
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <FadeInSection>
-            <div className="text-center mb-12">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
-                Compare
-              </span>
-              <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
-                LearnHub vs{" "}
-                <span className="text-muted-foreground/70">the rest</span>
-              </h2>
-            </div>
-          </FadeInSection>
-
-          <FadeInSection delay={0.1}>
-            <div className="backdrop-blur-lg bg-white/[0.05] border border-border rounded-lg overflow-hidden">
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-border">
-                    <th className="text-left p-5 text-muted-foreground font-medium">Feature</th>
-                    <th className="p-5 text-center">
-                      <span className="text-orange-400 font-bold">LearnHub</span>
-                    </th>
-                    <th className="p-5 text-center text-white/30 font-medium">Others</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    { feature: "Glassmorphism UI", us: true, them: false },
-                    { feature: "Free courses available", us: true, them: "Limited" },
-                    { feature: "Verified certificates", us: true, them: "Paid extra" },
-                    { feature: "Interactive quizzes", us: true, them: "Some" },
-                    { feature: "Progress tracking", us: true, them: true },
-                    { feature: "70% instructor revenue", us: true, them: false },
-                    { feature: "Lifetime course access", us: true, them: "Subscription" },
-                    { feature: "No ads or distractions", us: true, them: false },
-                  ].map((row) => (
-                    <tr key={row.feature} className="border-b border-white/5 hover:bg-white/[0.02] transition-colors">
-                      <td className="p-5 text-muted-foreground">{row.feature}</td>
-                      <td className="p-5 text-center">
-                        {row.us === true ? (
-                          <CheckCircle2 className="w-5 h-5 text-emerald-400 mx-auto" />
-                        ) : (
-                          <span className="text-muted-foreground/70">{String(row.us)}</span>
-                        )}
-                      </td>
-                      <td className="p-5 text-center">
-                        {row.them === true ? (
-                          <CheckCircle2 className="w-5 h-5 text-white/30 mx-auto" />
-                        ) : row.them === false ? (
-                          <span className="text-white/20">—</span>
-                        ) : (
-                          <span className="text-white/30 text-xs">{row.them}</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </FadeInSection>
-        </div>
-      </section>
+      <CompareSection />
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           FAQ
@@ -1017,7 +973,7 @@ export default async function HomePage() {
                 <span className="text-orange-400">questions</span>
               </h2>
               <p className="text-muted-foreground/70 text-lg">
-                Everything you need to know about LearnHub.
+                Everything you need to know about CoachNest.
               </p>
             </div>
           </FadeInSection>
@@ -1026,7 +982,7 @@ export default async function HomePage() {
             <div className="space-y-3">
               {[
                 {
-                  question: "Is LearnHub really free to get started?",
+                  question: "Is CoachNest really free to get started?",
                   answer: "Yes! You can create a free account and access all our free courses without any credit card. Paid courses are available for purchase individually — no subscription required.",
                 },
                 {

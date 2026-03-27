@@ -86,7 +86,7 @@ function generateBlog(index: number, authorId: string) {
   if (index > 20) title += ` - Part ${index}`;
 
   const slug = slugify(title, { lower: true, strict: true });
-  
+
   const excerpt = pick(PARAGRAPHS)
     .replace(/{tech}/g, tech)
     .replace(/{tech2}/g, tech2)
@@ -103,18 +103,18 @@ function generateBlog(index: number, authorId: string) {
       .replace(/{field}/g, field)
       .replace(/{concept}/g, concept)
       .replace(/{app}/g, app));
-    
+
     if (i % 3 === 0) {
       const techImages = ["1517694712202-14dd9538aa97", "1587620962725-abab7fe55159", "1498050108023-c5249f4df085", "1555066931-4365d14bab8c"];
       const imageUrl = `https://images.unsplash.com/photo-${pick(techImages)}?w=1200&q=80&fit=crop`;
-      contentBlocks.push(`![Image illustrating ${pick(CONCEPTS)}](${imageUrl})\n\n*Fig ${Math.floor(i/3) + 1}: Modern implementation of ${pick(CONCEPTS)}*`);
+      contentBlocks.push(`![Image illustrating ${pick(CONCEPTS)}](${imageUrl})\n\n*Fig ${Math.floor(i / 3) + 1}: Modern implementation of ${pick(CONCEPTS)}*`);
       contentBlocks.push(`## ${pick(CONCEPTS)} in ${tech}\n\nAnother important aspect to consider is how ${pick(CONCEPTS)} interacts with your overall ${field} strategy.`);
     }
   }
 
   const content = contentBlocks.join("\n\n");
   const tags = Array.from(new Set([tech.toLowerCase(), ...Array(2).fill(0).map(() => pick(TAGS_POOL))])).join(",");
-  
+
   // Get relevant images or fallback to generic
   const relevantImages = TECH_IMAGE_MAP[tech] || TECH_IMAGE_MAP[field] || GENERIC_TECH_IMAGES;
   const chosenThumbnail = `https://images.unsplash.com/photo-${pick(relevantImages)}?w=1200&q=80&fit=crop`;
@@ -159,7 +159,7 @@ async function main() {
     author = await prisma.user.create({
       data: {
         name: "Blog Author",
-        email: "author@learnhub.dev",
+        email: "author@coachnest.dev",
         password: "password123", // Should be hashed in real app but for seed it's okay if followed by seed.ts pattern
         role: Role.INSTRUCTOR,
       },

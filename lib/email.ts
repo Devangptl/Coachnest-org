@@ -5,7 +5,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
-const FROM = process.env.EMAIL_FROM ?? "LearnHub <noreply@learnhub.dev>";
+const FROM = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
 
 /**
  * In dev / when using the Resend sandbox (`onboarding@resend.dev`),
@@ -26,9 +26,9 @@ function resolveRecipient(to: string): string {
 
 export async function sendWelcomeEmail(to: string, name: string) {
   return resend.emails.send({
-    from:    FROM,
-    to:      resolveRecipient(to),
-    subject: "Welcome to LearnHub! 🎓",
+    from: FROM,
+    to: resolveRecipient(to),
+    subject: "Welcome to CoachNest! 🎓",
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
         <h1 style="color:#7c3aed;">Welcome, ${name}!</h1>
@@ -44,15 +44,15 @@ export async function sendWelcomeEmail(to: string, name: string) {
 // ─── Purchase confirmation ────────────────────────────────────────────────────
 
 export async function sendPurchaseEmail(
-  to:         string,
-  name:       string,
+  to: string,
+  name: string,
   courseTitle: string,
-  amount:     string,
-  courseId:   string
+  amount: string,
+  courseId: string
 ) {
   return resend.emails.send({
-    from:    FROM,
-    to:      resolveRecipient(to),
+    from: FROM,
+    to: resolveRecipient(to),
     subject: `You're enrolled in "${courseTitle}"`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
@@ -70,15 +70,15 @@ export async function sendPurchaseEmail(
 // ─── Course update / drip notification ───────────────────────────────────────
 
 export async function sendCourseUpdateEmail(
-  to:          string,
-  name:        string,
+  to: string,
+  name: string,
   courseTitle: string,
   lessonTitle: string,
-  courseId:    string
+  courseId: string
 ) {
   return resend.emails.send({
-    from:    FROM,
-    to:      resolveRecipient(to),
+    from: FROM,
+    to: resolveRecipient(to),
     subject: `New lesson available in "${courseTitle}"`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
@@ -96,14 +96,14 @@ export async function sendCourseUpdateEmail(
 // ─── Certificate issued ───────────────────────────────────────────────────────
 
 export async function sendCertificateEmail(
-  to:          string,
-  name:        string,
+  to: string,
+  name: string,
   courseTitle: string,
-  certUrl:     string
+  certUrl: string
 ) {
   return resend.emails.send({
-    from:    FROM,
-    to:      resolveRecipient(to),
+    from: FROM,
+    to: resolveRecipient(to),
     subject: `Your certificate for "${courseTitle}" is ready!`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">

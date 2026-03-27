@@ -20,6 +20,7 @@ import {
   Award,
   Settings,
   FileText,
+  GraduationCap,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
