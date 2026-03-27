@@ -27,23 +27,24 @@ async function getDashboardData(userId: string) {
     orderBy: { enrolledAt: "desc" },
   });
 
-  // For each course, get the count of completed lessons
-  const enriched = await Promise.all(
-    enrollments.map(async (e) => {
-      const completedCount = await prisma.lessonProgress.count({
-        where: {
-          userId,
-          lessonId: { in: e.course.lessons.map((l) => l.id) },
-          completed: true,
-        },
-      });
-      return {
-        ...e,
-        completedLessons: completedCount,
-        progress: calcProgress(completedCount, e.course._count.lessons),
-      };
-    })
-  );
+  // Batch-fetch completed lesson counts per course (avoids N+1 queries)
+  const allLessonIds = enrollments.flatMap((e) => e.course.lessons.map((l) => l.id));
+  const completedRows = allLessonIds.length > 0
+    ? await prisma.lessonProgress.findMany({
+        where: { userId, lessonId: { in: allLessonIds }, completed: true },
+        select: { lessonId: true },
+      })
+    : [];
+  const completedSet = new Set(completedRows.map((r) => r.lessonId));
+
+  const enriched = enrollments.map((e) => {
+    const completedCount = e.course.lessons.filter((l) => completedSet.has(l.id)).length;
+    return {
+      ...e,
+      completedLessons: completedCount,
+      progress: calcProgress(completedCount, e.course._count.lessons),
+    };
+  });
 
   const totalCompleted = enriched.filter((e) => e.progress === 100).length;
 
