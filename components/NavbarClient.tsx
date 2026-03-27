@@ -137,17 +137,17 @@ export default function NavbarClient({ session }: Props) {
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3">
       <div
         className={cn(
-          "max-w-7xl mx-auto flex items-center justify-between rounded-2xl px-4 sm:px-6 py-3 transition-all duration-500 border",
-          "backdrop-blur-lg bg-white/10 border-white/20 shadow-lg"
+          "max-w-7xl mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-3 transition-all duration-300 border",
+          "bg-card border-border shadow-glass"
         )}
       >
         {/* ── Logo ────────────────────────────────────────────── */}
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30 group-hover:shadow-purple-500/50 transition-shadow">
+          <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center shadow-lg shadow-orange-600/25 group-hover:shadow-orange-500/40 transition-shadow">
             <BookOpen className="w-4.5 h-4.5 text-white" />
           </div>
-          <span className="font-bold text-white text-lg tracking-tight">
-            Learn<span className="text-purple-400 group-hover:text-purple-300 transition-colors">Hub</span>
+          <span className="font-bold text-foreground text-lg tracking-tight">
+            Learn<span className="text-orange-400 group-hover:text-orange-300 transition-colors">Hub</span>
           </span>
         </Link>
 
@@ -163,8 +163,8 @@ export default function NavbarClient({ session }: Props) {
                 className={cn(
                   "relative flex items-center gap-1.5 text-sm px-3.5 py-2 rounded-xl transition-all duration-200",
                   isActive
-                    ? "text-white bg-white/15"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                    ? "text-foreground bg-secondary"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
               >
                 <Icon className="w-4 h-4" />
@@ -172,7 +172,7 @@ export default function NavbarClient({ session }: Props) {
                 {isActive && (
                   <motion.div
                     layoutId="nav-active"
-                    className="absolute inset-0 rounded-xl bg-white/10 border border-white/20"
+                    className="absolute inset-0 rounded-lg bg-secondary border border-border"
                     transition={{ type: "spring", stiffness: 350, damping: 30 }}
                   />
                 )}
@@ -194,27 +194,27 @@ export default function NavbarClient({ session }: Props) {
                   className={cn(
                     "flex items-center gap-2 rounded-xl px-2.5 py-1.5 transition-all duration-200",
                     userMenuOpen
-                      ? "bg-white/15 border border-white/20"
-                      : "hover:bg-white/10 border border-transparent"
+                      ? "bg-secondary border border-border"
+                      : "hover:bg-secondary border border-transparent"
                   )}
                 >
                   {/* Avatar */}
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
                     {initials}
                   </div>
                   <div className="hidden sm:flex flex-col items-start">
-                    <span className="text-white text-xs font-medium leading-tight">
+                    <span className="text-foreground text-xs font-medium leading-tight">
                       {session.name.split(" ")[0]}
                     </span>
                     {roleMeta && (
-                      <span className="text-[10px] text-white/40 leading-tight">
+                      <span className="text-[10px] text-muted-foreground leading-tight">
                         {roleMeta.label}
                       </span>
                     )}
                   </div>
                   <ChevronDown
                     className={cn(
-                      "w-3.5 h-3.5 text-white/40 transition-transform duration-200 hidden sm:block",
+                      "w-3.5 h-3.5 text-muted-foreground transition-transform duration-200 hidden sm:block",
                       userMenuOpen && "rotate-180"
                     )}
                   />
@@ -228,17 +228,17 @@ export default function NavbarClient({ session }: Props) {
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -8, scale: 0.96 }}
                       transition={{ duration: 0.15 }}
-                      className="absolute right-0 top-14 w-64 z-50 backdrop-blur-xl bg-black/60 border border-white/15 rounded-2xl shadow-2xl shadow-black/40 overflow-hidden"
+                      className="absolute right-0 top-14 w-64 z-50 bg-card border border-border rounded-lg shadow-2xl shadow-black/60 overflow-hidden"
                     >
                       {/* User info header */}
-                      <div className="px-4 py-3.5 border-b border-white/10">
+                      <div className="px-4 py-3.5 border-b border-border">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
                             {initials}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-semibold truncate">{session.name}</p>
-                            <p className="text-white/40 text-xs truncate">{session.email}</p>
+                            <p className="text-foreground text-sm font-semibold truncate">{session.name}</p>
+                            <p className="text-muted-foreground text-xs truncate">{session.email}</p>
                           </div>
                         </div>
                         {roleMeta && (
@@ -270,8 +270,8 @@ export default function NavbarClient({ session }: Props) {
                               className={cn(
                                 "flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
                                 isActive
-                                  ? "text-purple-300 bg-purple-500/10"
-                                  : "text-white/70 hover:text-white hover:bg-white/5"
+                                  ? "text-orange-400 bg-orange-500/10"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                               )}
                             >
                               <Icon className="w-4 h-4" />
@@ -282,7 +282,7 @@ export default function NavbarClient({ session }: Props) {
                       </div>
 
                       {/* Logout */}
-                      <div className="border-t border-white/10 py-1.5">
+                      <div className="border-t border-border py-1.5">
                         <button
                           onClick={handleLogout}
                           className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
@@ -300,13 +300,13 @@ export default function NavbarClient({ session }: Props) {
             <div className="flex items-center gap-2">
               <Link
                 href="/login"
-                className="text-white/70 hover:text-white text-sm px-3.5 py-2 rounded-xl hover:bg-white/10 transition-all"
+                className="text-muted-foreground hover:text-foreground text-sm px-3.5 py-2 rounded-lg hover:bg-secondary transition-all"
               >
                 Sign In
               </Link>
               <Link
                 href="/signup"
-                className="bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-medium px-4 py-2 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50"
+                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/30"
               >
                 Get Started
               </Link>
@@ -316,7 +316,7 @@ export default function NavbarClient({ session }: Props) {
           {/* Mobile hamburger */}
           <button
             onClick={() => setMobileOpen((o) => !o)}
-            className="lg:hidden p-2 rounded-xl text-white/60 hover:text-white hover:bg-white/10 transition-all ml-1"
+            className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
             aria-label="Toggle menu"
           >
             {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -334,7 +334,7 @@ export default function NavbarClient({ session }: Props) {
             transition={{ duration: 0.25, ease: "easeInOut" }}
             className="lg:hidden max-w-7xl mx-auto mt-2 overflow-hidden"
           >
-            <div className="backdrop-blur-xl bg-black/50 border border-white/15 rounded-2xl shadow-2xl shadow-black/30 p-4 space-y-1">
+            <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/50 p-4 space-y-1">
               {allLinks.map((link) => {
                 const isActive = pathname === link.href || pathname.startsWith(link.href + "/");
                 const Icon = link.icon;
@@ -343,10 +343,10 @@ export default function NavbarClient({ session }: Props) {
                     key={link.href}
                     href={link.href}
                     className={cn(
-                      "flex items-center gap-3 px-4 py-3 rounded-xl text-sm transition-all",
+                      "flex items-center gap-3 px-4 py-3 rounded-lg text-sm transition-all",
                       isActive
-                        ? "text-white bg-white/10 border border-white/15"
-                        : "text-white/60 hover:text-white hover:bg-white/5"
+                        ? "text-foreground bg-secondary border border-border"
+                        : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                     )}
                   >
                     <Icon className="w-4.5 h-4.5" />
@@ -357,14 +357,14 @@ export default function NavbarClient({ session }: Props) {
 
               {session && (
                 <>
-                  <div className="border-t border-white/10 my-2" />
+                  <div className="border-t border-border my-2" />
                   <div className="px-4 py-2 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
                       {initials}
                     </div>
                     <div>
-                      <p className="text-white text-sm font-medium">{session.name}</p>
-                      <p className="text-white/40 text-xs">{session.email}</p>
+                      <p className="text-foreground text-sm font-medium">{session.name}</p>
+                      <p className="text-muted-foreground text-xs">{session.email}</p>
                     </div>
                     {roleMeta && (
                       <span
@@ -377,24 +377,24 @@ export default function NavbarClient({ session }: Props) {
                       </span>
                     )}
                   </div>
-                  <div className="border-t border-white/10 my-2" />
+                  <div className="border-t border-border my-2" />
                   {dropdownLinks.map((link) => {
                     const Icon = link.icon;
                     return (
                       <Link
                         key={link.href}
                         href={link.href}
-                        className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm text-white/50 hover:text-white hover:bg-white/5 transition-all"
+                        className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       >
                         <Icon className="w-4 h-4" />
                         {link.label}
                       </Link>
                     );
                   })}
-                  <div className="border-t border-white/10 my-2" />
+                  <div className="border-t border-border my-2" />
                   <button
                     onClick={handleLogout}
-                    className="flex items-center gap-3 w-full px-4 py-2.5 rounded-xl text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
+                    className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
                   >
                     <LogOut className="w-4 h-4" />
                     Sign Out
@@ -404,17 +404,17 @@ export default function NavbarClient({ session }: Props) {
 
               {!session && (
                 <>
-                  <div className="border-t border-white/10 my-2" />
+                  <div className="border-t border-border my-2" />
                   <div className="flex gap-2 px-2">
                     <Link
                       href="/login"
-                      className="flex-1 text-center text-white/70 text-sm py-2.5 rounded-xl border border-white/15 hover:bg-white/10 transition-all"
+                      className="flex-1 text-center text-muted-foreground text-sm py-2.5 rounded-lg border border-border hover:bg-secondary transition-all"
                     >
                       Sign In
                     </Link>
                     <Link
                       href="/signup"
-                      className="flex-1 text-center bg-gradient-to-r from-violet-500 to-purple-600 text-white text-sm font-medium py-2.5 rounded-xl hover:from-violet-600 hover:to-purple-700 transition-all"
+                      className="flex-1 text-center bg-gradient-to-r from-orange-600 to-orange-500 text-white text-sm font-medium py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all"
                     >
                       Get Started
                     </Link>

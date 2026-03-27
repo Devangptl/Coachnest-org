@@ -60,7 +60,7 @@ export default async function AdminStudentsPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Students</h1>
-        <p className="text-white/50 mt-1">
+        <p className="text-muted-foreground mt-1">
           Manage student accounts, view profiles, and track activity.
         </p>
       </div>
@@ -70,18 +70,18 @@ export default async function AdminStudentsPage() {
         {[
           { label: "Total Students", value: stats.total, icon: Users, color: "text-blue-400" },
           { label: "Active (30d)", value: stats.active, icon: Star, color: "text-emerald-400" },
-          { label: "Total Enrollments", value: stats.totalEnrollments, icon: GraduationCap, color: "text-violet-400" },
+          { label: "Total Enrollments", value: stats.totalEnrollments, icon: GraduationCap, color: "text-orange-400" },
           { label: "Certificates Issued", value: stats.totalCertificates, icon: Award, color: "text-yellow-400" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
                 <div className="text-3xl font-bold text-white">{stat.value}</div>
-                <div className="text-white/50 text-sm">{stat.label}</div>
+                <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -97,13 +97,13 @@ export default async function AdminStudentsPage() {
       {students.length === 0 ? (
         <GlassCard className="text-center py-16">
           <Users className="w-12 h-12 text-white/20 mx-auto mb-3" />
-          <p className="text-white/50">No students have signed up yet.</p>
+          <p className="text-muted-foreground">No students have signed up yet.</p>
         </GlassCard>
       ) : (
         <GlassCard padding="sm">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
             <h2 className="text-white font-semibold">All Students</h2>
-            <span className="text-white/40 text-sm">{students.length} total</span>
+            <span className="text-muted-foreground/70 text-sm">{students.length} total</span>
           </div>
           <StudentTable students={students.map(s => ({ ...s, createdAt: s.createdAt.toISOString() }))} />
         </GlassCard>

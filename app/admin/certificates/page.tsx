@@ -28,7 +28,7 @@ export default async function AdminCertificatesPage({
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Certificates</h1>
-          <p className="text-white/40 text-sm mt-1">
+          <p className="text-muted-foreground/70 text-sm mt-1">
             {certs.length} certificate{certs.length !== 1 ? "s" : ""} issued
           </p>
         </div>
@@ -43,7 +43,7 @@ export default async function AdminCertificatesPage({
             type="text"
             defaultValue={search ?? ""}
             placeholder="Search by student or course..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.06] border border-white/10 text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-purple-400/50 focus:ring-1 focus:ring-purple-400/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.06] border border-border text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-orange-400/25 focus:ring-1 focus:ring-orange-400/30 transition-all"
           />
         </div>
       </form>
@@ -52,14 +52,14 @@ export default async function AdminCertificatesPage({
         <GlassCard className="text-center py-20">
           <Award className="w-16 h-16 text-white/20 mx-auto mb-4" />
           <p className="text-white font-semibold text-lg mb-2">No certificates found</p>
-          <p className="text-white/40 text-sm">
+          <p className="text-muted-foreground/70 text-sm">
             {search ? "No certificates match your search." : "No certificates have been issued yet."}
           </p>
         </GlassCard>
       ) : (
         <GlassCard padding="sm">
           {/* Table header */}
-          <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-white/10 text-white/40 text-xs font-semibold uppercase tracking-wider">
+          <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-border text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider">
             <div className="col-span-4 flex items-center gap-2">
               <User className="w-3 h-3" /> Student
             </div>
@@ -81,7 +81,7 @@ export default async function AdminCertificatesPage({
               >
                 {/* Student */}
                 <div className="col-span-4 flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-purple-500/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-9 h-9 rounded-full bg-orange-500/15 flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {cert.user.avatar ? (
                       <Image
                         src={cert.user.avatar}
@@ -91,7 +91,7 @@ export default async function AdminCertificatesPage({
                         className="object-cover w-full h-full"
                       />
                     ) : (
-                      <span className="text-purple-400 font-bold text-sm">
+                      <span className="text-orange-400 font-bold text-sm">
                         {cert.user.name.charAt(0).toUpperCase()}
                       </span>
                     )}
@@ -121,14 +121,14 @@ export default async function AdminCertificatesPage({
                       <BookOpen className="w-4 h-4 text-white/30" />
                     )}
                   </div>
-                  <p className="text-white/70 text-sm truncate">
+                  <p className="text-muted-foreground text-sm truncate">
                     {cert.course.title}
                   </p>
                 </div>
 
                 {/* Date */}
                 <div className="col-span-2">
-                  <p className="text-white/50 text-sm">
+                  <p className="text-muted-foreground text-sm">
                     {formatDate(cert.issuedAt)}
                   </p>
                 </div>

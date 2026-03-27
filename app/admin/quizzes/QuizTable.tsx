@@ -62,7 +62,7 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
         {quizzes.map((quiz) => (
           <div
             key={quiz.id}
-            className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-white/5 transition-colors"
+            className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-secondary transition-colors"
           >
             {/* Quiz / Lesson Name */}
             <div className="col-span-3 min-w-0">
@@ -73,13 +73,13 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
             </div>
 
             {/* Questions */}
-            <div className="col-span-1 text-sm text-white/70">{quiz.questionCount}</div>
+            <div className="col-span-1 text-sm text-muted-foreground">{quiz.questionCount}</div>
 
             {/* Pass Mark */}
-            <div className="col-span-1 text-sm text-white/70">{quiz.passMark}%</div>
+            <div className="col-span-1 text-sm text-muted-foreground">{quiz.passMark}%</div>
 
             {/* Attempts */}
-            <div className="col-span-1 text-sm text-white/70">{quiz.attemptCount}</div>
+            <div className="col-span-1 text-sm text-muted-foreground">{quiz.attemptCount}</div>
 
             {/* Avg Score */}
             <div className="col-span-1 text-sm text-white font-semibold">

@@ -35,13 +35,13 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
     percent === 100
       ? "from-amber-500/8 to-yellow-500/5 border-amber-400/15"
       : percent > 0
-      ? "from-violet-500/8 to-purple-500/5 border-purple-400/15"
-      : "from-white/5 to-white/[0.02] border-white/10";
+      ? "from-orange-600/8 to-orange-500/15 border-orange-400/25"
+      : "from-white/5 to-white/[0.02] border-border";
 
   const barGradient =
     percent === 100
       ? "from-amber-400 via-yellow-400 to-amber-500"
-      : "from-violet-500 via-purple-500 to-fuchsia-500";
+      : "from-orange-600 via-orange-500 to-orange-400";
 
   return (
     <motion.div
@@ -67,8 +67,8 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
                 percent === 100
                   ? "bg-amber-500/20 shadow-lg shadow-amber-500/10"
                   : percent > 0
-                  ? "bg-purple-500/20 shadow-lg shadow-purple-500/10"
-                  : "bg-white/10"
+                  ? "bg-orange-500/15 shadow-lg shadow-orange-600/15"
+                  : "bg-secondary"
               }`}
             >
               {percent === 100 ? (
@@ -76,9 +76,9 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
               ) : percent > 50 ? (
                 <Flame className="w-5 h-5 text-orange-400" />
               ) : percent > 0 ? (
-                <Zap className="w-5 h-5 text-purple-400" />
+                <Zap className="w-5 h-5 text-orange-400" />
               ) : (
-                <Target className="w-5 h-5 text-white/40" />
+                <Target className="w-5 h-5 text-muted-foreground/70" />
               )}
             </motion.div>
             <div>
@@ -97,7 +97,7 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
             className="text-right"
           >
             <span className={`text-xl font-bold tabular-nums ${
-              percent === 100 ? "text-amber-400" : percent > 0 ? "text-purple-400" : "text-white/20"
+              percent === 100 ? "text-amber-400" : percent > 0 ? "text-orange-400" : "text-white/20"
             }`}>
               {percent}%
             </span>
@@ -145,7 +145,7 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
 
         {/* Bottom row: message + time remaining */}
         <div className="flex items-center justify-between">
-          <span className="text-white/40 text-xs flex items-center gap-1.5">
+          <span className="text-muted-foreground/70 text-xs flex items-center gap-1.5">
             <span>{getStreakEmoji(percent)}</span>
             {getMessage(percent)}
           </span>

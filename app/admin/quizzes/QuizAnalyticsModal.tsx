@@ -36,15 +36,15 @@ export default function QuizAnalyticsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-3xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-white/10">
+    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-3xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-border">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-border px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-xl font-bold text-white">Quiz Analytics</h2>
-            <p className="text-white/50 text-sm">{quiz.title} &middot; {quiz.courseTitle}</p>
+            <p className="text-muted-foreground text-sm">{quiz.title} &middot; {quiz.courseTitle}</p>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -52,10 +52,10 @@ export default function QuizAnalyticsModal({
         <div className="p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
             </div>
           ) : !analytics || analytics.totalAttempts === 0 ? (
-            <div className="text-center py-12 text-white/40">
+            <div className="text-center py-12 text-muted-foreground/70">
               No analytics data available. Quizzes need attempts first.
             </div>
           ) : (
@@ -64,19 +64,19 @@ export default function QuizAnalyticsModal({
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { label: "Attempts", value: analytics.totalAttempts, icon: Users, color: "text-blue-400" },
-                  { label: "Avg Score", value: `${analytics.avgScore}%`, icon: BarChart3, color: "text-violet-400" },
+                  { label: "Avg Score", value: `${analytics.avgScore}%`, icon: BarChart3, color: "text-orange-400" },
                   { label: "Pass Rate", value: `${analytics.passRate}%`, icon: Target, color: "text-emerald-400" },
                   { label: "Avg Time", value: `${Math.round(analytics.avgTimeTaken / 60)}m`, icon: Clock, color: "text-amber-400" },
                 ].map((stat) => {
                   const Icon = stat.icon;
                   return (
                     <GlassCard key={stat.label} className="flex items-center gap-3 !p-4">
-                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
                         <Icon className={`w-5 h-5 ${stat.color}`} />
                       </div>
                       <div>
                         <div className="text-xl font-bold text-white">{stat.value}</div>
-                        <div className="text-white/50 text-xs">{stat.label}</div>
+                        <div className="text-muted-foreground text-xs">{stat.label}</div>
                       </div>
                     </GlassCard>
                   );
@@ -92,10 +92,10 @@ export default function QuizAnalyticsModal({
                     const width = (bucket.count / maxCount) * 100;
                     return (
                       <div key={bucket.range} className="flex items-center gap-3">
-                        <span className="text-white/50 text-xs w-16 text-right">{bucket.range}</span>
-                        <div className="flex-1 bg-white/5 rounded-full h-6 overflow-hidden">
+                        <span className="text-muted-foreground text-xs w-16 text-right">{bucket.range}</span>
+                        <div className="flex-1 bg-secondary rounded-full h-6 overflow-hidden">
                           <div
-                            className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full flex items-center justify-end pr-2 transition-all"
+                            className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded-full flex items-center justify-end pr-2 transition-all"
                             style={{ width: `${Math.max(width, 5)}%` }}
                           >
                             <span className="text-white text-xs font-semibold">{bucket.count}</span>
@@ -115,13 +115,13 @@ export default function QuizAnalyticsModal({
                     {analytics.questionAnalytics.map((q: any, idx: number) => (
                       <div
                         key={q.id}
-                        className="flex items-center justify-between p-3 bg-white/5 rounded-xl"
+                        className="flex items-center justify-between p-3 bg-secondary rounded-xl"
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-white text-sm truncate">
                             Q{idx + 1}: {q.text}
                           </p>
-                          <p className="text-white/40 text-xs mt-0.5">
+                          <p className="text-muted-foreground/70 text-xs mt-0.5">
                             {q.correctCount}/{q.attempts} correct ({q.correctPercentage}%)
                           </p>
                         </div>

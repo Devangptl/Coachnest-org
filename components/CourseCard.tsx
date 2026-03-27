@@ -40,9 +40,9 @@ export default function CourseCard({
 
   return (
     <Link href={`/courses/${id}`} className="group block">
-      <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 group-hover:bg-white/[0.15] group-hover:border-white/30 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-purple-500/10 h-full flex flex-col">
+      <div className="bg-card border border-border rounded-lg overflow-hidden shadow-xl transition-all duration-300 group-hover:bg-white/[0.15] group-hover:border-white/30 group-hover:-translate-y-1 group-hover:shadow-2xl group-hover:shadow-orange-600/15 h-full flex flex-col">
         {/* Thumbnail */}
-        <div className="relative h-44 bg-gradient-to-br from-violet-600/50 to-purple-800/50 overflow-hidden flex-shrink-0">
+        <div className="relative h-44 bg-gradient-to-br from-orange-700/50 to-orange-700/50 overflow-hidden flex-shrink-0">
           {thumbnail ? (
             <Image
               src={thumbnail}
@@ -51,7 +51,7 @@ export default function CourseCard({
               className="object-cover transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-violet-500/40 to-purple-700/40 flex items-center justify-center">
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/40 to-orange-600/40 flex items-center justify-center">
               <BookOpen className="w-12 h-12 text-white/30" />
             </div>
           )}
@@ -69,8 +69,8 @@ export default function CourseCard({
 
           {/* Bottom badges */}
           <div className="absolute bottom-3 left-3 flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm border border-white/10 rounded-lg px-2 py-1">
-              <BookOpen className="w-3 h-3 text-purple-300" />
+            <div className="flex items-center gap-1 bg-black/40 backdrop-blur-sm border border-border rounded-lg px-2 py-1">
+              <BookOpen className="w-3 h-3 text-orange-300" />
               <span className="text-white text-xs font-medium">
                 {totalLessons} lesson{totalLessons !== 1 ? "s" : ""}
               </span>
@@ -79,13 +79,13 @@ export default function CourseCard({
 
           {/* Price tag */}
           {!isFree && price != null && (
-            <div className="absolute bottom-3 right-3 bg-black/50 backdrop-blur-sm border border-white/10 rounded-lg px-2.5 py-1">
+            <div className="absolute bottom-3 right-3 bg-card backdrop-blur-sm border border-border rounded-lg px-2.5 py-1">
               {hasDiscount ? (
                 <div className="flex items-center gap-1.5">
                   <span className="text-white font-bold text-sm">
                     ₹{discountPrice!.toLocaleString("en-IN")}
                   </span>
-                  <span className="text-white/40 text-xs line-through">
+                  <span className="text-muted-foreground/70 text-xs line-through">
                     ₹{price.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -100,21 +100,21 @@ export default function CourseCard({
 
         {/* Content */}
         <div className="p-5 flex-1 flex flex-col">
-          <h3 className="text-white font-semibold text-base mb-1 line-clamp-2 group-hover:text-purple-300 transition-colors">
+          <h3 className="text-white font-semibold text-base mb-1 line-clamp-2 group-hover:text-orange-300 transition-colors">
             {title}
           </h3>
-          <p className="text-white/50 text-sm leading-relaxed line-clamp-2 flex-1">
+          <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2 flex-1">
             {truncate(description, 90)}
           </p>
 
           {/* Instructor */}
           {instructorName && (
-            <p className="text-white/40 text-xs mt-2">by {instructorName}</p>
+            <p className="text-muted-foreground/70 text-xs mt-2">by {instructorName}</p>
           )}
 
           {/* Footer */}
           <div className="mt-3 flex items-center justify-between gap-2">
-            <div className="flex items-center gap-3 text-xs text-white/40">
+            <div className="flex items-center gap-3 text-xs text-muted-foreground/70">
               {avgRating != null && avgRating > 0 && (
                 <span className="flex items-center gap-1 text-amber-400">
                   <Star className="w-3 h-3 fill-current" />
@@ -135,14 +135,14 @@ export default function CourseCard({
 
           {/* Progress bar — only for enrolled courses */}
           {progress !== undefined && (
-            <div className="mt-3 pt-3 border-t border-white/10">
+            <div className="mt-3 pt-3 border-t border-border">
               <div className="flex items-center justify-between mb-1">
-                <span className="text-white/50 text-xs">Progress</span>
-                <span className="text-purple-400 text-xs font-medium">{progress}%</span>
+                <span className="text-muted-foreground text-xs">Progress</span>
+                <span className="text-orange-400 text-xs font-medium">{progress}%</span>
               </div>
-              <div className="h-1.5 bg-white/10 rounded-full overflow-hidden">
+              <div className="h-1.5 bg-secondary rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all"
+                  className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded-full transition-all"
                   style={{ width: `${progress}%` }}
                 />
               </div>

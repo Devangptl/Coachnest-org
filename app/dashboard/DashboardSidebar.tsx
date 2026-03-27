@@ -21,8 +21,8 @@ export default function DashboardSidebar() {
 
   return (
     <aside className="w-64 flex-shrink-0">
-      <div className="sticky top-24 backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-4 shadow-xl">
-        <p className="text-white/40 text-xs font-semibold uppercase tracking-widest px-3 mb-3">
+      <div className="sticky top-24 bg-card border border-border rounded-lg p-4 shadow-glass">
+        <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
           Dashboard
         </p>
 
@@ -39,16 +39,16 @@ export default function DashboardSidebar() {
                 key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all",
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
                   isActive
-                    ? "bg-gradient-to-r from-violet-500/30 to-purple-600/20 text-white border border-purple-400/30"
-                    : "text-white/60 hover:text-white hover:bg-white/10"
+                    ? "bg-orange-500/10 text-foreground border border-orange-400/20"
+                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
               >
                 <Icon
                   className={cn(
                     "w-4 h-4",
-                    isActive ? "text-purple-400" : "text-white/50"
+                    isActive ? "text-orange-400" : "text-muted-foreground"
                   )}
                 />
                 {item.label}

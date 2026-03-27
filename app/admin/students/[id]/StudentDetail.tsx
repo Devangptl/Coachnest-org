@@ -92,7 +92,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
   const getProgressColor = (p: number) => {
     if (p === 100) return "bg-emerald-500";
-    if (p >= 75) return "bg-violet-500";
+    if (p >= 75) return "bg-orange-500";
     if (p >= 50) return "bg-blue-500";
     if (p >= 25) return "bg-amber-500";
     return "bg-red-500";
@@ -142,11 +142,11 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         <div className="flex flex-col sm:flex-row gap-6">
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/40 to-purple-600/40 border border-white/10 flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-lg bg-gradient-to-br from-orange-600/40 to-orange-500/40 border border-border flex items-center justify-center overflow-hidden">
               {student.avatar ? (
                 <Image src={student.avatar} alt={student.name} width={80} height={80} className="w-20 h-20 object-cover" />
               ) : (
-                <span className="text-2xl font-bold text-white/70">
+                <span className="text-2xl font-bold text-muted-foreground">
                   {student.name.charAt(0).toUpperCase()}
                 </span>
               )}
@@ -159,7 +159,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               <div>
                 <h1 className="text-2xl font-bold text-white">{student.name}</h1>
                 {student.headline && (
-                  <p className="text-white/50 text-sm mt-0.5">{student.headline}</p>
+                  <p className="text-muted-foreground text-sm mt-0.5">{student.headline}</p>
                 )}
               </div>
               <div className="flex items-center gap-2">
@@ -169,12 +169,12 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               </div>
             </div>
 
-            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 text-sm text-white/60">
+            <div className="flex flex-wrap gap-x-5 gap-y-2 mt-3 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-purple-400" /> {student.email}
+                <Mail className="w-3.5 h-3.5 text-orange-400" /> {student.email}
               </span>
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-purple-400" /> Joined {formatDate(student.createdAt)}
+                <Calendar className="w-3.5 h-3.5 text-orange-400" /> Joined {formatDate(student.createdAt)}
               </span>
               {student.website && (
                 <a
@@ -183,13 +183,13 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                   rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-white transition-colors"
                 >
-                  <Globe className="w-3.5 h-3.5 text-purple-400" /> Website
+                  <Globe className="w-3.5 h-3.5 text-orange-400" /> Website
                 </a>
               )}
             </div>
 
             {student.bio && (
-              <p className="text-white/40 text-sm mt-3 line-clamp-2">{student.bio}</p>
+              <p className="text-muted-foreground/70 text-sm mt-3 line-clamp-2">{student.bio}</p>
             )}
           </div>
         </div>
@@ -200,19 +200,19 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         {[
           { label: "Enrollments", value: student.counts.enrollments, icon: BookOpen, color: "text-blue-400" },
           { label: "Certificates", value: student.counts.certificates, icon: Award, color: "text-emerald-400" },
-          { label: "Orders", value: student.counts.orders, icon: ShoppingCart, color: "text-violet-400" },
+          { label: "Orders", value: student.counts.orders, icon: ShoppingCart, color: "text-orange-400" },
           { label: "Total Spent", value: `₹${student.totalSpent.toLocaleString()}`, icon: IndianRupee, color: "text-yellow-400" },
           { label: "Reviews", value: student.counts.reviews, icon: Star, color: "text-amber-400" },
         ].map((s) => {
           const Icon = s.icon;
           return (
             <GlassCard key={s.label} padding="sm" className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
                 <Icon className={`w-5 h-5 ${s.color}`} />
               </div>
               <div>
                 <div className="text-lg font-bold text-white">{s.value}</div>
-                <div className="text-white/40 text-xs">{s.label}</div>
+                <div className="text-muted-foreground/70 text-xs">{s.label}</div>
               </div>
             </GlassCard>
           );
@@ -227,12 +227,12 @@ export default function StudentDetail({ student }: { student: StudentData }) {
           </Button>
 
           <div className="flex items-center gap-2">
-            <Shield className="w-4 h-4 text-white/40" />
+            <Shield className="w-4 h-4 text-muted-foreground/70" />
             <select
               value={currentRole}
               onChange={(e) => handleRoleChange(e.target.value)}
               disabled={roleLoading}
-              className="bg-white/5 border border-white/20 rounded-xl px-3 py-1.5 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all"
+              className="bg-secondary border border-border rounded-xl px-3 py-1.5 text-white text-sm focus:outline-none focus:border-orange-400/25 transition-all"
             >
               <option value="STUDENT">Student</option>
               <option value="INSTRUCTOR">Instructor</option>
@@ -284,13 +284,13 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               onClick={() => setActiveTab(tab.key)}
               className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium transition-all whitespace-nowrap ${
                 isActive
-                  ? "bg-gradient-to-r from-violet-500/30 to-purple-600/20 text-white border border-purple-400/30"
-                  : "text-white/50 hover:text-white hover:bg-white/10 border border-transparent"
+                  ? "bg-gradient-to-r from-orange-600/30 to-orange-500/20 text-white border border-orange-400/25"
+                  : "text-muted-foreground hover:text-white hover:bg-secondary border border-transparent"
               }`}
             >
-              <Icon className={`w-4 h-4 ${isActive ? "text-purple-400" : "text-white/40"}`} />
+              <Icon className={`w-4 h-4 ${isActive ? "text-orange-400" : "text-muted-foreground/70"}`} />
               {tab.label}
-              <span className={`text-xs ${isActive ? "text-purple-300" : "text-white/30"}`}>
+              <span className={`text-xs ${isActive ? "text-orange-300" : "text-white/30"}`}>
                 ({student.counts[tab.key === "quizzes" ? "quizAttempts" : tab.key]})
               </span>
             </button>
@@ -303,7 +303,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         {/* Enrollments Tab */}
         {activeTab === "enrollments" && (
           <div>
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
               <div className="col-span-4">Course</div>
               <div className="col-span-3">Progress</div>
               <div className="col-span-2">Enrolled</div>
@@ -311,25 +311,25 @@ export default function StudentDetail({ student }: { student: StudentData }) {
             </div>
             <div className="divide-y divide-white/5">
               {student.enrollments.length === 0 ? (
-                <div className="text-center py-10 text-white/40">No enrollments yet.</div>
+                <div className="text-center py-10 text-muted-foreground/70">No enrollments yet.</div>
               ) : (
                 student.enrollments.map((e) => (
-                  <div key={e.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-white/5 transition-colors">
+                  <div key={e.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-secondary transition-colors">
                     <div className="col-span-4 min-w-0">
                       <p className="text-white text-sm font-medium truncate">{e.course.title}</p>
-                      <p className="text-white/40 text-xs">{e.completedLessons}/{e.totalLessons} lessons</p>
+                      <p className="text-muted-foreground/70 text-xs">{e.completedLessons}/{e.totalLessons} lessons</p>
                     </div>
                     <div className="col-span-3">
-                      <div className="w-full bg-white/10 rounded-full h-2 mb-1">
+                      <div className="w-full bg-secondary rounded-full h-2 mb-1">
                         <div
                           className={`h-2 rounded-full transition-all ${getProgressColor(e.progress)}`}
                           style={{ width: `${e.progress}%` }}
                         />
                       </div>
-                      <span className="text-white/50 text-xs">{e.progress}%</span>
+                      <span className="text-muted-foreground text-xs">{e.progress}%</span>
                     </div>
                     <div className="col-span-2">
-                      <span className="text-white/40 text-xs">{formatDate(e.enrolledAt)}</span>
+                      <span className="text-muted-foreground/70 text-xs">{formatDate(e.enrolledAt)}</span>
                     </div>
                     <div className="col-span-3 text-right">
                       {e.completedAt ? (
@@ -350,7 +350,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         {/* Orders Tab */}
         {activeTab === "orders" && (
           <div>
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
               <div className="col-span-3">Order ID</div>
               <div className="col-span-3">Course</div>
               <div className="col-span-2">Amount</div>
@@ -359,11 +359,11 @@ export default function StudentDetail({ student }: { student: StudentData }) {
             </div>
             <div className="divide-y divide-white/5">
               {student.orders.length === 0 ? (
-                <div className="text-center py-10 text-white/40">No orders yet.</div>
+                <div className="text-center py-10 text-muted-foreground/70">No orders yet.</div>
               ) : (
                 student.orders.map((o) => (
-                  <div key={o.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-white/5 transition-colors">
-                    <div className="col-span-3 text-white/60 text-xs font-mono truncate">
+                  <div key={o.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-secondary transition-colors">
+                    <div className="col-span-3 text-muted-foreground text-xs font-mono truncate">
                       {o.id.slice(0, 12)}...
                     </div>
                     <div className="col-span-3 min-w-0">
@@ -373,7 +373,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                       {o.currency === "INR" ? "₹" : o.currency}{o.amount.toLocaleString()}
                     </div>
                     <div className="col-span-2">
-                      <span className="text-white/40 text-xs">{formatDate(o.createdAt)}</span>
+                      <span className="text-muted-foreground/70 text-xs">{formatDate(o.createdAt)}</span>
                     </div>
                     <div className="col-span-2 text-right">
                       {statusBadge(o.status)}
@@ -388,21 +388,21 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         {/* Certificates Tab */}
         {activeTab === "certificates" && (
           <div>
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
               <div className="col-span-6">Course</div>
               <div className="col-span-6 text-right">Issued Date</div>
             </div>
             <div className="divide-y divide-white/5">
               {student.certificates.length === 0 ? (
-                <div className="text-center py-10 text-white/40">No certificates earned yet.</div>
+                <div className="text-center py-10 text-muted-foreground/70">No certificates earned yet.</div>
               ) : (
                 student.certificates.map((c) => (
-                  <div key={c.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-white/5 transition-colors">
+                  <div key={c.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-secondary transition-colors">
                     <div className="col-span-6 flex items-center gap-2">
                       <Award className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                       <span className="text-white text-sm truncate">{c.course.title}</span>
                     </div>
-                    <div className="col-span-6 text-right text-white/40 text-xs">
+                    <div className="col-span-6 text-right text-muted-foreground/70 text-xs">
                       {formatDate(c.issuedAt)}
                     </div>
                   </div>
@@ -415,7 +415,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         {/* Quiz History Tab */}
         {activeTab === "quizzes" && (
           <div>
-            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+            <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
               <div className="col-span-4">Quiz</div>
               <div className="col-span-2 text-center">Score</div>
               <div className="col-span-2 text-center">Pass Mark</div>
@@ -424,21 +424,21 @@ export default function StudentDetail({ student }: { student: StudentData }) {
             </div>
             <div className="divide-y divide-white/5">
               {student.quizAttempts.length === 0 ? (
-                <div className="text-center py-10 text-white/40">No quiz attempts yet.</div>
+                <div className="text-center py-10 text-muted-foreground/70">No quiz attempts yet.</div>
               ) : (
                 student.quizAttempts.map((a) => (
-                  <div key={a.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-white/5 transition-colors">
+                  <div key={a.id} className="grid grid-cols-12 gap-4 px-4 py-3 items-center hover:bg-secondary transition-colors">
                     <div className="col-span-4 min-w-0">
                       <p className="text-white text-sm truncate">{a.quiz.title}</p>
-                      <p className="text-white/40 text-xs">{formatDate(a.createdAt)}</p>
+                      <p className="text-muted-foreground/70 text-xs">{formatDate(a.createdAt)}</p>
                     </div>
                     <div className="col-span-2 text-center text-white font-semibold text-sm">
                       {a.score}%
                     </div>
-                    <div className="col-span-2 text-center text-white/50 text-sm">
+                    <div className="col-span-2 text-center text-muted-foreground text-sm">
                       {a.quiz.passMark}%
                     </div>
-                    <div className="col-span-2 text-center text-white/50 text-sm">
+                    <div className="col-span-2 text-center text-muted-foreground text-sm">
                       {a.timeTaken ? `${Math.floor(a.timeTaken / 60)}m ${a.timeTaken % 60}s` : "—"}
                     </div>
                     <div className="col-span-2 text-right">
@@ -458,13 +458,13 @@ export default function StudentDetail({ student }: { student: StudentData }) {
           <div>
             <div className="divide-y divide-white/5">
               {student.reviews.length === 0 ? (
-                <div className="text-center py-10 text-white/40">No reviews yet.</div>
+                <div className="text-center py-10 text-muted-foreground/70">No reviews yet.</div>
               ) : (
                 student.reviews.map((r) => (
-                  <div key={r.id} className="px-4 py-4 hover:bg-white/5 transition-colors">
+                  <div key={r.id} className="px-4 py-4 hover:bg-secondary transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-white text-sm font-medium">{r.course.title}</span>
-                      <span className="text-white/40 text-xs">{formatDate(r.createdAt)}</span>
+                      <span className="text-muted-foreground/70 text-xs">{formatDate(r.createdAt)}</span>
                     </div>
                     <div className="flex items-center gap-1 mb-2">
                       {Array.from({ length: 5 }, (_, i) => (
@@ -475,10 +475,10 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                           }`}
                         />
                       ))}
-                      <span className="text-white/40 text-xs ml-1">{r.rating}/5</span>
+                      <span className="text-muted-foreground/70 text-xs ml-1">{r.rating}/5</span>
                     </div>
                     {r.comment && (
-                      <p className="text-white/60 text-sm">{r.comment}</p>
+                      <p className="text-muted-foreground text-sm">{r.comment}</p>
                     )}
                   </div>
                 ))

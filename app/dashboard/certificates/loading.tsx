@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function CertificateRowSkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 flex items-center gap-4 animate-pulse">
+    <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
       <Skeleton className="w-14 h-14 rounded-xl flex-shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton h="h-5" w="w-1/3" />

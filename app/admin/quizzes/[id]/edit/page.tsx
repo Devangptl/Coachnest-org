@@ -147,7 +147,7 @@ export default function EditQuizPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-8 h-8 text-purple-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
       </div>
     );
   }
@@ -157,12 +157,12 @@ export default function EditQuizPage() {
       <div className="mb-8">
         <Link
           href="/admin/quizzes"
-          className="text-white/50 hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors"
+          className="text-muted-foreground hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Quizzes
         </Link>
         <h1 className="text-3xl font-bold text-white">Edit Quiz</h1>
-        <p className="text-white/50 mt-1">
+        <p className="text-muted-foreground mt-1">
           {quizInfo?.courseTitle && <span>{quizInfo.courseTitle} &middot; </span>}
           {quizInfo?.title || ""}
           {quizInfo?.attemptCount > 0 && (
@@ -235,7 +235,7 @@ export default function EditQuizPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
-                    <label className="text-white/50 text-xs">Points:</label>
+                    <label className="text-muted-foreground text-xs">Points:</label>
                     <input
                       type="number"
                       className="input-glass w-16 text-center text-sm"
@@ -263,7 +263,7 @@ export default function EditQuizPage() {
                 />
 
                 <div className="space-y-2">
-                  <p className="text-white/40 text-xs font-semibold uppercase">
+                  <p className="text-muted-foreground/70 text-xs font-semibold uppercase">
                     Options (click circle to mark correct)
                   </p>
                   {q.options.map((opt, oIdx) => (
@@ -274,7 +274,7 @@ export default function EditQuizPage() {
                         className={`w-6 h-6 rounded-full border flex items-center justify-center transition-all flex-shrink-0 ${
                           opt.correct
                             ? "bg-emerald-500 border-emerald-400"
-                            : "bg-white/5 border-white/20 hover:border-white/40"
+                            : "bg-secondary border-border hover:border-white/40"
                         }`}
                         title={opt.correct ? "Correct answer" : "Mark as correct"}
                       >
@@ -300,7 +300,7 @@ export default function EditQuizPage() {
                   <button
                     type="button"
                     onClick={() => addOption(qIdx)}
-                    className="text-purple-400 text-xs hover:text-purple-300 transition-colors"
+                    className="text-orange-400 text-xs hover:text-orange-300 transition-colors"
                   >
                     + Add option
                   </button>
@@ -311,7 +311,7 @@ export default function EditQuizPage() {
 
           {questions.length === 0 && (
             <GlassCard padding="md">
-              <div className="text-center py-6 text-white/40">
+              <div className="text-center py-6 text-muted-foreground/70">
                 <p className="mb-2">No questions. All questions were removed.</p>
                 <Button variant="primary" size="sm" onClick={addQuestion}>
                   <PlusCircle className="w-4 h-4 mr-1" /> Add Question

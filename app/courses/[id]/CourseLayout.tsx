@@ -34,8 +34,8 @@ export default function CourseLayout({ isEnrolled, children, sidebar }: Props) {
               className={cn(
                 "hidden lg:flex items-center gap-2 text-xs font-medium px-3 py-2 rounded-xl border transition-all mb-3",
                 sidebarOpen
-                  ? "text-white/40 bg-white/[0.03] border-white/[0.08] hover:text-white/60 hover:border-white/15"
-                  : "text-purple-400 bg-purple-500/10 border-purple-400/20 hover:bg-purple-500/15"
+                  ? "text-muted-foreground/70 bg-white/[0.03] border-white/[0.08] hover:text-muted-foreground hover:border-border"
+                  : "text-orange-400 bg-orange-500/10 border-orange-400/20 hover:bg-orange-500/15"
               )}
             >
               {sidebarOpen ? (

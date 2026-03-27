@@ -63,7 +63,7 @@ export default async function OrderHistoryPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Order History</h1>
-        <p className="text-white/50 mt-1">
+        <p className="text-muted-foreground mt-1">
           View your past purchases and payment receipts.
         </p>
       </div>
@@ -71,23 +71,23 @@ export default async function OrderHistoryPage() {
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <GlassCard className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
             <ShoppingCart className="w-6 h-6 text-blue-400" />
           </div>
           <div>
             <div className="text-2xl font-bold text-white">{orders.length}</div>
-            <div className="text-white/50 text-sm">Total Orders</div>
+            <div className="text-muted-foreground text-sm">Total Orders</div>
           </div>
         </GlassCard>
         <GlassCard className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
             <Receipt className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
             <div className="text-2xl font-bold text-white">
               ₹{totalSpent.toLocaleString("en-IN")}
             </div>
-            <div className="text-white/50 text-sm">Total Spent</div>
+            <div className="text-muted-foreground text-sm">Total Spent</div>
           </div>
         </GlassCard>
       </div>
@@ -105,7 +105,7 @@ export default async function OrderHistoryPage() {
                   className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
                   <ShoppingCart className="w-6 h-6 text-white/20" />
                 </div>
               )}
@@ -116,11 +116,11 @@ export default async function OrderHistoryPage() {
                   {order.courseTitle}
                 </p>
                 <div className="flex items-center gap-3 mt-1">
-                  <span className="text-white/40 text-xs">
+                  <span className="text-muted-foreground/70 text-xs">
                     {formatDate(order.createdAt)}
                   </span>
                   {order.couponCode && (
-                    <span className="text-purple-400 text-xs">
+                    <span className="text-orange-400 text-xs">
                       Coupon: {order.couponCode}
                     </span>
                   )}
@@ -150,7 +150,7 @@ export default async function OrderHistoryPage() {
                 {order.courseId && order.status === "PAID" && (
                   <Link
                     href={`/courses/${order.courseId}`}
-                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-orange-400 hover:text-orange-300 transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -161,10 +161,10 @@ export default async function OrderHistoryPage() {
         </div>
       ) : (
         <GlassCard padding="lg">
-          <div className="text-center py-8 text-white/40">
+          <div className="text-center py-8 text-muted-foreground/70">
             <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-white/20" />
             <p className="mb-2">No orders yet.</p>
-            <Link href="/courses" className="text-purple-400 hover:text-purple-300">
+            <Link href="/courses" className="text-orange-400 hover:text-orange-300">
               Browse Courses
             </Link>
           </div>

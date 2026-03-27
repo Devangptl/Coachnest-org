@@ -53,14 +53,14 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
       {coupons.map((coupon) => (
         <div
           key={coupon.id}
-          className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-white/5 transition-colors"
+          className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-secondary transition-colors"
         >
           {/* Code */}
           <div className="col-span-2 min-w-0 flex items-center gap-2">
-            <code className="text-purple-400 font-mono text-sm">{coupon.code}</code>
+            <code className="text-orange-400 font-mono text-sm">{coupon.code}</code>
             <button
               onClick={() => copyCode(coupon.code)}
-              className="text-white/40 hover:text-white transition-colors"
+              className="text-muted-foreground/70 hover:text-white transition-colors"
               title="Copy code"
             >
               <Copy className="w-3 h-3" />
@@ -77,12 +77,12 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
           </div>
 
           {/* Uses */}
-          <div className="col-span-1 text-sm text-white/70">
+          <div className="col-span-1 text-sm text-muted-foreground">
             {coupon.maxUses ? `${coupon.uses}/${coupon.maxUses}` : "Unlimited"}
           </div>
 
           {/* Expires */}
-          <div className="col-span-1 text-sm text-white/70">
+          <div className="col-span-1 text-sm text-muted-foreground">
             {coupon.expiresAt ? formatDate(coupon.expiresAt) : "Never"}
           </div>
 
@@ -94,7 +94,7 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
           </div>
 
           {/* Discount Given */}
-          <div className="col-span-1 text-sm text-white/70">
+          <div className="col-span-1 text-sm text-muted-foreground">
             ₹{coupon.totalDiscountGiven.toLocaleString("en-IN")}
           </div>
 

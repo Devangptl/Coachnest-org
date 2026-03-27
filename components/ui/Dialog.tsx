@@ -10,7 +10,7 @@ const DialogClose   = DialogPrimitive.Close;
 const DialogOverlay = ({ className, ...props }: React.ComponentProps<typeof DialogPrimitive.Overlay>) => (
   <DialogPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-black/60 backdrop-blur-sm",
+      "fixed inset-0 z-50 bg-card backdrop-blur-sm",
       "data-[state=open]:animate-in data-[state=closed]:animate-out",
       "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
       className
@@ -29,8 +29,8 @@ const DialogContent = ({
     <DialogPrimitive.Content
       className={cn(
         "fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2",
-        "w-full max-w-lg backdrop-blur-xl bg-white/10 border border-white/20",
-        "rounded-2xl p-6 shadow-2xl",
+        "w-full max-w-lg backdrop-blur-xl bg-card border border-border",
+        "rounded-lg p-6 shadow-2xl",
         "data-[state=open]:animate-in data-[state=closed]:animate-out",
         "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
         "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
@@ -41,7 +41,7 @@ const DialogContent = ({
       {...props}
     >
       {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 text-white/40 hover:text-white transition-colors rounded-lg p-1 hover:bg-white/10">
+      <DialogPrimitive.Close className="absolute right-4 top-4 text-muted-foreground/70 hover:text-white transition-colors rounded-lg p-1 hover:bg-secondary">
         <X className="h-4 w-4" />
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>
@@ -57,7 +57,7 @@ const DialogTitle = ({ className, ...props }: React.HTMLAttributes<HTMLHeadingEl
 );
 
 const DialogDescription = ({ className, ...props }: React.HTMLAttributes<HTMLParagraphElement>) => (
-  <p className={cn("text-sm text-white/50", className)} {...props} />
+  <p className={cn("text-sm text-muted-foreground", className)} {...props} />
 );
 
 export { Dialog, DialogTrigger, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogDescription };

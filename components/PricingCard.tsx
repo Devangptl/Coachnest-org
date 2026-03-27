@@ -29,7 +29,7 @@ export default function PricingCard({ plan, index = 0, onSelect }: Props) {
       transition={{ delay: index * 0.1 }}
       className={cn(
         "relative flex flex-col glass p-6 transition-all hover:scale-[1.02] duration-300",
-        plan.popular && "border-purple-400/50 shadow-glow"
+        plan.popular && "border-orange-400/25 shadow-glow"
       )}
     >
       {plan.popular && (
@@ -50,15 +50,15 @@ export default function PricingCard({ plan, index = 0, onSelect }: Props) {
             {plan.price === 0 ? "Free" : `₹${plan.price.toLocaleString("en-IN")}`}
           </span>
           {plan.price > 0 && (
-            <span className="text-white/40 text-sm mb-1">/{plan.period}</span>
+            <span className="text-muted-foreground/70 text-sm mb-1">/{plan.period}</span>
           )}
         </div>
       </div>
 
       <ul className="flex-1 space-y-3 mb-6">
         {plan.features.map((f) => (
-          <li key={f} className="flex items-center gap-2.5 text-sm text-white/70">
-            <Check className="w-4 h-4 text-purple-400 flex-shrink-0" />
+          <li key={f} className="flex items-center gap-2.5 text-sm text-muted-foreground">
+            <Check className="w-4 h-4 text-orange-400 flex-shrink-0" />
             {f}
           </li>
         ))}

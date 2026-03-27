@@ -118,7 +118,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
   }, []);
 
   return (
-    <div className="rounded-xl border border-white/10 overflow-hidden bg-white/[0.02]">
+    <div className="rounded-xl border border-border overflow-hidden bg-white/[0.02]">
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-white/[0.08] bg-white/[0.03] flex-wrap">
         {/* Formatting buttons */}
@@ -153,8 +153,8 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all",
             showPreview
-              ? "bg-purple-500/20 text-purple-300 border border-purple-400/20"
-              : "text-white/35 hover:text-white/60 hover:bg-white/[0.05]"
+              ? "bg-orange-500/15 text-orange-300 border border-orange-400/20"
+              : "text-white/35 hover:text-muted-foreground hover:bg-white/[0.05]"
           )}
         >
           {showPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -235,7 +235,7 @@ function parseBlocks(raw: string) {
 
     // Divider
     if (/^---+$/.test(line.trim())) {
-      elements.push(<hr key={key++} className="border-white/10 my-2" />);
+      elements.push(<hr key={key++} className="border-border my-2" />);
       i++;
       continue;
     }
@@ -252,7 +252,7 @@ function parseBlocks(raw: string) {
     }
     if (line.startsWith("## ")) {
       elements.push(
-        <h2 key={key++} className="text-base font-semibold text-white/90 border-l-2 border-purple-500/50 pl-3 pt-2">
+        <h2 key={key++} className="text-base font-semibold text-white/90 border-l-2 border-orange-400/25 pl-3 pt-2">
           {renderInlinePreview(line.slice(3))}
         </h2>
       );
@@ -262,7 +262,7 @@ function parseBlocks(raw: string) {
     if (line.startsWith("# ")) {
       elements.push(
         <h1 key={key++} className="text-xl font-bold text-white flex items-center gap-2">
-          <Hash className="w-4 h-4 text-purple-400" />
+          <Hash className="w-4 h-4 text-orange-400" />
           {renderInlinePreview(line.slice(2))}
         </h1>
       );
@@ -275,7 +275,7 @@ function parseBlocks(raw: string) {
       elements.push(
         <blockquote
           key={key++}
-          className="border-l-2 border-amber-400/40 pl-3 text-white/60 text-sm italic"
+          className="border-l-2 border-amber-400/40 pl-3 text-muted-foreground text-sm italic"
         >
           {renderInlinePreview(line.slice(2))}
         </blockquote>
@@ -295,7 +295,7 @@ function parseBlocks(raw: string) {
         <ul key={key++} className="space-y-1.5 pl-1">
           {items.map((item, j) => (
             <li key={j} className="flex items-start gap-2 text-white/65 text-sm">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-purple-400/50 flex-shrink-0" />
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500/15 flex-shrink-0" />
               <span>{renderInlinePreview(item)}</span>
             </li>
           ))}
@@ -315,7 +315,7 @@ function parseBlocks(raw: string) {
         <ol key={key++} className="space-y-1.5 pl-1">
           {items.map((item, j) => (
             <li key={j} className="flex items-start gap-2 text-white/65 text-sm">
-              <span className="flex-shrink-0 w-4 h-4 rounded bg-purple-500/15 text-purple-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
+              <span className="flex-shrink-0 w-4 h-4 rounded bg-orange-500/15 text-orange-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
                 {j + 1}
               </span>
               <span>{renderInlinePreview(item)}</span>
@@ -349,7 +349,7 @@ function parseBlocks(raw: string) {
     }
     if (paraLines.length > 0) {
       elements.push(
-        <p key={key++} className="text-white/60 text-sm leading-relaxed">
+        <p key={key++} className="text-muted-foreground text-sm leading-relaxed">
           {renderInlinePreview(paraLines.join(" "))}
         </p>
       );
@@ -367,7 +367,7 @@ function renderInlinePreview(text: string): React.ReactNode {
       return (
         <code
           key={i}
-          className="px-1 py-0.5 rounded bg-purple-500/15 text-purple-300 text-[0.85em] font-mono border border-purple-400/10"
+          className="px-1 py-0.5 rounded bg-orange-500/15 text-orange-300 text-[0.85em] font-mono border border-orange-400/25"
         >
           {part.slice(1, -1)}
         </code>
@@ -389,7 +389,7 @@ function renderInlinePreview(text: string): React.ReactNode {
         const linkMatch = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
         if (linkMatch) {
           return (
-            <span key={`${i}-${j}-${k}`} className="text-purple-400 underline underline-offset-2">
+            <span key={`${i}-${j}-${k}`} className="text-orange-400 underline underline-offset-2">
               {linkMatch[1]}
             </span>
           );

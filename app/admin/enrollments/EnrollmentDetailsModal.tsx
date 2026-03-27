@@ -51,17 +51,17 @@ export default function EnrollmentDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-white/10">
+    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-white/10 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-border px-6 py-4 flex items-center justify-between">
           <div>
             <h2 className="text-xl font-bold text-white">{enrollment.user.name}</h2>
-            <p className="text-white/50 text-sm">{enrollment.user.email}</p>
+            <p className="text-muted-foreground text-sm">{enrollment.user.email}</p>
           </div>
           <button
             onClick={onClose}
-            className="text-white/50 hover:text-white transition-colors"
+            className="text-muted-foreground hover:text-white transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -75,16 +75,16 @@ export default function EnrollmentDetailsModal({
               <h3 className="text-white font-semibold">Course Information</h3>
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-white/70">Course:</span>
+                  <span className="text-muted-foreground">Course:</span>
                   <span className="text-white">{enrollment.course.title}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-white/70">Enrolled:</span>
+                  <span className="text-muted-foreground">Enrolled:</span>
                   <span className="text-white">{formatDate(enrollment.enrolledAt)}</span>
                 </div>
                 {enrollment.completedAt && (
                   <div className="flex justify-between items-center">
-                    <span className="text-white/70">Completed:</span>
+                    <span className="text-muted-foreground">Completed:</span>
                     <span className="text-white">{formatDate(enrollment.completedAt)}</span>
                   </div>
                 )}
@@ -98,12 +98,12 @@ export default function EnrollmentDetailsModal({
               <h3 className="text-white font-semibold">Progress</h3>
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-white/70 text-sm">Overall Progress</span>
+                  <span className="text-muted-foreground text-sm">Overall Progress</span>
                   <span className="text-white font-semibold">50%</span>
                 </div>
-                <div className="w-full bg-white/10 rounded-full h-3">
+                <div className="w-full bg-secondary rounded-full h-3">
                   <div
-                    className="h-3 bg-gradient-to-r from-violet-500 to-purple-600 rounded-full"
+                    className="h-3 bg-gradient-to-r from-orange-600 to-orange-500 rounded-full"
                     style={{ width: "50%" }}
                   />
                 </div>
@@ -117,7 +117,7 @@ export default function EnrollmentDetailsModal({
             <div className="space-y-2">
               {["Lesson 1: Introduction", "Lesson 2: Basics", "Lesson 3: Advanced"].map(
                 (lesson, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-2 bg-white/5 rounded">
+                  <div key={idx} className="flex items-center justify-between p-2 bg-secondary rounded">
                     <span className="text-white/80 text-sm">{lesson}</span>
                     <Badge variant={idx < 2 ? "green" : "gray"}>
                       {idx < 2 ? "Completed" : "Pending"}

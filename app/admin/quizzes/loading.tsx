@@ -5,8 +5,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function QuizGroupSkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl animate-pulse">
-      <div className="px-4 py-3 border-b border-white/10">
+    <div className="bg-card border border-border rounded-lg animate-pulse">
+      <div className="px-4 py-3 border-b border-border">
         <Skeleton h="h-5" w="w-48" className="mb-1" />
         <Skeleton h="h-3" w="w-20" />
       </div>
@@ -61,7 +61,7 @@ export default function QuizzesLoading() {
         {Array.from({ length: 3 }).map((_, i) => (
           <div
             key={i}
-            className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 flex items-center gap-4 animate-pulse"
+            className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
             <Skeleton className="w-12 h-12 rounded-xl" />
             <div className="space-y-2">

@@ -43,21 +43,21 @@ export default function QuizAttemptsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center" onClick={onClose}>
+    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center" onClick={onClose}>
       <div
-        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-4xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-white/10"
+        className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-4xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-border"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-white/10 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-border px-6 py-4 flex items-center justify-between z-10">
           <div>
             <h2 className="text-xl font-bold text-white">Quiz Attempts</h2>
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               {quiz.title} &middot; {quiz.courseTitle}
               {attempts.length > 0 && <span className="ml-2">· {attempts.length} attempt{attempts.length !== 1 ? "s" : ""}</span>}
             </p>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -65,10 +65,10 @@ export default function QuizAttemptsModal({
         <div className="p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-purple-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
             </div>
           ) : attempts.length === 0 ? (
-            <div className="text-center py-12 text-white/40">
+            <div className="text-center py-12 text-muted-foreground/70">
               No attempts yet for this quiz.
             </div>
           ) : (
@@ -86,16 +86,16 @@ export default function QuizAttemptsModal({
                     { label: "Pass Rate", value: `${passRate}%` },
                     { label: "Avg Time", value: avgTime > 0 ? formatDuration(avgTime) : "—" },
                   ].map((s) => (
-                    <div key={s.label} className="bg-white/5 border border-white/10 rounded-xl p-3 text-center">
+                    <div key={s.label} className="bg-secondary border border-border rounded-xl p-3 text-center">
                       <p className="text-lg font-bold text-white">{s.value}</p>
-                      <p className="text-white/40 text-xs">{s.label}</p>
+                      <p className="text-muted-foreground/70 text-xs">{s.label}</p>
                     </div>
                   ));
                 })()}
               </div>
 
               {/* Table Header */}
-              <div className="grid grid-cols-12 gap-4 px-3 py-2 text-xs text-white/40 font-semibold uppercase tracking-wider border-b border-white/10 mb-1">
+              <div className="grid grid-cols-12 gap-4 px-3 py-2 text-xs text-muted-foreground/70 font-semibold uppercase tracking-wider border-b border-border mb-1">
                 <div className="col-span-3">Student</div>
                 <div className="col-span-2">Score</div>
                 <div className="col-span-2">Result</div>
@@ -113,13 +113,13 @@ export default function QuizAttemptsModal({
                     <div key={attempt.id}>
                       <button
                         onClick={() => toggleExpand(attempt.id)}
-                        className="grid grid-cols-12 gap-4 items-center px-3 py-3 hover:bg-white/5 transition-colors rounded w-full text-left"
+                        className="grid grid-cols-12 gap-4 items-center px-3 py-3 hover:bg-secondary transition-colors rounded w-full text-left"
                       >
                         <div className="col-span-3 min-w-0">
                           <p className="text-white text-sm font-medium truncate">
                             {attempt.studentName}
                           </p>
-                          <p className="text-white/40 text-xs truncate">{attempt.studentEmail}</p>
+                          <p className="text-muted-foreground/70 text-xs truncate">{attempt.studentEmail}</p>
                         </div>
                         <div className="col-span-2 text-white font-semibold text-sm">
                           {attempt.score}%
@@ -129,11 +129,11 @@ export default function QuizAttemptsModal({
                             {attempt.passed ? "Passed" : "Failed"}
                           </Badge>
                         </div>
-                        <div className="col-span-2 text-sm text-white/70">
+                        <div className="col-span-2 text-sm text-muted-foreground">
                           {formatDuration(attempt.timeTaken)}
                         </div>
                         <div className="col-span-3 flex items-center justify-between">
-                          <span className="text-xs text-white/50">{formatDate(attempt.createdAt)}</span>
+                          <span className="text-xs text-muted-foreground">{formatDate(attempt.createdAt)}</span>
                           <ChevronDown className={cn(
                             "w-4 h-4 text-white/30 transition-transform",
                             isExpanded && "rotate-180"
@@ -145,7 +145,7 @@ export default function QuizAttemptsModal({
                       {isExpanded && questions.length > 0 && (
                         <div className="px-3 pb-4 pt-1">
                           <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl p-3 space-y-2">
-                            <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-2">
+                            <p className="text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider mb-2">
                               Answer Breakdown
                             </p>
                             {questions.map((q: any, qIdx: number) => {
@@ -169,7 +169,7 @@ export default function QuizAttemptsModal({
                                       : <XCircle className="w-3 h-3 text-red-400" />}
                                   </span>
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-white/70 text-xs">
+                                    <p className="text-muted-foreground text-xs">
                                       <span className="text-white/30">Q{qIdx + 1}.</span> {q.text}
                                     </p>
                                     {!isCorrect && (

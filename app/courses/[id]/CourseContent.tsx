@@ -90,18 +90,18 @@ export default function CourseContent({
             className="space-y-8"
           >
             {/* About this course */}
-            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-purple-400" />
+                <Target className="w-5 h-5 text-orange-400" />
                 About This Course
               </h2>
-              <div className="text-white/60 text-sm leading-relaxed whitespace-pre-line">
+              <div className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
                 {description}
               </div>
             </div>
 
             {/* What you'll learn */}
-            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6">
               <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-400" />
                 What You&apos;ll Learn
@@ -110,14 +110,14 @@ export default function CourseContent({
                 {lessons.slice(0, 8).map((lesson) => (
                   <div
                     key={lesson.id}
-                    className="flex items-start gap-2.5 text-white/60 text-sm"
+                    className="flex items-start gap-2.5 text-muted-foreground text-sm"
                   >
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0 mt-0.5" />
                     <span>{lesson.title}</span>
                   </div>
                 ))}
                 {lessons.length > 8 && (
-                  <div className="flex items-center gap-2 text-purple-400 text-sm">
+                  <div className="flex items-center gap-2 text-orange-400 text-sm">
                     <Zap className="w-4 h-4" />
                     And {lessons.length - 8} more topics...
                   </div>
@@ -126,12 +126,12 @@ export default function CourseContent({
             </div>
 
             {/* Quick curriculum preview */}
-            <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6">
+            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6">
               <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Course Content
               </h2>
-              <p className="text-white/40 text-sm mb-4">
+              <p className="text-muted-foreground/70 text-sm mb-4">
                 {lessons.length} lessons &middot;{" "}
                 {(() => {
                   const mins = lessons.reduce((s, l) => s + (l.duration ?? 0), 0);
@@ -190,7 +190,7 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
         return (
           <div
             key={lesson.id}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors"
           >
             <span className="text-white/30 text-xs w-5 text-right flex-shrink-0">
               {i + 1}
@@ -201,7 +201,7 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
               <Circle className="w-4.5 h-4.5 text-white/20 flex-shrink-0" />
             )}
             <Icon className="w-4 h-4 text-white/30 flex-shrink-0" />
-            <span className="text-white/70 text-sm flex-1 truncate">{lesson.title}</span>
+            <span className="text-muted-foreground text-sm flex-1 truncate">{lesson.title}</span>
             {lesson.isFree && (
               <span className="text-[10px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-400/20">
                 Free
@@ -220,7 +220,7 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
       {lessons.length > 5 && (
         <button
           onClick={() => setExpanded((e) => !e)}
-          className="flex items-center gap-2 text-purple-400 hover:text-purple-300 text-sm px-3 py-2 transition-colors w-full"
+          className="flex items-center gap-2 text-orange-400 hover:text-orange-300 text-sm px-3 py-2 transition-colors w-full"
         >
           <ChevronDown className={cn("w-4 h-4 transition-transform", expanded && "rotate-180")} />
           {expanded ? "Show less" : `Show all ${lessons.length} lessons`}

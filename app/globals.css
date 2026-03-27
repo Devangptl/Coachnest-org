@@ -2,52 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── shadcn CSS variable tokens (dark theme default) ───────────────────────── */
+/* ─── Claude Code theme — CSS variable tokens ────────────────────────────── */
 @layer base {
   :root {
-    --background: 246 20% 10%;
-    --foreground: 0 0% 98%;
-    --card: 246 18% 14%;
-    --card-foreground: 0 0% 98%;
-    --popover: 246 18% 12%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 263 70% 55%;
+    --background: 0 0% 5%;
+    --foreground: 0 0% 91%;
+    --card: 0 0% 8%;
+    --card-foreground: 0 0% 91%;
+    --popover: 0 0% 7%;
+    --popover-foreground: 0 0% 91%;
+    --primary: 20 70% 52%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 246 18% 18%;
-    --secondary-foreground: 0 0% 90%;
-    --muted: 246 15% 20%;
-    --muted-foreground: 246 10% 60%;
-    --accent: 263 50% 30%;
-    --accent-foreground: 0 0% 98%;
+    --secondary: 0 0% 13%;
+    --secondary-foreground: 0 0% 78%;
+    --muted: 0 0% 13%;
+    --muted-foreground: 0 0% 53%;
+    --accent: 20 30% 18%;
+    --accent-foreground: 0 0% 91%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 246 15% 22%;
-    --input: 246 15% 18%;
-    --ring: 263 70% 55%;
-    --radius: 0.75rem;
+    --border: 0 0% 16%;
+    --input: 0 0% 12%;
+    --ring: 20 70% 52%;
+    --radius: 0.5rem;
   }
-/* 063D5D primary color */
-  /* Light mode overrides (activated by removing .dark from <html>) */
+
   .light {
-    --background: 0 0% 100%;
-    --foreground: 246 20% 10%;
-    --card: 0 0% 98%;
-    --card-foreground: 246 20% 10%;
+    --background: 0 0% 98%;
+    --foreground: 0 0% 9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 246 20% 10%;
-    --primary: 263 70% 50%;
+    --popover-foreground: 0 0% 9%;
+    --primary: 20 70% 48%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 246 10% 94%;
-    --secondary-foreground: 246 20% 15%;
-    --muted: 246 10% 92%;
-    --muted-foreground: 246 10% 45%;
-    --accent: 263 30% 90%;
-    --accent-foreground: 263 70% 30%;
+    --secondary: 0 0% 93%;
+    --secondary-foreground: 0 0% 20%;
+    --muted: 0 0% 93%;
+    --muted-foreground: 0 0% 45%;
+    --accent: 20 25% 90%;
+    --accent-foreground: 20 60% 35%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
-    --border: 246 10% 88%;
-    --input: 246 10% 88%;
-    --ring: 263 70% 50%;
+    --border: 0 0% 88%;
+    --input: 0 0% 88%;
+    --ring: 20 70% 48%;
   }
 }
 
@@ -59,26 +58,26 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+    background: #0d0d0d;
     min-height: 100vh;
     font-family: var(--font-geist-sans, system-ui, sans-serif);
   }
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: rgba(255,255,255,.05); }
-  ::-webkit-scrollbar-thumb { background: rgba(139,92,246,.5); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(139,92,246,.8); }
+  ::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
+  ::-webkit-scrollbar-thumb { background: rgba(217,112,65,.35); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(217,112,65,.6); }
 }
 
 /* ─── Reusable component classes ─────────────────────────────────────────────── */
 @layer components {
-  /* Glass panel */
+  /* Surface panel — solid dark instead of glass */
   .glass {
-    @apply backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl shadow-glass;
+    @apply bg-card border border-border rounded-lg shadow-glass;
   }
   .glass-hover {
-    @apply transition-all duration-300 hover:bg-white/[.15] hover:border-white/30;
+    @apply transition-all duration-200 hover:bg-secondary hover:border-border/80;
   }
   .glass-card {
     @apply glass glass-hover cursor-pointer;
@@ -86,45 +85,45 @@
 
   /* Buttons */
   .btn-primary {
-    @apply bg-gradient-to-r from-violet-500 to-purple-600 text-white font-semibold
-           px-6 py-3 rounded-xl hover:from-violet-600 hover:to-purple-700
-           transition-all shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50
+    @apply bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold
+           px-6 py-3 rounded-lg hover:from-orange-700 hover:to-orange-600
+           transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/35
            disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center
            justify-center gap-2 text-sm;
   }
   .btn-secondary {
-    @apply bg-white/10 border border-white/20 text-white font-medium px-6 py-3
-           rounded-xl hover:bg-white/20 transition-all inline-flex items-center
+    @apply bg-secondary border border-border text-foreground font-medium px-6 py-3
+           rounded-lg hover:bg-secondary/70 transition-all inline-flex items-center
            justify-center gap-2 text-sm;
   }
   .btn-ghost {
-    @apply text-white/70 hover:text-white hover:bg-white/10 px-4 py-2 rounded-xl
-           transition-all border border-transparent hover:border-white/20
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary px-4 py-2 rounded-lg
+           transition-all border border-transparent hover:border-border
            inline-flex items-center gap-2 text-sm;
   }
   .btn-danger {
-    @apply bg-red-500/20 border border-red-400/30 text-red-300 hover:bg-red-500/30
-           px-4 py-2 rounded-xl transition-all inline-flex items-center gap-2 text-sm;
+    @apply bg-red-500/15 border border-red-400/25 text-red-400 hover:bg-red-500/25
+           px-4 py-2 rounded-lg transition-all inline-flex items-center gap-2 text-sm;
   }
 
   /* Form inputs */
   .input-glass {
-    @apply w-full bg-white/10 border border-white/20 rounded-xl px-4 py-3
-           text-white placeholder-white/30 focus:outline-none focus:border-purple-400/60
-           focus:bg-white/[.15] transition-all;
+    @apply w-full bg-input border border-border rounded-lg px-4 py-3
+           text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50
+           focus:ring-1 focus:ring-primary/30 transition-all;
   }
   .label {
-    @apply block text-white/70 text-sm font-medium mb-1.5;
+    @apply block text-muted-foreground text-sm font-medium mb-1.5;
   }
 
   /* Shimmer skeleton */
   .skeleton {
-    @apply rounded-lg bg-white/10 overflow-hidden relative;
+    @apply rounded bg-secondary overflow-hidden relative;
     background: linear-gradient(
       90deg,
-      rgba(255,255,255,.08) 25%,
-      rgba(255,255,255,.15) 50%,
-      rgba(255,255,255,.08) 75%
+      rgba(255,255,255,.04) 25%,
+      rgba(255,255,255,.08) 50%,
+      rgba(255,255,255,.04) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 2s infinite linear;
@@ -132,43 +131,44 @@
 
   /* Badge */
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium;
   }
-  .badge-purple { @apply badge bg-purple-500/20 text-purple-300 border border-purple-400/30; }
-  .badge-green  { @apply badge bg-green-500/20  text-green-300  border border-green-400/30;  }
-  .badge-amber  { @apply badge bg-amber-500/20  text-amber-300  border border-amber-400/30;  }
-  .badge-red    { @apply badge bg-red-500/20    text-red-300    border border-red-400/30;    }
-  .badge-blue   { @apply badge bg-blue-500/20   text-blue-300   border border-blue-400/30;   }
+  .badge-orange { @apply badge bg-orange-500/15 text-orange-300 border border-orange-400/25; }
+  .badge-purple { @apply badge bg-orange-500/15 text-orange-300 border border-orange-400/25; }
+  .badge-green  { @apply badge bg-green-500/15  text-green-400  border border-green-400/25;  }
+  .badge-amber  { @apply badge bg-amber-500/15  text-amber-300  border border-amber-400/25;  }
+  .badge-red    { @apply badge bg-red-500/15    text-red-400    border border-red-400/25;    }
+  .badge-blue   { @apply badge bg-blue-500/15   text-blue-400   border border-blue-400/25;   }
 
   /* Divider */
-  .divider { @apply border-t border-white/10 my-6; }
+  .divider { @apply border-t border-border my-6; }
 
   /* Section heading */
-  .section-title  { @apply text-2xl font-bold text-white; }
-  .section-subtitle { @apply text-white/50 text-sm mt-1; }
+  .section-title  { @apply text-2xl font-bold text-foreground; }
+  .section-subtitle { @apply text-muted-foreground text-sm mt-1; }
 
   /* Stats card */
   .stat-card {
     @apply glass p-6 flex items-center gap-4;
   }
   .stat-icon {
-    @apply w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0;
+    @apply w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0;
   }
 }
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
 
-/* Perspective grid */
+/* Subtle terminal grid */
 .hero-grid {
   background-image:
-    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+    linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
   background-size: 60px 60px;
   mask-image: linear-gradient(to bottom, transparent, white 10%, white 60%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 60%, transparent);
 }
 
-/* Animated gradient text shimmer */
+/* Animated gradient text shimmer — warm orange/amber */
 @keyframes gradient-shift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -178,12 +178,12 @@
 .hero-gradient-text {
   background: linear-gradient(
     90deg,
-    #a78bfa 0%,
-    #c084fc 20%,
-    #f0abfc 40%,
-    #f9a8d4 60%,
-    #c084fc 80%,
-    #a78bfa 100%
+    #f97316 0%,
+    #fb923c 20%,
+    #fbbf24 40%,
+    #fb923c 60%,
+    #f97316 80%,
+    #ea580c 100%
   );
   background-size: 200% 100%;
   animation: gradient-shift 6s ease-in-out infinite;
@@ -194,9 +194,9 @@
 
 /* Pulsing ring for CTA */
 @keyframes hero-ring-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(139,92,246,0.4); }
-  70%  { box-shadow: 0 0 0 12px rgba(139,92,246,0); }
-  100% { box-shadow: 0 0 0 0 rgba(139,92,246,0); }
+  0%   { box-shadow: 0 0 0 0 rgba(217,112,65,0.4); }
+  70%  { box-shadow: 0 0 0 12px rgba(217,112,65,0); }
+  100% { box-shadow: 0 0 0 0 rgba(217,112,65,0); }
 }
 
 .hero-cta-ring {
@@ -205,8 +205,8 @@
 
 /* Floating avatar border glow */
 @keyframes avatar-glow {
-  0%, 100% { border-color: rgba(168,85,247,0.3); }
-  50%      { border-color: rgba(168,85,247,0.6); }
+  0%, 100% { border-color: rgba(217,112,65,0.3); }
+  50%      { border-color: rgba(217,112,65,0.6); }
 }
 
 .avatar-glow {
@@ -215,8 +215,8 @@
 
 /* ─── Course page: floating glow CTA ────────────────────────────────────────── */
 @keyframes cta-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(139,92,246,0.3), 0 0 30px rgba(139,92,246,0.1); }
-  50%      { box-shadow: 0 0 25px rgba(139,92,246,0.5), 0 0 50px rgba(139,92,246,0.2); }
+  0%, 100% { box-shadow: 0 0 15px rgba(217,112,65,0.25), 0 0 30px rgba(217,112,65,0.1); }
+  50%      { box-shadow: 0 0 25px rgba(217,112,65,0.45), 0 0 50px rgba(217,112,65,0.15); }
 }
 .cta-glow { animation: cta-glow 2.5s ease-in-out infinite; }
 
@@ -231,7 +231,7 @@
   top: 0;
   bottom: 0;
   width: 2px;
-  background: linear-gradient(to bottom, rgba(139,92,246,0.3), rgba(139,92,246,0.05));
+  background: linear-gradient(to bottom, rgba(217,112,65,0.3), rgba(217,112,65,0.05));
 }
 
 /* ─── Confetti / sparkle burst ───────────────────────────────────────────────── */

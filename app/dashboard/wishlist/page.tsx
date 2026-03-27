@@ -42,7 +42,7 @@ export default async function WishlistPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">My Wishlist</h1>
-        <p className="text-white/40 text-sm mt-1">
+        <p className="text-muted-foreground/70 text-sm mt-1">
           {courses.length} saved course{courses.length !== 1 ? "s" : ""}
         </p>
       </div>
@@ -51,7 +51,7 @@ export default async function WishlistPage() {
         <GlassCard className="text-center py-20">
           <Heart className="w-16 h-16 text-white/20 mx-auto mb-4" />
           <p className="text-white font-semibold text-lg mb-2">Wishlist is empty</p>
-          <p className="text-white/40 text-sm">
+          <p className="text-muted-foreground/70 text-sm">
             Save courses you&apos;re interested in for later.
           </p>
           <a href="/courses" className="btn-primary inline-flex mt-6">

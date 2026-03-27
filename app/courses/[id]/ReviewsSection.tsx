@@ -70,7 +70,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
   return (
     <section className="space-y-6">
       {/* Header + Rating overview */}
-      <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 sm:p-8">
+      <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row gap-6 sm:gap-10">
           {/* Left: big average */}
           <div className="flex flex-col items-center justify-center sm:min-w-[140px]">
@@ -91,7 +91,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                 />
               ))}
             </div>
-            <span className="text-white/40 text-xs">{reviews.length} reviews</span>
+            <span className="text-muted-foreground/70 text-xs">{reviews.length} reviews</span>
           </div>
 
           {/* Right: rating breakdown */}
@@ -110,8 +110,8 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                     isFiltered && "bg-white/[0.03]"
                   )}
                 >
-                  <span className="text-white/50 text-xs w-7 text-right font-medium">{star}★</span>
-                  <div className="flex-1 h-2 bg-white/10 rounded-full overflow-hidden">
+                  <span className="text-muted-foreground text-xs w-7 text-right font-medium">{star}★</span>
+                  <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden">
                     <motion.div
                       className="h-full bg-amber-400 rounded-full"
                       initial={{ width: 0 }}
@@ -140,7 +140,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                   "text-xs px-2.5 py-1 rounded-full border transition-all",
                   filterRating === star
                     ? "bg-amber-500/20 border-amber-400/30 text-amber-400"
-                    : "bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/60 hover:border-white/15"
+                    : "bg-white/[0.03] border-white/[0.08] text-muted-foreground/70 hover:text-muted-foreground hover:border-border"
                 )}
               >
                 {star}★
@@ -149,7 +149,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
             {filterRating && (
               <button
                 onClick={() => setFilterRating(null)}
-                className="text-xs text-white/30 hover:text-white/50 transition-colors ml-1"
+                className="text-xs text-white/30 hover:text-muted-foreground transition-colors ml-1"
               >
                 Clear
               </button>
@@ -164,8 +164,8 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                 className={cn(
                   "text-xs px-2.5 py-1 rounded-full border transition-all capitalize",
                   sortBy === opt
-                    ? "bg-purple-500/20 border-purple-400/30 text-purple-400"
-                    : "bg-white/[0.03] border-white/[0.08] text-white/40 hover:text-white/60"
+                    ? "bg-orange-500/15 border-orange-400/25 text-orange-400"
+                    : "bg-white/[0.03] border-white/[0.08] text-muted-foreground/70 hover:text-muted-foreground"
                 )}
               >
                 {opt}
@@ -184,7 +184,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
       {loading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl p-6 animate-pulse">
+            <div key={i} className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6 animate-pulse">
               <div className="flex items-center gap-3 mb-3">
                 <div className="skeleton w-10 h-10 rounded-full" />
                 <div className="space-y-1.5">
@@ -198,9 +198,9 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
           ))}
         </div>
       ) : filteredReviews.length === 0 ? (
-        <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-2xl py-16 text-center">
+        <div className="backdrop-blur-md bg-secondary border border-border rounded-lg py-16 text-center">
           <MessageSquareText className="w-14 h-14 text-white/10 mx-auto mb-4" />
-          <p className="text-white/40 text-base mb-1">
+          <p className="text-muted-foreground/70 text-base mb-1">
             {filterRating ? `No ${filterRating}-star reviews yet` : "No reviews yet"}
           </p>
           <p className="text-white/25 text-sm">

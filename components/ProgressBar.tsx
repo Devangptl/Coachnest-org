@@ -23,18 +23,18 @@ export default function ProgressBar({
       {(label || showPercent) && (
         <div className="flex justify-between items-center mb-1.5">
           {label && (
-            <span className="text-white/60 text-sm">{label}</span>
+            <span className="text-muted-foreground text-sm">{label}</span>
           )}
           {showPercent && (
-            <span className="text-purple-400 text-sm font-semibold">
+            <span className="text-orange-400 text-sm font-semibold">
               {clamped}%
             </span>
           )}
         </div>
       )}
-      <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+      <div className="h-2 bg-secondary rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-violet-500 to-purple-500 rounded-full transition-all duration-700 ease-out"
+          className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded-full transition-all duration-700 ease-out"
           style={{ width: `${clamped}%` }}
         />
       </div>

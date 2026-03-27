@@ -69,9 +69,9 @@ export default async function DashboardPage() {
       <div className="mb-10 animate-fade-in">
         <h1 className="text-4xl font-bold text-white">
           Welcome back,{" "}
-          <span className="text-purple-400">{session.name.split(" ")[0]}</span>
+          <span className="text-orange-400">{session.name.split(" ")[0]}</span>
         </h1>
-        <p className="text-white/50 mt-2">
+        <p className="text-muted-foreground mt-2">
           Keep up the great work. You&apos;re doing amazing!
         </p>
       </div>
@@ -83,7 +83,7 @@ export default async function DashboardPage() {
             label: "Enrolled",
             value: enrollments.length,
             icon: BookOpen,
-            color: "text-violet-400",
+            color: "text-orange-400",
           },
           {
             label: "In Progress",
@@ -107,12 +107,12 @@ export default async function DashboardPage() {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
                 <Icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div>
                 <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-white/50 text-xs">{stat.label}</div>
+                <div className="text-muted-foreground text-xs">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
           <h3 className="text-white text-xl font-semibold mb-2">
             No courses yet
           </h3>
-          <p className="text-white/50 mb-6">
+          <p className="text-muted-foreground mb-6">
             Browse our catalog and enroll in your first course.
           </p>
           <Link href="/courses" className="btn-primary inline-flex items-center gap-2">

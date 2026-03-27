@@ -77,12 +77,12 @@ export default function NewCouponPage() {
       <div className="mb-8">
         <Link
           href="/admin/coupons"
-          className="text-white/50 hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors"
+          className="text-muted-foreground hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Coupons
         </Link>
         <h1 className="text-3xl font-bold text-white">Create Coupon</h1>
-        <p className="text-white/50 mt-1">Set up a new promotional code for your courses.</p>
+        <p className="text-muted-foreground mt-1">Set up a new promotional code for your courses.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
@@ -97,7 +97,7 @@ export default function NewCouponPage() {
                 onChange={(e) => setAutoGenerate(e.target.checked)}
                 className="accent-purple-500"
               />
-              <span className="text-white/70 text-sm flex items-center gap-1">
+              <span className="text-muted-foreground text-sm flex items-center gap-1">
                 <Sparkles className="w-3 h-3" /> Auto-generate code
               </span>
             </label>
@@ -130,8 +130,8 @@ export default function NewCouponPage() {
                     onClick={() => setForm({ ...form, discountType: type })}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
                       form.discountType === type
-                        ? "bg-purple-500/30 border-purple-400/40 text-white"
-                        : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                        ? "bg-orange-500/20 border-orange-400/25 text-white"
+                        : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
                     }`}
                   >
                     {type === "PERCENTAGE" ? "Percentage (%)" : "Fixed Amount (₹)"}
@@ -156,8 +156,8 @@ export default function NewCouponPage() {
             </div>
 
             {form.discount && (
-              <div className="p-3 bg-white/5 rounded-xl border border-white/10">
-                <p className="text-white/50 text-xs">Preview on ₹{samplePrice} course:</p>
+              <div className="p-3 bg-secondary rounded-xl border border-border">
+                <p className="text-muted-foreground text-xs">Preview on ₹{samplePrice} course:</p>
                 <p className="text-emerald-400 font-semibold">
                   Save ₹{previewDiscount.toFixed(0)} → Pay ₹{(samplePrice - previewDiscount).toFixed(0)}
                 </p>

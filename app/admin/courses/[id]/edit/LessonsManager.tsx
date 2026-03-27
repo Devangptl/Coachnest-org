@@ -74,7 +74,7 @@ const lessonTypeIcons = {
 };
 
 const lessonTypeColors = {
-  VIDEO: "text-purple-400",
+  VIDEO: "text-orange-400",
   TEXT: "text-blue-400",
   QUIZ: "text-amber-400",
 };
@@ -393,12 +393,12 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
               {/* Edit header */}
               <div className="flex items-center justify-between">
                 <h3 className="text-white font-semibold text-sm flex items-center gap-2">
-                  <Pencil className="w-3.5 h-3.5 text-purple-400" />
+                  <Pencil className="w-3.5 h-3.5 text-orange-400" />
                   Edit Lesson
                 </h3>
                 <button
                   onClick={cancelEditing}
-                  className="text-white/30 hover:text-white/60 transition-colors p-1"
+                  className="text-white/30 hover:text-muted-foreground transition-colors p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -426,7 +426,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
                 <button
                   type="button"
                   onClick={cancelEditing}
-                  className="btn-ghost text-sm border border-white/20"
+                  className="btn-ghost text-sm border border-border"
                 >
                   Cancel
                 </button>
@@ -448,7 +448,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
               <p className="text-white text-sm font-medium truncate">
                 {lesson.title}
               </p>
-              <p className="text-white/40 text-xs">
+              <p className="text-muted-foreground/70 text-xs">
                 {lesson.type === "VIDEO"
                   ? lesson.duration
                     ? `Video · ${lesson.duration} min`
@@ -464,7 +464,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onClick={() => startEditing(lesson)}
-                className="text-purple-400/60 hover:text-purple-400 transition-colors p-1.5 rounded-lg hover:bg-purple-500/10 flex-shrink-0"
+                className="text-orange-400/60 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
                 title="Edit lesson"
               >
                 <Pencil className="w-3.5 h-3.5" />
@@ -487,7 +487,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       })}
 
       {initial.length === 0 && !showForm && (
-        <GlassCard className="text-center py-10 text-white/40">
+        <GlassCard className="text-center py-10 text-muted-foreground/70">
           No lessons yet. Add your first lesson below.
         </GlassCard>
       )}
@@ -521,7 +521,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
             <button
               type="button"
               onClick={() => { setShowForm(false); setQuizForm(emptyQuizForm); }}
-              className="btn-ghost text-sm border border-white/20"
+              className="btn-ghost text-sm border border-border"
             >
               Cancel
             </button>
@@ -533,7 +533,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       {!showForm && !editingId && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-white/20 text-white/50 hover:text-white hover:border-white/40 hover:bg-white/5 transition-all text-sm"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border text-muted-foreground hover:text-white hover:border-white/40 hover:bg-secondary transition-all text-sm"
         >
           <PlusCircle className="w-4 h-4" /> Add Lesson
         </button>
@@ -595,8 +595,8 @@ function LessonFormFields({
                   form.type === t
                     ? t === "QUIZ"
                       ? "bg-amber-500/20 border-amber-400/40 text-white"
-                      : "bg-violet-500/20 border-violet-400/40 text-white"
-                    : "bg-white/5 border-white/10 text-white/50 hover:text-white hover:bg-white/10"
+                      : "bg-orange-500/15 border-orange-400/25 text-white"
+                    : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -657,10 +657,10 @@ function LessonFormFields({
       )}
 
       {/* Free preview toggle */}
-      <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+      <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
         <div>
           <p className="text-white text-sm font-medium">Free preview</p>
-          <p className="text-white/40 text-xs mt-0.5">Allow non-enrolled users to view this lesson</p>
+          <p className="text-muted-foreground/70 text-xs mt-0.5">Allow non-enrolled users to view this lesson</p>
         </div>
         <button
           type="button"
@@ -697,8 +697,8 @@ function QuizBuilderInline({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 text-purple-400 animate-spin" />
-        <span className="text-white/40 text-sm ml-2">Loading quiz data...</span>
+        <Loader2 className="w-5 h-5 text-orange-400 animate-spin" />
+        <span className="text-muted-foreground/70 text-sm ml-2">Loading quiz data...</span>
       </div>
     );
   }
@@ -751,7 +751,7 @@ function QuizBuilderInline({
       {/* Questions */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <p className="text-white/60 text-xs font-semibold uppercase tracking-wider">
+          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider">
             Questions ({quizForm.questions.length})
           </p>
           <button
@@ -764,12 +764,12 @@ function QuizBuilderInline({
         </div>
 
         {quizForm.questions.map((q, qIdx) => (
-          <div key={qIdx} className="bg-white/5 border border-white/10 rounded-xl p-3 space-y-3">
+          <div key={qIdx} className="bg-secondary border border-border rounded-xl p-3 space-y-3">
             <div className="flex items-start justify-between">
-              <span className="text-white/60 text-xs font-semibold">Q{qIdx + 1}</span>
+              <span className="text-muted-foreground text-xs font-semibold">Q{qIdx + 1}</span>
               <div className="flex items-center gap-2">
                 <div className="flex items-center gap-1">
-                  <label className="text-white/40 text-[10px]">Pts:</label>
+                  <label className="text-muted-foreground/70 text-[10px]">Pts:</label>
                   <input
                     type="number"
                     className="input-glass w-14 text-center text-xs py-1"
@@ -806,7 +806,7 @@ function QuizBuilderInline({
                     className={`w-5 h-5 rounded-full border flex items-center justify-center transition-all flex-shrink-0 ${
                       opt.correct
                         ? "bg-emerald-500 border-emerald-400"
-                        : "bg-white/5 border-white/20 hover:border-white/40"
+                        : "bg-secondary border-border hover:border-white/40"
                     }`}
                     title={opt.correct ? "Correct answer" : "Mark as correct"}
                   >
@@ -833,7 +833,7 @@ function QuizBuilderInline({
               <button
                 type="button"
                 onClick={() => helpers.addOption(setQuizForm, qIdx)}
-                className="text-purple-400 text-xs hover:text-purple-300 transition-colors"
+                className="text-orange-400 text-xs hover:text-orange-300 transition-colors"
               >
                 + Add option
               </button>

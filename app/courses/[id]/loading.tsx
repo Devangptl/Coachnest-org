@@ -35,15 +35,15 @@ export default function CourseDetailLoading() {
               <div className="skeleton h-5 w-32 rounded" />
             </div>
             {/* Instructor card */}
-            <div className="skeleton h-16 w-56 rounded-2xl" />
+            <div className="skeleton h-16 w-56 rounded-lg" />
           </div>
 
           {/* Right thumbnail */}
           <div className="lg:w-[440px] flex-shrink-0">
-            <div className="skeleton aspect-video w-full rounded-2xl" />
+            <div className="skeleton aspect-video w-full rounded-lg" />
             <div className="grid grid-cols-3 gap-3 mt-5">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-xl px-3 py-3 text-center space-y-1.5">
+                <div key={i} className="backdrop-blur-md bg-white/[0.04] border border-border rounded-xl px-3 py-3 text-center space-y-1.5">
                   <div className="skeleton h-4 w-4 rounded mx-auto" />
                   <div className="skeleton h-4 w-8 rounded mx-auto" />
                   <div className="skeleton h-2 w-12 rounded mx-auto" />
@@ -62,16 +62,16 @@ export default function CourseDetailLoading() {
           {/* Left: tabs + content */}
           <div className="flex-1 min-w-0 space-y-6">
             {/* Tab bar */}
-            <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-1.5 flex gap-1">
+            <div className="backdrop-blur-md bg-white/[0.04] border border-border rounded-lg p-1.5 flex gap-1">
               {["Overview", "Curriculum", "Reviews"].map((t) => (
                 <div key={t} className="skeleton h-10 flex-1 sm:flex-none sm:w-28 rounded-xl" />
               ))}
             </div>
 
             {/* About section with accent */}
-            <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl overflow-hidden">
+            <div className="backdrop-blur-md bg-white/[0.04] border border-border rounded-lg overflow-hidden">
               <div className="flex">
-                <div className="w-1 bg-gradient-to-b from-violet-500/50 to-transparent flex-shrink-0" />
+                <div className="w-1 bg-gradient-to-b from-orange-600/50 to-transparent flex-shrink-0" />
                 <div className="p-6 sm:p-8 space-y-4 flex-1">
                   <div className="flex items-center gap-3">
                     <div className="skeleton w-10 h-10 rounded-xl" />
@@ -85,7 +85,7 @@ export default function CourseDetailLoading() {
             </div>
 
             {/* What you'll learn */}
-            <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 space-y-4">
+            <div className="backdrop-blur-md bg-white/[0.04] border border-border rounded-lg p-6 sm:p-8 space-y-4">
               <div className="flex items-center gap-3">
                 <div className="skeleton w-10 h-10 rounded-xl" />
                 <div className="skeleton h-6 w-44 rounded-lg" />
@@ -101,7 +101,7 @@ export default function CourseDetailLoading() {
             </div>
 
             {/* Curriculum preview */}
-            <div className="backdrop-blur-md bg-white/[0.04] border border-white/10 rounded-2xl p-6 sm:p-8 space-y-3">
+            <div className="backdrop-blur-md bg-white/[0.04] border border-border rounded-lg p-6 sm:p-8 space-y-3">
               <div className="flex items-center gap-3 mb-2">
                 <div className="skeleton w-10 h-10 rounded-xl" />
                 <div className="skeleton h-6 w-40 rounded-lg" />
@@ -122,8 +122,8 @@ export default function CourseDetailLoading() {
 
           {/* Right: sidebar */}
           <aside className="lg:w-[360px] flex-shrink-0">
-            <div className="backdrop-blur-xl bg-white/[0.06] border border-white/10 rounded-2xl overflow-hidden">
-              <div className="p-6 border-b border-white/10 space-y-4">
+            <div className="backdrop-blur-xl bg-white/[0.06] border border-border rounded-lg overflow-hidden">
+              <div className="p-6 border-b border-border space-y-4">
                 <div className="skeleton h-9 w-24 rounded-lg" />
                 <div className="skeleton h-12 w-full rounded-xl" />
                 <div className="flex items-center justify-center gap-2">

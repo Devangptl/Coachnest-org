@@ -23,11 +23,11 @@ export default function OrderTable({ orders }: { orders: any[] }) {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-white/5 transition-colors"
+            className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-secondary transition-colors"
           >
             {/* Order ID */}
             <div className="col-span-2 min-w-0">
-              <code className="text-purple-400 text-xs font-mono">
+              <code className="text-orange-400 text-xs font-mono">
                 {order.id.slice(0, 12)}...
               </code>
             </div>
@@ -35,7 +35,7 @@ export default function OrderTable({ orders }: { orders: any[] }) {
             {/* Student */}
             <div className="col-span-2 min-w-0">
               <p className="text-white text-sm font-medium truncate">{order.studentName}</p>
-              <p className="text-white/40 text-xs truncate">{order.studentEmail}</p>
+              <p className="text-muted-foreground/70 text-xs truncate">{order.studentEmail}</p>
             </div>
 
             {/* Course */}
@@ -61,7 +61,7 @@ export default function OrderTable({ orders }: { orders: any[] }) {
             </div>
 
             {/* Date */}
-            <div className="col-span-1 text-xs text-white/50">
+            <div className="col-span-1 text-xs text-muted-foreground">
               {formatDate(order.createdAt)}
             </div>
 

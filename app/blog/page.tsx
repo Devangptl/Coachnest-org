@@ -57,14 +57,14 @@ export default async function BlogPage() {
     <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 bg-purple-500/10 border border-purple-400/20 rounded-full px-4 py-1.5 mb-4">
-          <FileText className="w-4 h-4 text-purple-400" />
-          <span className="text-purple-300 text-sm font-medium">Our Blog</span>
+        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/20 rounded-full px-4 py-1.5 mb-4">
+          <FileText className="w-4 h-4 text-orange-400" />
+          <span className="text-orange-300 text-sm font-medium">Our Blog</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
           Insights & Tutorials
         </h1>
-        <p className="text-white/50 text-lg max-w-2xl mx-auto">
+        <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
           Learn from our latest articles, tutorials, and industry insights.
         </p>
       </div>
@@ -75,7 +75,7 @@ export default async function BlogPage() {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs text-white/50 bg-white/[0.06] border border-white/10 px-3 py-1.5 rounded-full hover:bg-purple-500/15 hover:text-purple-300 hover:border-purple-400/20 transition-colors cursor-default"
+              className="text-xs text-muted-foreground bg-white/[0.06] border border-border px-3 py-1.5 rounded-full hover:bg-orange-500/15 hover:text-orange-300 hover:border-orange-400/20 transition-colors cursor-default"
             >
               {tag}
             </span>
@@ -87,7 +87,7 @@ export default async function BlogPage() {
       {blogs.length === 0 ? (
         <div className="text-center py-20">
           <FileText className="w-16 h-16 text-white/10 mx-auto mb-4" />
-          <p className="text-white/40 text-lg">No posts yet. Check back soon!</p>
+          <p className="text-muted-foreground/70 text-lg">No posts yet. Check back soon!</p>
         </div>
       ) : (
         <BlogGrid initialBlogs={blogs} initialCursor={nextCursor} />

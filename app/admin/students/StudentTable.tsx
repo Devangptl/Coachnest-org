@@ -29,7 +29,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
   return (
     <>
       {/* Header */}
-      <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+      <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
         <div className="col-span-4">Student</div>
         <div className="col-span-1 text-center">Courses</div>
         <div className="col-span-1 text-center">Certs</div>
@@ -42,11 +42,11 @@ export default function StudentTable({ students }: { students: Student[] }) {
         {students.map((student) => (
           <div
             key={student.id}
-            className="grid grid-cols-12 gap-4 px-4 py-3.5 items-center hover:bg-white/5 transition-colors"
+            className="grid grid-cols-12 gap-4 px-4 py-3.5 items-center hover:bg-secondary transition-colors"
           >
             {/* Avatar + name */}
             <div className="col-span-4 flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-violet-500/40 to-purple-600/40 border border-white/10 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-600/40 to-orange-500/40 border border-border flex items-center justify-center flex-shrink-0">
                 {student.avatar ? (
                   <img
                     src={student.avatar}
@@ -54,7 +54,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
                     className="w-9 h-9 rounded-full object-cover"
                   />
                 ) : (
-                  <span className="text-white/70 text-xs font-bold">
+                  <span className="text-muted-foreground text-xs font-bold">
                     {student.name.charAt(0).toUpperCase()}
                   </span>
                 )}
@@ -63,7 +63,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
                 <p className="text-white text-sm font-medium truncate">
                   {student.name}
                 </p>
-                <p className="text-white/40 text-xs truncate">{student.email}</p>
+                <p className="text-muted-foreground/70 text-xs truncate">{student.email}</p>
               </div>
             </div>
 
@@ -90,7 +90,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
 
             {/* Joined date */}
             <div className="col-span-2 text-center">
-              <span className="text-white/40 text-xs">
+              <span className="text-muted-foreground/70 text-xs">
                 {formatDate(student.createdAt)}
               </span>
             </div>

@@ -37,7 +37,7 @@ export default async function CoursesPage() {
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-4xl font-bold text-white mb-2">All Courses</h1>
-        <p className="text-white/50 mb-6">
+        <p className="text-muted-foreground mb-6">
           {courses.length} course{courses.length !== 1 ? "s" : ""} available
         </p>
         <SearchBar className="max-w-md" placeholder="Search courses..." />
@@ -48,7 +48,7 @@ export default async function CoursesPage() {
         <div className="flex flex-wrap gap-2 mb-8">
           {categories.map((cat) => (
             <Link key={cat.id} href={`/search?category=${cat.slug}`}>
-              <Badge variant="outline" className="cursor-pointer hover:bg-white/10 transition-colors">
+              <Badge variant="outline" className="cursor-pointer hover:bg-secondary transition-colors">
                 {cat.icon && <span>{cat.icon}</span>} {cat.name} ({cat._count.courses})
               </Badge>
             </Link>
@@ -87,7 +87,7 @@ export default async function CoursesPage() {
         <GlassCard className="text-center py-20">
           <BookOpen className="w-16 h-16 text-white/20 mx-auto mb-4" />
           <h3 className="text-white text-xl font-semibold mb-2">No courses yet</h3>
-          <p className="text-white/50">Check back soon — new courses are added regularly.</p>
+          <p className="text-muted-foreground">Check back soon — new courses are added regularly.</p>
         </GlassCard>
       )}
     </div>

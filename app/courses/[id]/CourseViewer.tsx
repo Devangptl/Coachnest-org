@@ -55,7 +55,7 @@ interface Props {
 }
 
 const typeConfig = {
-  VIDEO: { icon: PlayCircle, color: "text-purple-400", bg: "bg-purple-500/15", border: "border-purple-400/20", label: "Video Lesson" },
+  VIDEO: { icon: PlayCircle, color: "text-orange-400", bg: "bg-orange-500/15", border: "border-orange-400/20", label: "Video Lesson" },
   TEXT:  { icon: FileText, color: "text-blue-400", bg: "bg-blue-500/15", border: "border-blue-400/20", label: "Text Lesson" },
   QUIZ:  { icon: HelpCircle, color: "text-amber-400", bg: "bg-amber-500/15", border: "border-amber-400/20", label: "Quiz" },
 };
@@ -155,18 +155,18 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
   const sidebarContent = (
     <>
       {/* Sidebar header */}
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-white/10 flex-shrink-0">
+      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2">
-          <LayoutList className="w-4 h-4 text-purple-400" />
+          <LayoutList className="w-4 h-4 text-orange-400" />
           <span className="text-white font-semibold text-sm">Lessons</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/30 bg-white/5 px-2.5 py-1 rounded-full">
+          <span className="text-xs text-white/30 bg-secondary px-2.5 py-1 rounded-full">
             {completedCount}/{lessons.length}
           </span>
           <button
             onClick={() => setShowSidebar(false)}
-            className="hidden lg:flex p-1.5 hover:bg-white/10 rounded-md text-white/40 hover:text-white transition-colors"
+            className="hidden lg:flex p-1.5 hover:bg-secondary rounded-md text-muted-foreground/70 hover:text-white transition-colors"
             title="Close sidebar"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -175,9 +175,9 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
       </div>
 
       {/* Mini progress bar */}
-      <div className="h-1 bg-white/5 flex-shrink-0">
+      <div className="h-1 bg-secondary flex-shrink-0">
         <div
-          className="h-full bg-gradient-to-r from-violet-500 to-purple-500 transition-all duration-500"
+          className="h-full bg-gradient-to-r from-orange-600 to-orange-500 transition-all duration-500"
           style={{ width: `${lessons.length > 0 ? (completedCount / lessons.length) * 100 : 0}%` }}
         />
       </div>
@@ -204,7 +204,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 "flex items-center gap-3 w-full px-5 py-3.5 text-left transition-all",
                 isLocked && "opacity-50 cursor-not-allowed",
                 isActive
-                  ? "bg-purple-500/10 border-l-[3px] border-l-purple-500"
+                  ? "bg-orange-500/10 border-l-[3px] border-l-orange-500"
                   : "border-l-[3px] border-l-transparent hover:bg-white/[0.04]",
                 i !== lessons.length - 1 && "border-b border-b-white/[0.04]"
               )}
@@ -217,7 +217,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   : isCompleted
                   ? "bg-emerald-500/20"
                   : isActive
-                  ? "bg-purple-500/20 border border-purple-400/30"
+                  ? "bg-orange-500/15 border border-orange-400/25"
                   : "bg-white/[0.04]"
               )}>
                 {isLocked ? (
@@ -225,7 +225,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 ) : isCompleted ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : isActive ? (
-                  <div className="w-2.5 h-2.5 rounded-full bg-purple-400 animate-pulse" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse" />
                 ) : (
                   <span className="text-xs text-white/30 font-medium">{i + 1}</span>
                 )}
@@ -235,7 +235,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               <div className="flex-1 min-w-0">
                 <p className={cn(
                   "text-xs font-medium leading-tight mb-0.5 truncate",
-                  isActive ? "text-white" : isCompleted ? "text-emerald-300/80" : "text-white/70"
+                  isActive ? "text-white" : isCompleted ? "text-emerald-300/80" : "text-muted-foreground"
                 )}>
                   {lesson.title}
                 </p>
@@ -267,7 +267,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
   );
 
   return (
-    <div ref={contentRef} className="flex flex-col lg:flex-row gap-0 lg:gap-0 rounded-2xl overflow-hidden border border-white/10 backdrop-blur-md bg-white/[0.03]">
+    <div ref={contentRef} className="flex flex-col lg:flex-row gap-0 lg:gap-0 rounded-lg overflow-hidden border border-border backdrop-blur-md bg-white/[0.03]">
       {/* ── Left: Lesson sidebar ── */}
       <AnimatePresence initial={false} mode="wait">
         {showSidebar && (
@@ -277,7 +277,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             animate={{ opacity: 1, width: 300 }}
             exit={{ opacity: 0, width: 0 }}
             transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="hidden lg:flex flex-col flex-shrink-0 border-r border-white/10 bg-white/[0.02]"
+            className="hidden lg:flex flex-col flex-shrink-0 border-r border-border bg-white/[0.02]"
           >
             <div className="w-[300px] flex flex-col h-full max-h-[600px]">
               {sidebarContent}
@@ -294,7 +294,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="lg:hidden flex flex-col border-b border-white/10 bg-white/[0.02]"
+            className="lg:hidden flex flex-col border-b border-border bg-white/[0.02]"
           >
             <div className="w-full flex flex-col max-h-[500px]">
               {sidebarContent}
@@ -306,16 +306,16 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
       {/* ── Mobile toggle ── */}
       <button
         onClick={() => setShowSidebar(!showSidebar)}
-        className="lg:hidden flex items-center justify-between gap-3 px-5 py-3 bg-white/[0.03] border-b border-white/10"
+        className="lg:hidden flex items-center justify-between gap-3 px-5 py-3 bg-white/[0.03] border-b border-border"
       >
         <div className="flex items-center gap-2 text-sm">
-          <LayoutList className="w-4 h-4 text-purple-400" />
-          <span className="text-white/50 truncate">
+          <LayoutList className="w-4 h-4 text-orange-400" />
+          <span className="text-muted-foreground truncate">
             {activeIndex + 1}. {activeLesson?.title ?? "Select lesson"}
           </span>
         </div>
         <ChevronDown className={cn(
-          "w-4 h-4 text-white/40 transition-transform",
+          "w-4 h-4 text-muted-foreground/70 transition-transform",
           showSidebar && "rotate-180"
         )} />
       </button>
@@ -327,19 +327,19 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(true)}
-                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all z-10"
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all z-10"
                 title="Show Lessons"
               >
                 <LayoutList className="w-5 h-5" />
               </button>
             )}
-            <div className="w-24 h-24 rounded-3xl bg-white/5 border border-white/10 flex items-center justify-center mb-6">
+            <div className="w-24 h-24 rounded-xl bg-secondary border border-border flex items-center justify-center mb-6">
               <Lock className="w-12 h-12 text-white/15" />
             </div>
             <h3 className="text-white text-2xl font-bold mb-3">
               Enroll to Access Content
             </h3>
-            <p className="text-white/40 text-base max-w-md leading-relaxed">
+            <p className="text-muted-foreground/70 text-base max-w-md leading-relaxed">
               Get full access to all {lessons.length} lessons, quizzes, and downloadable resources.
             </p>
           </div>
@@ -353,12 +353,12 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               transition={{ duration: 0.2 }}
             >
               {/* Lesson header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 border-b border-white/10">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 border-b border-border">
                 <div className="flex items-center gap-3.5 min-w-0">
                   {!showSidebar && (
                     <button
                       onClick={() => setShowSidebar(true)}
-                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all flex-shrink-0 z-10"
+                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all flex-shrink-0 z-10"
                       title="Show Lessons"
                     >
                       <LayoutList className="w-5 h-5" />
@@ -406,7 +406,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => setIsFullscreen(true)}
-                      className="flex items-center justify-center w-9 h-9 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                      className="flex items-center justify-center w-9 h-9 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all"
                       title="Full Screen (F)"
                     >
                       <Maximize2 className="w-4 h-4" />
@@ -418,7 +418,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                         "flex items-center gap-2 text-xs px-4 py-2 rounded-xl border transition-all font-semibold",
                         completed[activeLesson.id]
                           ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                          : "bg-white/5 border-white/15 text-white/50 hover:text-white hover:bg-white/10"
+                          : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
                       )}
                     >
                       {completed[activeLesson.id] ? (
@@ -448,7 +448,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     }}
                   />
                 ) : activeLesson.type === "VIDEO" && activeLesson.content ? (
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-black/60 border border-white/5 shadow-xl shadow-black/30">
+                  <div className="relative aspect-video rounded-xl overflow-hidden bg-card border border-white/5 shadow-xl shadow-black/30">
                     <iframe
                       src={activeLesson.content}
                       title={activeLesson.title}
@@ -475,13 +475,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 )}
 
                 {/* Navigation */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-white/10">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-border">
                   {prev ? (
                     <button
                       onClick={() => selectLesson(prev.id)}
-                      className="flex items-center gap-3 text-white/50 hover:text-white transition-colors group px-4 py-3 rounded-xl hover:bg-white/5 border border-transparent hover:border-white/10"
+                      className="flex items-center gap-3 text-muted-foreground hover:text-white transition-colors group px-4 py-3 rounded-xl hover:bg-secondary border border-transparent hover:border-border"
                     >
-                      <div className="w-9 h-9 rounded-lg bg-white/5 flex items-center justify-center flex-shrink-0 group-hover:bg-white/10 transition-colors">
+                      <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-secondary transition-colors">
                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                       </div>
                       <div className="text-left">
@@ -495,13 +495,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {next ? (
                     <button
                       onClick={() => selectLesson(next.id)}
-                      className="flex items-center gap-3 group bg-gradient-to-r from-violet-500/15 to-purple-500/15 border border-purple-400/20 text-purple-300 hover:text-white px-4 py-3 rounded-xl transition-all hover:border-purple-400/40 hover:from-violet-500/25 hover:to-purple-500/25"
+                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-orange-300 hover:text-white px-4 py-3 rounded-xl transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15"
                     >
                       <div className="text-right">
                         <p className="text-[10px] text-white/25 mb-0.5 font-medium uppercase tracking-wide">Next</p>
                         <p className="text-sm font-semibold truncate max-w-[180px]">{next.title}</p>
                       </div>
-                      <div className="w-9 h-9 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0 group-hover:bg-purple-500/30 transition-colors">
+                      <div className="w-9 h-9 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/20 transition-colors">
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </button>
@@ -519,7 +519,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     initial={{ opacity: 0, y: 12, scale: 0.98 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     transition={{ duration: 0.4, delay: 0.2 }}
-                    className="mt-6 p-5 rounded-2xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
+                    className="mt-6 p-5 rounded-lg bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
                   >
                     {/* Shimmer */}
                     <motion.div
@@ -533,7 +533,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="text-white font-bold text-sm">🎉 Course Completed!</h3>
-                        <p className="text-white/40 text-xs mt-0.5">You&apos;ve finished all lessons. Claim your certificate now!</p>
+                        <p className="text-muted-foreground/70 text-xs mt-0.5">You&apos;ve finished all lessons. Claim your certificate now!</p>
                       </div>
                       <button
                         onClick={downloadCertificate}
@@ -563,14 +563,14 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(true)}
-                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all z-10"
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all z-10"
                 title="Show Lessons"
               >
                 <LayoutList className="w-5 h-5" />
               </button>
             )}
             <BookOpen className="w-14 h-14 text-white/10 mx-auto mb-4" />
-            <p className="text-white/40 text-lg">No lessons in this course yet.</p>
+            <p className="text-muted-foreground/70 text-lg">No lessons in this course yet.</p>
           </div>
         )}
       </div>
@@ -587,7 +587,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               className="fixed inset-0 z-[9999] flex flex-col bg-[#0a0a0f]"
             >
               {/* ── Top bar ── */}
-              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-white/10 bg-white/[0.02] flex-shrink-0">
+              <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border bg-white/[0.02] flex-shrink-0">
                 <div className="flex items-center gap-4 min-w-0">
                   {(() => {
                     const config = typeConfig[activeLesson.type] ?? typeConfig.TEXT;
@@ -628,7 +628,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       "flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all font-semibold",
                       completed[activeLesson.id]
                         ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                        : "bg-white/5 border-white/15 text-white/50 hover:text-white hover:bg-white/10"
+                        : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
                     )}
                   >
                     {completed[activeLesson.id] ? (
@@ -644,7 +644,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {/* Exit fullscreen */}
                   <button
                     onClick={() => setIsFullscreen(false)}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl border border-white/15 bg-white/5 text-white/50 hover:text-white hover:bg-white/10 transition-all"
+                    className="flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all"
                     title="Exit Full Screen (Esc)"
                   >
                     <Minimize2 className="w-4.5 h-4.5" />
@@ -663,7 +663,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       }}
                     />
                   ) : activeLesson.type === "VIDEO" && activeLesson.content ? (
-                    <div className="relative aspect-video rounded-2xl overflow-hidden bg-black/60 border border-white/5 shadow-2xl shadow-black/40">
+                    <div className="relative aspect-video rounded-lg overflow-hidden bg-card border border-white/5 shadow-2xl shadow-black/40">
                       <iframe
                         src={activeLesson.content}
                         title={activeLesson.title}
@@ -684,11 +684,11 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               </div>
 
               {/* ── Bottom navigation bar ── */}
-              <div className="flex items-center justify-between gap-4 px-6 py-3 border-t border-white/10 bg-white/[0.02] flex-shrink-0">
+              <div className="flex items-center justify-between gap-4 px-6 py-3 border-t border-border bg-white/[0.02] flex-shrink-0">
                 {prev ? (
                   <button
                     onClick={() => selectLesson(prev.id)}
-                    className="flex items-center gap-2 text-white/50 hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-white/5 text-sm"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-secondary text-sm"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span className="hidden sm:inline truncate max-w-[200px]">{prev.title}</span>
@@ -703,7 +703,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 {next ? (
                   <button
                     onClick={() => selectLesson(next.id)}
-                    className="flex items-center gap-2 text-purple-300 hover:text-white bg-purple-500/15 border border-purple-400/20 px-3 py-2 rounded-xl hover:bg-purple-500/25 transition-all text-sm"
+                    className="flex items-center gap-2 text-orange-300 hover:text-white bg-orange-500/15 border border-orange-400/20 px-3 py-2 rounded-xl hover:bg-orange-500/15 transition-all text-sm"
                   >
                     <span className="hidden sm:inline truncate max-w-[200px]">{next.title}</span>
                     <span className="sm:hidden">Next</span>
@@ -837,7 +837,7 @@ function renderInline(text: string) {
       return (
         <code
           key={i}
-          className="px-1.5 py-0.5 rounded-md bg-purple-500/15 text-purple-300 text-[0.85em] font-mono border border-purple-400/10"
+          className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-orange-300 text-[0.85em] font-mono border border-orange-400/25"
         >
           {part.slice(1, -1)}
         </code>
@@ -869,11 +869,11 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
       <div className="flex items-center justify-between px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
           <Code2 className="w-3.5 h-3.5 text-emerald-400" />
-          <span className="text-[11px] font-medium text-white/40 uppercase tracking-wider">{lang}</span>
+          <span className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">{lang}</span>
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/60 transition-colors px-2 py-1 rounded-md hover:bg-white/[0.05]"
+          className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-muted-foreground transition-colors px-2 py-1 rounded-md hover:bg-white/[0.05]"
         >
           {copied ? (
             <>
@@ -926,7 +926,7 @@ function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: ()
   if (loading) {
     return (
       <div className="flex items-center justify-center py-20">
-        <div className="w-8 h-8 border-2 border-purple-400/30 border-t-purple-400 rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-orange-400/25 border-t-orange-400 rounded-full animate-spin" />
       </div>
     );
   }
@@ -957,7 +957,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
     <div className="rounded-xl border border-white/[0.06] overflow-hidden">
       {/* Article header */}
       <div className="bg-white/[0.02] border-b border-white/[0.06] px-6 sm:px-8 py-3 flex items-center gap-2">
-        <Type className="w-3.5 h-3.5 text-purple-400" />
+        <Type className="w-3.5 h-3.5 text-orange-400" />
         <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Lesson Content</span>
       </div>
 
@@ -970,7 +970,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                 case "h1":
                   return (
                     <h1 key={i} data-block-index={i} className="text-2xl font-bold text-white flex items-center gap-3 pt-2 pb-1">
-                      <Hash className="w-5 h-5 text-purple-400 flex-shrink-0" />
+                      <Hash className="w-5 h-5 text-orange-400 flex-shrink-0" />
                       {block.text}
                     </h1>
                   );
@@ -979,7 +979,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                     <h2
                       key={i}
                       data-block-index={i}
-                      className="text-lg font-semibold text-white/90 border-l-2 border-purple-500/50 pl-3 pt-3"
+                      className="text-lg font-semibold text-white/90 border-l-2 border-orange-400/25 pl-3 pt-3"
                     >
                       {block.text}
                     </h2>
@@ -996,8 +996,8 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                   return (
                     <ul key={i} data-block-index={i} className="space-y-2 pl-1">
                       {block.items.map((item, j) => (
-                        <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
-                          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-purple-400/60 flex-shrink-0" />
+                        <li key={j} className="flex items-start gap-3 text-muted-foreground text-sm leading-relaxed">
+                          <span className="mt-2 w-1.5 h-1.5 rounded-full bg-orange-500/15 flex-shrink-0" />
                           <span>{renderInline(item)}</span>
                         </li>
                       ))}
@@ -1007,8 +1007,8 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                   return (
                     <ol key={i} data-block-index={i} className="space-y-2 pl-1">
                       {block.items.map((item, j) => (
-                        <li key={j} className="flex items-start gap-3 text-white/70 text-sm leading-relaxed">
-                          <span className="flex-shrink-0 w-5 h-5 rounded-md bg-purple-500/15 text-purple-300 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                        <li key={j} className="flex items-start gap-3 text-muted-foreground text-sm leading-relaxed">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-md bg-orange-500/15 text-orange-300 text-[11px] font-bold flex items-center justify-center mt-0.5">
                             {j + 1}
                           </span>
                           <span>{renderInline(item)}</span>

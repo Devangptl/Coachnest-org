@@ -109,8 +109,8 @@ export default function BlogGrid({ initialBlogs, initialCursor }: Props) {
         if (el) {
           el.scrollIntoView({ block: "center", behavior: "instant" });
           // Brief highlight effect
-          el.classList.add("ring-2", "ring-purple-400/50");
-          setTimeout(() => el.classList.remove("ring-2", "ring-purple-400/50"), 1500);
+          el.classList.add("ring-2", "ring-orange-400/30");
+          setTimeout(() => el.classList.remove("ring-2", "ring-orange-400/30"), 1500);
         }
         sessionStorage.removeItem(LAST_SLUG_KEY);
       });
@@ -152,7 +152,7 @@ export default function BlogGrid({ initialBlogs, initialCursor }: Props) {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3, delay: i < 9 ? i * 0.05 : 0 }}
             onClick={() => handleBlogClick(blog.slug)}
-            className="rounded-2xl transition-all duration-300 h-full"
+            className="rounded-lg transition-all duration-300 h-full"
           >
             <BlogCard
               slug={blog.slug}
@@ -172,7 +172,7 @@ export default function BlogGrid({ initialBlogs, initialCursor }: Props) {
       {cursor && (
         <div ref={sentinelRef} className="flex justify-center py-12">
           {loading && (
-            <div className="flex items-center gap-2 text-white/40 text-sm">
+            <div className="flex items-center gap-2 text-muted-foreground/70 text-sm">
               <Loader2 className="w-4 h-4 animate-spin" />
               Loading more posts...
             </div>

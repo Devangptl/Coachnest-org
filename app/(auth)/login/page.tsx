@@ -51,15 +51,15 @@ export default function LoginPage() {
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/40">
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-600/15">
             <BookOpen className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Welcome back</h1>
-          <p className="text-white/50 mt-1">Sign in to continue learning</p>
+          <p className="text-muted-foreground mt-1">Sign in to continue learning</p>
         </div>
 
         {/* Glass form card */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-card border border-border rounded-lg p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Error banner */}
             {error && (
@@ -98,7 +98,7 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                 >
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -118,17 +118,17 @@ export default function LoginPage() {
           </form>
 
           {/* Demo credentials hint */}
-          <div className="mt-6 p-4 bg-white/5 border border-white/10 rounded-xl text-xs text-white/40 space-y-1">
-            <p className="font-semibold text-white/60 mb-2">Demo accounts</p>
+          <div className="mt-6 p-4 bg-secondary border border-border rounded-xl text-xs text-muted-foreground/70 space-y-1">
+            <p className="font-semibold text-muted-foreground mb-2">Demo accounts</p>
             <p>Admin: admin@learnhub.dev / admin123</p>
             <p>Student: student@learnhub.dev / student123</p>
           </div>
         </div>
 
         {/* Sign up link */}
-        <p className="text-center text-white/50 text-sm mt-6">
+        <p className="text-center text-muted-foreground text-sm mt-6">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-purple-400 hover:text-purple-300 transition-colors">
+          <Link href="/signup" className="text-orange-400 hover:text-orange-300 transition-colors">
             Sign up free
           </Link>
         </p>

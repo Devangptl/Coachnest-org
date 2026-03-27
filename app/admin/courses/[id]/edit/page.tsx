@@ -27,13 +27,13 @@ export default async function EditCoursePage({ params }: Props) {
     <div className="max-w-3xl">
       <Link
         href="/admin/courses"
-        className="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Courses
       </Link>
 
       <h1 className="text-3xl font-bold text-white mb-2">Edit Course</h1>
-      <p className="text-white/40 text-sm mb-8">{course.title}</p>
+      <p className="text-muted-foreground/70 text-sm mb-8">{course.title}</p>
 
       {/* Course details form */}
       <EditCourseForm course={course} />

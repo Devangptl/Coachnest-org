@@ -43,11 +43,11 @@ export default function CertificateCard({ cert }: Props) {
   return (
     <div className="glass p-5 flex gap-4 items-start hover:bg-white/[.12] transition-colors">
       {/* Thumbnail */}
-      <div className="w-16 h-16 rounded-xl overflow-hidden bg-purple-500/20 flex-shrink-0 relative">
+      <div className="w-16 h-16 rounded-xl overflow-hidden bg-orange-500/15 flex-shrink-0 relative">
         {cert.course.thumbnail ? (
           <Image src={cert.course.thumbnail} alt={cert.course.title} fill className="object-cover" />
         ) : (
-          <Award className="w-8 h-8 text-purple-400 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2" />
+          <Award className="w-8 h-8 text-orange-400 absolute inset-1/2 -translate-x-1/2 -translate-y-1/2" />
         )}
       </div>
 
@@ -55,7 +55,7 @@ export default function CertificateCard({ cert }: Props) {
         <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">
           {cert.course.title}
         </h3>
-        <p className="text-white/40 text-xs mt-1">
+        <p className="text-muted-foreground/70 text-xs mt-1">
           Issued {format(new Date(cert.issuedAt), "d MMM yyyy")}
         </p>
         <span className="badge-green mt-2">Completed</span>

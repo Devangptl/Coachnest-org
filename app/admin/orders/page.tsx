@@ -28,7 +28,7 @@ export default async function AdminOrdersPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Orders & Revenue</h1>
-        <p className="text-white/50 mt-1">
+        <p className="text-muted-foreground mt-1">
           Monitor payments, track revenue, and manage refunds.
         </p>
       </div>
@@ -52,7 +52,7 @@ export default async function AdminOrdersPage() {
             label: "Paid Orders",
             value: stats.paidOrders,
             icon: ShoppingCart,
-            color: "text-violet-400",
+            color: "text-orange-400",
           },
           {
             label: "Refund Rate",
@@ -64,12 +64,12 @@ export default async function AdminOrdersPage() {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
                 <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-white/50 text-sm">{stat.label}</div>
+                <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -83,13 +83,13 @@ export default async function AdminOrdersPage() {
 
       {/* Table */}
       <GlassCard padding="sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h2 className="text-white font-semibold">All Orders</h2>
-          <span className="text-white/40 text-sm">{orders.length} total</span>
+          <span className="text-muted-foreground/70 text-sm">{orders.length} total</span>
         </div>
 
         {/* Header Row */}
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs text-white/40 font-semibold uppercase tracking-wider border-b border-white/5">
+        <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs text-muted-foreground/70 font-semibold uppercase tracking-wider border-b border-white/5">
           <div className="col-span-2">Order ID</div>
           <div className="col-span-2">Student</div>
           <div className="col-span-2">Course</div>
@@ -102,7 +102,7 @@ export default async function AdminOrdersPage() {
         <OrderTable orders={orders} />
 
         {orders.length === 0 && (
-          <div className="text-center py-12 text-white/40">
+          <div className="text-center py-12 text-muted-foreground/70">
             <p className="mb-4">No orders found.</p>
           </div>
         )}

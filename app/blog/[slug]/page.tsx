@@ -48,14 +48,14 @@ export default async function BlogDetailPage({ params }: Props) {
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
       <Link
         href="/blog"
-        className="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm mb-8 transition-colors"
+        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white text-sm mb-8 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Blog
       </Link>
 
       {/* Cover image */}
       {blog.thumbnail && (
-        <div className="relative h-64 sm:h-80 rounded-2xl overflow-hidden mb-8 border border-white/10">
+        <div className="relative h-64 sm:h-80 rounded-lg overflow-hidden mb-8 border border-border">
           <img
             src={blog.thumbnail}
             alt={blog.title}
@@ -71,7 +71,7 @@ export default async function BlogDetailPage({ params }: Props) {
           {tagList.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 text-xs font-medium text-purple-300 bg-purple-500/15 px-2.5 py-1 rounded-full border border-purple-400/20"
+              className="inline-flex items-center gap-1 text-xs font-medium text-orange-300 bg-orange-500/15 px-2.5 py-1 rounded-full border border-orange-400/20"
             >
               <Tag className="w-3 h-3" />
               {tag}
@@ -86,7 +86,7 @@ export default async function BlogDetailPage({ params }: Props) {
       </h1>
 
       {/* Meta */}
-      <div className="flex items-center gap-4 text-white/40 text-sm mb-8 pb-8 border-b border-white/10">
+      <div className="flex items-center gap-4 text-muted-foreground/70 text-sm mb-8 pb-8 border-b border-border">
         <span className="flex items-center gap-1.5">
           <User className="w-4 h-4" />
           {blog.author.name}
@@ -105,7 +105,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
       {/* Excerpt */}
       {blog.excerpt && (
-        <p className="text-white/60 text-lg leading-relaxed mb-8 italic border-l-4 border-purple-500/40 pl-4">
+        <p className="text-muted-foreground text-lg leading-relaxed mb-8 italic border-l-4 border-orange-400/25 pl-4">
           {blog.excerpt}
         </p>
       )}
@@ -113,31 +113,31 @@ export default async function BlogDetailPage({ params }: Props) {
       {/* Content */}
       <article className="prose prose-invert prose-purple max-w-none
         prose-headings:text-white prose-headings:font-bold
-        prose-p:text-white/70 prose-p:leading-relaxed
-        prose-a:text-purple-400 prose-a:no-underline hover:prose-a:text-purple-300
+        prose-p:text-muted-foreground prose-p:leading-relaxed
+        prose-a:text-orange-400 prose-a:no-underline hover:prose-a:text-orange-300
         prose-strong:text-white
-        prose-code:text-purple-300 prose-code:bg-white/10 prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-        prose-pre:bg-white/[0.06] prose-pre:border prose-pre:border-white/10 prose-pre:rounded-xl
-        prose-blockquote:border-purple-500/40 prose-blockquote:text-white/50
-        prose-li:text-white/70
-        prose-img:rounded-xl prose-img:border prose-img:border-white/10
+        prose-code:text-orange-300 prose-code:bg-secondary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
+        prose-pre:bg-white/[0.06] prose-pre:border prose-pre:border-border prose-pre:rounded-xl
+        prose-blockquote:border-orange-400/25 prose-blockquote:text-muted-foreground
+        prose-li:text-muted-foreground
+        prose-img:rounded-xl prose-img:border prose-img:border-border
       ">
         <div dangerouslySetInnerHTML={{ __html: blog.content }} />
       </article>
 
       {/* Related posts */}
       {related.length > 0 && (
-        <div className="mt-16 pt-8 border-t border-white/10">
+        <div className="mt-16 pt-8 border-t border-border">
           <h2 className="text-xl font-bold text-white mb-6">Related Posts</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {related.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`}>
-                <GlassCard className="h-full hover:border-purple-400/30">
+                <GlassCard className="h-full hover:border-orange-400/25">
                   <h3 className="text-white font-semibold text-sm mb-2 line-clamp-2">
                     {post.title}
                   </h3>
                   {post.excerpt && (
-                    <p className="text-white/40 text-xs line-clamp-2 mb-2">{post.excerpt}</p>
+                    <p className="text-muted-foreground/70 text-xs line-clamp-2 mb-2">{post.excerpt}</p>
                   )}
                   <p className="text-white/30 text-xs">{formatDate(post.createdAt)}</p>
                 </GlassCard>

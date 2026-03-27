@@ -166,11 +166,11 @@ export default function AiChatWidget({ lessonId, lessonTitle }: Props) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 right-6 z-50 flex w-[400px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-white/10 bg-gray-950 shadow-2xl shadow-black/50"
+            className="fixed bottom-6 right-6 z-50 flex w-[400px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-lg border border-border bg-gray-950 shadow-2xl shadow-black/50"
             style={{ height: "min(600px, calc(100vh - 6rem))" }}
           >
             {/* Header */}
-            <div className="flex items-center gap-3 border-b border-white/10 bg-gradient-to-r from-blue-600/20 to-indigo-600/20 px-4 py-3">
+            <div className="flex items-center gap-3 border-b border-border bg-gradient-to-r from-blue-600/20 to-indigo-600/20 px-4 py-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-500/20">
                 <Bot className="h-5 w-5 text-blue-400" />
               </div>
@@ -181,21 +181,21 @@ export default function AiChatWidget({ lessonId, lessonTitle }: Props) {
               <div className="flex gap-1">
                 <button
                   onClick={handleClear}
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-secondary hover:text-white transition-colors"
                   title="Clear conversation"
                 >
                   <Trash2 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-secondary hover:text-white transition-colors"
                   title="Minimize"
                 >
                   <Minimize2 className="h-4 w-4" />
                 </button>
                 <button
                   onClick={() => setIsOpen(false)}
-                  className="rounded-lg p-1.5 text-gray-400 hover:bg-white/10 hover:text-white transition-colors"
+                  className="rounded-lg p-1.5 text-gray-400 hover:bg-secondary hover:text-white transition-colors"
                   title="Close"
                 >
                   <X className="h-4 w-4" />
@@ -232,7 +232,7 @@ export default function AiChatWidget({ lessonId, lessonTitle }: Props) {
                           setInput(q);
                           inputRef.current?.focus();
                         }}
-                        className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-gray-300 hover:bg-white/10 transition-colors"
+                        className="rounded-lg border border-border bg-secondary px-3 py-1.5 text-xs text-gray-300 hover:bg-secondary transition-colors"
                       >
                         {q}
                       </button>
@@ -264,10 +264,10 @@ export default function AiChatWidget({ lessonId, lessonTitle }: Props) {
                     </div>
                     <div
                       className={cn(
-                        "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed",
+                        "max-w-[80%] rounded-lg px-3.5 py-2.5 text-sm leading-relaxed",
                         msg.role === "user"
                           ? "bg-indigo-600/30 text-white rounded-tr-md"
-                          : "bg-white/5 text-gray-200 rounded-tl-md"
+                          : "bg-secondary text-gray-200 rounded-tl-md"
                       )}
                     >
                       <div className="whitespace-pre-wrap break-words prose-sm prose-invert">
@@ -283,7 +283,7 @@ export default function AiChatWidget({ lessonId, lessonTitle }: Props) {
                   <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-blue-500/20">
                     <Bot className="h-3.5 w-3.5 text-blue-400" />
                   </div>
-                  <div className="rounded-2xl rounded-tl-md bg-white/5 px-4 py-3">
+                  <div className="rounded-lg rounded-tl-md bg-secondary px-4 py-3">
                     <div className="flex gap-1">
                       <span className="h-2 w-2 animate-bounce rounded-full bg-gray-500 [animation-delay:0ms]" />
                       <span className="h-2 w-2 animate-bounce rounded-full bg-gray-500 [animation-delay:150ms]" />
@@ -297,8 +297,8 @@ export default function AiChatWidget({ lessonId, lessonTitle }: Props) {
             </div>
 
             {/* Input area */}
-            <div className="border-t border-white/10 bg-gray-950 px-3 py-3">
-              <div className="flex items-end gap-2 rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <div className="border-t border-border bg-gray-950 px-3 py-3">
+              <div className="flex items-end gap-2 rounded-xl border border-border bg-secondary px-3 py-2">
                 <textarea
                   ref={inputRef}
                   value={input}

@@ -41,11 +41,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Decorative background blobs */}
+        {/* Subtle background glow — warm dark */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-          <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/3 -right-40 w-96 h-96 bg-violet-600/15 rounded-full blur-3xl" />
-          <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-indigo-600/15 rounded-full blur-3xl" />
+          <div className="absolute -top-40 -left-40 w-96 h-96 bg-orange-600/[.07] rounded-full blur-3xl" />
+          <div className="absolute top-1/3 -right-40 w-80 h-80 bg-orange-500/[.04] rounded-full blur-3xl" />
+          <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-amber-600/[.04] rounded-full blur-3xl" />
         </div>
 
         <Navbar />

@@ -41,8 +41,8 @@ export default function LessonList({
             className={cn(
               "flex items-center gap-3 p-3 rounded-xl text-left transition-all w-full",
               isActive
-                ? "bg-gradient-to-r from-violet-500/25 to-purple-600/15 border border-purple-400/30"
-                : "hover:bg-white/10 border border-transparent"
+                ? "bg-gradient-to-r from-orange-600/25 to-orange-500/15 border border-orange-400/25"
+                : "hover:bg-secondary border border-transparent"
             )}
           >
             {/* Completion indicator */}
@@ -53,7 +53,7 @@ export default function LessonList({
                 <Circle
                   className={cn(
                     "w-5 h-5",
-                    isActive ? "text-purple-400" : "text-white/30"
+                    isActive ? "text-orange-400" : "text-white/30"
                   )}
                 />
               )}
@@ -62,13 +62,13 @@ export default function LessonList({
             {/* Lesson info */}
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-white/40 text-xs w-5 flex-shrink-0">
+                <span className="text-muted-foreground/70 text-xs w-5 flex-shrink-0">
                   {index + 1}
                 </span>
                 <span
                   className={cn(
                     "text-sm font-medium truncate",
-                    isActive ? "text-white" : "text-white/70"
+                    isActive ? "text-white" : "text-muted-foreground"
                   )}
                 >
                   {lesson.title}
@@ -78,10 +78,10 @@ export default function LessonList({
                 <Icon
                   className={cn(
                     "w-3 h-3",
-                    isActive ? "text-purple-400" : "text-white/30"
+                    isActive ? "text-orange-400" : "text-white/30"
                   )}
                 />
-                <span className="text-white/40 text-xs">
+                <span className="text-muted-foreground/70 text-xs">
                   {lesson.type === "VIDEO"
                     ? lesson.duration
                       ? `${lesson.duration} min`
@@ -92,7 +92,7 @@ export default function LessonList({
             </div>
 
             {isActive && (
-              <ChevronRight className="w-4 h-4 text-purple-400 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-orange-400 flex-shrink-0" />
             )}
           </button>
         );

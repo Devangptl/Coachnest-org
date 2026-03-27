@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function StatSkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 flex items-center gap-4 animate-pulse">
+    <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
       <Skeleton className="w-11 h-11 rounded-xl" />
       <div className="space-y-2">
         <Skeleton h="h-7" w="w-12" />
@@ -18,7 +18,7 @@ function StatSkeleton() {
 
 function CourseCardSkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl overflow-hidden animate-pulse">
+    <div className="bg-card border border-border rounded-lg overflow-hidden animate-pulse">
       <Skeleton className="h-44 w-full rounded-none" />
       <div className="p-5 space-y-3">
         <Skeleton h="h-5" w="w-4/5" />

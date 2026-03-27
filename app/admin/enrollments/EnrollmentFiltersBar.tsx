@@ -32,7 +32,7 @@ export default function EnrollmentFiltersBar() {
       <div className="space-y-4">
         <div className="flex items-center gap-3">
           <div className="flex-1 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
             <input
               type="text"
               placeholder="Search by name or email..."
@@ -53,7 +53,7 @@ export default function EnrollmentFiltersBar() {
         </div>
 
         {expanded && (
-          <div className="space-y-3 pt-3 border-t border-white/10">
+          <div className="space-y-3 pt-3 border-t border-border">
             <div>
               <label className="label">Status</label>
               <select
@@ -72,7 +72,7 @@ export default function EnrollmentFiltersBar() {
 
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-purple-400 text-sm hover:text-purple-300 transition-colors"
+          className="text-orange-400 text-sm hover:text-orange-300 transition-colors"
         >
           {expanded ? "Hide filters" : "More filters"}
         </button>

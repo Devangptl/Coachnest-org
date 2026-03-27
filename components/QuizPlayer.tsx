@@ -147,28 +147,28 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="glass p-8 space-y-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-lg bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto">
             <HelpCircle className="w-8 h-8 text-amber-400" />
           </div>
           <div>
             <h2 className="text-2xl font-bold text-white mb-2">{quiz.title}</h2>
-            <p className="text-white/50 text-sm">Test your knowledge with this quiz</p>
+            <p className="text-muted-foreground text-sm">Test your knowledge with this quiz</p>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+            <div className="bg-secondary border border-border rounded-xl p-3">
               <p className="text-2xl font-bold text-white">{quiz.questions.length}</p>
-              <p className="text-white/40 text-xs">Questions</p>
+              <p className="text-muted-foreground/70 text-xs">Questions</p>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+            <div className="bg-secondary border border-border rounded-xl p-3">
               <p className="text-2xl font-bold text-white">{quiz.passMark}%</p>
-              <p className="text-white/40 text-xs">Pass Mark</p>
+              <p className="text-muted-foreground/70 text-xs">Pass Mark</p>
             </div>
-            <div className="bg-white/5 border border-white/10 rounded-xl p-3">
+            <div className="bg-secondary border border-border rounded-xl p-3">
               <p className="text-2xl font-bold text-white">
                 {quiz.timeLimit ? `${quiz.timeLimit}m` : "\u221E"}
               </p>
-              <p className="text-white/40 text-xs">Time Limit</p>
+              <p className="text-muted-foreground/70 text-xs">Time Limit</p>
             </div>
           </div>
 
@@ -178,10 +178,10 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
               "border rounded-xl p-4 text-left",
               quiz.hasPassed
                 ? "bg-emerald-500/5 border-emerald-400/20"
-                : "bg-white/5 border-white/10"
+                : "bg-secondary border-border"
             )}>
               <div className="flex items-center justify-between mb-2">
-                <p className="text-white/70 text-sm font-medium">Previous Attempts</p>
+                <p className="text-muted-foreground text-sm font-medium">Previous Attempts</p>
                 {quiz.hasPassed && (
                   <span className="text-emerald-400 text-xs font-semibold flex items-center gap-1">
                     <CheckCircle className="w-3 h-3" /> Passed
@@ -198,7 +198,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                     )}>
                       {a.score}%
                     </span>
-                    <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                    <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
                       <div
                         className={cn("h-full rounded-full", a.passed ? "bg-emerald-500" : "bg-red-500")}
                         style={{ width: `${a.score}%` }}
@@ -214,7 +214,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                 ))}
               </div>
               {quiz.bestScore !== null && quiz.bestScore !== undefined && (
-                <p className="text-white/40 text-xs mt-2">
+                <p className="text-muted-foreground/70 text-xs mt-2">
                   Best score: <span className="text-white font-semibold">{quiz.bestScore}%</span>
                   {" · "}{quiz.previousAttempts.length} attempt{quiz.previousAttempts.length !== 1 ? "s" : ""}
                 </p>
@@ -222,9 +222,9 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
             </div>
           )}
 
-          <div className="bg-white/5 border border-white/10 rounded-xl p-4 text-left space-y-2">
-            <p className="text-white/70 text-sm font-medium">Instructions:</p>
-            <ul className="text-white/50 text-xs space-y-1">
+          <div className="bg-secondary border border-border rounded-xl p-4 text-left space-y-2">
+            <p className="text-muted-foreground text-sm font-medium">Instructions:</p>
+            <ul className="text-muted-foreground text-xs space-y-1">
               <li>- Select one answer per question</li>
               <li>- You can navigate between questions freely</li>
               <li>- Flag questions to review before submitting</li>
@@ -250,12 +250,12 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
     return (
       <div className="max-w-2xl mx-auto">
         <div className="glass p-8 space-y-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto">
+          <div className="w-16 h-16 rounded-lg bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto">
             <AlertTriangle className="w-8 h-8 text-amber-400" />
           </div>
           <div>
             <h3 className="text-xl font-bold text-white mb-2">Submit Quiz?</h3>
-            <p className="text-white/50 text-sm">
+            <p className="text-muted-foreground text-sm">
               {allAnswered
                 ? `You've answered all ${quiz.questions.length} questions.`
                 : `You have ${unansweredCount} unanswered question${unansweredCount > 1 ? "s" : ""}. Unanswered questions will be marked incorrect.`}
@@ -330,9 +330,9 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
       <div className="glass px-5 py-3 flex items-center justify-between">
         <div>
           <h3 className="text-white font-semibold text-sm">{quiz.title}</h3>
-          <p className="text-white/40 text-xs">
+          <p className="text-muted-foreground/70 text-xs">
             Question {currentIdx + 1} of {quiz.questions.length}
-            {q.points > 1 && <span className="ml-2 text-purple-400">({q.points} pts)</span>}
+            {q.points > 1 && <span className="ml-2 text-orange-400">({q.points} pts)</span>}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -346,7 +346,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                 ? "bg-red-500/20 text-red-300 border border-red-400/30 animate-pulse"
                 : timeLeft < 300
                 ? "bg-amber-500/15 text-amber-300 border border-amber-400/20"
-                : "bg-white/10 text-white/70 border border-white/20"
+                : "bg-secondary text-muted-foreground border border-border"
             )}>
               <Clock className="w-3.5 h-3.5" />
               {String(mins).padStart(2, "0")}:{String(secs).padStart(2, "0")}
@@ -356,9 +356,9 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
       </div>
 
       {/* Progress bar */}
-      <div className="h-1 bg-white/10 rounded-full overflow-hidden">
+      <div className="h-1 bg-secondary rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-violet-500 to-purple-600 rounded-full transition-all duration-300"
+          className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded-full transition-all duration-300"
           style={{ width: `${(answeredCount / quiz.questions.length) * 100}%` }}
         />
       </div>
@@ -377,10 +377,10 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                 className={cn(
                   "w-8 h-8 rounded-lg text-xs font-semibold border transition-all relative",
                   isActive
-                    ? "bg-purple-500/30 border-purple-400/60 text-white ring-1 ring-purple-400/30"
+                    ? "bg-orange-500/20 border-orange-400/25 text-white ring-1 ring-orange-400/30"
                     : isAnswered
                     ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                    : "bg-white/5 border-white/10 text-white/40 hover:bg-white/10 hover:border-white/20"
+                    : "bg-secondary border-border text-muted-foreground/70 hover:bg-secondary hover:border-border"
                 )}
               >
                 {idx + 1}
@@ -416,21 +416,21 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                     className={cn(
                       "w-full text-left px-4 py-3.5 rounded-xl border text-sm transition-all flex items-center gap-3 group",
                       isSelected
-                        ? "bg-purple-500/20 border-purple-400/50 text-white"
-                        : "bg-white/[0.03] border-white/10 text-white/70 hover:bg-white/[0.06] hover:border-white/20"
+                        ? "bg-orange-500/15 border-orange-400/25 text-white"
+                        : "bg-white/[0.03] border-border text-muted-foreground hover:bg-white/[0.06] hover:border-border"
                     )}
                   >
                     <span className={cn(
                       "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 border transition-all",
                       isSelected
-                        ? "bg-purple-500 border-purple-400 text-white"
-                        : "bg-white/5 border-white/15 text-white/50 group-hover:border-white/30"
+                        ? "bg-orange-500 border-orange-400 text-white"
+                        : "bg-secondary border-border text-muted-foreground group-hover:border-white/30"
                     )}>
                       {label}
                     </span>
                     <span className="flex-1">{opt.text}</span>
                     {isSelected && (
-                      <CheckCircle className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-orange-400 flex-shrink-0" />
                     )}
                   </button>
                 );
@@ -479,7 +479,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
               variant="ghost"
               size="sm"
               onClick={trySubmit}
-              className="text-white/40"
+              className="text-muted-foreground/70"
             >
               Submit
             </Button>
@@ -508,7 +508,7 @@ function QuizResult({
     <div className="max-w-2xl mx-auto space-y-4">
       {/* Score banner */}
       <div className={cn(
-        "glass rounded-2xl p-8 text-center border",
+        "glass rounded-lg p-8 text-center border",
         result.passed
           ? "border-emerald-400/30"
           : "border-red-400/30"
@@ -534,13 +534,13 @@ function QuizResult({
         <p className={cn("text-xl font-semibold", result.passed ? "text-emerald-300" : "text-red-300")}>
           {result.passed ? "Congratulations! You passed!" : "Not quite there yet"}
         </p>
-        <p className="text-white/40 text-sm mt-2">
+        <p className="text-muted-foreground/70 text-sm mt-2">
           {correctCount} of {result.feedback.length} correct &nbsp;·&nbsp; Pass mark: {quiz.passMark}%
         </p>
 
         {/* Score breakdown bar */}
         <div className="mt-4 mx-auto max-w-xs">
-          <div className="h-3 bg-white/10 rounded-full overflow-hidden relative">
+          <div className="h-3 bg-secondary rounded-full overflow-hidden relative">
             {/* Pass mark indicator */}
             <div
               className="absolute top-0 bottom-0 w-0.5 bg-white/40 z-10"
@@ -607,7 +607,7 @@ function QuizResult({
                       {fb.isCorrect ? <CheckCircle className="w-3.5 h-3.5" /> : <XCircle className="w-3.5 h-3.5" />}
                     </span>
                     <p className="text-white/90 text-sm font-medium leading-relaxed">
-                      <span className="text-white/40 mr-1.5">Q{i + 1}.</span>
+                      <span className="text-muted-foreground/70 mr-1.5">Q{i + 1}.</span>
                       {fb.questionText}
                     </p>
                   </div>

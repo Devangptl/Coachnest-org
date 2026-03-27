@@ -23,7 +23,7 @@ export default async function AdminBlogsPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Blog Posts</h1>
-          <p className="text-white/50 mt-1">
+          <p className="text-muted-foreground mt-1">
             {blogs.length} post{blogs.length !== 1 ? "s" : ""} total
           </p>
         </div>
@@ -35,7 +35,7 @@ export default async function AdminBlogsPage() {
       {blogs.length === 0 ? (
         <GlassCard className="text-center py-16">
           <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />
-          <p className="text-white/50 mb-4">No blog posts yet.</p>
+          <p className="text-muted-foreground mb-4">No blog posts yet.</p>
           <Link href="/admin/blogs/new" className="btn-primary inline-flex items-center gap-2 text-sm">
             <PlusCircle className="w-4 h-4" /> Create First Post
           </Link>
@@ -43,7 +43,7 @@ export default async function AdminBlogsPage() {
       ) : (
         <GlassCard padding="sm">
           {/* Table header */}
-          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
             <div className="col-span-5">Title</div>
             <div className="col-span-2">Author</div>
             <div className="col-span-2 text-center">Date</div>
@@ -55,7 +55,7 @@ export default async function AdminBlogsPage() {
             {blogs.map((blog) => (
               <div
                 key={blog.id}
-                className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-white/5 transition-colors"
+                className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-secondary transition-colors"
               >
                 <div className="col-span-5 min-w-0">
                   <p className="text-white text-sm font-medium truncate">
@@ -64,7 +64,7 @@ export default async function AdminBlogsPage() {
                   {blog.tags && (
                     <div className="flex gap-1 mt-1 flex-wrap">
                       {blog.tags.split(",").slice(0, 3).map((tag) => (
-                        <span key={tag} className="text-[10px] text-purple-300/70 bg-purple-500/10 px-1.5 py-0.5 rounded">
+                        <span key={tag} className="text-[10px] text-orange-300/70 bg-orange-500/10 px-1.5 py-0.5 rounded">
                           {tag.trim()}
                         </span>
                       ))}
@@ -72,11 +72,11 @@ export default async function AdminBlogsPage() {
                   )}
                 </div>
 
-                <div className="col-span-2 text-white/60 text-sm truncate">
+                <div className="col-span-2 text-muted-foreground text-sm truncate">
                   {blog.author.name}
                 </div>
 
-                <div className="col-span-2 text-center text-white/50 text-xs">
+                <div className="col-span-2 text-center text-muted-foreground text-xs">
                   {formatDate(blog.createdAt)}
                 </div>
 
@@ -95,13 +95,13 @@ export default async function AdminBlogsPage() {
                 <div className="col-span-2 flex justify-end gap-2">
                   <Link
                     href={`/admin/blogs/${blog.id}/edit`}
-                    className="text-xs text-white/50 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/10"
+                    className="text-xs text-muted-foreground hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-secondary"
                   >
                     Edit
                   </Link>
                   <Link
                     href={`/blog/${blog.slug}`}
-                    className="text-xs text-purple-400 hover:text-purple-300 transition-colors px-2 py-1 rounded-lg hover:bg-purple-500/10"
+                    className="text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded-lg hover:bg-orange-500/10"
                   >
                     View
                   </Link>

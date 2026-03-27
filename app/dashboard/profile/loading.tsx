@@ -23,7 +23,7 @@ export default function ProfileLoading() {
 
       <div className="space-y-6">
         {/* Account Info card */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 animate-pulse">
+        <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
           <div className="flex items-center gap-4 mb-4">
             <Skeleton className="w-16 h-16 rounded-full" />
             <div className="space-y-2">
@@ -42,7 +42,7 @@ export default function ProfileLoading() {
         </div>
 
         {/* Profile Form card */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 animate-pulse">
+        <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
           <Skeleton h="h-6" w="w-32" className="mb-6" />
           <div className="space-y-4">
             <FormFieldSkeleton />
@@ -54,7 +54,7 @@ export default function ProfileLoading() {
         </div>
 
         {/* Password Form card */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 animate-pulse">
+        <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
           <Skeleton h="h-6" w="w-40" className="mb-6" />
           <div className="space-y-4">
             <FormFieldSkeleton />

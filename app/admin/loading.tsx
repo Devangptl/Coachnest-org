@@ -17,7 +17,7 @@ export default function AdminLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 flex items-center gap-4 animate-pulse"
+            className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
             <Skeleton className="w-12 h-12 rounded-xl" />
             <div className="space-y-2">
@@ -35,8 +35,8 @@ export default function AdminLoading() {
       </div>
 
       {/* Recent courses table */}
-      <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl animate-pulse">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+      <div className="bg-card border border-border rounded-lg animate-pulse">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <Skeleton h="h-5" w="w-36" />
           <Skeleton h="h-4" w="w-16" />
         </div>

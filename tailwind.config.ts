@@ -46,18 +46,18 @@ const config: Config = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        // Brand palette
+        // Brand palette — Claude orange
         brand: {
-          50:  "#f5f3ff",
-          100: "#ede9fe",
-          200: "#ddd6fe",
-          300: "#c4b5fd",
-          400: "#a78bfa",
-          500: "#8b5cf6",
-          600: "#7c3aed",
-          700: "#6d28d9",
-          800: "#5b21b6",
-          900: "#4c1d95",
+          50:  "#fff7ed",
+          100: "#ffedd5",
+          200: "#fed7aa",
+          300: "#fdba74",
+          400: "#fb923c",
+          500: "#f97316",
+          600: "#ea580c",
+          700: "#c2410c",
+          800: "#9a3412",
+          900: "#7c2d12",
         },
       },
       borderRadius: {
@@ -68,10 +68,10 @@ const config: Config = {
       // ── Gradient backgrounds ─────────────────────────────────────────────
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "hero-gradient": "linear-gradient(135deg,#667eea 0%,#764ba2 50%,#f093fb 100%)",
-        "dark-gradient": "linear-gradient(135deg,#0f0c29 0%,#302b63 50%,#24243e 100%)",
-        "card-gradient": "linear-gradient(135deg,rgba(255,255,255,.1),rgba(255,255,255,.05))",
-        "brand-gradient": "linear-gradient(135deg,#7c3aed 0%,#a855f7 100%)",
+        "hero-gradient":  "linear-gradient(135deg, #1a1410 0%, #0f0f0f 100%)",
+        "dark-gradient":  "linear-gradient(135deg, #0a0a0a 0%, #141414 50%, #0a0a0a 100%)",
+        "card-gradient":  "linear-gradient(135deg, rgba(255,255,255,.03), rgba(255,255,255,.01))",
+        "brand-gradient": "linear-gradient(135deg, #ea580c 0%, #f97316 100%)",
       },
       // ── Keyframes ────────────────────────────────────────────────────────
       keyframes: {
@@ -117,9 +117,9 @@ const config: Config = {
       backdropBlur: { xs: "2px" },
       // ── Box shadows ──────────────────────────────────────────────────────
       boxShadow: {
-        glass: "0 8px 32px 0 rgba(31,38,135,.15)",
-        glow:  "0 0 20px rgba(124,58,237,.4)",
-        card:  "0 4px 24px rgba(0,0,0,.06)",
+        glass: "0 2px 16px 0 rgba(0,0,0,.5)",
+        glow:  "0 0 20px rgba(217,112,65,.25)",
+        card:  "0 2px 12px rgba(0,0,0,.35)",
       },
     },
   },

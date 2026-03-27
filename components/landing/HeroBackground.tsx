@@ -45,7 +45,7 @@ export default function HeroBackground() {
           animate={{ rotate: 360 }}
           transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
         >
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-purple-400/40 shadow-[0_0_12px_rgba(168,85,247,0.4)]" />
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2.5 h-2.5 rounded-full bg-orange-500/15 shadow-[0_0_12px_rgba(168,85,247,0.4)]" />
         </motion.div>
 
         {/* Ring 2 — medium, counter */}
@@ -54,13 +54,13 @@ export default function HeroBackground() {
           animate={{ rotate: -360 }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
         >
-          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full bg-violet-400/50 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 w-2 h-2 rounded-full bg-orange-500/15 shadow-[0_0_10px_rgba(139,92,246,0.5)]" />
           <div className="absolute top-1/2 right-0 translate-x-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-pink-400/40 shadow-[0_0_8px_rgba(244,114,182,0.4)]" />
         </motion.div>
 
         {/* Ring 3 — small, fast */}
         <motion.div
-          className="absolute -top-[120px] -left-[120px] w-[240px] h-[240px] rounded-full border border-purple-400/[0.08]"
+          className="absolute -top-[120px] -left-[120px] w-[240px] h-[240px] rounded-full border border-orange-400/25[0.08]"
           animate={{ rotate: 360 }}
           transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
         >

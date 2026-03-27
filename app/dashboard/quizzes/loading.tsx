@@ -5,7 +5,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 
 function StatSkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 flex items-center gap-4 animate-pulse">
+    <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
       <Skeleton className="w-12 h-12 rounded-xl" />
       <div className="space-y-2">
         <Skeleton h="h-7" w="w-12" />
@@ -17,7 +17,7 @@ function StatSkeleton() {
 
 function QuizCardSkeleton() {
   return (
-    <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 space-y-4 animate-pulse">
+    <div className="bg-card border border-border rounded-lg p-6 space-y-4 animate-pulse">
       {/* Quiz header */}
       <div className="flex items-start gap-4">
         <Skeleton className="w-14 h-14 rounded-xl flex-shrink-0" />

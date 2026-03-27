@@ -42,7 +42,7 @@ export default async function ProfilePage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Profile & Settings</h1>
-        <p className="text-white/40 text-sm mt-1">
+        <p className="text-muted-foreground/70 text-sm mt-1">
           Manage your account details and preferences
         </p>
       </div>

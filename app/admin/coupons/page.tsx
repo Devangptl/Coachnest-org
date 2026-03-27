@@ -33,7 +33,7 @@ export default async function AdminCouponsPage() {
       <div className="mb-8 flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Promotions & Coupons</h1>
-          <p className="text-white/50 mt-1">
+          <p className="text-muted-foreground mt-1">
             Create and manage promotional codes for your courses.
           </p>
         </div>
@@ -47,17 +47,17 @@ export default async function AdminCouponsPage() {
         {[
           { label: "Total Coupons", value: coupons.length, icon: Ticket, color: "text-blue-400" },
           { label: "Active", value: activeCoupons, icon: TrendingUp, color: "text-emerald-400" },
-          { label: "Total Discount", value: `₹${totalDiscount.toLocaleString("en-IN")}`, icon: Ticket, color: "text-violet-400" },
+          { label: "Total Discount", value: `₹${totalDiscount.toLocaleString("en-IN")}`, icon: Ticket, color: "text-orange-400" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
                 <div className="text-3xl font-bold text-white">{stat.value}</div>
-                <div className="text-white/50 text-sm">{stat.label}</div>
+                <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -66,17 +66,17 @@ export default async function AdminCouponsPage() {
 
       {/* Table */}
       <GlassCard padding="sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h2 className="text-white font-semibold">All Coupons</h2>
-          <span className="text-white/40 text-sm">{coupons.length} total</span>
+          <span className="text-muted-foreground/70 text-sm">{coupons.length} total</span>
         </div>
 
         <CouponTable coupons={coupons} />
 
         {coupons.length === 0 && (
-          <div className="text-center py-12 text-white/40">
+          <div className="text-center py-12 text-muted-foreground/70">
             <p className="mb-4">No coupons created yet.</p>
-            <Link href="/admin/coupons/new" className="text-purple-400 hover:text-purple-300">
+            <Link href="/admin/coupons/new" className="text-orange-400 hover:text-orange-300">
               Create your first coupon
             </Link>
           </div>

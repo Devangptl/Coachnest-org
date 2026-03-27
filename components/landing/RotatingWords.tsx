@@ -28,7 +28,7 @@ export default function RotatingWords({ words, className = "", interval = 2800 }
           animate={{ y: 0, opacity: 1, rotateX: 0 }}
           exit={{ y: -30, opacity: 0, rotateX: 40 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          className="inline-block bg-gradient-to-r from-violet-400 via-purple-400 to-pink-400 bg-clip-text text-transparent"
+          className="inline-block bg-gradient-to-r from-orange-400 via-orange-400 to-orange-300 bg-clip-text text-transparent"
         >
           {words[index]}
         </motion.span>

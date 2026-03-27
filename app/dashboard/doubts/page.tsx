@@ -87,7 +87,7 @@ export default async function DoubtHistoryPage() {
           </div>
           Doubt History
         </h1>
-        <p className="mt-2 text-white/50 text-sm">
+        <p className="mt-2 text-muted-foreground text-sm">
           Review your past questions and AI tutor conversations.
         </p>
       </div>
@@ -97,17 +97,17 @@ export default async function DoubtHistoryPage() {
         <GlassCard className="p-4 text-center">
           <MessagesSquare className="h-5 w-5 text-blue-400 mx-auto mb-1" />
           <p className="text-xl font-bold text-white">{totalConversations}</p>
-          <p className="text-xs text-white/50">Conversations</p>
+          <p className="text-xs text-muted-foreground">Conversations</p>
         </GlassCard>
         <GlassCard className="p-4 text-center">
-          <Bot className="h-5 w-5 text-purple-400 mx-auto mb-1" />
+          <Bot className="h-5 w-5 text-orange-400 mx-auto mb-1" />
           <p className="text-xl font-bold text-white">{totalMessages}</p>
-          <p className="text-xs text-white/50">Messages</p>
+          <p className="text-xs text-muted-foreground">Messages</p>
         </GlassCard>
         <GlassCard className="p-4 text-center">
           <BookOpen className="h-5 w-5 text-green-400 mx-auto mb-1" />
           <p className="text-xl font-bold text-white">{courses.length}</p>
-          <p className="text-xs text-white/50">Courses</p>
+          <p className="text-xs text-muted-foreground">Courses</p>
         </GlassCard>
       </div>
 
@@ -115,10 +115,10 @@ export default async function DoubtHistoryPage() {
       {courses.length === 0 ? (
         <GlassCard className="p-12 text-center">
           <Bot className="h-12 w-12 text-white/20 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-white/70">
+          <h3 className="text-lg font-semibold text-muted-foreground">
             No conversations yet
           </h3>
-          <p className="text-sm text-white/40 mt-1">
+          <p className="text-sm text-muted-foreground/70 mt-1">
             Start asking questions in any lesson to build your doubt history.
           </p>
         </GlassCard>
@@ -126,7 +126,7 @@ export default async function DoubtHistoryPage() {
         <div className="space-y-6">
           {courses.map((course) => (
             <GlassCard key={course.courseId} className="p-5">
-              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-white/10">
+              <div className="flex items-center gap-3 mb-4 pb-3 border-b border-border">
                 {course.courseThumbnail && (
                   <img
                     src={course.courseThumbnail}
@@ -141,7 +141,7 @@ export default async function DoubtHistoryPage() {
                   >
                     {course.courseTitle}
                   </Link>
-                  <p className="text-xs text-white/40">
+                  <p className="text-xs text-muted-foreground/70">
                     {course.conversations.length} conversation
                     {course.conversations.length !== 1 ? "s" : ""}
                   </p>
@@ -157,7 +157,7 @@ export default async function DoubtHistoryPage() {
                     <Link
                       key={conv.id}
                       href={`/courses/${course.courseId}`}
-                      className="flex items-start gap-3 rounded-xl p-3 hover:bg-white/5 transition-colors group"
+                      className="flex items-start gap-3 rounded-xl p-3 hover:bg-secondary transition-colors group"
                     >
                       <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-500/10">
                         <MessageCircle className="h-4 w-4 text-blue-400" />
@@ -167,7 +167,7 @@ export default async function DoubtHistoryPage() {
                           {conv.title || firstUserMsg?.content || "Conversation"}
                         </p>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs text-white/40 flex items-center gap-1">
+                          <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
                             <BookOpen className="h-3 w-3" />
                             {conv.lesson.title}
                           </span>
@@ -180,7 +180,7 @@ export default async function DoubtHistoryPage() {
                           </span>
                         </div>
                       </div>
-                      <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-white/50 transition-colors shrink-0 mt-1" />
+                      <ArrowRight className="h-4 w-4 text-white/20 group-hover:text-muted-foreground transition-colors shrink-0 mt-1" />
                     </Link>
                   );
                 })}

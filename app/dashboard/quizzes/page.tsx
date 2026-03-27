@@ -115,7 +115,7 @@ export default async function QuizHistoryPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">Quiz History</h1>
-        <p className="text-white/50 mt-1">
+        <p className="text-muted-foreground mt-1">
           Track your quiz performance and review past attempts.
         </p>
       </div>
@@ -124,19 +124,19 @@ export default async function QuizHistoryPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Quizzes Taken", value: quizHistory.length, icon: HelpCircle, color: "text-blue-400" },
-          { label: "Total Attempts", value: totalAttempts, icon: Target, color: "text-violet-400" },
+          { label: "Total Attempts", value: totalAttempts, icon: Target, color: "text-orange-400" },
           { label: "Passed", value: passedQuizzes, icon: Trophy, color: "text-emerald-400" },
           { label: "Avg Best Score", value: `${avgBestScore}%`, icon: BarChart3, color: "text-amber-400" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
                 <div className="text-2xl font-bold text-white">{stat.value}</div>
-                <div className="text-white/50 text-sm">{stat.label}</div>
+                <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -157,13 +157,13 @@ export default async function QuizHistoryPage() {
                     className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-xl bg-white/5 flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
                     <HelpCircle className="w-6 h-6 text-white/20" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-white font-semibold text-sm truncate">{quiz.lessonTitle}</p>
-                  <p className="text-white/40 text-xs truncate">{quiz.courseTitle}</p>
+                  <p className="text-muted-foreground/70 text-xs truncate">{quiz.courseTitle}</p>
                   <div className="flex items-center gap-3 mt-1.5">
                     <span className="text-white/30 text-xs">{quiz.questionCount} questions</span>
                     <span className="text-white/30 text-xs">Pass: {quiz.passMark}%</span>
@@ -182,7 +182,7 @@ export default async function QuizHistoryPage() {
                   </Badge>
                   <Link
                     href={`/courses/${quiz.courseId}`}
-                    className="text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-orange-400 hover:text-orange-300 transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -207,7 +207,7 @@ export default async function QuizHistoryPage() {
                         <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
                       )}
                       <span className="text-white text-sm font-semibold w-12">{attempt.score}%</span>
-                      <div className="flex-1 h-1.5 bg-white/5 rounded-full overflow-hidden">
+                      <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${attempt.passed ? "bg-emerald-500" : "bg-red-500"}`}
                           style={{ width: `${attempt.score}%` }}
@@ -234,13 +234,13 @@ export default async function QuizHistoryPage() {
         </div>
       ) : (
         <GlassCard padding="lg">
-          <div className="text-center py-12 text-white/40">
+          <div className="text-center py-12 text-muted-foreground/70">
             <HelpCircle className="w-12 h-12 mx-auto mb-4 text-white/20" />
             <p className="mb-2">No quiz attempts yet.</p>
             <p className="text-white/30 text-sm">
               Start a course and take quizzes to see your history here.
             </p>
-            <Link href="/courses" className="text-purple-400 hover:text-purple-300 text-sm mt-3 inline-block">
+            <Link href="/courses" className="text-orange-400 hover:text-orange-300 text-sm mt-3 inline-block">
               Browse Courses
             </Link>
           </div>

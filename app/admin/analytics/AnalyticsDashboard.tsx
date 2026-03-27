@@ -20,7 +20,7 @@ interface Props {
 
 const STAT_CARDS = (stats: Props["stats"]) => [
   { label: "Total Users",       value: stats.totalUsers.toLocaleString(),           icon: Users,       color: "bg-blue-500/20   text-blue-400"    },
-  { label: "Published Courses", value: stats.totalCourses.toLocaleString(),         icon: BookOpen,    color: "bg-purple-500/20 text-purple-400"  },
+  { label: "Published Courses", value: stats.totalCourses.toLocaleString(),         icon: BookOpen,    color: "bg-orange-500/15 text-orange-400"  },
   { label: "Total Enrollments", value: stats.totalEnrollments.toLocaleString(),     icon: TrendingUp,  color: "bg-emerald-500/20 text-emerald-400" },
   { label: "Total Revenue",     value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, icon: DollarSign, color: "bg-amber-500/20  text-amber-400"   },
 ];
@@ -35,7 +35,7 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
     <div className="space-y-8 animate-fade-in">
       <div>
         <h1 className="text-3xl font-bold text-white">Analytics</h1>
-        <p className="text-white/40 text-sm mt-1">Platform-wide insights</p>
+        <p className="text-muted-foreground/70 text-sm mt-1">Platform-wide insights</p>
       </div>
 
       {/* Stat cards */}
@@ -53,7 +53,7 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
             </div>
             <div>
               <p className="text-2xl font-bold text-white">{value}</p>
-              <p className="text-white/40 text-xs">{label}</p>
+              <p className="text-muted-foreground/70 text-xs">{label}</p>
             </div>
           </motion.div>
         ))}
@@ -111,12 +111,12 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
           <div className="space-y-3">
             {topCourses.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-lg bg-purple-500/20 text-purple-300 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-300 text-xs font-bold flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
                   <p className="text-white text-sm font-medium truncate">{c.title}</p>
-                  <p className="text-white/40 text-xs">{c.enrollments} students</p>
+                  <p className="text-muted-foreground/70 text-xs">{c.enrollments} students</p>
                 </div>
                 <div className="flex items-center gap-1 text-amber-400 text-xs">
                   <Star className="w-3 h-3 fill-current" />
@@ -137,7 +137,7 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
                   <p className="text-white text-sm font-medium truncate">
                     {o.user?.name ?? "—"}
                   </p>
-                  <p className="text-white/40 text-xs truncate">
+                  <p className="text-muted-foreground/70 text-xs truncate">
                     {o.course?.title ?? "Subscription"}
                   </p>
                 </div>

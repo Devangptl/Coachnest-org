@@ -23,7 +23,7 @@ export default async function AdminCoursesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-3xl font-bold text-white">Courses</h1>
-          <p className="text-white/50 mt-1">
+          <p className="text-muted-foreground mt-1">
             {courses.length} course{courses.length !== 1 ? "s" : ""} total
           </p>
         </div>
@@ -35,7 +35,7 @@ export default async function AdminCoursesPage() {
       {courses.length === 0 ? (
         <GlassCard className="text-center py-16">
           <BookOpen className="w-12 h-12 text-white/20 mx-auto mb-3" />
-          <p className="text-white/50 mb-4">No courses yet.</p>
+          <p className="text-muted-foreground mb-4">No courses yet.</p>
           <Link href="/admin/courses/new" className="btn-primary inline-flex items-center gap-2 text-sm">
             <PlusCircle className="w-4 h-4" /> Create First Course
           </Link>
@@ -43,7 +43,7 @@ export default async function AdminCoursesPage() {
       ) : (
         <GlassCard padding="sm">
           {/* Table header */}
-          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-white/40 text-xs font-semibold uppercase tracking-wider border-b border-white/10">
+          <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
             <div className="col-span-5">Course</div>
             <div className="col-span-2 text-center">Lessons</div>
             <div className="col-span-2 text-center">Enrolled</div>
@@ -55,25 +55,25 @@ export default async function AdminCoursesPage() {
             {courses.map((course) => (
               <div
                 key={course.id}
-                className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-white/5 transition-colors"
+                className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-secondary transition-colors"
               >
                 {/* Title + date */}
                 <div className="col-span-5 min-w-0">
                   <p className="text-white text-sm font-medium truncate">
                     {course.title}
                   </p>
-                  <p className="text-white/40 text-xs mt-0.5">
+                  <p className="text-muted-foreground/70 text-xs mt-0.5">
                     {formatDate(course.createdAt)}
                   </p>
                 </div>
 
                 {/* Lesson count */}
-                <div className="col-span-2 text-center text-white/70 text-sm">
+                <div className="col-span-2 text-center text-muted-foreground text-sm">
                   {course._count.lessons}
                 </div>
 
                 {/* Enrollment count */}
-                <div className="col-span-2 text-center text-white/70 text-sm">
+                <div className="col-span-2 text-center text-muted-foreground text-sm">
                   {course._count.enrollments}
                 </div>
 
@@ -94,13 +94,13 @@ export default async function AdminCoursesPage() {
                 <div className="col-span-2 flex justify-end gap-2">
                   <Link
                     href={`/admin/courses/${course.id}/edit`}
-                    className="text-xs text-white/50 hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-white/10"
+                    className="text-xs text-muted-foreground hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-secondary"
                   >
                     Edit
                   </Link>
                   <Link
                     href={`/courses/${course.id}`}
-                    className="text-xs text-purple-400 hover:text-purple-300 transition-colors px-2 py-1 rounded-lg hover:bg-purple-500/10"
+                    className="text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded-lg hover:bg-orange-500/10"
                   >
                     View
                   </Link>

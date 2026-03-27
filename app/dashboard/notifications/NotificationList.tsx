@@ -32,9 +32,9 @@ const typeColors: Record<string, string> = {
   COURSE_UPDATE: "text-blue-400",
   PURCHASE: "text-emerald-400",
   REVIEW: "text-amber-400",
-  REMINDER: "text-purple-400",
+  REMINDER: "text-orange-400",
   OFFER: "text-pink-400",
-  SYSTEM: "text-white/50",
+  SYSTEM: "text-muted-foreground",
 };
 
 export default function NotificationList({
@@ -87,7 +87,7 @@ export default function NotificationList({
             size="sm"
             loading={markingAll}
             onClick={handleMarkAllRead}
-            className="flex items-center gap-2 text-sm border border-white/20"
+            className="flex items-center gap-2 text-sm border border-border"
           >
             <CheckCheck className="w-4 h-4" /> Mark all as read
           </Button>
@@ -97,7 +97,7 @@ export default function NotificationList({
       {/* Unread Notifications */}
       {unread.length > 0 && (
         <div>
-          <h2 className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-3">
+          <h2 className="text-muted-foreground/70 text-xs font-semibold uppercase tracking-widest mb-3">
             Unread ({unread.length})
           </h2>
           <div className="space-y-2">
@@ -115,7 +115,7 @@ export default function NotificationList({
       {/* Read Notifications */}
       {read.length > 0 && (
         <div>
-          <h2 className="text-white/40 text-xs font-semibold uppercase tracking-widest mb-3">
+          <h2 className="text-muted-foreground/70 text-xs font-semibold uppercase tracking-widest mb-3">
             Earlier
           </h2>
           <div className="space-y-2">
@@ -141,18 +141,18 @@ function NotificationCard({
   onMarkRead: (id: string) => void;
 }) {
   const Icon = typeIcons[notification.type] || Bell;
-  const color = typeColors[notification.type] || "text-white/50";
+  const color = typeColors[notification.type] || "text-muted-foreground";
 
   const content = (
     <GlassCard
       className={`flex items-start gap-4 cursor-pointer transition-all ${
         !notification.read
-          ? "border-l-2 border-l-purple-500 bg-purple-500/5"
+          ? "border-l-2 border-l-orange-500 bg-orange-500/15"
           : "opacity-70"
       }`}
     >
       {/* Icon */}
-      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center flex-shrink-0">
+      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
         <Icon className={`w-5 h-5 ${color}`} />
       </div>
 
@@ -161,10 +161,10 @@ function NotificationCard({
         <div className="flex items-center gap-2 mb-0.5">
           <p className="text-white font-semibold text-sm">{notification.title}</p>
           {!notification.read && (
-            <span className="w-2 h-2 rounded-full bg-purple-400 flex-shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" />
           )}
         </div>
-        <p className="text-white/50 text-sm leading-relaxed line-clamp-2">
+        <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
           {notification.body}
         </p>
         <p className="text-white/30 text-xs mt-1.5">

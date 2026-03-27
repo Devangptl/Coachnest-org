@@ -17,7 +17,7 @@ export default function AnalyticsLoading() {
         {Array.from({ length: 4 }).map((_, i) => (
           <div
             key={i}
-            className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 flex items-center gap-4 animate-pulse"
+            className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
             <Skeleton className="w-11 h-11 rounded-xl" />
             <div className="space-y-2">
@@ -29,7 +29,7 @@ export default function AnalyticsLoading() {
       </div>
 
       {/* Charts area (tabs) */}
-      <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 animate-pulse">
+      <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
         <div className="flex gap-3 mb-6">
           <Skeleton className="h-9 w-24 rounded-lg" />
           <Skeleton className="h-9 w-28 rounded-lg" />
@@ -40,7 +40,7 @@ export default function AnalyticsLoading() {
       {/* Bottom row: Top Courses + Recent Orders */}
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Top Courses */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 animate-pulse">
+        <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
           <Skeleton h="h-5" w="w-28" className="mb-4" />
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
@@ -57,7 +57,7 @@ export default function AnalyticsLoading() {
         </div>
 
         {/* Recent Orders */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-6 animate-pulse">
+        <div className="bg-card border border-border rounded-lg p-6 animate-pulse">
           <Skeleton h="h-5" w="w-32" className="mb-4" />
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (

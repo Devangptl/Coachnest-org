@@ -48,8 +48,8 @@ export default function CourseHero({
   return (
     <div className="relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-900/30 via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-violet-600/10 to-purple-600/10" />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-700/10 to-orange-500/10" />
 
       <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-6">
         {/* Breadcrumb */}
@@ -57,15 +57,15 @@ export default function CourseHero({
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="flex items-center gap-2 text-xs text-white/40 mb-4"
+          className="flex items-center gap-2 text-xs text-muted-foreground/70 mb-4"
         >
-          <Link href="/" className="hover:text-white/70 transition-colors">Home</Link>
+          <Link href="/" className="hover:text-muted-foreground transition-colors">Home</Link>
           <ChevronRight className="w-3.5 h-3.5" />
-          <Link href="/courses" className="hover:text-white/70 transition-colors">Courses</Link>
+          <Link href="/courses" className="hover:text-muted-foreground transition-colors">Courses</Link>
           {categoryName && (
             <>
               <ChevronRight className="w-3.5 h-3.5" />
-              <span className="text-white/60">{categoryName}</span>
+              <span className="text-muted-foreground">{categoryName}</span>
             </>
           )}
         </motion.nav>
@@ -121,10 +121,10 @@ export default function CourseHero({
                       />
                     ))}
                   </div>
-                  <span className="text-white/40 text-sm">({reviewCount} reviews)</span>
+                  <span className="text-muted-foreground/70 text-sm">({reviewCount} reviews)</span>
                 </div>
               )}
-              <div className="flex items-center gap-1.5 text-white/50 text-sm">
+              <div className="flex items-center gap-1.5 text-muted-foreground text-sm">
                 <Users className="w-4 h-4" />
                 {enrollmentCount.toLocaleString()} students
               </div>
@@ -132,11 +132,11 @@ export default function CourseHero({
 
             {/* Instructor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
                 {instructorName.charAt(0).toUpperCase()}
               </div>
               <div>
-                <p className="text-white/40 text-[10px]">Created by</p>
+                <p className="text-muted-foreground/70 text-[10px]">Created by</p>
                 <p className="text-white font-medium text-xs">{instructorName}</p>
               </div>
             </div>
@@ -149,7 +149,7 @@ export default function CourseHero({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-violet-600/30 to-purple-800/30 border border-white/10 shadow-xl shadow-purple-500/10 group">
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-orange-700/30 to-orange-700/30 border border-border shadow-xl shadow-orange-600/15 group">
               {thumbnail ? (
                 <Image
                   src={thumbnail}
@@ -174,24 +174,24 @@ export default function CourseHero({
 
             {/* Quick stats under thumbnail */}
             <div className="grid grid-cols-3 gap-2 mt-3">
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center">
-                <BookOpen className="w-3.5 h-3.5 text-purple-400 mx-auto mb-0.5" />
+              <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
+                <BookOpen className="w-3.5 h-3.5 text-orange-400 mx-auto mb-0.5" />
                 <p className="text-white font-semibold text-xs">{lessonCount}</p>
-                <p className="text-white/40 text-[9px]">Lessons</p>
+                <p className="text-muted-foreground/70 text-[9px]">Lessons</p>
               </div>
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center">
+              <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
                 <Clock className="w-3.5 h-3.5 text-blue-400 mx-auto mb-0.5" />
                 <p className="text-white font-semibold text-xs">
                   {totalDuration > 60
                     ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`
                     : `${totalDuration}m`}
                 </p>
-                <p className="text-white/40 text-[9px]">Duration</p>
+                <p className="text-muted-foreground/70 text-[9px]">Duration</p>
               </div>
-              <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-lg px-2 py-2 text-center">
+              <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
                 <Users className="w-3.5 h-3.5 text-green-400 mx-auto mb-0.5" />
                 <p className="text-white font-semibold text-xs">{enrollmentCount}</p>
-                <p className="text-white/40 text-[9px]">Students</p>
+                <p className="text-muted-foreground/70 text-[9px]">Students</p>
               </div>
             </div>
           </motion.div>

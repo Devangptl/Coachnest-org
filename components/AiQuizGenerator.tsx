@@ -98,7 +98,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
   // Initial state — generate button
   if (questions.length === 0 && !loading) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div className="rounded-lg border border-border bg-secondary p-6">
         <div className="flex items-center gap-3 mb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-amber-500/15 border border-amber-400/20">
             <Sparkles className="h-5 w-5 text-amber-400" />
@@ -107,7 +107,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
             <h3 className="text-sm font-semibold text-white">
               AI Quiz Generator
             </h3>
-            <p className="text-xs text-white/50">
+            <p className="text-xs text-muted-foreground">
               Test your understanding with AI-generated questions
             </p>
           </div>
@@ -123,7 +123,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
           <select
             value={questionCount}
             onChange={(e) => setQuestionCount(Number(e.target.value))}
-            className="rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50"
+            className="rounded-lg border border-border bg-secondary px-3 py-2 text-sm text-white focus:outline-none focus:border-amber-400/50"
           >
             {[3, 5, 7, 10].map((n) => (
               <option key={n} value={n} className="bg-gray-900">
@@ -146,12 +146,12 @@ export default function AiQuizGenerator({ lessonId }: Props) {
   // Loading state
   if (loading) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-8 text-center">
+      <div className="rounded-lg border border-border bg-secondary p-8 text-center">
         <Loader2 className="h-8 w-8 animate-spin text-amber-400 mx-auto mb-3" />
-        <p className="text-sm text-white/70">
+        <p className="text-sm text-muted-foreground">
           Generating quiz questions from lesson content...
         </p>
-        <p className="text-xs text-white/40 mt-1">This may take a few seconds</p>
+        <p className="text-xs text-muted-foreground/70 mt-1">This may take a few seconds</p>
       </div>
     );
   }
@@ -160,7 +160,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
   if (showResults) {
     const percentage = Math.round((score / questions.length) * 100);
     return (
-      <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+      <div className="rounded-lg border border-border bg-secondary p-6">
         <div className="text-center mb-6">
           <div
             className={cn(
@@ -179,7 +179,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
           <h3 className="text-lg font-bold text-white">
             {score} / {questions.length} correct
           </h3>
-          <p className="text-sm text-white/50">{percentage}% score</p>
+          <p className="text-sm text-muted-foreground">{percentage}% score</p>
         </div>
 
         <div className="space-y-4 mb-6">
@@ -211,7 +211,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
                           ? "text-green-400 bg-green-500/10"
                           : opt.id === selected && !opt.isCorrect
                           ? "text-red-400 bg-red-500/10"
-                          : "text-white/50"
+                          : "text-muted-foreground"
                       )}
                     >
                       {opt.isCorrect ? (
@@ -232,7 +232,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
 
         <button
           onClick={generateQuiz}
-          className="flex items-center gap-2 mx-auto rounded-xl bg-white/10 px-4 py-2 text-sm font-medium text-white hover:bg-white/15 transition-colors"
+          className="flex items-center gap-2 mx-auto rounded-xl bg-secondary px-4 py-2 text-sm font-medium text-white hover:bg-white/15 transition-colors"
         >
           <RotateCw className="h-4 w-4" />
           Generate New Quiz
@@ -244,17 +244,17 @@ export default function AiQuizGenerator({ lessonId }: Props) {
   // Quiz in progress
   const q = questions[currentQ];
   return (
-    <div className="rounded-2xl border border-white/10 bg-white/5 p-6">
+    <div className="rounded-lg border border-border bg-secondary p-6">
       {/* Progress */}
       <div className="flex items-center justify-between mb-4">
-        <span className="text-xs text-white/50">
+        <span className="text-xs text-muted-foreground">
           Question {currentQ + 1} of {questions.length}
         </span>
-        <span className="text-xs text-white/50">
+        <span className="text-xs text-muted-foreground">
           {Object.keys(answers).length} answered
         </span>
       </div>
-      <div className="h-1.5 rounded-full bg-white/10 mb-6">
+      <div className="h-1.5 rounded-full bg-secondary mb-6">
         <div
           className="h-full rounded-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all"
           style={{
@@ -282,10 +282,10 @@ export default function AiQuizGenerator({ lessonId }: Props) {
                   "w-full text-left rounded-xl border px-4 py-3 text-sm transition-all",
                   answers[currentQ] === opt.id
                     ? "border-amber-400/50 bg-amber-500/10 text-white"
-                    : "border-white/10 bg-white/5 text-white/70 hover:border-white/20 hover:bg-white/10"
+                    : "border-border bg-secondary text-muted-foreground hover:border-border hover:bg-secondary"
                 )}
               >
-                <span className="font-semibold mr-2 text-white/50">
+                <span className="font-semibold mr-2 text-muted-foreground">
                   {opt.id.toUpperCase()}.
                 </span>
                 {opt.text}
@@ -300,7 +300,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
         <button
           onClick={() => setCurrentQ((p) => Math.max(0, p - 1))}
           disabled={currentQ === 0}
-          className="text-sm text-white/50 hover:text-white disabled:opacity-30 transition-colors"
+          className="text-sm text-muted-foreground hover:text-white disabled:opacity-30 transition-colors"
         >
           Previous
         </button>
@@ -320,7 +320,7 @@ export default function AiQuizGenerator({ lessonId }: Props) {
               "rounded-xl px-4 py-2 text-sm font-semibold transition-all",
               allAnswered
                 ? "bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:opacity-90"
-                : "bg-white/10 text-white/30"
+                : "bg-secondary text-white/30"
             )}
           >
             Submit Quiz

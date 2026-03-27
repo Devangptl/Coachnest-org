@@ -34,8 +34,8 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-purple-500/30 border border-purple-400/30 flex items-center justify-center flex-shrink-0">
-            <span className="text-purple-300 text-xs font-bold">{initials}</span>
+          <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-400/25 flex items-center justify-center flex-shrink-0">
+            <span className="text-orange-300 text-xs font-bold">{initials}</span>
           </div>
         )}
         <div className="flex-1 min-w-0">
@@ -49,7 +49,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
 
       {/* Comment */}
       {review.comment && (
-        <p className="text-white/70 text-sm leading-relaxed">{review.comment}</p>
+        <p className="text-muted-foreground text-sm leading-relaxed">{review.comment}</p>
       )}
 
       {/* Helpful */}

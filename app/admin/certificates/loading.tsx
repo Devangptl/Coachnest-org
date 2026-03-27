@@ -20,9 +20,9 @@ export default function CertificatesLoading() {
       </div>
 
       {/* Table */}
-      <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl animate-pulse">
+      <div className="bg-card border border-border rounded-lg animate-pulse">
         {/* Column headers */}
-        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-white/10">
+        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-border">
           <Skeleton className="col-span-4 h-3 w-14 rounded" />
           <Skeleton className="col-span-4 h-3 w-12 rounded" />
           <Skeleton className="col-span-2 h-3 w-12 rounded" />

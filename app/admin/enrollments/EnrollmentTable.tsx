@@ -13,7 +13,7 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
 
   const getProgressColor = (progress: number) => {
     if (progress === 100) return "bg-emerald-500";
-    if (progress >= 75) return "bg-violet-500";
+    if (progress >= 75) return "bg-orange-500";
     if (progress >= 50) return "bg-blue-500";
     if (progress >= 25) return "bg-amber-500";
     return "bg-red-500";
@@ -32,14 +32,14 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
         {enrollments.map((enrollment) => (
           <div
             key={enrollment.id}
-            className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-white/5 transition-colors"
+            className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-secondary transition-colors"
           >
             {/* Student Info */}
             <div className="col-span-3 min-w-0">
               <p className="text-white text-sm font-medium truncate">
                 {enrollment.user.name}
               </p>
-              <p className="text-white/40 text-xs truncate mt-0.5">
+              <p className="text-muted-foreground/70 text-xs truncate mt-0.5">
                 {enrollment.user.email}
               </p>
             </div>
@@ -52,19 +52,19 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
             </div>
 
             {/* Enrollment Date */}
-            <div className="col-span-1 text-xs text-white/50">
+            <div className="col-span-1 text-xs text-muted-foreground">
               {formatDate(enrollment.enrolledAt)}
             </div>
 
             {/* Progress Bar */}
             <div className="col-span-1">
-              <div className="w-full bg-white/10 rounded-full h-2">
+              <div className="w-full bg-secondary rounded-full h-2">
                 <div
                   className={`h-2 rounded-full transition-all ${getProgressColor(50)}`}
                   style={{ width: "50%" }}
                 />
               </div>
-              <p className="text-xs text-white/50 mt-1">50%</p>
+              <p className="text-xs text-muted-foreground mt-1">50%</p>
             </div>
 
             {/* Status */}

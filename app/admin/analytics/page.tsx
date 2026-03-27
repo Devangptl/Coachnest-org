@@ -15,10 +15,10 @@ const AnalyticsDashboard = dynamic(() => import("./AnalyticsDashboard"), {
     <div className="space-y-6 animate-pulse">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 rounded-2xl bg-white/5" />
+          <div key={i} className="h-28 rounded-lg bg-secondary" />
         ))}
       </div>
-      <div className="h-80 rounded-2xl bg-white/5" />
+      <div className="h-80 rounded-lg bg-secondary" />
     </div>
   ),
 });

@@ -16,9 +16,9 @@ export default function BlogsLoading() {
       </div>
 
       {/* Table */}
-      <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl animate-pulse">
+      <div className="bg-card border border-border rounded-lg animate-pulse">
         {/* Column headers */}
-        <div className="grid grid-cols-12 gap-4 px-4 py-2 border-b border-white/10">
+        <div className="grid grid-cols-12 gap-4 px-4 py-2 border-b border-border">
           <Skeleton className="col-span-5 h-3 w-10 rounded" />
           <Skeleton className="col-span-2 h-3 w-14 rounded" />
           <Skeleton className="col-span-2 h-3 w-10 rounded mx-auto" />

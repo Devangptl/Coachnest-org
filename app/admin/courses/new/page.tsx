@@ -58,7 +58,7 @@ export default function NewCoursePage() {
     <div className="max-w-2xl">
       <Link
         href="/admin/courses"
-        className="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Courses
       </Link>
@@ -121,10 +121,10 @@ export default function NewCoursePage() {
 
           {/* Pricing */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+            <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
               <div>
                 <p className="text-white text-sm font-medium">Free course</p>
-                <p className="text-white/40 text-xs mt-0.5">No payment required to enroll</p>
+                <p className="text-muted-foreground/70 text-xs mt-0.5">No payment required to enroll</p>
               </div>
               <button
                 type="button"
@@ -152,15 +152,15 @@ export default function NewCoursePage() {
           </div>
 
           {/* Publish toggle */}
-          <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
             <div>
               <p className="text-white text-sm font-medium">Publish immediately</p>
-              <p className="text-white/40 text-xs mt-0.5">Students can see and enroll in published courses.</p>
+              <p className="text-muted-foreground/70 text-xs mt-0.5">Students can see and enroll in published courses.</p>
             </div>
             <button
               type="button"
               onClick={() => setPublished(!published)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${published ? "bg-violet-600" : "bg-white/20"}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${published ? "bg-orange-600" : "bg-white/20"}`}
             >
               <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${published ? "translate-x-6" : "translate-x-1"}`} />
             </button>
@@ -171,7 +171,7 @@ export default function NewCoursePage() {
             <Button type="submit" loading={loading}>
               Create Course
             </Button>
-            <Link href="/admin/courses" className="btn-ghost border border-white/20">
+            <Link href="/admin/courses" className="btn-ghost border border-border">
               Cancel
             </Link>
           </div>

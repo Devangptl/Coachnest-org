@@ -22,7 +22,7 @@ export default function CoursesLoading() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="backdrop-blur-lg bg-white/[0.06] border border-white/10 rounded-2xl overflow-hidden"
+            className="backdrop-blur-lg bg-white/[0.06] border border-border rounded-lg overflow-hidden"
           >
             <div className="skeleton h-44 w-full rounded-none" />
             <div className="p-5 space-y-3">

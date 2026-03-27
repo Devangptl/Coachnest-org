@@ -45,7 +45,7 @@ export default function WishlistButton({ courseId, initialState, className }: Pr
       aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
       className={cn(
         "p-2 rounded-full transition-all",
-        "bg-white/10 border border-white/20 hover:bg-white/20",
+        "bg-card border border-border hover:bg-secondary",
         loading && "opacity-50 cursor-wait",
         className
       )}
@@ -53,7 +53,7 @@ export default function WishlistButton({ courseId, initialState, className }: Pr
       <Heart
         className={cn(
           "w-4 h-4 transition-colors",
-          inWishlist ? "fill-red-400 text-red-400" : "text-white/50"
+          inWishlist ? "fill-red-400 text-red-400" : "text-muted-foreground"
         )}
       />
     </button>

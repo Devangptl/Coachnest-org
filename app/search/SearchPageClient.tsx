@@ -114,7 +114,7 @@ export default function SearchPageClient() {
               <div className="glass p-5 space-y-6 w-64">
                 {/* Level */}
                 <div>
-                  <h4 className="text-white/50 text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
+                  <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
                     <Filter className="w-3 h-3" /> Level
                   </h4>
                   <div className="space-y-1">
@@ -125,8 +125,8 @@ export default function SearchPageClient() {
                         className={cn(
                           "w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all",
                           level === l
-                            ? "bg-purple-500/20 text-purple-300 border border-purple-400/30"
-                            : "text-white/60 hover:text-white hover:bg-white/10"
+                            ? "bg-orange-500/15 text-orange-300 border border-orange-400/25"
+                            : "text-muted-foreground hover:text-white hover:bg-secondary"
                         )}
                       >
                         {l || "All levels"}
@@ -151,7 +151,7 @@ export default function SearchPageClient() {
 
         {/* Results */}
         <div className="flex-1 min-w-0">
-          <p className="text-white/40 text-sm mb-5">
+          <p className="text-muted-foreground/70 text-sm mb-5">
             {loading ? "Searching..." : `${total} course${total !== 1 ? "s" : ""} found`}
           </p>
 
@@ -185,7 +185,7 @@ export default function SearchPageClient() {
           </div>
 
           {courses.length === 0 && !loading && (
-            <div className="text-center py-20 text-white/40">
+            <div className="text-center py-20 text-muted-foreground/70">
               <p className="text-lg font-medium text-white mb-2">No courses found</p>
               <p className="text-sm">Try a different keyword or clear the filters</p>
             </div>
@@ -201,8 +201,8 @@ export default function SearchPageClient() {
                   className={cn(
                     "w-9 h-9 rounded-xl text-sm font-medium transition-all",
                     page === p
-                      ? "bg-purple-500 text-white"
-                      : "bg-white/10 text-white/60 hover:bg-white/20"
+                      ? "bg-orange-500 text-white"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary"
                   )}
                 >
                   {p}

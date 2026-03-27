@@ -44,10 +44,10 @@ export default function SearchBar({
   return (
     <form onSubmit={handleSubmit} className={cn("relative", className)}>
       <div className={cn(
-        "flex items-center gap-2 backdrop-blur-lg bg-white/10 border rounded-xl px-4 py-3 transition-all",
-        focused ? "border-purple-400/60 bg-white/[.15]" : "border-white/20"
+        "flex items-center gap-2 backdrop-blur-lg bg-secondary border rounded-xl px-4 py-3 transition-all",
+        focused ? "border-orange-400/25 bg-secondary" : "border-border"
       )}>
-        <Search className="w-4 h-4 text-white/40 flex-shrink-0" />
+        <Search className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
         <input
           ref={inputRef}
           type="text"

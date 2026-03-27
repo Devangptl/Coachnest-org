@@ -77,10 +77,10 @@ export default function CourseSidebar({
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="backdrop-blur-xl bg-white/[0.07] border border-white/15 rounded-xl overflow-hidden shadow-xl shadow-black/20"
+      className="backdrop-blur-xl bg-white/[0.07] border border-border rounded-xl overflow-hidden shadow-xl shadow-black/20"
     >
       {/* Price section */}
-      <div className="p-4 border-b border-white/10">
+      <div className="p-4 border-b border-border">
         {isFree ? (
           <div className="flex items-center gap-2">
             <span className="text-2xl font-bold text-emerald-400">Free</span>
@@ -133,7 +133,7 @@ export default function CourseSidebar({
           {isLoggedIn && (
             <div className="flex items-center justify-center gap-2">
               <WishlistButton courseId={courseId} initialState={isWishlisted} />
-              <span className="text-white/40 text-xs">
+              <span className="text-muted-foreground/70 text-xs">
                 {isWishlisted ? "In your wishlist" : "Add to wishlist"}
               </span>
             </div>
@@ -149,7 +149,7 @@ export default function CourseSidebar({
             className="flex items-center gap-2 mt-3 pt-3 border-t border-white/[0.06]"
           >
             <Shield className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-            <p className="text-white/40 text-xs leading-relaxed">
+            <p className="text-muted-foreground/70 text-xs leading-relaxed">
               30-day money-back guarantee. Full refund if you&apos;re not satisfied.
             </p>
           </motion.div>
@@ -183,7 +183,7 @@ export default function CourseSidebar({
       <div className="px-4 pb-4 flex gap-2">
         <button
           onClick={handleCopyLink}
-          className="flex-1 flex items-center justify-center gap-2 text-white/40 hover:text-white/70 text-[11px] py-2.5 rounded-lg border border-white/[0.06] hover:border-white/15 hover:bg-white/[0.03] transition-all"
+          className="flex-1 flex items-center justify-center gap-2 text-muted-foreground/70 hover:text-muted-foreground text-[11px] py-2.5 rounded-lg border border-white/[0.06] hover:border-border hover:bg-white/[0.03] transition-all"
         >
           {copied ? (
             <>
@@ -201,7 +201,7 @@ export default function CourseSidebar({
           <button
             onClick={() => { window.location.href = `/api/courses/${courseId}/pdf`; }}
             title="Download Full Course PDF"
-            className="w-10 flex-shrink-0 flex items-center justify-center text-white/40 hover:text-white/70 py-2.5 rounded-lg border border-white/[0.06] hover:border-white/15 hover:bg-white/[0.03] transition-all"
+            className="w-10 flex-shrink-0 flex items-center justify-center text-muted-foreground/70 hover:text-muted-foreground py-2.5 rounded-lg border border-white/[0.06] hover:border-border hover:bg-white/[0.03] transition-all"
           >
             <Download className="w-4 h-4" />
           </button>
@@ -213,9 +213,9 @@ export default function CourseSidebar({
 
 function IncludeItem({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
   return (
-    <div className="flex items-center gap-2.5 text-white/60 text-xs group">
-      <div className="w-6 h-6 rounded-md bg-white/[0.04] flex items-center justify-center group-hover:bg-purple-500/15 transition-colors">
-        <Icon className="w-3 h-3 text-purple-400 flex-shrink-0" />
+    <div className="flex items-center gap-2.5 text-muted-foreground text-xs group">
+      <div className="w-6 h-6 rounded-md bg-white/[0.04] flex items-center justify-center group-hover:bg-orange-500/15 transition-colors">
+        <Icon className="w-3 h-3 text-orange-400 flex-shrink-0" />
       </div>
       {text}
     </div>

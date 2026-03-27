@@ -35,7 +35,7 @@ export default function BlogCard({
     >
       <Link
         href={`/blog/${slug}`}
-        className="group flex flex-col h-[340px] backdrop-blur-lg bg-white/[0.06] border border-white/10 rounded-xl overflow-hidden shadow-lg hover:bg-white/[0.1] hover:border-white/20 transition-all duration-300"
+        className="group flex flex-col h-[340px] backdrop-blur-lg bg-white/[0.06] border border-border rounded-xl overflow-hidden shadow-lg hover:bg-white/[0.1] hover:border-border transition-all duration-300"
       >
         {/* Thumbnail */}
         {thumbnail ? (
@@ -48,9 +48,9 @@ export default function BlogCard({
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </div>
         ) : (
-          <div className="h-36 shrink-0 bg-gradient-to-br from-violet-500/20 to-purple-600/20 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
-              <span className="text-2xl font-bold text-purple-400">{title.charAt(0)}</span>
+          <div className="h-36 shrink-0 bg-gradient-to-br from-orange-600/20 to-orange-500/20 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+              <span className="text-2xl font-bold text-orange-400">{title.charAt(0)}</span>
             </div>
           </div>
         )}
@@ -62,7 +62,7 @@ export default function BlogCard({
             {tagList.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] font-medium text-purple-300 bg-purple-500/15 px-1.5 py-px rounded-full border border-purple-400/20"
+                className="text-[10px] font-medium text-orange-300 bg-orange-500/15 px-1.5 py-px rounded-full border border-orange-400/20"
               >
                 {tag}
               </span>
@@ -76,12 +76,12 @@ export default function BlogCard({
           </div>
 
           {/* Title */}
-          <h3 className="text-white font-semibold text-sm leading-snug mb-1.5 group-hover:text-purple-300 transition-colors line-clamp-2">
+          <h3 className="text-white font-semibold text-sm leading-snug mb-1.5 group-hover:text-orange-300 transition-colors line-clamp-2">
             {title}
           </h3>
 
           {/* Excerpt */}
-          <p className="text-white/40 text-xs leading-relaxed line-clamp-2">
+          <p className="text-muted-foreground/70 text-xs leading-relaxed line-clamp-2">
             {excerpt || "\u00A0"}
           </p>
 
@@ -97,7 +97,7 @@ export default function BlogCard({
                 {formatDate(typeof createdAt === "string" ? new Date(createdAt) : createdAt)}
               </span>
             </div>
-            <ArrowRight className="w-3.5 h-3.5 text-purple-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            <ArrowRight className="w-3.5 h-3.5 text-orange-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
         </div>
       </Link>

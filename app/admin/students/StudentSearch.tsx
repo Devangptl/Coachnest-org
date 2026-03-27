@@ -26,11 +26,11 @@ export default function StudentSearch() {
     <GlassCard padding="sm">
       <div className="flex items-center gap-3 px-2">
         <div className="flex-1 relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
           <input
             type="text"
             placeholder="Search by name or email..."
-            className="w-full bg-white/5 border border-white/20 rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            className="w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}

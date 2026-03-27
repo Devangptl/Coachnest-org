@@ -53,7 +53,7 @@ export default function NewBlogPage() {
     <div className="max-w-3xl">
       <Link
         href="/admin/blogs"
-        className="inline-flex items-center gap-1.5 text-white/50 hover:text-white text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Blog Posts
       </Link>
@@ -123,15 +123,15 @@ export default function NewBlogPage() {
           </div>
 
           {/* Publish toggle */}
-          <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
             <div>
               <p className="text-white text-sm font-medium">Publish immediately</p>
-              <p className="text-white/40 text-xs mt-0.5">Published posts are visible to everyone.</p>
+              <p className="text-muted-foreground/70 text-xs mt-0.5">Published posts are visible to everyone.</p>
             </div>
             <button
               type="button"
               onClick={() => setPublished(!published)}
-              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${published ? "bg-violet-600" : "bg-white/20"}`}
+              className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${published ? "bg-orange-600" : "bg-white/20"}`}
             >
               <span className={`inline-block h-4 w-4 rounded-full bg-white shadow transition-transform ${published ? "translate-x-6" : "translate-x-1"}`} />
             </button>
@@ -142,7 +142,7 @@ export default function NewBlogPage() {
             <Button type="submit" loading={loading}>
               Create Post
             </Button>
-            <Link href="/admin/blogs" className="btn-ghost border border-white/20">
+            <Link href="/admin/blogs" className="btn-ghost border border-border">
               Cancel
             </Link>
           </div>

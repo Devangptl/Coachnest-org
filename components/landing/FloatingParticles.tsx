@@ -17,7 +17,7 @@ export default function FloatingParticles() {
       {particles.map((p) => (
         <motion.div
           key={p.id}
-          className="absolute rounded-full bg-purple-400/20"
+          className="absolute rounded-full bg-orange-500/15"
           style={{
             width: p.size,
             height: p.size,

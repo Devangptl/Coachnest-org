@@ -144,7 +144,7 @@ export default function PricingPage() {
         <h1 className="text-4xl md:text-5xl font-black text-white mb-4">
           Invest in your future
         </h1>
-        <p className="text-white/50 text-lg max-w-xl mx-auto">
+        <p className="text-muted-foreground text-lg max-w-xl mx-auto">
           Choose a plan that works for you. All plans include access to our
           growing library of world-class courses.
         </p>
@@ -171,14 +171,14 @@ export default function PricingPage() {
       </div>
 
       {/* Trust badges */}
-      <div className="flex flex-wrap justify-center gap-8 mb-20 text-white/40 text-sm">
+      <div className="flex flex-wrap justify-center gap-8 mb-20 text-muted-foreground/70 text-sm">
         {[
           { icon: Shield, label: "30-day money-back guarantee" },
           { icon: Zap,    label: "Instant access after payment" },
           { icon: Shield, label: "Secure payments via Stripe" },
         ].map(({ icon: Icon, label }) => (
           <div key={label} className="flex items-center gap-2">
-            <Icon className="w-4 h-4 text-purple-400" />
+            <Icon className="w-4 h-4 text-orange-400" />
             {label}
           </div>
         ))}
@@ -193,10 +193,10 @@ export default function PricingPage() {
           {FAQ.map(({ q, a }) => (
             <div key={q} className="glass p-5">
               <div className="flex items-start gap-3">
-                <HelpCircle className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+                <HelpCircle className="w-5 h-5 text-orange-400 flex-shrink-0 mt-0.5" />
                 <div>
                   <p className="text-white font-medium mb-1">{q}</p>
-                  <p className="text-white/50 text-sm">{a}</p>
+                  <p className="text-muted-foreground text-sm">{a}</p>
                 </div>
               </div>
             </div>

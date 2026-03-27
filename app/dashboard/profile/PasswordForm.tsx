@@ -57,13 +57,13 @@ export default function PasswordForm() {
   return (
     <GlassCard>
       <h2 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <Lock className="w-4 h-4 text-purple-400" /> Change Password
+        <Lock className="w-4 h-4 text-orange-400" /> Change Password
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Current Password */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 block">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
             Current Password
           </label>
           <div className="relative">
@@ -72,13 +72,13 @@ export default function PasswordForm() {
               required
               value={currentPassword}
               onChange={(e) => { setCurrentPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 pr-10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 pr-10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
               placeholder="Enter current password"
             />
             <button
               type="button"
               onClick={() => setShowCurrent(!showCurrent)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
             >
               {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -87,7 +87,7 @@ export default function PasswordForm() {
 
         {/* New Password */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 block">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
             New Password
           </label>
           <div className="relative">
@@ -96,13 +96,13 @@ export default function PasswordForm() {
               required
               value={newPassword}
               onChange={(e) => { setNewPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 pr-10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 pr-10 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
               placeholder="At least 6 characters"
             />
             <button
               type="button"
               onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
             >
               {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
             </button>
@@ -111,7 +111,7 @@ export default function PasswordForm() {
 
         {/* Confirm New Password */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 block">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
             Confirm New Password
           </label>
           <input
@@ -119,7 +119,7 @@ export default function PasswordForm() {
             required
             value={confirmPassword}
             onChange={(e) => { setConfirmPassword(e.target.value); setMessage(null); }}
-            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="Re-enter new password"
           />
         </div>

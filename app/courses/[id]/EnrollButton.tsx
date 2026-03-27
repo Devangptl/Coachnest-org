@@ -148,7 +148,7 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
 
   if (verifying) {
     return (
-      <div className="flex items-center gap-2 bg-purple-500/20 border border-purple-400/30 rounded-xl px-4 py-3 text-purple-300 text-sm font-medium justify-center">
+      <div className="flex items-center gap-2 bg-orange-500/15 border border-orange-400/25 rounded-xl px-4 py-3 text-orange-300 text-sm font-medium justify-center">
         <Loader2 className="w-4 h-4 animate-spin" />
         Verifying payment…
       </div>
@@ -178,7 +178,7 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
                   (-{appliedCoupon.discountType === "PERCENTAGE" ? `${appliedCoupon.discount}%` : `₹${appliedCoupon.discount}`})
                 </span>
               </div>
-              <button onClick={removeCoupon} className="text-white/40 hover:text-white/70 transition-colors">
+              <button onClick={removeCoupon} className="text-muted-foreground/70 hover:text-muted-foreground transition-colors">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -190,12 +190,12 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                 placeholder="Coupon code"
-                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-purple-400/50 transition-colors"
+                className="flex-1 bg-secondary border border-border rounded-xl px-3 py-2 text-sm text-white placeholder:text-white/30 focus:outline-none focus:border-orange-400/25 transition-colors"
               />
               <button
                 onClick={handleApplyCoupon}
                 disabled={couponLoading || !couponCode.trim()}
-                className="px-4 py-2 bg-white/10 border border-white/20 rounded-xl text-sm text-white/70 hover:text-white hover:bg-white/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-card border border-border rounded-xl text-sm text-muted-foreground hover:text-white hover:bg-white/15 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {couponLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Apply"}
               </button>
@@ -206,8 +206,8 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
 
       {/* Price breakdown with coupon */}
       {!isFree && price && appliedCoupon && (
-        <div className="bg-white/5 rounded-xl px-3 py-2 space-y-1 text-sm">
-          <div className="flex justify-between text-white/50">
+        <div className="bg-secondary rounded-xl px-3 py-2 space-y-1 text-sm">
+          <div className="flex justify-between text-muted-foreground">
             <span>Price</span>
             <span>₹{originalPrice.toLocaleString("en-IN")}</span>
           </div>
@@ -215,7 +215,7 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
             <span>Discount</span>
             <span>-₹{discountAmount.toLocaleString("en-IN")}</span>
           </div>
-          <div className="flex justify-between text-white font-semibold border-t border-white/10 pt-1">
+          <div className="flex justify-between text-white font-semibold border-t border-border pt-1">
             <span>Total</span>
             <span>₹{finalPrice.toLocaleString("en-IN")}</span>
           </div>

@@ -6,8 +6,8 @@ import { Skeleton } from "@/components/ui/Skeleton";
 function NotificationRowSkeleton({ isUnread }: { isUnread?: boolean }) {
   return (
     <div
-      className={`backdrop-blur-lg border border-white/20 rounded-2xl p-5 flex items-start gap-4 animate-pulse ${
-        isUnread ? "bg-white/[0.12]" : "bg-white/10"
+      className={`backdrop-blur-lg border border-border rounded-lg p-5 flex items-start gap-4 animate-pulse ${
+        isUnread ? "bg-white/[0.12]" : "bg-secondary"
       }`}
     >
       {/* Icon / dot */}

@@ -25,7 +25,7 @@ interface TextHighlighterProps {
 }
 
 const COLORS = [
-  { value: "#a855f7", label: "Purple", bg: "bg-purple-500", ring: "ring-purple-400" },
+  { value: "#a855f7", label: "Purple", bg: "bg-orange-500", ring: "ring-orange-400" },
   { value: "#f59e0b", label: "Amber", bg: "bg-amber-500", ring: "ring-amber-400" },
   { value: "#10b981", label: "Emerald", bg: "bg-emerald-500", ring: "ring-emerald-400" },
   { value: "#3b82f6", label: "Blue", bg: "bg-blue-500", ring: "ring-blue-400" },
@@ -205,7 +205,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-[#1a1a2e] border border-white/15 rounded-xl shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2">
+            <div className="bg-[#1a1a2e] border border-border rounded-xl shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2">
               {/* Color picker */}
               <div className="flex items-center gap-1.5 px-1">
                 <Palette className="w-3 h-3 text-white/30" />
@@ -227,7 +227,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               <button
                 onClick={saveHighlight}
                 disabled={saving}
-                className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-white/10 border border-white/10 text-white/80 hover:text-white hover:bg-white/15 transition-all font-medium disabled:opacity-50"
+                className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-secondary border border-border text-white/80 hover:text-white hover:bg-white/15 transition-all font-medium disabled:opacity-50"
               >
                 <Highlighter className="w-3.5 h-3.5" />
                 {saving ? "Saving..." : "Highlight"}
@@ -235,7 +235,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
             </div>
 
             {/* Arrow */}
-            <div className="w-2.5 h-2.5 bg-[#1a1a2e] border-r border-b border-white/15 rotate-45 -mt-[5px]" />
+            <div className="w-2.5 h-2.5 bg-[#1a1a2e] border-r border-b border-border rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -256,7 +256,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-[#1a1a2e] border border-white/15 rounded-xl shadow-2xl shadow-black/50 px-2.5 py-2 flex items-center gap-1.5">
+            <div className="bg-[#1a1a2e] border border-border rounded-xl shadow-2xl shadow-black/50 px-2.5 py-2 flex items-center gap-1.5">
               <button
                 onClick={() => removeHighlight(activeHighlight.id)}
                 className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-red-500/15 border border-red-400/20 text-red-400 hover:bg-red-500/25 transition-all font-medium"
@@ -269,12 +269,12 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                   setActiveHighlight(null);
                   setActiveHlPos(null);
                 }}
-                className="p-1.5 rounded-lg text-white/30 hover:text-white/60 hover:bg-white/5 transition-all"
+                className="p-1.5 rounded-lg text-white/30 hover:text-muted-foreground hover:bg-secondary transition-all"
               >
                 <X className="w-3 h-3" />
               </button>
             </div>
-            <div className="w-2.5 h-2.5 bg-[#1a1a2e] border-r border-b border-white/15 rotate-45 -mt-[5px]" />
+            <div className="w-2.5 h-2.5 bg-[#1a1a2e] border-r border-b border-border rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>

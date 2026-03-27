@@ -58,7 +58,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 flex items-center gap-2">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
             <User className="w-3.5 h-3.5" /> Name
           </label>
           <input
@@ -66,63 +66,63 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             required
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
-            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="Your full name"
           />
         </div>
 
         {/* Headline */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 flex items-center gap-2">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
             <FileText className="w-3.5 h-3.5" /> Headline
           </label>
           <input
             type="text"
             value={form.headline}
             onChange={(e) => handleChange("headline", e.target.value)}
-            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="e.g. Full Stack Developer | Student"
           />
         </div>
 
         {/* Bio */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 flex items-center gap-2">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
             <FileText className="w-3.5 h-3.5" /> Bio
           </label>
           <textarea
             rows={3}
             value={form.bio}
             onChange={(e) => handleChange("bio", e.target.value)}
-            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all resize-none"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all resize-none"
             placeholder="Tell us about yourself..."
           />
         </div>
 
         {/* Website */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 flex items-center gap-2">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
             <Globe className="w-3.5 h-3.5" /> Website
           </label>
           <input
             type="url"
             value={form.website}
             onChange={(e) => handleChange("website", e.target.value)}
-            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="https://yourwebsite.com"
           />
         </div>
 
         {/* Avatar URL */}
         <div>
-          <label className="text-white/60 text-sm font-medium mb-1.5 flex items-center gap-2">
+          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
             <Image className="w-3.5 h-3.5" /> Avatar URL
           </label>
           <input
             type="url"
             value={form.avatar}
             onChange={(e) => handleChange("avatar", e.target.value)}
-            className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 focus:bg-white/10 transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="https://example.com/avatar.jpg"
           />
         </div>

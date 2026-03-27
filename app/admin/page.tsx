@@ -36,7 +36,7 @@ export default async function AdminOverviewPage() {
         <h1 className="text-3xl font-bold text-white">
           Admin Overview
         </h1>
-        <p className="text-white/50 mt-1">
+        <p className="text-muted-foreground mt-1">
           Welcome back, {session?.name}. Here&apos;s what&apos;s happening.
         </p>
       </div>
@@ -44,7 +44,7 @@ export default async function AdminOverviewPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
-          { label: "Total Courses", value: totalCourses, icon: BookOpen, color: "text-violet-400" },
+          { label: "Total Courses", value: totalCourses, icon: BookOpen, color: "text-orange-400" },
           { label: "Students", value: totalStudents, icon: Users, color: "text-blue-400" },
           { label: "Enrollments", value: totalEnrollments, icon: GraduationCap, color: "text-emerald-400" },
           { label: "Certificates", value: totalCertificates, icon: Award, color: "text-amber-400" },
@@ -52,12 +52,12 @@ export default async function AdminOverviewPage() {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-white/10 flex items-center justify-center">
+              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
                 <div className="text-3xl font-bold text-white">{stat.value}</div>
-                <div className="text-white/50 text-sm">{stat.label}</div>
+                <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -69,19 +69,19 @@ export default async function AdminOverviewPage() {
         <Link href="/admin/courses/new" className="btn-primary flex items-center gap-2 text-sm">
           <PlusCircle className="w-4 h-4" /> New Course
         </Link>
-        <Link href="/admin/courses" className="btn-ghost flex items-center gap-2 text-sm border border-white/20">
+        <Link href="/admin/courses" className="btn-ghost flex items-center gap-2 text-sm border border-border">
           View All Courses <ArrowRight className="w-4 h-4" />
         </Link>
       </div>
 
       {/* Recent courses table */}
       <GlassCard padding="sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h2 className="text-white font-semibold flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-purple-400" />
+            <TrendingUp className="w-4 h-4 text-orange-400" />
             Recent Courses
           </h2>
-          <Link href="/admin/courses" className="text-purple-400 text-sm hover:text-purple-300">
+          <Link href="/admin/courses" className="text-orange-400 text-sm hover:text-orange-300">
             View all
           </Link>
         </div>
@@ -90,13 +90,13 @@ export default async function AdminOverviewPage() {
           {recentCourses.map((course) => (
             <div
               key={course.id}
-              className="flex items-center justify-between px-4 py-3 hover:bg-white/5 transition-colors"
+              className="flex items-center justify-between px-4 py-3 hover:bg-secondary transition-colors"
             >
               <div className="flex-1 min-w-0">
                 <p className="text-white text-sm font-medium truncate">
                   {course.title}
                 </p>
-                <p className="text-white/40 text-xs mt-0.5">
+                <p className="text-muted-foreground/70 text-xs mt-0.5">
                   {formatDate(course.createdAt)} ·{" "}
                   {course._count.lessons} lessons ·{" "}
                   {course._count.enrollments} enrolled
@@ -115,7 +115,7 @@ export default async function AdminOverviewPage() {
                 </span>
                 <Link
                   href={`/admin/courses/${course.id}/edit`}
-                  className="text-white/40 hover:text-white text-xs transition-colors"
+                  className="text-muted-foreground/70 hover:text-white text-xs transition-colors"
                 >
                   Edit
                 </Link>
@@ -124,9 +124,9 @@ export default async function AdminOverviewPage() {
           ))}
 
           {recentCourses.length === 0 && (
-            <div className="text-center py-8 text-white/40">
+            <div className="text-center py-8 text-muted-foreground/70">
               No courses yet.{" "}
-              <Link href="/admin/courses/new" className="text-purple-400 hover:text-purple-300">
+              <Link href="/admin/courses/new" className="text-orange-400 hover:text-orange-300">
                 Create one
               </Link>
             </div>

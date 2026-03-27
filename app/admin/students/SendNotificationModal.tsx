@@ -49,15 +49,15 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-lg w-full mx-4 border border-white/10">
+    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-lg w-full mx-4 border border-border">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-white/10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
             <h2 className="text-lg font-semibold text-white">Send Notification</h2>
-            <p className="text-white/40 text-sm">To: {studentName}</p>
+            <p className="text-muted-foreground/70 text-sm">To: {studentName}</p>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -65,11 +65,11 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
         {/* Form */}
         <div className="p-6 space-y-4">
           <div>
-            <label className="text-white/60 text-sm font-medium mb-1.5 block">Type</label>
+            <label className="text-muted-foreground text-sm font-medium mb-1.5 block">Type</label>
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-purple-400/60 transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-orange-400/25 transition-all"
             >
               <option value="SYSTEM">System</option>
               <option value="COURSE_UPDATE">Course Update</option>
@@ -79,22 +79,22 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
           </div>
 
           <div>
-            <label className="text-white/60 text-sm font-medium mb-1.5 block">Title</label>
+            <label className="text-muted-foreground text-sm font-medium mb-1.5 block">Title</label>
             <input
               type="text"
               placeholder="Notification title"
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 transition-all"
               value={title}
               onChange={(e) => { setTitle(e.target.value); setResult(null); }}
             />
           </div>
 
           <div>
-            <label className="text-white/60 text-sm font-medium mb-1.5 block">Message</label>
+            <label className="text-muted-foreground text-sm font-medium mb-1.5 block">Message</label>
             <textarea
               rows={3}
               placeholder="Your message to the student..."
-              className="w-full bg-white/5 border border-white/20 rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-purple-400/60 transition-all resize-none"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
               value={message}
               onChange={(e) => { setMessage(e.target.value); setResult(null); }}
             />

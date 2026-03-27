@@ -18,7 +18,7 @@ export default async function CertificatesPage() {
     <div>
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-white">My Certificates</h1>
-        <p className="text-white/40 text-sm mt-1">
+        <p className="text-muted-foreground/70 text-sm mt-1">
           {certs.length} certificate{certs.length !== 1 ? "s" : ""} earned
         </p>
       </div>
@@ -27,7 +27,7 @@ export default async function CertificatesPage() {
         <GlassCard className="text-center py-20">
           <Award className="w-16 h-16 text-white/20 mx-auto mb-4" />
           <p className="text-white font-semibold text-lg mb-2">No certificates yet</p>
-          <p className="text-white/40 text-sm">
+          <p className="text-muted-foreground/70 text-sm">
             Complete a course to earn your first certificate.
           </p>
           <a href="/courses" className="btn-primary inline-flex mt-6">

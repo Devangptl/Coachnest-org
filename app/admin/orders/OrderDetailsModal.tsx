@@ -19,7 +19,7 @@ const statusIcon: Record<string, React.ReactNode> = {
   PAID: <CheckCircle2 className="w-4 h-4 text-emerald-400" />,
   PENDING: <Clock className="w-4 h-4 text-amber-400" />,
   FAILED: <XCircle className="w-4 h-4 text-red-400" />,
-  REFUNDED: <AlertCircle className="w-4 h-4 text-white/40" />,
+  REFUNDED: <AlertCircle className="w-4 h-4 text-muted-foreground/70" />,
 };
 
 export default function OrderDetailsModal({
@@ -62,18 +62,18 @@ export default function OrderDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-white/10">
+    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
+      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-white/10 px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-border px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {statusIcon[order.status]}
             <div>
               <h2 className="text-xl font-bold text-white">Order Details</h2>
-              <code className="text-white/40 text-xs font-mono">{order.id}</code>
+              <code className="text-muted-foreground/70 text-xs font-mono">{order.id}</code>
             </div>
           </div>
-          <button onClick={onClose} className="text-white/50 hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -87,7 +87,7 @@ export default function OrderDetailsModal({
               <Badge variant={statusVariant[order.status] || "gray"}>
                 {order.status}
               </Badge>
-              <span className="text-white/50 text-sm">
+              <span className="text-muted-foreground text-sm">
                 Last updated: {formatDate(order.updatedAt || order.createdAt)}
               </span>
             </div>
@@ -98,11 +98,11 @@ export default function OrderDetailsModal({
             <h3 className="text-white font-semibold mb-4">Customer</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-white/70">Name:</span>
+                <span className="text-muted-foreground">Name:</span>
                 <span className="text-white">{order.studentName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Email:</span>
+                <span className="text-muted-foreground">Email:</span>
                 <span className="text-white">{order.studentEmail}</span>
               </div>
             </div>
@@ -113,11 +113,11 @@ export default function OrderDetailsModal({
             <h3 className="text-white font-semibold mb-4">Payment</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
-                <span className="text-white/70">Course:</span>
+                <span className="text-muted-foreground">Course:</span>
                 <span className="text-white">{order.courseTitle}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-white/70">Amount:</span>
+                <span className="text-muted-foreground">Amount:</span>
                 <span className="text-white font-semibold">
                   ₹{order.amount.toLocaleString("en-IN")}
                 </span>
@@ -125,11 +125,11 @@ export default function OrderDetailsModal({
               {order.couponCode && (
                 <>
                   <div className="flex justify-between">
-                    <span className="text-white/70">Coupon:</span>
-                    <code className="text-purple-400 text-sm">{order.couponCode}</code>
+                    <span className="text-muted-foreground">Coupon:</span>
+                    <code className="text-orange-400 text-sm">{order.couponCode}</code>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-white/70">Discount:</span>
+                    <span className="text-muted-foreground">Discount:</span>
                     <span className="text-emerald-400">
                       -₹{order.discountAmount.toLocaleString("en-IN")}
                     </span>
@@ -137,7 +137,7 @@ export default function OrderDetailsModal({
                 </>
               )}
               <div className="flex justify-between">
-                <span className="text-white/70">Date:</span>
+                <span className="text-muted-foreground">Date:</span>
                 <span className="text-white">{formatDate(order.createdAt)}</span>
               </div>
             </div>

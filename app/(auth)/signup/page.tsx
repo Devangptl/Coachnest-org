@@ -50,15 +50,15 @@ export default function SignupPage() {
       <div className="w-full max-w-md animate-fade-in">
         {/* Logo */}
         <div className="text-center mb-8">
-          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-purple-500/40">
+          <div className="w-14 h-14 rounded-lg bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-600/15">
             <BookOpen className="w-7 h-7 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-white">Create account</h1>
-          <p className="text-white/50 mt-1">Start your learning journey today</p>
+          <p className="text-muted-foreground mt-1">Start your learning journey today</p>
         </div>
 
         {/* Glass form card */}
-        <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-card border border-border rounded-lg p-8 shadow-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
             {error && (
               <div className="bg-red-500/20 border border-red-400/30 rounded-xl px-4 py-3 text-red-300 text-sm">
@@ -111,7 +111,7 @@ export default function SignupPage() {
                 <button
                   type="button"
                   onClick={() => setShowPass(!showPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white/70 transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                 >
                   {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -134,11 +134,11 @@ export default function SignupPage() {
           </form>
         </div>
 
-        <p className="text-center text-white/50 text-sm mt-6">
+        <p className="text-center text-muted-foreground text-sm mt-6">
           Already have an account?{" "}
           <Link
             href="/login"
-            className="text-purple-400 hover:text-purple-300 transition-colors"
+            className="text-orange-400 hover:text-orange-300 transition-colors"
           >
             Sign in
           </Link>
