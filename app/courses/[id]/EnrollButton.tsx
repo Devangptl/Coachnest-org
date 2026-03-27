@@ -4,8 +4,8 @@
  */
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Loader2, CheckCircle2, Tag, X } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -26,8 +26,30 @@ interface CouponData {
 
 export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, isFree, price }: Props) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Detect payment redirect from URL immediately — no race condition
+  const isPaymentRedirect = searchParams.get("payment") === "success";
+
   const [enrolled, setEnrolled] = useState(initialEnrolled);
   const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(isPaymentRedirect && !initialEnrolled);
+
+  // Sync with server prop after router.refresh() re-renders with updated data
+  useEffect(() => {
+    setEnrolled(initialEnrolled);
+    if (initialEnrolled) setVerifying(false);
+  }, [initialEnrolled]);
+
+  // Listen for payment verified event from PaymentStatus component
+  useEffect(() => {
+    function onVerified() { setVerifying(false); setEnrolled(true); }
+
+    window.addEventListener("payment:verified", onVerified);
+    return () => {
+      window.removeEventListener("payment:verified", onVerified);
+    };
+  }, []);
 
   // Coupon state
   const [couponCode, setCouponCode] = useState("");
@@ -122,6 +144,15 @@ export default function EnrollButton({ courseId, isEnrolled: initialEnrolled, is
     } finally {
       setLoading(false);
     }
+  }
+
+  if (verifying) {
+    return (
+      <div className="flex items-center gap-2 bg-purple-500/20 border border-purple-400/30 rounded-xl px-4 py-3 text-purple-300 text-sm font-medium justify-center">
+        <Loader2 className="w-4 h-4 animate-spin" />
+        Verifying payment…
+      </div>
+    );
   }
 
   if (enrolled) {

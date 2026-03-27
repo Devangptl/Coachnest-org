@@ -5,6 +5,7 @@
  * Body: { sessionId }
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getSession } from "@/lib/auth";
 import { getStripe } from "@/lib/stripe";
 import { handlePaymentSuccess } from "@/services/payment.service";
@@ -34,6 +35,8 @@ export async function POST(req: NextRequest) {
           : checkoutSession.payment_intent?.id || "";
 
       const result = await handlePaymentSuccess(sessionId, paymentIntentId);
+      // Bust the server cache so router.refresh() gets fresh enrollment data
+      revalidatePath(`/courses/${result.courseId}`);
       return NextResponse.json(result);
     }
 

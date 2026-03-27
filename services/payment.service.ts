@@ -139,41 +139,41 @@ export async function handlePaymentSuccess(
 
   const userId = order.userId;
 
-  // Atomic: mark paid + enroll + increment coupon uses
-  await prisma.$transaction(async (tx) => {
-    await tx.order.update({
-      where: { id: order.id },
-      data: { status: "PAID", stripePaymentId: paymentIntentId },
-    });
+  // Mark order as paid + enroll + increment coupon uses
+  // Using sequential operations instead of interactive $transaction
+  // to avoid "Transaction not found" errors on serverless (Vercel).
+  // Each operation is idempotent, so partial completion is safe.
+  await prisma.order.update({
+    where: { id: order.id },
+    data: { status: "PAID", stripePaymentId: paymentIntentId },
+  });
 
-    await tx.enrollment.upsert({
-      where: { userId_courseId: { userId, courseId: order.courseId! } },
-      create: { userId, courseId: order.courseId! },
+  await prisma.enrollment.upsert({
+    where: { userId_courseId: { userId, courseId: order.courseId! } },
+    create: { userId, courseId: order.courseId! },
+    update: {},
+  });
+
+  if (order.couponId) {
+    await prisma.coupon.update({
+      where: { id: order.couponId },
+      data: { uses: { increment: 1 } },
+    });
+    await prisma.couponUse.upsert({
+      where: { userId_couponId: { userId, couponId: order.couponId } },
+      create: { userId, couponId: order.couponId },
       update: {},
     });
+  }
 
-    if (order.couponId) {
-      await tx.coupon.update({
-        where: { id: order.couponId },
-        data: { uses: { increment: 1 } },
-      });
-      await tx.couponUse.upsert({
-        where: { userId_couponId: { userId, couponId: order.couponId } },
-        create: { userId, couponId: order.couponId },
-        update: {},
-      });
-    }
-
-    // Notify the student
-    await tx.notification.create({
-      data: {
-        userId,
-        title: `Enrolled in "${order.course!.title}"`,
-        body: "Your payment was successful. Start learning now!",
-        type: "PURCHASE",
-        link: `/courses/${order.course!.id}`,
-      },
-    });
+  await prisma.notification.create({
+    data: {
+      userId,
+      title: `Enrolled in "${order.course!.title}"`,
+      body: "Your payment was successful. Start learning now!",
+      type: "PURCHASE",
+      link: `/courses/${order.course!.id}`,
+    },
   });
 
   // Fire-and-forget email

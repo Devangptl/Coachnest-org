@@ -11,6 +11,9 @@ import CourseSidebar from "./CourseSidebar";
 import CourseLayout from "./CourseLayout";
 import PaymentStatus from "./PaymentStatus";
 
+// Prevent Vercel from caching this page — enrollment status must always be fresh
+export const dynamic = "force-dynamic";
+
 type Props = { params: Promise<{ id: string }> };
 
 async function getCourseData(id: string, userId?: string) {
