@@ -1,15 +1,15 @@
 /**
- * Admin overview loading skeleton — header + 4 stats + quick actions + recent courses table.
+ * Admin Enrollments loading skeleton — header + 4 stats + filters bar + table.
  */
 import { Skeleton } from "@/components/ui/Skeleton";
 
-export default function AdminLoading() {
+export default function EnrollmentsLoading() {
   return (
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-44 rounded-xl mb-2" />
-        <Skeleton className="h-4 w-64 rounded-lg" />
+        <Skeleton className="h-9 w-52 rounded-xl mb-2" />
+        <Skeleton className="h-4 w-80 rounded-lg" />
       </div>
 
       {/* Stats */}
@@ -21,36 +21,38 @@ export default function AdminLoading() {
           >
             <Skeleton className="w-12 h-12 rounded-xl" />
             <div className="space-y-2">
-              <Skeleton h="h-8" w="w-16" />
+              <Skeleton h="h-8" w="w-14" />
               <Skeleton h="h-4" w="w-24" />
             </div>
           </div>
         ))}
       </div>
 
-      {/* Quick actions */}
-      <div className="flex gap-3 mb-10 animate-pulse">
-        <Skeleton className="h-10 w-32 rounded-lg" />
-        <Skeleton className="h-10 w-40 rounded-lg" />
+      {/* Filters bar */}
+      <div className="mb-8 animate-pulse">
+        <div className="flex gap-3">
+          <Skeleton className="h-10 w-48 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
+        </div>
       </div>
 
-      {/* Recent courses table */}
+      {/* Table */}
       <div className="backdrop-blur-lg bg-white/10 border border-white/20 rounded-2xl animate-pulse">
         <div className="flex items-center justify-between px-4 py-3 border-b border-white/10">
-          <Skeleton h="h-5" w="w-36" />
+          <Skeleton h="h-5" w="w-28" />
           <Skeleton h="h-4" w="w-16" />
         </div>
         <div className="divide-y divide-white/5">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <div key={i} className="flex items-center justify-between px-4 py-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div key={i} className="flex items-center gap-4 px-4 py-3">
+              <Skeleton className="w-9 h-9 rounded-full flex-shrink-0" />
               <div className="flex-1 space-y-1.5">
-                <Skeleton h="h-4" w="w-3/5" />
-                <Skeleton h="h-3" w="w-2/5" />
+                <Skeleton h="h-4" w="w-1/3" />
+                <Skeleton h="h-3" w="w-1/4" />
               </div>
-              <div className="flex items-center gap-3">
-                <Skeleton className="h-6 w-12 rounded-full" />
-                <Skeleton h="h-4" w="w-8" />
-              </div>
+              <Skeleton h="h-4" w="w-24" />
+              <Skeleton className="h-6 w-16 rounded-full" />
             </div>
           ))}
         </div>
