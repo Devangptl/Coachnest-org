@@ -138,7 +138,7 @@ export default function NavbarClient({ session }: Props) {
             <Search className="w-4 h-4" />
           </Link>
 
-          {session ? (
+          {session && (
             <>
               <NotificationBell />
 
@@ -251,21 +251,6 @@ export default function NavbarClient({ session }: Props) {
                 </AnimatePresence>
               </div>
             </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <Link
-                href="/login"
-                className="text-muted-foreground hover:text-foreground text-sm px-3.5 py-2 rounded-lg hover:bg-secondary transition-all"
-              >
-                Sign In
-              </Link>
-              <Link
-                href="/signup"
-                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/30"
-              >
-                Get Started
-              </Link>
-            </div>
           )}
 
           {/* Mobile hamburger */}
