@@ -7,12 +7,27 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
 const FROM = process.env.EMAIL_FROM ?? "LearnHub <noreply@learnhub.dev>";
 
+/**
+ * In dev / when using the Resend sandbox (`onboarding@resend.dev`),
+ * emails can only be delivered to the account-owner address.
+ * Set DEV_EMAIL_OVERRIDE in .env to redirect all emails there.
+ */
+const DEV_EMAIL_OVERRIDE = process.env.DEV_EMAIL_OVERRIDE;
+
+function resolveRecipient(to: string): string {
+  if (DEV_EMAIL_OVERRIDE && FROM.includes("resend.dev")) {
+    console.log(`[email] Dev mode: redirecting email from ${to} → ${DEV_EMAIL_OVERRIDE}`);
+    return DEV_EMAIL_OVERRIDE;
+  }
+  return to;
+}
+
 // ─── Welcome email ────────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(to: string, name: string) {
   return resend.emails.send({
     from:    FROM,
-    to,
+    to:      resolveRecipient(to),
     subject: "Welcome to LearnHub! 🎓",
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
@@ -37,7 +52,7 @@ export async function sendPurchaseEmail(
 ) {
   return resend.emails.send({
     from:    FROM,
-    to,
+    to:      resolveRecipient(to),
     subject: `You're enrolled in "${courseTitle}"`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
@@ -63,7 +78,7 @@ export async function sendCourseUpdateEmail(
 ) {
   return resend.emails.send({
     from:    FROM,
-    to,
+    to:      resolveRecipient(to),
     subject: `New lesson available in "${courseTitle}"`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
@@ -88,7 +103,7 @@ export async function sendCertificateEmail(
 ) {
   return resend.emails.send({
     from:    FROM,
-    to,
+    to:      resolveRecipient(to),
     subject: `Your certificate for "${courseTitle}" is ready!`,
     html: `
       <div style="font-family:sans-serif;max-width:600px;margin:auto;">
