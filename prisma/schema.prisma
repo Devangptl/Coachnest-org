@@ -564,3 +564,21 @@ model Highlight {
   @@index([userId, lessonId])
   @@map("highlights")
 }
+
+// ─── Contact Messages ─────────────────────────────────────────────────────────
+
+model ContactMessage {
+  id          String    @id @default(cuid())
+  name        String
+  email       String
+  subject     String?
+  message     String    @db.Text
+  status      String    @default("UNREAD") // UNREAD, READ, REPLIED
+  adminReply  String?   @db.Text
+  repliedAt   DateTime?
+  repliedById String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("contact_messages")
+}

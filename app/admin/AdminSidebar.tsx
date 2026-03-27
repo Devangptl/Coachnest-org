@@ -7,7 +7,7 @@
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap, Ticket, ShoppingCart, HelpCircle, Award, FileText } from "lucide-react";
+import { LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap, Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNav = [
@@ -21,6 +21,7 @@ const adminNav = [
   { label: "Quizzes",       href: "/admin/quizzes",         icon: HelpCircle },
   { label: "Blog Posts",     href: "/admin/blogs",            icon: FileText },
   { label: "Certificates",  href: "/admin/certificates",    icon: Award },
+  { label: "Messages",      href: "/admin/messages",        icon: MessageSquare },
 ];
 
 export default function AdminSidebar() {
