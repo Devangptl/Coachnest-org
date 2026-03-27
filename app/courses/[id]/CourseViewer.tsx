@@ -33,6 +33,8 @@ import {
 import { cn } from "@/lib/utils";
 import QuizPlayer from "@/components/QuizPlayer";
 import TextHighlighter from "@/components/TextHighlighter";
+import AiChatWidget from "@/components/AiChatWidget";
+import AiQuizGenerator from "@/components/AiQuizGenerator";
 import toast from "react-hot-toast";
 
 interface Lesson {
@@ -465,6 +467,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   </div>
                 )}
 
+                {/* AI Quiz Generator — only for enrolled users on TEXT/VIDEO lessons */}
+                {isEnrolled && activeLesson.type !== "QUIZ" && activeLesson.content && (
+                  <div className="mt-8">
+                    <AiQuizGenerator lessonId={activeLesson.id} />
+                  </div>
+                )}
+
                 {/* Navigation */}
                 <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-white/10">
                   {prev ? (
@@ -711,6 +720,11 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
           )}
         </AnimatePresence>,
         document.body
+      )}
+
+      {/* AI Tutor Chat Widget — floating on course pages for enrolled users */}
+      {isEnrolled && activeLesson && (
+        <AiChatWidget lessonId={activeLesson.id} lessonTitle={activeLesson.title} />
       )}
     </div>
   );

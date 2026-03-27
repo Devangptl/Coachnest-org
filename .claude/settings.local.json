@@ -12,7 +12,9 @@
       "Bash(ls -la d:/Devang/Claude/learning/app/courses/[id]/)",
       "Bash(npm uninstall:*)",
       "Bash(head -80 /d/Devang/Claude/learning/app/admin/courses/[id]/edit/page.tsx)",
-      "Bash(head -70 /d/Devang/Claude/learning/app/courses/[id]/page.tsx)"
+      "Bash(head -70 /d/Devang/Claude/learning/app/courses/[id]/page.tsx)",
+      "WebFetch(domain:claude.ai)",
+      "Bash(grep -r import.*from.*heavy /d/Devang/Claude/learning --include=*.tsx --include=*.ts)"
     ]
   }
 }

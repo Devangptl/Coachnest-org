@@ -127,6 +127,7 @@ model User {
   couponUses     CouponUse[]
   highlights     Highlight[]
   blogs          Blog[]           @relation("BlogAuthor")
+  conversations  Conversation[]
 
   @@map("users")
 }
@@ -239,8 +240,9 @@ model Lesson {
   course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   section    Section?         @relation(fields: [sectionId], references: [id])
   progress   LessonProgress[]
-  quiz       Quiz?
-  highlights Highlight[]
+  quiz          Quiz?
+  highlights    Highlight[]
+  conversations Conversation[]
 
   @@map("lessons")
 }
@@ -496,6 +498,36 @@ model Blog {
 
   @@fulltext([title, content])
   @@map("blogs")
+}
+
+// ─── AI Chat (Tutor) ─────────────────────────────────────────────────────────
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  lessonId  String
+  title     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson   Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  messages Message[]
+
+  @@index([userId, lessonId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // "user" | "assistant"
+  content        String   @db.Text
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("messages")
 }
 
 // ─── Highlight ────────────────────────────────────────────────────────────────

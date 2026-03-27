@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle, UserCircle } from "lucide-react";
+import { LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle, UserCircle, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -10,6 +10,7 @@ const navItems = [
   { label: "Wishlist",      href: "/dashboard/wishlist",       icon: Heart },
   { label: "Certificates",  href: "/dashboard/certificates",   icon: Award },
   { label: "Quiz History",  href: "/dashboard/quizzes",        icon: HelpCircle },
+  { label: "Doubt History", href: "/dashboard/doubts",         icon: MessageCircle },
   { label: "Order History", href: "/dashboard/orders",         icon: ShoppingCart },
   { label: "Notifications", href: "/dashboard/notifications",  icon: Bell },
   { label: "Profile",       href: "/dashboard/profile",        icon: UserCircle },
