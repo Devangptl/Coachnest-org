@@ -33,7 +33,7 @@ export default async function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold text-white">
           Admin Overview
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -65,7 +65,7 @@ export default async function AdminOverviewPage() {
       </div>
 
       {/* Quick actions */}
-      <div className="flex gap-3 mb-10">
+      <div className="flex flex-wrap gap-3 mb-10">
         <Link href="/admin/courses/new" className="btn-primary flex items-center gap-2 text-sm">
           <PlusCircle className="w-4 h-4" /> New Course
         </Link>

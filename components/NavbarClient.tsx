@@ -140,7 +140,9 @@ export default function NavbarClient({ session }: Props) {
 
           {session ? (
             <>
-              <NotificationBell />
+              <div className="hidden lg:block">
+                <NotificationBell />
+              </div>
 
               {/* User menu */}
               <div ref={userMenuRef} className="relative">
@@ -269,13 +271,15 @@ export default function NavbarClient({ session }: Props) {
           )}
 
           {/* Mobile hamburger */}
-          <button
-            onClick={() => setMobileOpen((o) => !o)}
-            className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
-            aria-label="Toggle menu"
-          >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-          </button>
+          {!session && (
+            <button
+              onClick={() => setMobileOpen((o) => !o)}
+              className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
+              aria-label="Toggle menu"
+            >
+              {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+          )}
         </div>
       </div>
 

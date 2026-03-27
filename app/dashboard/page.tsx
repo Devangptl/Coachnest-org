@@ -92,7 +92,7 @@ export default async function DashboardPage() {
     <div>
       {/* Header */}
       <div className="mb-10 animate-fade-in">
-        <h1 className="text-4xl font-bold text-white">
+        <h1 className="text-2xl sm:text-4xl font-bold text-white">
           Welcome back,{" "}
           <span className="text-orange-400">{session.name.split(" ")[0]}</span>
         </h1>
