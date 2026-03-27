@@ -3,19 +3,25 @@
  * categories, courses, how-it-works, FAQ, instructor CTA, and final CTA.
  * Server Component: fetches data; delegates animations to client components.
  */
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import CourseCard from "@/components/CourseCard";
 import GlassCard from "@/components/GlassCard";
-import HeroBackground from "@/components/landing/HeroBackground";
-import RotatingWords from "@/components/landing/RotatingWords";
-import FadeInSection from "@/components/landing/FadeInSection";
-import AnimatedCounter from "@/components/landing/AnimatedCounter";
-import TestimonialCard from "@/components/landing/TestimonialCard";
 import FAQItem from "@/components/landing/FAQItem";
-import StaggerChildren, { StaggerItem } from "@/components/landing/StaggerChildren";
+
+// Lazy-load heavy animation components (framer-motion) — separate JS chunks
+const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
+const RotatingWords = dynamic(() => import("@/components/landing/RotatingWords"));
+const FadeInSection = dynamic(() => import("@/components/landing/FadeInSection"));
+const AnimatedCounter = dynamic(() => import("@/components/landing/AnimatedCounter"));
+const TestimonialCard = dynamic(() => import("@/components/landing/TestimonialCard"));
+const StaggerChildren = dynamic(() => import("@/components/landing/StaggerChildren"));
+const StaggerItem = dynamic(() =>
+  import("@/components/landing/StaggerChildren").then((mod) => ({ default: mod.StaggerItem }))
+);
 import {
   BookOpen, Zap, Users, Award, ArrowRight, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,

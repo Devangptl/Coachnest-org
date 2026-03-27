@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -143,7 +144,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
           <div className="flex-shrink-0">
             <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-violet-500/40 to-purple-600/40 border border-white/10 flex items-center justify-center overflow-hidden">
               {student.avatar ? (
-                <img src={student.avatar} alt={student.name} className="w-20 h-20 object-cover" />
+                <Image src={student.avatar} alt={student.name} width={80} height={80} className="w-20 h-20 object-cover" />
               ) : (
                 <span className="text-2xl font-bold text-white/70">
                   {student.name.charAt(0).toUpperCase()}

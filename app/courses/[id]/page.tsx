@@ -3,6 +3,7 @@
  * Server Component: fetches data, delegates interactivity to client components.
  */
 import { notFound } from "next/navigation";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import CourseHero from "./CourseHero";
@@ -11,72 +12,78 @@ import CourseSidebar from "./CourseSidebar";
 import CourseLayout from "./CourseLayout";
 import PaymentStatus from "./PaymentStatus";
 
-// Prevent Vercel from caching this page — enrollment status must always be fresh
-export const dynamic = "force-dynamic";
-
 type Props = { params: Promise<{ id: string }> };
 
-async function getCourseData(id: string, userId?: string) {
-  const course = await prisma.course.findUnique({
-    where: { id },
-    include: {
-      lessons: { orderBy: { order: "asc" } },
-      createdBy: { select: { name: true } },
-      category: { select: { name: true } },
-      reviews: { select: { rating: true } },
-      _count: { select: { enrollments: true, reviews: true } },
-    },
-  });
+// Cache course data shared across all users (revalidates every 60s)
+const getCourseById = unstable_cache(
+  async (id: string) => {
+    const course = await prisma.course.findUnique({
+      where: { id },
+      include: {
+        lessons: { orderBy: { order: "asc" } },
+        createdBy: { select: { name: true } },
+        category: { select: { name: true } },
+        reviews: { select: { rating: true } },
+        _count: { select: { enrollments: true, reviews: true } },
+      },
+    });
+    if (!course || course.status === "ARCHIVED") return null;
 
-  if (!course || course.status === "ARCHIVED") return null;
+    const avgRating =
+      course.reviews.length > 0
+        ? course.reviews.reduce((sum, r) => sum + r.rating, 0) / course.reviews.length
+        : 0;
 
-  const enrollment = userId
-    ? await prisma.enrollment.findUnique({
-        where: { userId_courseId: { userId, courseId: id } },
-      })
-    : null;
+    return { course, avgRating };
+  },
+  ["course-detail"],
+  { revalidate: 60, tags: ["course-detail"] }
+);
 
-  const completedLessonIds = userId
-    ? (
-        await prisma.lessonProgress.findMany({
-          where: { userId, lessonId: { in: course.lessons.map((l) => l.id) }, completed: true },
-          select: { lessonId: true },
-        })
-      ).map((p) => p.lessonId)
-    : [];
+// User-specific data — not cached
+async function getUserCourseData(courseId: string, lessonIds: string[], userId?: string) {
+  if (!userId) return { isEnrolled: false, completedLessonIds: [] as string[], isWishlisted: false };
 
-  const wishlisted = userId
-    ? await prisma.wishlist.findUnique({
-        where: { userId_courseId: { userId, courseId: id } },
-      })
-    : null;
-
-  const avgRating =
-    course.reviews.length > 0
-      ? course.reviews.reduce((sum, r) => sum + r.rating, 0) / course.reviews.length
-      : 0;
+  const [enrollment, completedRows, wishlisted] = await Promise.all([
+    prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+    }),
+    prisma.lessonProgress.findMany({
+      where: { userId, lessonId: { in: lessonIds }, completed: true },
+      select: { lessonId: true },
+    }),
+    prisma.wishlist.findUnique({
+      where: { userId_courseId: { userId, courseId } },
+    }),
+  ]);
 
   return {
-    course,
     isEnrolled: Boolean(enrollment),
-    completedLessonIds,
-    avgRating,
+    completedLessonIds: completedRows.map((p) => p.lessonId),
     isWishlisted: Boolean(wishlisted),
   };
 }
 
 export default async function CourseDetailPage({ params }: Props) {
   const { id } = await params;
+
+  // Cached course data (shared across users)
+  const courseData = await getCourseById(id);
+  if (!courseData) notFound();
+
+  const { course, avgRating } = courseData;
+
+  // User-specific data (parallel fetch, uncached)
   const session = await getSession();
+  const { isEnrolled, completedLessonIds, isWishlisted } = await getUserCourseData(
+    id,
+    course.lessons.map((l: { id: string }) => l.id),
+    session?.userId
+  );
 
-  const data = await getCourseData(id, session?.userId);
-  if (!data) notFound();
+  const totalDuration = course.lessons.reduce((sum: number, l: { duration?: number | null }) => sum + (l.duration ?? 0), 0);
 
-  const { course, isEnrolled, completedLessonIds, avgRating, isWishlisted } = data;
-
-  const totalDuration = course.lessons.reduce((sum, l) => sum + (l.duration ?? 0), 0);
-
-  const lessonsWithCompletion = course.lessons.map((l) => ({
+  const lessonsWithCompletion = course.lessons.map((l: (typeof course.lessons)[number]) => ({
     ...l,
     completed: completedLessonIds.includes(l.id),
   }));
