@@ -62,6 +62,15 @@ enum NotifType {
   REMINDER
   OFFER
   SYSTEM
+  FORUM_REPLY
+  GROUP_INVITE
+  PEER_REVIEW
+  ACTIVITY
+}
+
+enum GroupRole {
+  MEMBER
+  ADMIN
 }
 
 // ─── Organization (Multi-tenant) ──────────────────────────────────────────────
@@ -130,6 +139,17 @@ model User {
   gameProfile    UserGameProfile?
   userBadges     UserBadge[]
   xpEvents       XpEvent[]
+
+  // Community
+  forumThreads          ForumThread[]
+  forumReplies          ForumReply[]
+  forumVotes            ForumVote[]
+  studyGroups           StudyGroupMember[]
+  createdGroups         StudyGroup[]           @relation("GroupCreator")
+  peerReviewSubmissions PeerReviewAssignment[]
+  peerReviews           PeerReview[]
+  activityEvents        ActivityFeedEvent[]
+  groupNotes            GroupNote[]
 
   @@map("users")
 }
@@ -581,4 +601,164 @@ model ContactMessage {
   updatedAt   DateTime  @updatedAt
 
   @@map("contact_messages")
+}
+
+// ─── Community: Discussion Forums ─────────────────────────────────────────────
+
+model ForumThread {
+  id         String   @id @default(cuid())
+  title      String
+  body       String   @db.Text
+  courseId   String?
+  lessonId   String?
+  authorId   String
+  isPinned   Boolean  @default(false)
+  isResolved Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replies ForumReply[]
+
+  @@index([courseId])
+  @@index([authorId])
+  @@map("forum_threads")
+}
+
+model ForumReply {
+  id        String   @id @default(cuid())
+  body      String   @db.Text
+  threadId  String
+  authorId  String
+  parentId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  thread  ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author  User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent  ForumReply?  @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: SetNull)
+  children ForumReply[] @relation("ReplyToReply")
+  votes   ForumVote[]
+
+  @@index([threadId])
+  @@index([authorId])
+  @@map("forum_replies")
+}
+
+model ForumVote {
+  id      String @id @default(cuid())
+  userId  String
+  replyId String
+  value   Int    // +1 or -1
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, replyId])
+  @@map("forum_votes")
+}
+
+// ─── Community: Study Groups ──────────────────────────────────────────────────
+
+model StudyGroup {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  courseId    String?
+  inviteCode  String   @unique
+  maxMembers  Int      @default(20)
+  isPublic    Boolean  @default(true)
+  groupXp     Int      @default(0)
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  createdBy User               @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  members   StudyGroupMember[]
+  notes     GroupNote[]
+
+  @@index([courseId])
+  @@map("study_groups")
+}
+
+model StudyGroupMember {
+  userId   String
+  groupId  String
+  role     GroupRole @default(MEMBER)
+  joinedAt DateTime  @default(now())
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+
+  @@id([userId, groupId])
+  @@map("study_group_members")
+}
+
+model GroupNote {
+  id        String   @id @default(cuid())
+  groupId   String
+  authorId  String
+  title     String
+  content   String   @db.LongText
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  group  StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  author User       @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([groupId])
+  @@map("group_notes")
+}
+
+// ─── Community: Peer Review ───────────────────────────────────────────────────
+
+model PeerReviewAssignment {
+  id            String   @id @default(cuid())
+  title         String
+  content       String   @db.Text
+  courseId      String?
+  lessonId      String?
+  submittedById String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  submittedBy User         @relation(fields: [submittedById], references: [id], onDelete: Cascade)
+  reviews     PeerReview[]
+
+  @@index([submittedById])
+  @@map("peer_review_assignments")
+}
+
+model PeerReview {
+  id           String   @id @default(cuid())
+  assignmentId String
+  reviewerId   String
+  rating       Int      // 1-5
+  feedback     String   @db.Text
+  rubricScores Json?    // { clarity: 4, depth: 3, ... }
+  createdAt    DateTime @default(now())
+
+  assignment PeerReviewAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
+  reviewer   User                 @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+
+  @@unique([assignmentId, reviewerId])
+  @@map("peer_reviews")
+}
+
+// ─── Community: Activity Feed ─────────────────────────────────────────────────
+
+model ActivityFeedEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String   // BADGE_EARNED, COURSE_COMPLETED, THREAD_CREATED, GROUP_JOINED, REVIEW_SUBMITTED
+  title       String
+  description String?  @db.Text
+  meta        Json?    // extra data (badgeName, courseName, etc.)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+  @@map("activity_feed_events")
 }

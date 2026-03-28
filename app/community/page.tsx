@@ -1,167 +1,252 @@
-import type { Metadata } from "next";
+"use client";
+
+/**
+ * Community Hub — landing page showing recent activity, popular threads, and active groups.
+ */
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MessageSquare, Users, Trophy, BookOpen, ArrowRight, Star } from "lucide-react";
-import Footer from "@/components/Footer";
+import {
+  MessageSquare, Users, ClipboardCheck, Activity,
+  ArrowRight, TrendingUp, Clock, Flame
+} from "lucide-react";
 
-export const metadata: Metadata = {
-  title: "Community — CoachNest",
-  description:
-    "Join the CoachNest learner community — ask questions, share progress, and grow together.",
-};
+interface Thread {
+  id: string;
+  title: string;
+  createdAt: string;
+  author: { name: string; avatar: string | null };
+  _count: { replies: number };
+}
 
-const CHANNELS = [
-  {
-    icon: MessageSquare,
-    title: "General Discussion",
-    desc: "Introduce yourself, share what you're learning, and connect with fellow students.",
-    members: "12.4k",
-  },
-  {
-    icon: BookOpen,
-    title: "Course Q&A",
-    desc: "Get help from instructors and peers on any course-related questions.",
-    members: "8.9k",
-  },
-  {
-    icon: Trophy,
-    title: "Wins & Milestones",
-    desc: "Celebrate completions, new jobs, and personal achievements with the community.",
-    members: "5.2k",
-  },
-  {
-    icon: Users,
-    title: "Study Groups",
-    desc: "Find accountability partners and study groups for specific courses or topics.",
-    members: "3.7k",
-  },
+interface Group {
+  id: string;
+  name: string;
+  description: string | null;
+  _count: { members: number };
+}
+
+interface FeedEvent {
+  id: string;
+  type: string;
+  title: string;
+  createdAt: string;
+  user: { name: string; avatar: string | null };
+}
+
+const QUICK_LINKS = [
+  { icon: MessageSquare, title: "Discussion Forums", desc: "Ask questions, get answers, share knowledge.", href: "/community/forums", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
+  { icon: Users, title: "Study Groups", desc: "Form groups, track progress together, earn group XP.", href: "/community/groups", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
+  { icon: ClipboardCheck, title: "Peer Review", desc: "Submit work, give & receive structured feedback.", href: "/community/peer-review", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
+  { icon: Activity, title: "Activity Feed", desc: "See badges earned, milestones, and community wins.", href: "/community/feed", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
 ];
 
-const HIGHLIGHTS = [
-  {
-    name: "Sarah K.",
-    initials: "SK",
-    quote: "The community helped me land my first dev job. I got feedback on my portfolio from people who had just done the same thing.",
-    course: "Full-Stack Web Dev",
-  },
-  {
-    name: "Marcus T.",
-    initials: "MT",
-    quote: "Study groups here are underrated. My group finished the React course together in 3 weeks and we all held each other accountable.",
-    course: "Advanced React",
-  },
-  {
-    name: "Aisha B.",
-    initials: "AB",
-    quote: "Instructors actually respond to questions. I posted a question on a Monday and had a detailed answer by Tuesday morning.",
-    course: "UI/UX Design",
-  },
-];
+export default function CommunityHubPage() {
+  const [threads, setThreads] = useState<Thread[]>([]);
+  const [groups, setGroups] = useState<Group[]>([]);
+  const [events, setEvents] = useState<FeedEvent[]>([]);
+  const [loading, setLoading] = useState(true);
 
-export default function CommunityPage() {
+  useEffect(() => {
+    async function load() {
+      try {
+        const [t, g, e] = await Promise.all([
+          fetch("/api/community/forums?sort=popular&page=1").then(r => r.json()),
+          fetch("/api/community/groups?page=1").then(r => r.json()),
+          fetch("/api/community/feed?page=1").then(r => r.json()),
+        ]);
+        setThreads(t.threads?.slice(0, 5) || []);
+        setGroups(g.groups?.slice(0, 4) || []);
+        setEvents(e.events?.slice(0, 6) || []);
+      } catch {
+        // Silently fail
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, []);
+
   return (
-    <>
-      <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto py-16">
-
-          {/* Hero */}
-          <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-400/80 text-xs font-medium mb-6">
-              <Users className="w-3 h-3" /> 50,000+ members
-            </div>
-            <h1 className="text-4xl sm:text-5xl font-bold text-white mb-5 leading-tight">
-              Learn better,<br />
-              <span className="text-white/40">together.</span>
-            </h1>
-            <p className="text-white/40 text-lg leading-relaxed max-w-xl mx-auto">
-              The CoachNest community is where learning continues outside the course player —
-              ask questions, share work, find study partners, and celebrate wins.
-            </p>
-          </div>
-
-          {/* Community channels */}
-          <div className="mb-16">
-            <h2 className="text-xl font-bold text-white mb-6">Community Channels</h2>
-            <div className="grid sm:grid-cols-2 gap-4">
-              {CHANNELS.map(({ icon: Icon, title, desc, members }) => (
-                <div key={title} className="rounded-xl border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-6 group transition-all">
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                      <Icon className="w-5 h-5 text-orange-400/70" />
-                    </div>
-                    <span className="text-white/25 text-xs">{members} members</span>
-                  </div>
-                  <p className="text-white/75 font-semibold text-sm mb-1.5 group-hover:text-white transition-colors">{title}</p>
-                  <p className="text-white/35 text-xs leading-relaxed">{desc}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Testimonials */}
-          <div className="mb-16">
-            <h2 className="text-xl font-bold text-white mb-6">What members say</h2>
-            <div className="grid sm:grid-cols-3 gap-4">
-              {HIGHLIGHTS.map((item) => (
-                <div key={item.name} className="rounded-xl border border-white/8 bg-white/[.02] p-5">
-                  <div className="flex items-center gap-1 mb-3">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-3 h-3 fill-orange-400/60 text-orange-400/60" />
-                    ))}
-                  </div>
-                  <p className="text-white/45 text-xs leading-relaxed mb-4">&ldquo;{item.quote}&rdquo;</p>
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-7 h-7 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400/70 text-xs font-bold">
-                      {item.initials}
-                    </div>
-                    <div>
-                      <p className="text-white/60 text-xs font-medium">{item.name}</p>
-                      <p className="text-white/25 text-[10px]">{item.course}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* How to join */}
-          <div className="rounded-2xl border border-white/8 bg-white/[.02] p-8 sm:p-10 mb-8">
-            <h2 className="text-xl font-bold text-white mb-5">How to join</h2>
-            <div className="space-y-4">
-              {[
-                { step: "01", title: "Create your free account", desc: "Sign up in under 30 seconds — no credit card required." },
-                { step: "02", title: "Enrol in any course", desc: "Free and paid courses both come with full community access." },
-                { step: "03", title: "Join the discussion", desc: "Introduce yourself, ask questions, and find your people." },
-              ].map((item) => (
-                <div key={item.step} className="flex gap-4">
-                  <span className="text-orange-400/40 font-bold text-sm w-8 shrink-0 pt-0.5">{item.step}</span>
-                  <div>
-                    <p className="text-white/70 font-medium text-sm">{item.title}</p>
-                    <p className="text-white/35 text-xs leading-relaxed">{item.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* CTA */}
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-            <Link
-              href="/signup"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-medium px-6 py-3 rounded-lg transition-colors"
-            >
-              Join for Free <ArrowRight className="w-4 h-4" />
-            </Link>
-            <Link
-              href="/courses"
-              className="w-full sm:w-auto flex items-center justify-center gap-2 border border-white/10 hover:border-white/20 text-white/55 hover:text-white/75 text-sm font-medium px-6 py-3 rounded-lg transition-colors"
-            >
-              Browse Courses
-            </Link>
-          </div>
-
-        </div>
+    <div className="py-8 space-y-10">
+      {/* Hero */}
+      <div>
+        <h1 className="text-3xl font-bold text-foreground mb-2">Community Hub</h1>
+        <p className="text-muted-foreground text-sm max-w-lg">
+          Connect with fellow learners — ask questions, join study groups, review peers&apos; work, and celebrate wins together.
+        </p>
       </div>
-      <Footer />
-    </>
+
+      {/* Quick Links Grid */}
+      <div className="grid sm:grid-cols-2 gap-4">
+        {QUICK_LINKS.map((item) => {
+          const Icon = item.icon;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="group rounded-xl border border-border bg-card hover:bg-secondary/50 p-5 transition-all hover:border-white/15 hover:-translate-y-0.5"
+            >
+              <div className="flex items-start gap-4">
+                <div className={`w-10 h-10 rounded-xl ${item.bg} border flex items-center justify-center flex-shrink-0`}>
+                  <Icon className={`w-5 h-5 ${item.color}`} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-foreground font-semibold text-sm mb-1 group-hover:text-white transition-colors flex items-center gap-2">
+                    {item.title}
+                    <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-70 group-hover:translate-x-0 transition-all" />
+                  </p>
+                  <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
+                </div>
+              </div>
+            </Link>
+          );
+        })}
+      </div>
+
+      {/* Popular Threads */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-blue-400" />
+            Popular Discussions
+          </h2>
+          <Link href="/community/forums" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            View all →
+          </Link>
+        </div>
+        {loading ? (
+          <div className="space-y-3">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-16 rounded-lg bg-secondary/50 animate-pulse" />
+            ))}
+          </div>
+        ) : threads.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+            <p className="text-muted-foreground text-sm">No discussions yet. Be the first to start one!</p>
+            <Link href="/community/forums" className="inline-flex items-center gap-1.5 mt-3 text-emerald-400 text-xs font-medium hover:underline">
+              Start a discussion <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {threads.map((t) => (
+              <Link
+                key={t.id}
+                href={`/community/forums/${t.id}`}
+                className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-all group"
+              >
+                <div className="min-w-0 flex-1">
+                  <p className="text-foreground text-sm font-medium truncate group-hover:text-white transition-colors">{t.title}</p>
+                  <p className="text-muted-foreground text-xs mt-0.5">
+                    by {t.author.name} · {new Date(t.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs ml-4 flex-shrink-0">
+                  <MessageSquare className="w-3.5 h-3.5" />
+                  {t._count.replies}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Active Study Groups */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Users className="w-4 h-4 text-emerald-400" />
+            Active Study Groups
+          </h2>
+          <Link href="/community/groups" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            View all →
+          </Link>
+        </div>
+        {loading ? (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {[1,2].map(i => (
+              <div key={i} className="h-24 rounded-lg bg-secondary/50 animate-pulse" />
+            ))}
+          </div>
+        ) : groups.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+            <p className="text-muted-foreground text-sm">No study groups yet. Create one!</p>
+            <Link href="/community/groups" className="inline-flex items-center gap-1.5 mt-3 text-emerald-400 text-xs font-medium hover:underline">
+              Create a group <ArrowRight className="w-3 h-3" />
+            </Link>
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 gap-3">
+            {groups.map((g) => (
+              <Link
+                key={g.id}
+                href={`/community/groups/${g.id}`}
+                className="p-4 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-all group"
+              >
+                <p className="text-foreground text-sm font-semibold group-hover:text-white transition-colors">{g.name}</p>
+                {g.description && (
+                  <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{g.description}</p>
+                )}
+                <div className="flex items-center gap-1.5 text-muted-foreground text-xs mt-2">
+                  <Users className="w-3 h-3" />
+                  {g._count.members} member{g._count.members !== 1 ? "s" : ""}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </section>
+
+      {/* Recent Activity */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+            <Flame className="w-4 h-4 text-orange-400" />
+            Recent Activity
+          </h2>
+          <Link href="/community/feed" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
+            View all →
+          </Link>
+        </div>
+        {loading ? (
+          <div className="space-y-2">
+            {[1,2,3].map(i => (
+              <div key={i} className="h-12 rounded-lg bg-secondary/50 animate-pulse" />
+            ))}
+          </div>
+        ) : events.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center">
+            <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
+            <p className="text-muted-foreground text-sm">No activity yet. Start learning and contributing!</p>
+          </div>
+        ) : (
+          <div className="space-y-1.5">
+            {events.map((e) => (
+              <div key={e.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
+                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0">
+                  {e.user.avatar ? (
+                    <img src={e.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                  ) : (
+                    e.user.name.charAt(0).toUpperCase()
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-foreground text-xs">
+                    <span className="font-medium">{e.user.name}</span>{" "}
+                    <span className="text-muted-foreground">{e.title}</span>
+                  </p>
+                  <p className="text-muted-foreground text-[10px] flex items-center gap-1 mt-0.5">
+                    <Clock className="w-2.5 h-2.5" />
+                    {new Date(e.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
+    </div>
   );
 }
