@@ -8,6 +8,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import Footer from "@/components/Footer";
 import CourseCard from "@/components/CourseCard";
 import GlassCard from "@/components/GlassCard";
 import FAQItem from "@/components/landing/FAQItem";
@@ -1078,96 +1079,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           FOOTER
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <footer className="border-t border-white/5 py-16 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10 mb-12">
-            {/* Brand */}
-            <div>
-              <div className="mb-4">
-                <img src="/logo.png" alt="CoachNest" className="h-5 w-auto object-contain" />
-              </div>
-              <p className="text-white/30 text-sm leading-relaxed mb-4">
-                The modern learning platform for ambitious developers and designers. Master new skills and advance your career.
-              </p>
-              <div className="flex items-center gap-3">
-                {["Twitter", "GitHub", "LinkedIn", "YouTube"].map((social) => (
-                  <span key={social} className="w-8 h-8 rounded-lg bg-secondary border border-border flex items-center justify-center text-white/30 text-xs hover:bg-secondary hover:text-muted-foreground transition-colors cursor-pointer">
-                    {social[0]}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Platform */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Platform</h4>
-              <ul className="space-y-2.5">
-                {[
-                  { label: "Browse Courses", href: "/courses" },
-                  { label: "Pricing", href: "/pricing" },
-                  { label: "Search", href: "/search" },
-                  { label: "Become Instructor", href: "/signup" },
-                  { label: "Enterprise", href: "/pricing" },
-                ].map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="text-white/30 hover:text-muted-foreground text-sm transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Resources */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Resources</h4>
-              <ul className="space-y-2.5">
-                {[
-                  { label: "Help Center", href: "#" },
-                  { label: "Blog", href: "#" },
-                  { label: "Documentation", href: "#" },
-                  { label: "Community", href: "#" },
-                  { label: "Changelog", href: "#" },
-                ].map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="text-white/30 hover:text-muted-foreground text-sm transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Legal */}
-            <div>
-              <h4 className="text-white font-semibold text-sm mb-4">Legal</h4>
-              <ul className="space-y-2.5">
-                {[
-                  { label: "Privacy Policy", href: "#" },
-                  { label: "Terms of Service", href: "#" },
-                  { label: "Refund Policy", href: "#" },
-                  { label: "Cookie Policy", href: "#" },
-                ].map((link) => (
-                  <li key={link.label}>
-                    <Link href={link.href} className="text-white/30 hover:text-muted-foreground text-sm transition-colors">
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="border-t border-white/5 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-white/20 text-xs">
-              &copy; {new Date().getFullYear()} CoachNest. All rights reserved.
-            </p>
-            <p className="text-white/15 text-xs">
-              Built with Next.js, Tailwind CSS, and Prisma
-            </p>
-          </div>
-        </div>
-      </footer>
+      <Footer />
     </div>
   );
 }

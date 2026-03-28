@@ -24,7 +24,10 @@
       "Bash(rm -f \"D:/Devang/Claude/learning/lib/ai.ts\" \"D:/Devang/Claude/learning/components/AiChatWidget.tsx\" \"D:/Devang/Claude/learning/components/AiQuizGenerator.tsx\")",
       "Bash(rm -rf \"D:/Devang/Claude/learning/app/api/chat\" \"D:/Devang/Claude/learning/app/api/ai-quiz\" \"D:/Devang/Claude/learning/app/dashboard/doubts\")",
       "Bash(ls:*)",
-      "Bash(grep -r \"level\\\\|streak\\\\|badge\\\\|reward\" /d/Devang/Claude/learning --include=*.ts --include=*.tsx --include=*.prisma)"
+      "Bash(grep -r \"level\\\\|streak\\\\|badge\\\\|reward\" /d/Devang/Claude/learning --include=*.ts --include=*.tsx --include=*.prisma)",
+      "Bash(xargs grep:*)",
+      "Bash(grep -r -i footer /d/Devang/Claude/learning/components /d/Devang/Claude/learning/app --include=*.tsx --include=*.ts --include=*.jsx --include=*.js)",
+      "Bash(grep -E \"\\\\.\\(json|ts|js|yaml\\)$\")"
     ]
   }
 }
