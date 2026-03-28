@@ -140,6 +140,9 @@ model User {
   userBadges     UserBadge[]
   xpEvents       XpEvent[]
 
+  // Stripe
+  stripeCustomerId String? @unique
+
   // Tour Flags
   hasSeenTour          Boolean  @default(false)
   hasSeenCommunityTour Boolean  @default(false)

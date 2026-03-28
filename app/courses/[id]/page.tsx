@@ -44,7 +44,7 @@ const getCourseById = unstable_cache(
 async function getUserCourseData(courseId: string, lessonIds: string[], userId?: string) {
   if (!userId) return { isEnrolled: false, completedLessonIds: [] as string[], isWishlisted: false };
 
-  const [enrollment, completedRows, wishlisted] = await Promise.all([
+  const [enrollment, completedRows, wishlisted, subscription] = await Promise.all([
     prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
     }),
@@ -55,10 +55,30 @@ async function getUserCourseData(courseId: string, lessonIds: string[], userId?:
     prisma.wishlist.findUnique({
       where: { userId_courseId: { userId, courseId } },
     }),
+    prisma.subscription.findUnique({
+      where:  { userId },
+      select: { plan: true, status: true, endDate: true },
+    }),
   ]);
 
+  // All-access: any active paid subscription grants course access
+  const hasAllAccess =
+    subscription !== null &&
+    subscription.plan !== "FREE" &&
+    (subscription.status === "ACTIVE" || subscription.status === "TRIAL") &&
+    (subscription.endDate === null || subscription.endDate > new Date());
+
+  // Auto-enroll subscriber so progress tracking works
+  if (hasAllAccess && !enrollment) {
+    await prisma.enrollment.upsert({
+      where:  { userId_courseId: { userId, courseId } },
+      create: { userId, courseId },
+      update: {},
+    });
+  }
+
   return {
-    isEnrolled: Boolean(enrollment),
+    isEnrolled: Boolean(enrollment) || hasAllAccess,
     completedLessonIds: completedRows.map((p) => p.lessonId),
     isWishlisted: Boolean(wishlisted),
   };

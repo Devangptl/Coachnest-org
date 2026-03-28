@@ -10,20 +10,21 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle,
-  UserCircle, Trophy, Menu, X, Users2,
+  UserCircle, Trophy, Menu, X, Users2, Crown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "My Courses",    href: "/dashboard",                icon: LayoutDashboard },
-  { label: "Wishlist",      href: "/dashboard/wishlist",       icon: Heart },
-  { label: "Certificates",  href: "/dashboard/certificates",   icon: Award },
-  { label: "Achievements",  href: "/dashboard/achievements",   icon: Trophy },
-  { label: "Quiz History",  href: "/dashboard/quizzes",        icon: HelpCircle },
-  { label: "Order History", href: "/dashboard/orders",         icon: ShoppingCart },
-  { label: "Notifications", href: "/dashboard/notifications",  icon: Bell },
-  { label: "Community",     href: "/community",               icon: Users2 },
-  { label: "Profile",       href: "/dashboard/profile",        icon: UserCircle },
+  { label: "My Courses",    href: "/dashboard",                    icon: LayoutDashboard },
+  { label: "Wishlist",      href: "/dashboard/wishlist",           icon: Heart },
+  { label: "Certificates",  href: "/dashboard/certificates",       icon: Award },
+  { label: "Achievements",  href: "/dashboard/achievements",       icon: Trophy },
+  { label: "Quiz History",  href: "/dashboard/quizzes",            icon: HelpCircle },
+  { label: "Subscription",  href: "/dashboard/subscription",       icon: Crown },
+  { label: "Order History", href: "/dashboard/orders",             icon: ShoppingCart },
+  { label: "Notifications", href: "/dashboard/notifications",      icon: Bell },
+  { label: "Community",     href: "/community",                    icon: Users2 },
+  { label: "Profile",       href: "/dashboard/profile",            icon: UserCircle },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

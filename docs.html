@@ -1,0 +1,1335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoachNest — Documentation</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg2: #161b27;
+      --bg3: #1e2535;
+      --border: #2a3347;
+      --accent: #f97316;
+      --accent2: #fb923c;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --radius: 10px;
+      --sidebar-w: 270px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+      font-size: 15px;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+    /* ── Top Nav ── */
+    .topnav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 58px;
+      background: rgba(15,17,23,0.85);
+      backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; padding: 0 24px;
+      gap: 16px;
+    }
+    .topnav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 18px;
+    }
+    .topnav-logo .dot {
+      width: 32px; height: 32px; border-radius: 8px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .topnav-badge {
+      margin-left: auto;
+      background: var(--bg3); border: 1px solid var(--border);
+      color: var(--text2); font-size: 12px; padding: 3px 10px; border-radius: 20px;
+    }
+    .topnav-badge span { color: var(--green); }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      padding-top: 58px;
+      min-height: 100vh;
+    }
+
+    /* ── Sidebar ── */
+    .sidebar {
+      width: var(--sidebar-w);
+      flex-shrink: 0;
+      position: fixed;
+      top: 58px; left: 0; bottom: 0;
+      overflow-y: auto;
+      padding: 24px 0 40px;
+      border-right: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .sidebar-section { margin-bottom: 8px; }
+    .sidebar-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.2px;
+      color: var(--text3); text-transform: uppercase;
+      padding: 8px 20px 4px;
+    }
+    .sidebar a {
+      display: flex; align-items: center; gap: 8px;
+      padding: 7px 20px;
+      color: var(--text2); text-decoration: none;
+      font-size: 13.5px; border-left: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .sidebar a:hover { color: var(--text); background: var(--bg3); border-left-color: var(--border); }
+    .sidebar a.active { color: var(--accent); background: rgba(249,115,22,0.08); border-left-color: var(--accent); }
+    .sidebar a .icon { font-size: 14px; width: 18px; text-align: center; }
+
+    /* ── Main Content ── */
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      max-width: 900px;
+      padding: 48px 60px 100px;
+    }
+
+    /* ── Sections ── */
+    .doc-section {
+      margin-bottom: 72px;
+      scroll-margin-top: 80px;
+    }
+
+    /* ── Typography ── */
+    h1 {
+      font-size: 40px; font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, var(--accent2));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      line-height: 1.2; margin-bottom: 12px;
+    }
+    h2 {
+      font-size: 24px; font-weight: 700; color: #fff;
+      margin-bottom: 20px; padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 10px;
+    }
+    h2 .h2-icon {
+      width: 34px; height: 34px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px; flex-shrink: 0;
+    }
+    h3 {
+      font-size: 16px; font-weight: 600; color: #cbd5e1;
+      margin: 28px 0 12px;
+    }
+    p { color: var(--text2); margin-bottom: 14px; }
+    strong { color: var(--text); }
+
+    /* ── Hero ── */
+    .hero {
+      text-align: center; padding: 20px 0 56px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 64px;
+    }
+    .hero-sub {
+      font-size: 16px; color: var(--text2); max-width: 520px;
+      margin: 0 auto 28px;
+    }
+    .hero-badges {
+      display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+      margin-bottom: 32px;
+    }
+    .badge {
+      padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+      border: 1px solid;
+    }
+    .badge-orange { color: var(--accent); border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.1); }
+    .badge-blue   { color: var(--blue);   border-color: rgba(96,165,250,0.4);  background: rgba(96,165,250,0.1); }
+    .badge-green  { color: var(--green);  border-color: rgba(52,211,153,0.4);  background: rgba(52,211,153,0.1); }
+    .badge-purple { color: var(--purple); border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.1); }
+    .badge-pink   { color: var(--pink);   border-color: rgba(244,114,182,0.4); background: rgba(244,114,182,0.1); }
+    .badge-yellow { color: var(--yellow); border-color: rgba(251,191,36,0.4);  background: rgba(251,191,36,0.1); }
+
+    .stat-row {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      text-align: center;
+    }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+    .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+    /* ── Tables ── */
+    .table-wrap { overflow-x: auto; margin-bottom: 24px; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--bg3); }
+    th {
+      padding: 11px 16px; text-align: left;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text3);
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 10px 16px; font-size: 13.5px; color: var(--text2);
+      border-bottom: 1px solid rgba(42,51,71,0.5);
+      vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    code {
+      font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+      font-size: 12.5px; background: var(--bg3);
+      color: var(--accent2); padding: 2px 7px; border-radius: 5px;
+      border: 1px solid var(--border);
+    }
+
+    /* Method badges */
+    .method {
+      display: inline-block; padding: 2px 8px; border-radius: 5px;
+      font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .get    { background: rgba(52,211,153,0.15); color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+    .post   { background: rgba(96,165,250,0.15); color: var(--blue);   border: 1px solid rgba(96,165,250,0.3); }
+    .put    { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+    .delete { background: rgba(244,114,182,0.15);color: var(--pink);   border: 1px solid rgba(244,114,182,0.3); }
+
+    /* ── Code block ── */
+    pre {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 20px;
+      overflow-x: auto; margin-bottom: 20px;
+    }
+    pre code {
+      background: none; border: none; padding: 0;
+      color: #cbd5e1; font-size: 13px; line-height: 1.7;
+    }
+    .kw  { color: #c084fc; }
+    .str { color: #86efac; }
+    .cmt { color: var(--text3); font-style: italic; }
+    .num { color: #fbbf24; }
+    .fn  { color: #60a5fa; }
+    .prop{ color: #f9a8d4; }
+
+    /* ── Cards grid ── */
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .card {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 18px;
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--accent); }
+    .card-title { font-weight: 600; color: var(--text); margin-bottom: 6px; font-size: 14px; }
+    .card-desc  { font-size: 13px; color: var(--text2); }
+    .card-icon  { font-size: 22px; margin-bottom: 10px; }
+
+    /* ── Feature list ── */
+    .feature-list { list-style: none; display: grid; gap: 10px; margin-bottom: 24px; }
+    .feature-list li {
+      display: flex; align-items: flex-start; gap: 10px;
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 12px 16px;
+      font-size: 14px; color: var(--text2);
+    }
+    .feature-list li .check {
+      color: var(--green); font-size: 15px; flex-shrink: 0; margin-top: 1px;
+    }
+
+    /* ── Step list ── */
+    .steps { counter-reset: step; list-style: none; display: grid; gap: 12px; margin-bottom: 24px; }
+    .steps li {
+      display: flex; align-items: flex-start; gap: 14px;
+      counter-increment: step;
+      font-size: 14px; color: var(--text2);
+    }
+    .steps li::before {
+      content: counter(step);
+      min-width: 28px; height: 28px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      color: #fff; font-weight: 700; font-size: 12px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; margin-top: 2px;
+    }
+
+    /* ── Schema domain ── */
+    .schema-group {
+      margin-bottom: 28px;
+    }
+    .schema-group h3 {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--text3);
+      margin-bottom: 10px;
+    }
+    .model-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .model-pill {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: 6px; padding: 6px 12px;
+      font-family: 'Cascadia Code', 'Fira Code', monospace;
+      font-size: 12.5px; color: var(--blue);
+    }
+
+    /* ── Env block ── */
+    .env-block {
+      background: var(--bg3); border: 1px solid var(--border);
+      border-radius: var(--radius); overflow: hidden; margin-bottom: 20px;
+    }
+    .env-block .env-header {
+      padding: 10px 16px;
+      background: rgba(255,255,255,0.03);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px; font-weight: 600; letter-spacing: 0.5px;
+      color: var(--text3);
+    }
+    .env-row {
+      display: grid; grid-template-columns: 240px 1fr;
+      border-bottom: 1px solid rgba(42,51,71,0.5);
+    }
+    .env-row:last-child { border-bottom: none; }
+    .env-key {
+      padding: 10px 16px; font-family: monospace; font-size: 12.5px;
+      color: var(--accent2); border-right: 1px solid var(--border);
+      background: rgba(249,115,22,0.04);
+    }
+    .env-val { padding: 10px 16px; font-size: 13px; color: var(--text2); }
+
+    /* ── Flow steps ── */
+    .flow {
+      display: flex; flex-direction: column; gap: 0;
+      position: relative; margin-bottom: 24px;
+    }
+    .flow::before {
+      content: ''; position: absolute;
+      left: 19px; top: 28px; bottom: 28px; width: 2px;
+      background: linear-gradient(to bottom, var(--accent), transparent);
+    }
+    .flow-item {
+      display: flex; align-items: flex-start; gap: 14px;
+      padding: 12px 0;
+    }
+    .flow-num {
+      width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+      background: var(--bg3); border: 2px solid var(--accent);
+      color: var(--accent); font-weight: 700; font-size: 14px;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 1;
+    }
+    .flow-content { padding-top: 7px; }
+    .flow-title { font-weight: 600; color: var(--text); font-size: 14px; margin-bottom: 2px; }
+    .flow-desc { font-size: 13px; color: var(--text2); }
+
+    /* ── Callout ── */
+    .callout {
+      border-radius: var(--radius); padding: 14px 18px;
+      margin-bottom: 20px; display: flex; gap: 12px;
+      font-size: 14px;
+    }
+    .callout.info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); color: #93c5fd; }
+    .callout.warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: #fcd34d; }
+    .callout.tip  { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: #6ee7b7; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* ── Checklist ── */
+    .checklist { list-style: none; display: grid; gap: 8px; margin-bottom: 20px; }
+    .checklist li {
+      display: flex; align-items: center; gap: 10px;
+      font-size: 14px; color: var(--text2);
+    }
+    .checklist li::before {
+      content: '☐'; color: var(--text3); font-size: 16px;
+    }
+
+    /* ── API group ── */
+    .api-group { margin-bottom: 32px; }
+    .api-group-title {
+      font-size: 13px; font-weight: 700; letter-spacing: 0.8px;
+      text-transform: uppercase; color: var(--accent);
+      padding: 0 0 8px; margin-bottom: 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Footer ── */
+    .doc-footer {
+      margin-left: var(--sidebar-w);
+      border-top: 1px solid var(--border);
+      padding: 28px 60px;
+      display: flex; align-items: center; justify-content: space-between;
+      font-size: 13px; color: var(--text3);
+    }
+    .doc-footer a { color: var(--accent); text-decoration: none; }
+    .doc-footer a:hover { text-decoration: underline; }
+
+    /* ── Responsive ── */
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 32px 24px 80px; }
+      .doc-footer { margin-left: 0; padding: 20px 24px; }
+      .cards { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .env-row { grid-template-columns: 1fr; }
+      .env-key { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Top Nav -->
+<nav class="topnav">
+  <div class="topnav-logo">
+    <div class="dot">🎓</div>
+    CoachNest
+  </div>
+  <span style="color:var(--text3); font-size:13px; margin-left:8px;">Documentation</span>
+  <span class="topnav-badge">v<span>0.2.0</span></span>
+</nav>
+
+<!-- Layout -->
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Getting Started</div>
+      <a href="#overview" class="active"><span class="icon">🏠</span> Overview</a>
+      <a href="#techstack"><span class="icon">⚙️</span> Tech Stack</a>
+      <a href="#quickstart"><span class="icon">🚀</span> Quick Start</a>
+      <a href="#envvars"><span class="icon">🔑</span> Environment Vars</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Architecture</div>
+      <a href="#structure"><span class="icon">📁</span> Project Structure</a>
+      <a href="#database"><span class="icon">🗄️</span> Database Schema</a>
+      <a href="#auth"><span class="icon">🔐</span> Authentication</a>
+      <a href="#middleware"><span class="icon">🛡️</span> Middleware</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">API Reference</div>
+      <a href="#api-auth"><span class="icon">🔑</span> Auth</a>
+      <a href="#api-courses"><span class="icon">📚</span> Courses</a>
+      <a href="#api-enrollments"><span class="icon">📋</span> Enrollments</a>
+      <a href="#api-quizzes"><span class="icon">📝</span> Quizzes</a>
+      <a href="#api-payments"><span class="icon">💳</span> Payments</a>
+      <a href="#api-community"><span class="icon">👥</span> Community</a>
+      <a href="#api-gamification"><span class="icon">🏆</span> Gamification</a>
+      <a href="#api-admin"><span class="icon">🔧</span> Admin</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Features</div>
+      <a href="#pages"><span class="icon">🗺️</span> Pages & Routes</a>
+      <a href="#components"><span class="icon">🧩</span> Components</a>
+      <a href="#services"><span class="icon">⚡</span> Services</a>
+      <a href="#gamification"><span class="icon">🎮</span> Gamification</a>
+      <a href="#payments"><span class="icon">💰</span> Payment Flow</a>
+      <a href="#community"><span class="icon">🌐</span> Community</a>
+      <a href="#admin"><span class="icon">🎛️</span> Admin Panel</a>
+      <a href="#email"><span class="icon">📧</span> Email System</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Deployment</div>
+      <a href="#deployment"><span class="icon">🚢</span> Deploying</a>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="overview">
+      <h1>CoachNest</h1>
+      <p class="hero-sub">A modern, full-stack online learning platform with course management, gamification, community, and Stripe payments.</p>
+      <div class="hero-badges">
+        <span class="badge badge-orange">Next.js 15</span>
+        <span class="badge badge-blue">TypeScript 5</span>
+        <span class="badge badge-green">Prisma + MySQL</span>
+        <span class="badge badge-purple">Stripe Payments</span>
+        <span class="badge badge-pink">Gamification</span>
+        <span class="badge badge-yellow">Community</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num">53</div><div class="stat-lbl">Pages</div></div>
+        <div class="stat-card"><div class="stat-num">60+</div><div class="stat-lbl">API Endpoints</div></div>
+        <div class="stat-card"><div class="stat-num">25+</div><div class="stat-lbl">DB Models</div></div>
+        <div class="stat-card"><div class="stat-num">27</div><div class="stat-lbl">Components</div></div>
+      </div>
+    </div>
+
+    <!-- Overview section -->
+    <div class="doc-section">
+      <p>CoachNest (v0.2.0) is a production-ready learning management system that supports:</p>
+      <ul class="feature-list">
+        <li><span class="check">✓</span> <strong>Course creation & delivery</strong> — structured courses with sections, video/text/quiz lessons, progress tracking, and PDF certificates</li>
+        <li><span class="check">✓</span> <strong>Gamification</strong> — XP points, levels, badges, daily streaks, and a global leaderboard</li>
+        <li><span class="check">✓</span> <strong>Community</strong> — discussion forums, study groups, peer review submissions, and activity feed</li>
+        <li><span class="check">✓</span> <strong>Payments</strong> — Stripe Checkout with coupon support, webhooks, and refund management</li>
+        <li><span class="check">✓</span> <strong>Admin panel</strong> — full control over courses, students, orders, analytics, blogs, and messages</li>
+        <li><span class="check">✓</span> <strong>Email</strong> — transactional emails via Resend (welcome, purchase confirmation, course updates)</li>
+        <li><span class="check">✓</span> <strong>Multi-role auth</strong> — STUDENT / INSTRUCTOR / ADMIN with JWT + Edge-compatible sessions</li>
+      </ul>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="doc-section" id="techstack">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">⚙️</span> Tech Stack</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Layer</th><th>Technology</th><th>Version</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td>Next.js (App Router)</td><td>15.3.0</td></tr>
+            <tr><td>Language</td><td>TypeScript (strict mode)</td><td>5</td></tr>
+            <tr><td>UI Library</td><td>React</td><td>19.0.0</td></tr>
+            <tr><td>Styling</td><td>Tailwind CSS</td><td>3.4.1</td></tr>
+            <tr><td>Animations</td><td>Framer Motion</td><td>11.3.8</td></tr>
+            <tr><td>UI Primitives</td><td>Radix UI</td><td>latest</td></tr>
+            <tr><td>ORM</td><td>Prisma</td><td>5.16.1</td></tr>
+            <tr><td>Database</td><td>MySQL</td><td>8.0+</td></tr>
+            <tr><td>Auth</td><td>JWT via jose (Edge-compatible)</td><td>5.6.3</td></tr>
+            <tr><td>Passwords</td><td>bcryptjs</td><td>2.4.3</td></tr>
+            <tr><td>Payments</td><td>Stripe</td><td>21.0.0</td></tr>
+            <tr><td>Email</td><td>Resend</td><td>3.4.0</td></tr>
+            <tr><td>Charts</td><td>Recharts</td><td>2.12.7</td></tr>
+            <tr><td>PDF</td><td>@react-pdf/renderer + pdf-lib</td><td>4.3.2 / 1.17.1</td></tr>
+            <tr><td>Validation</td><td>Zod</td><td>3.23.8</td></tr>
+            <tr><td>Icons</td><td>Lucide React</td><td>0.414.0</td></tr>
+            <tr><td>Notifications</td><td>React Hot Toast</td><td>2.4.1</td></tr>
+            <tr><td>Tours</td><td>React Joyride</td><td>3.0.0</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick Start -->
+    <div class="doc-section" id="quickstart">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🚀</span> Quick Start</h2>
+      <h3>Prerequisites</h3>
+      <ul class="feature-list">
+        <li><span class="check">→</span> Node.js 18+</li>
+        <li><span class="check">→</span> MySQL 8.0+ (required for full-text search)</li>
+        <li><span class="check">→</span> Stripe account (test mode)</li>
+        <li><span class="check">→</span> Resend account (for emails)</li>
+      </ul>
+      <h3>Installation</h3>
+      <pre><code><span class="cmt"># Clone & install</span>
+git clone &lt;repo-url&gt;
+cd learning
+npm install
+
+<span class="cmt"># Configure environment</span>
+cp .env.example .env
+<span class="cmt"># → Edit .env with your values</span>
+
+<span class="cmt"># Set up database</span>
+npm run db:push
+npm run db:seed
+npm run db:seed:blogs
+
+<span class="cmt"># Start dev server</span>
+npm run dev</code></pre>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        The app starts at <code>http://localhost:3000</code>. The first user you register will have the <strong>STUDENT</strong> role. Promote them in the database or via <code>prisma studio</code> for admin access.
+      </div>
+
+      <h3>Scripts</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Script</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>npm run dev</code></td><td>Start development server</td></tr>
+            <tr><td><code>npm run build</code></td><td>Runs <code>prisma generate</code> then <code>next build</code></td></tr>
+            <tr><td><code>npm run start</code></td><td>Start production server</td></tr>
+            <tr><td><code>npm run lint</code></td><td>ESLint check</td></tr>
+            <tr><td><code>npm run db:push</code></td><td>Push schema changes to DB (no migrations)</td></tr>
+            <tr><td><code>npm run db:migrate</code></td><td>Create & run a Prisma migration</td></tr>
+            <tr><td><code>npm run db:studio</code></td><td>Open Prisma Studio GUI</td></tr>
+            <tr><td><code>npm run db:seed</code></td><td>Seed sample courses, users, etc.</td></tr>
+            <tr><td><code>npm run db:seed:blogs</code></td><td>Seed blog posts</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Environment Variables -->
+    <div class="doc-section" id="envvars">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🔑</span> Environment Variables</h2>
+      <p>Copy <code>.env.example</code> to <code>.env</code> and fill in every value.</p>
+
+      <div class="env-block">
+        <div class="env-header">Database</div>
+        <div class="env-row"><div class="env-key">DATABASE_URL</div><div class="env-val">MySQL connection string — e.g. <code>mysql://root:pass@localhost:3306/learning_platform</code></div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">Auth</div>
+        <div class="env-row"><div class="env-key">JWT_SECRET</div><div class="env-val">Long random secret for signing JWT tokens. Never expose publicly.</div></div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_APP_URL</div><div class="env-val">Full URL of the app — <code>http://localhost:3000</code> in dev, your domain in prod.</div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">Stripe</div>
+        <div class="env-row"><div class="env-key">STRIPE_SECRET_KEY</div><div class="env-val">Secret key from Stripe dashboard (starts with <code>sk_test_</code> or <code>sk_live_</code>)</div></div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</div><div class="env-val">Publishable key (starts with <code>pk_test_</code> or <code>pk_live_</code>)</div></div>
+        <div class="env-row"><div class="env-key">STRIPE_WEBHOOK_SECRET</div><div class="env-val">Webhook signing secret from Stripe — get from the webhook endpoint settings.</div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">Email (Resend)</div>
+        <div class="env-row"><div class="env-key">RESEND_API_KEY</div><div class="env-val">API key from resend.com</div></div>
+        <div class="env-row"><div class="env-key">EMAIL_FROM</div><div class="env-val">Verified sender — e.g. <code>CoachNest &lt;noreply@yourdomain.com&gt;</code></div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">Cloudinary (Images)</div>
+        <div class="env-row"><div class="env-key">CLOUDINARY_URL</div><div class="env-val">Full Cloudinary URL — <code>cloudinary://api_key:api_secret@cloud_name</code></div></div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME</div><div class="env-val">Cloud name (public, safe to expose)</div></div>
+      </div>
+    </div>
+
+    <!-- Project Structure -->
+    <div class="doc-section" id="structure">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">📁</span> Project Structure</h2>
+      <pre><code>learning/
+├── <span class="prop">app/</span>                     <span class="cmt"># Next.js App Router</span>
+│   ├── <span class="prop">(auth)/</span>              <span class="cmt"># Login & signup pages</span>
+│   ├── <span class="prop">admin/</span>               <span class="cmt"># Admin dashboard & management</span>
+│   ├── <span class="prop">api/</span>                 <span class="cmt"># API route handlers</span>
+│   ├── <span class="prop">blog/</span>                <span class="cmt"># Blog listing & posts</span>
+│   ├── <span class="prop">community/</span>           <span class="cmt"># Forums, groups, peer review</span>
+│   ├── <span class="prop">courses/</span>             <span class="cmt"># Course catalog & player</span>
+│   ├── <span class="prop">dashboard/</span>           <span class="cmt"># Student dashboard</span>
+│   ├── <span class="prop">legal/</span>               <span class="cmt"># Policy pages</span>
+│   └── <span class="prop">page.tsx</span>             <span class="cmt"># Landing page</span>
+│
+├── <span class="prop">components/</span>              <span class="cmt"># Reusable React components</span>
+│   ├── <span class="prop">landing/</span>             <span class="cmt"># Landing page specific</span>
+│   ├── <span class="prop">ui/</span>                  <span class="cmt"># Primitive UI (shadcn-style)</span>
+│   └── <span class="prop">contact/</span>             <span class="cmt"># Contact form</span>
+│
+├── <span class="prop">lib/</span>                     <span class="cmt"># Core utilities</span>
+│   ├── auth.ts              <span class="cmt"># JWT session management</span>
+│   ├── prisma.ts            <span class="cmt"># Prisma client singleton</span>
+│   ├── stripe.ts            <span class="cmt"># Stripe client wrapper</span>
+│   ├── email.ts             <span class="cmt"># Resend email templates</span>
+│   ├── gamification.ts      <span class="cmt"># XP & badge awarding</span>
+│   ├── badges.ts            <span class="cmt"># Badge definitions & levels</span>
+│   ├── pdf.tsx              <span class="cmt"># Certificate PDF generation</span>
+│   └── utils.ts             <span class="cmt"># cn, formatDate, etc.</span>
+│
+├── <span class="prop">services/</span>                <span class="cmt"># Business logic layer</span>
+│   ├── analytics.service.ts
+│   ├── certificate.service.ts
+│   ├── coupon.service.ts
+│   ├── enrollment.service.ts
+│   ├── order.service.ts
+│   ├── payment.service.ts
+│   ├── quiz.service.ts
+│   └── recommendation.service.ts
+│
+├── <span class="prop">types/index.ts</span>           <span class="cmt"># Shared TypeScript types</span>
+├── <span class="prop">prisma/schema.prisma</span>     <span class="cmt"># Database schema</span>
+└── <span class="prop">middleware.ts</span>            <span class="cmt"># Edge route protection</span></code></pre>
+    </div>
+
+    <!-- Database Schema -->
+    <div class="doc-section" id="database">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🗄️</span> Database Schema</h2>
+      <p>MySQL 8.0+ with Prisma ORM. 25+ models organized into domains.</p>
+
+      <div class="schema-group">
+        <h3>Users & Organizations</h3>
+        <div class="model-pills">
+          <span class="model-pill">User</span>
+          <span class="model-pill">Organization</span>
+          <span class="model-pill">OrganizationMember</span>
+        </div>
+      </div>
+      <div class="schema-group">
+        <h3>Content</h3>
+        <div class="model-pills">
+          <span class="model-pill">Course</span>
+          <span class="model-pill">Section</span>
+          <span class="model-pill">Lesson</span>
+          <span class="model-pill">Category</span>
+          <span class="model-pill">Tag</span>
+          <span class="model-pill">Blog</span>
+        </div>
+      </div>
+      <div class="schema-group">
+        <h3>Learning & Assessment</h3>
+        <div class="model-pills">
+          <span class="model-pill">Enrollment</span>
+          <span class="model-pill">LessonProgress</span>
+          <span class="model-pill">Quiz</span>
+          <span class="model-pill">Question</span>
+          <span class="model-pill">QuizAttempt</span>
+          <span class="model-pill">Highlight</span>
+          <span class="model-pill">Certificate</span>
+        </div>
+      </div>
+      <div class="schema-group">
+        <h3>Payments</h3>
+        <div class="model-pills">
+          <span class="model-pill">Order</span>
+          <span class="model-pill">Coupon</span>
+          <span class="model-pill">CouponUse</span>
+          <span class="model-pill">Subscription</span>
+          <span class="model-pill">Payout</span>
+        </div>
+      </div>
+      <div class="schema-group">
+        <h3>Community</h3>
+        <div class="model-pills">
+          <span class="model-pill">ForumThread</span>
+          <span class="model-pill">ForumReply</span>
+          <span class="model-pill">ForumVote</span>
+          <span class="model-pill">StudyGroup</span>
+          <span class="model-pill">StudyGroupMember</span>
+          <span class="model-pill">GroupNote</span>
+          <span class="model-pill">PeerReviewAssignment</span>
+          <span class="model-pill">PeerReview</span>
+          <span class="model-pill">ActivityFeedEvent</span>
+        </div>
+      </div>
+      <div class="schema-group">
+        <h3>Gamification</h3>
+        <div class="model-pills">
+          <span class="model-pill">UserGameProfile</span>
+          <span class="model-pill">UserBadge</span>
+          <span class="model-pill">XpEvent</span>
+        </div>
+      </div>
+      <div class="schema-group">
+        <h3>Other</h3>
+        <div class="model-pills">
+          <span class="model-pill">Review</span>
+          <span class="model-pill">Wishlist</span>
+          <span class="model-pill">Notification</span>
+          <span class="model-pill">ContactMessage</span>
+        </div>
+      </div>
+
+      <h3>Enums</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Enum</th><th>Values</th></tr></thead>
+          <tbody>
+            <tr><td><code>Role</code></td><td>STUDENT · INSTRUCTOR · ADMIN</td></tr>
+            <tr><td><code>PlanType</code></td><td>FREE · BASIC · PRO · ENTERPRISE</td></tr>
+            <tr><td><code>OrderStatus</code></td><td>PENDING · PAID · FAILED · REFUNDED</td></tr>
+            <tr><td><code>LessonType</code></td><td>VIDEO · TEXT · QUIZ</td></tr>
+            <tr><td><code>ContentStatus</code></td><td>DRAFT · PUBLISHED · ARCHIVED · PENDING_REVIEW</td></tr>
+            <tr><td><code>DiscountType</code></td><td>PERCENTAGE · FIXED</td></tr>
+            <tr><td><code>NotifType</code></td><td>COURSE_UPDATE · PURCHASE · REVIEW · REMINDER · OFFER · SYSTEM · FORUM_REPLY · GROUP_INVITE · PEER_REVIEW · ACTIVITY</td></tr>
+            <tr><td><code>GroupRole</code></td><td>MEMBER · ADMIN</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="doc-section" id="auth">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">🔐</span> Authentication</h2>
+      <p>Sessions use JWTs signed with <code>JWT_SECRET</code> and stored in an HTTP-only cookie named <code>session</code>. The <code>jose</code> library is used instead of <code>jsonwebtoken</code> to maintain compatibility with Next.js Edge Runtime.</p>
+
+      <h3>Key Functions — <code>lib/auth.ts</code></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Function</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>signToken(payload)</code></td><td>Sign a new JWT with expiry</td></tr>
+            <tr><td><code>verifyToken(token)</code></td><td>Verify and decode a JWT</td></tr>
+            <tr><td><code>setSessionCookie(res, token)</code></td><td>Write JWT to HTTP-only cookie</td></tr>
+            <tr><td><code>getSession()</code></td><td>Read session in server components (via cookies)</td></tr>
+            <tr><td><code>getSessionFromRequest(req)</code></td><td>Read session in API route handlers</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>User Roles</h3>
+      <div class="cards">
+        <div class="card"><div class="card-icon">🎓</div><div class="card-title">STUDENT</div><div class="card-desc">Default role. Access to dashboard, courses, community, and gamification features.</div></div>
+        <div class="card"><div class="card-icon">📖</div><div class="card-title">INSTRUCTOR</div><div class="card-desc">All student access plus admin panel for course and content management.</div></div>
+        <div class="card"><div class="card-icon">🔧</div><div class="card-title">ADMIN</div><div class="card-desc">Full access to all features including user management, orders, and analytics.</div></div>
+      </div>
+    </div>
+
+    <!-- Middleware -->
+    <div class="doc-section" id="middleware">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🛡️</span> Middleware</h2>
+      <p><code>middleware.ts</code> runs at the Edge and guards routes before the request reaches any page or API handler.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Route Pattern</th><th>Rule</th></tr></thead>
+          <tbody>
+            <tr><td><code>/dashboard/*</code></td><td>Requires any authenticated user. Redirects to <code>/login</code> if unauthenticated.</td></tr>
+            <tr><td><code>/admin/*</code></td><td>Requires <code>INSTRUCTOR</code> or <code>ADMIN</code> role. Redirects to <code>/dashboard</code> otherwise.</td></tr>
+            <tr><td><code>/login</code>, <code>/signup</code></td><td>Redirects to <code>/dashboard</code> if already logged in.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API: Auth -->
+    <div class="doc-section" id="api-auth">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">🔑</span> API — Auth</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/auth/signup</code></td><td>Register a new user</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/auth/login</code></td><td>Log in and receive session cookie</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/auth/logout</code></td><td>Clear session cookie</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/auth/me</code></td><td>Get current authenticated user</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API: Courses -->
+    <div class="doc-section" id="api-courses">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">📚</span> API — Courses & Lessons</h2>
+
+      <div class="api-group">
+        <div class="api-group-title">Courses</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/courses</code></td><td>List published courses</td><td>—</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/courses/[id]</code></td><td>Course detail with sections & lessons</td><td>—</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/courses</code></td><td>Create a course</td><td>Admin</td></tr>
+              <tr><td><span class="method put">PUT</span></td><td><code>/api/courses/[id]</code></td><td>Update a course</td><td>Admin</td></tr>
+              <tr><td><span class="method delete">DELETE</span></td><td><code>/api/courses/[id]</code></td><td>Delete a course</td><td>Admin</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-group">
+        <div class="api-group-title">Lessons</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/lessons/[id]</code></td><td>Get lesson detail</td><td>Enrolled</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/lessons</code></td><td>Create lesson</td><td>Admin</td></tr>
+              <tr><td><span class="method put">PUT</span></td><td><code>/api/lessons/[id]</code></td><td>Update lesson</td><td>Admin</td></tr>
+              <tr><td><span class="method delete">DELETE</span></td><td><code>/api/lessons/[id]</code></td><td>Delete lesson</td><td>Admin</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-group">
+        <div class="api-group-title">Progress & Highlights</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/progress</code></td><td>Get user's lesson completion status</td></tr>
+              <tr><td><span class="method put">PUT</span></td><td><code>/api/progress</code></td><td>Mark lesson complete / update progress</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/highlights</code></td><td>Save a text highlight or note</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/highlights/[id]</code></td><td>Get highlights for a lesson</td></tr>
+              <tr><td><span class="method delete">DELETE</span></td><td><code>/api/highlights/[id]</code></td><td>Delete a highlight</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- API: Enrollments -->
+    <div class="doc-section" id="api-enrollments">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">📋</span> API — Enrollments & Reviews</h2>
+
+      <div class="api-group">
+        <div class="api-group-title">Enrollments</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/enrollments</code></td><td>Enroll in a course (after payment or free)</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/enrollments</code></td><td>Get current user's enrollments</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/admin/enrollments</code></td><td>All enrollments (admin)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-group">
+        <div class="api-group-title">Reviews</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/reviews</code></td><td>Get reviews for a course</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/reviews</code></td><td>Submit a course review</td></tr>
+              <tr><td><span class="method put">PUT</span></td><td><code>/api/reviews/[id]</code></td><td>Update your review</td></tr>
+              <tr><td><span class="method delete">DELETE</span></td><td><code>/api/reviews/[id]</code></td><td>Delete a review</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-group">
+        <div class="api-group-title">Wishlist & Certificates</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/wishlist</code></td><td>Get user's wishlist</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/wishlist</code></td><td>Add course to wishlist</td></tr>
+              <tr><td><span class="method delete">DELETE</span></td><td><code>/api/wishlist/[courseId]</code></td><td>Remove from wishlist</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/certificates/[courseId]</code></td><td>Download PDF certificate</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- API: Quizzes -->
+    <div class="doc-section" id="api-quizzes">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">📝</span> API — Quizzes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th><th>Auth</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/quizzes/[id]</code></td><td>Get quiz with questions</td><td>Enrolled</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/quizzes/[id]/attempt</code></td><td>Submit quiz answers</td><td>Enrolled</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/quiz-history</code></td><td>User's quiz attempt history</td><td>Auth</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/admin/quizzes</code></td><td>Create quiz</td><td>Admin</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/quizzes/[id]/analytics</code></td><td>Quiz performance analytics</td><td>Admin</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/quizzes/[id]/attempts</code></td><td>All attempts for a quiz</td><td>Admin</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API: Payments -->
+    <div class="doc-section" id="api-payments">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">💳</span> API — Payments & Orders</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/payments/create-order</code></td><td>Create Stripe Checkout session</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/payments/verify</code></td><td>Verify payment after Stripe redirect</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/payments/webhook</code></td><td>Stripe webhook event handler</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/coupons/validate</code></td><td>Validate a coupon code & get discount</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/orders</code></td><td>All orders (admin)</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/admin/orders/[id]/refund</code></td><td>Issue a Stripe refund (admin)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API: Community -->
+    <div class="doc-section" id="api-community">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">👥</span> API — Community</h2>
+
+      <div class="api-group">
+        <div class="api-group-title">Forums</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/community/forums</code></td><td>List forum threads</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/forums</code></td><td>Create thread</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/community/forums/[id]</code></td><td>Thread with replies</td></tr>
+              <tr><td><span class="method put">PUT</span></td><td><code>/api/community/forums/[id]</code></td><td>Update thread</td></tr>
+              <tr><td><span class="method delete">DELETE</span></td><td><code>/api/community/forums/[id]</code></td><td>Delete thread</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/forums/[id]/replies</code></td><td>Post a reply</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/forums/[id]/vote</code></td><td>Vote on a reply</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-group">
+        <div class="api-group-title">Study Groups</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/community/groups</code></td><td>List groups</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/groups</code></td><td>Create group</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/community/groups/[id]</code></td><td>Group detail</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/groups/[id]/join</code></td><td>Join group</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/groups/[id]/leave</code></td><td>Leave group</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/groups/[id]/notes</code></td><td>Add group note</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-group">
+        <div class="api-group-title">Peer Review & Feed</div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/community/peer-review</code></td><td>List peer review assignments</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/peer-review</code></td><td>Submit work for peer review</td></tr>
+              <tr><td><span class="method post">POST</span></td><td><code>/api/community/peer-review/[id]/review</code></td><td>Submit peer feedback</td></tr>
+              <tr><td><span class="method get">GET</span></td><td><code>/api/community/feed</code></td><td>Activity feed</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- API: Gamification -->
+    <div class="doc-section" id="api-gamification">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🏆</span> API — Gamification</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/gamification/profile</code></td><td>User's XP, level, badges, and streak</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/gamification/leaderboard</code></td><td>Global XP leaderboard</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/search</code></td><td>Full-text search across courses and blogs</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- API: Admin -->
+    <div class="doc-section" id="api-admin">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">🔧</span> API — Admin</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Method</th><th>Endpoint</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/students</code></td><td>List all students</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/students/[id]</code></td><td>Student detail</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td><code>/api/admin/students/[id]</code></td><td>Edit student</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td><code>/api/admin/students/[id]</code></td><td>Delete student</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/admin/students/[id]/send-notification</code></td><td>Send notification to student</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/certificates</code></td><td>All issued certificates</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/contact/[id]</code></td><td>Get contact message</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/admin/contact/[id]/reply</code></td><td>Reply to contact message</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/analytics/admin</code></td><td>Admin analytics data</td></tr>
+            <tr><td><span class="method get">GET</span></td><td><code>/api/admin/coupons</code></td><td>List all coupons</td></tr>
+            <tr><td><span class="method post">POST</span></td><td><code>/api/admin/coupons</code></td><td>Create coupon</td></tr>
+            <tr><td><span class="method put">PUT</span></td><td><code>/api/admin/coupons/[id]</code></td><td>Update coupon</td></tr>
+            <tr><td><span class="method delete">DELETE</span></td><td><code>/api/admin/coupons/[id]</code></td><td>Delete coupon</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Pages -->
+    <div class="doc-section" id="pages">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🗺️</span> Pages & Routes</h2>
+
+      <h3>Public</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Route</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>/</code></td><td>Landing page — hero, features, stats, testimonials, FAQ</td></tr>
+            <tr><td><code>/courses</code></td><td>Course catalog with filters, sorting, pagination</td></tr>
+            <tr><td><code>/courses/[id]</code></td><td>Course detail, lesson player, reviews, enrollment CTA</td></tr>
+            <tr><td><code>/blog</code></td><td>Blog listing with search</td></tr>
+            <tr><td><code>/blog/[slug]</code></td><td>Blog post detail</td></tr>
+            <tr><td><code>/pricing</code></td><td>Subscription pricing plans</td></tr>
+            <tr><td><code>/about</code> · <code>/careers</code> · <code>/press</code> · <code>/contact</code></td><td>Marketing & informational pages</td></tr>
+            <tr><td><code>/legal/*</code></td><td>Terms, Privacy, Cookie Policy, Refund Policy</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Student Dashboard <span style="color:var(--text3);font-weight:400;font-size:13px">(requires auth)</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Route</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>/dashboard</code></td><td>Overview — enrolled courses, activity</td></tr>
+            <tr><td><code>/dashboard/achievements</code></td><td>Badges, XP bar, leaderboard</td></tr>
+            <tr><td><code>/dashboard/certificates</code></td><td>Download completion certificates</td></tr>
+            <tr><td><code>/dashboard/notifications</code></td><td>All user notifications</td></tr>
+            <tr><td><code>/dashboard/orders</code></td><td>Purchase history</td></tr>
+            <tr><td><code>/dashboard/profile</code></td><td>Edit profile & change password</td></tr>
+            <tr><td><code>/dashboard/quizzes</code></td><td>Quiz attempt history</td></tr>
+            <tr><td><code>/dashboard/wishlist</code></td><td>Saved courses</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Admin Panel <span style="color:var(--text3);font-weight:400;font-size:13px">(INSTRUCTOR / ADMIN only)</span></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Route</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><code>/admin</code></td><td>Dashboard overview with key metrics</td></tr>
+            <tr><td><code>/admin/analytics</code></td><td>Revenue charts, enrollment trends</td></tr>
+            <tr><td><code>/admin/courses</code></td><td>Course listing and management</td></tr>
+            <tr><td><code>/admin/courses/[id]/edit</code></td><td>Course & lesson editor</td></tr>
+            <tr><td><code>/admin/students</code></td><td>Student management</td></tr>
+            <tr><td><code>/admin/orders</code></td><td>Payment orders and refunds</td></tr>
+            <tr><td><code>/admin/quizzes</code></td><td>Quiz management</td></tr>
+            <tr><td><code>/admin/coupons</code></td><td>Discount coupon management</td></tr>
+            <tr><td><code>/admin/blogs</code></td><td>Blog post CRUD</td></tr>
+            <tr><td><code>/admin/certificates</code></td><td>Certificate management</td></tr>
+            <tr><td><code>/admin/messages</code></td><td>Contact message inbox & replies</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Components -->
+    <div class="doc-section" id="components">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">🧩</span> Components</h2>
+      <div class="cards">
+        <div class="card"><div class="card-title">Navbar / NavbarClient</div><div class="card-desc">Server + client top navigation with auth menu and theme toggle.</div></div>
+        <div class="card"><div class="card-title">CourseCard</div><div class="card-desc">Course preview card with thumbnail, price, rating, and quick actions.</div></div>
+        <div class="card"><div class="card-title">QuizPlayer</div><div class="card-desc">Full quiz interface — timer, question flagging, answer review.</div></div>
+        <div class="card"><div class="card-title">ProgressBar / XpProgressBar</div><div class="card-desc">Visual progress bars for course completion and XP levels.</div></div>
+        <div class="card"><div class="card-title">OnboardingTour / CommunityTour</div><div class="card-desc">Step-by-step guided tours using React Joyride with persistent completion flags.</div></div>
+        <div class="card"><div class="card-title">NotificationBell</div><div class="card-desc">Notification icon with unread count badge and dropdown.</div></div>
+        <div class="card"><div class="card-title">ReviewForm / ReviewCard</div><div class="card-desc">Course review submission form and display card with star ratings.</div></div>
+        <div class="card"><div class="card-title">MarkdownEditor</div><div class="card-desc">Rich text content editor for lesson and blog content.</div></div>
+        <div class="card"><div class="card-title">GlassCard</div><div class="card-desc">Glassmorphism-styled card container used across the UI.</div></div>
+        <div class="card"><div class="card-title">Landing components</div><div class="card-desc">HeroBackground, RotatingWords, AnimatedCounter, FadeInSection, TestimonialCard, FAQItem, etc.</div></div>
+      </div>
+    </div>
+
+    <!-- Services -->
+    <div class="doc-section" id="services">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">⚡</span> Services & Utilities</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Responsibilities</th></tr></thead>
+          <tbody>
+            <tr><td><code>analytics.service.ts</code></td><td>Aggregate dashboard analytics queries — revenue, enrollments, active students</td></tr>
+            <tr><td><code>certificate.service.ts</code></td><td>Certificate generation, validation, and retrieval</td></tr>
+            <tr><td><code>coupon.service.ts</code></td><td>Coupon code validation, discount calculation, usage tracking</td></tr>
+            <tr><td><code>enrollment.service.ts</code></td><td>Enrollment queries, progress aggregation, completion detection</td></tr>
+            <tr><td><code>order.service.ts</code></td><td>Order filtering, revenue analytics, refund processing</td></tr>
+            <tr><td><code>payment.service.ts</code></td><td>Payment status checks and Stripe webhook event handling</td></tr>
+            <tr><td><code>quiz.service.ts</code></td><td>Quiz management, attempt scoring, analytics</td></tr>
+            <tr><td><code>recommendation.service.ts</code></td><td>Course recommendations based on enrollments and tags</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Key Utilities — <code>lib/</code></h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>File</th><th>Key Exports</th></tr></thead>
+          <tbody>
+            <tr><td><code>auth.ts</code></td><td><code>signToken</code> · <code>verifyToken</code> · <code>setSessionCookie</code> · <code>getSession</code> · <code>getSessionFromRequest</code></td></tr>
+            <tr><td><code>prisma.ts</code></td><td><code>prisma</code> — singleton Prisma client with dev connection pooling</td></tr>
+            <tr><td><code>stripe.ts</code></td><td><code>getStripe</code> · <code>verifyWebhookSignature</code></td></tr>
+            <tr><td><code>email.ts</code></td><td><code>sendWelcomeEmail</code> · <code>sendPurchaseEmail</code> · <code>sendCourseUpdateEmail</code></td></tr>
+            <tr><td><code>gamification.ts</code></td><td><code>awardXp</code> · <code>grantBadge</code> · <code>updateStreak</code></td></tr>
+            <tr><td><code>badges.ts</code></td><td><code>BADGE_MAP</code> · <code>getLevelForXp</code></td></tr>
+            <tr><td><code>pdf.tsx</code></td><td>Certificate PDF generation with <code>@react-pdf/renderer</code></td></tr>
+            <tr><td><code>utils.ts</code></td><td><code>cn</code> · <code>formatDate</code> · <code>calcProgress</code> · <code>truncate</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Gamification -->
+    <div class="doc-section" id="gamification">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🎮</span> Gamification System</h2>
+      <p>Students earn XP for learning activities. XP accumulates into levels and unlocks badges. Daily activity maintains a streak.</p>
+
+      <div class="cards">
+        <div class="card"><div class="card-icon">⭐</div><div class="card-title">XP Points</div><div class="card-desc">Awarded for completing lessons, passing quizzes, joining groups, writing reviews, and more. Logged to <code>XpEvent</code>.</div></div>
+        <div class="card"><div class="card-icon">📊</div><div class="card-title">Levels</div><div class="card-desc"><code>getLevelForXp(xp)</code> maps total XP to a level. Level thresholds increase progressively.</div></div>
+        <div class="card"><div class="card-icon">🏅</div><div class="card-title">Badges</div><div class="card-desc">Defined in <code>BADGE_MAP</code>. Awarded via <code>grantBadge()</code> on milestones. Stored in <code>UserBadge</code>.</div></div>
+        <div class="card"><div class="card-icon">🔥</div><div class="card-title">Streaks</div><div class="card-desc">Daily learning streaks tracked via <code>updateStreak()</code>. Current and longest streak stored on <code>UserGameProfile</code>.</div></div>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        The leaderboard at <code>/api/gamification/leaderboard</code> ranks users by total XP and is displayed on <code>/dashboard/achievements</code>.
+      </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="doc-section" id="payments">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">💰</span> Payment Flow</h2>
+
+      <div class="flow">
+        <div class="flow-item">
+          <div class="flow-num">1</div>
+          <div class="flow-content">
+            <div class="flow-title">Student clicks "Enroll"</div>
+            <div class="flow-desc">Optionally enters a coupon code. <code>POST /api/coupons/validate</code> returns the discounted price.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">2</div>
+          <div class="flow-content">
+            <div class="flow-title">Create Stripe Checkout Session</div>
+            <div class="flow-desc"><code>POST /api/payments/create-order</code> creates a Stripe Checkout Session and returns its URL.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">3</div>
+          <div class="flow-content">
+            <div class="flow-title">Student pays on Stripe</div>
+            <div class="flow-desc">Stripe hosts the checkout page. The student enters payment details and confirms.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">4</div>
+          <div class="flow-content">
+            <div class="flow-title">Verify & Enroll</div>
+            <div class="flow-desc">Stripe redirects to <code>/api/payments/verify?session_id=...</code> which confirms payment, creates an <code>Enrollment</code> and <code>Order</code> record, and sends a purchase email.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">5</div>
+          <div class="flow-content">
+            <div class="flow-title">Webhook (async)</div>
+            <div class="flow-desc"><code>POST /api/payments/webhook</code> handles Stripe events asynchronously — payment success, refunds, disputes.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        In production, configure your Stripe webhook endpoint to point to <code>https://yourdomain.com/api/payments/webhook</code> and set <code>STRIPE_WEBHOOK_SECRET</code> accordingly.
+      </div>
+    </div>
+
+    <!-- Community -->
+    <div class="doc-section" id="community">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🌐</span> Community Features</h2>
+      <div class="cards">
+        <div class="card"><div class="card-icon">💬</div><div class="card-title">Discussion Forums</div><div class="card-desc">Threaded discussions with nested replies, upvote/downvote voting, and author/admin moderation.</div></div>
+        <div class="card"><div class="card-icon">👥</div><div class="card-title">Study Groups</div><div class="card-desc">Students create or join groups with member lists, collaborative notes, and shared progress views. Supports MEMBER and ADMIN roles.</div></div>
+        <div class="card"><div class="card-icon">🔍</div><div class="card-title">Peer Review</div><div class="card-desc">Students submit work for evaluation. Reviewers provide structured ratings and written feedback.</div></div>
+        <div class="card"><div class="card-icon">📡</div><div class="card-title">Activity Feed</div><div class="card-desc">Key events (badges earned, courses completed, quiz passed) are logged and displayed in the community feed.</div></div>
+      </div>
+    </div>
+
+    <!-- Admin -->
+    <div class="doc-section" id="admin">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">🎛️</span> Admin Panel</h2>
+      <p>Accessible at <code>/admin</code> — requires <code>INSTRUCTOR</code> or <code>ADMIN</code> role.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Section</th><th>Capabilities</th></tr></thead>
+          <tbody>
+            <tr><td>Overview</td><td>Key metrics — total students, revenue, enrollments, active courses</td></tr>
+            <tr><td>Analytics</td><td>Revenue charts, enrollment trends, quiz pass rates via Recharts</td></tr>
+            <tr><td>Courses</td><td>Create, edit, publish, archive, delete courses; manage sections and lessons</td></tr>
+            <tr><td>Students</td><td>View, edit, send notifications, and delete student accounts</td></tr>
+            <tr><td>Enrollments</td><td>View and manage all course enrollments</td></tr>
+            <tr><td>Orders</td><td>View all orders, issue refunds via Stripe</td></tr>
+            <tr><td>Quizzes</td><td>Create and edit quizzes; view attempt analytics</td></tr>
+            <tr><td>Coupons</td><td>Create percentage or fixed discount codes with expiry and usage limits</td></tr>
+            <tr><td>Blogs</td><td>Create, edit, and publish blog posts</td></tr>
+            <tr><td>Certificates</td><td>View all issued certificates</td></tr>
+            <tr><td>Messages</td><td>View and reply to contact form submissions</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="doc-section" id="email">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">📧</span> Email System</h2>
+      <p>Transactional emails are sent via <strong>Resend</strong>. Templates are defined in <code>lib/email.ts</code>.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Function</th><th>Trigger</th></tr></thead>
+          <tbody>
+            <tr><td><code>sendWelcomeEmail(user)</code></td><td>On successful signup</td></tr>
+            <tr><td><code>sendPurchaseEmail(user, course, order)</code></td><td>On successful payment / enrollment</td></tr>
+            <tr><td><code>sendCourseUpdateEmail(user, course)</code></td><td>When an enrolled course is updated by the instructor</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        In development, set a <code>DEV_EMAIL_OVERRIDE</code> env var to redirect all outgoing emails to a single test address.
+      </div>
+    </div>
+
+    <!-- Deployment -->
+    <div class="doc-section" id="deployment">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🚢</span> Deployment</h2>
+      <p>The project is pre-configured for <strong>Vercel</strong> (a <code>.vercel/</code> config directory is present).</p>
+
+      <h3>Build Command</h3>
+      <pre><code>npm run build
+<span class="cmt"># Runs: prisma generate && next build</span></code></pre>
+
+      <h3>Production Checklist</h3>
+      <ul class="checklist">
+        <li>Set all environment variables in Vercel project settings</li>
+        <li>Provision a MySQL 8.0+ database (PlanetScale, Railway, AWS RDS, etc.)</li>
+        <li>Set <code>DATABASE_URL</code> to the production connection string</li>
+        <li>Set <code>JWT_SECRET</code> to a long random string (min. 32 chars)</li>
+        <li>Set <code>NEXT_PUBLIC_APP_URL</code> to your production domain</li>
+        <li>Run <code>prisma migrate deploy</code> on the production database</li>
+        <li>Configure Stripe webhook to <code>https://yourdomain.com/api/payments/webhook</code></li>
+        <li>Set <code>STRIPE_WEBHOOK_SECRET</code> from the Stripe webhook dashboard</li>
+        <li>Verify your email sender domain in Resend and set <code>EMAIL_FROM</code></li>
+        <li>Set <code>RESEND_API_KEY</code></li>
+        <li>Configure Cloudinary credentials for image uploads</li>
+      </ul>
+
+      <h3>Image Domains</h3>
+      <p><code>next.config.ts</code> allows images from these hosts. Add more in <code>images.remotePatterns</code> as needed:</p>
+      <div class="model-pills" style="margin-bottom:16px">
+        <span class="model-pill">images.unsplash.com</span>
+        <span class="model-pill">res.cloudinary.com</span>
+        <span class="model-pill">uploadthing.com</span>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Footer -->
+<footer class="doc-footer">
+  <span>CoachNest Documentation · v0.2.0</span>
+  <span>Built with Next.js 15 · Prisma · MySQL · Stripe</span>
+</footer>
+
+<script>
+  // Active sidebar link on scroll
+  const sections = document.querySelectorAll('.doc-section[id], .hero[id]');
+  const links = document.querySelectorAll('.sidebar a');
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const id = entry.target.id;
+        links.forEach(l => {
+          l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

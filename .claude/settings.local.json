@@ -27,7 +27,10 @@
       "Bash(grep -r \"level\\\\|streak\\\\|badge\\\\|reward\" /d/Devang/Claude/learning --include=*.ts --include=*.tsx --include=*.prisma)",
       "Bash(xargs grep:*)",
       "Bash(grep -r -i footer /d/Devang/Claude/learning/components /d/Devang/Claude/learning/app --include=*.tsx --include=*.ts --include=*.jsx --include=*.js)",
-      "Bash(grep -E \"\\\\.\\(json|ts|js|yaml\\)$\")"
+      "Bash(grep -E \"\\\\.\\(json|ts|js|yaml\\)$\")",
+      "Bash(wc -l /d/Devang/Claude/learning/components/*.tsx)",
+      "Bash(grep -E \"\\\\.tsx$\")",
+      "Bash(grep -r Subscription /d/Devang/Claude/learning/app/api --include=*.ts)"
     ]
   }
 }

@@ -3,6 +3,7 @@
  */
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import PricingCard, { type PricingPlan } from "@/components/PricingCard";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/Tabs";
@@ -114,20 +115,48 @@ const FAQ = [
 ];
 
 export default function PricingPage() {
-  const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
+  const [billing, setBilling]   = useState<"monthly" | "yearly">("monthly");
+  const [loading, setLoading]   = useState<string | null>(null);
+  const router = useRouter();
 
-  function handleSelect(plan: PricingPlan) {
+  async function handleSelect(plan: PricingPlan) {
     if (plan.id === "free") {
-      window.location.href = "/signup";
+      router.push("/signup");
       return;
     }
     if (plan.id === "enterprise") {
       toast.success("Our sales team will reach out within 24 hours.");
       return;
     }
-    // In production: initiate Stripe subscription flow
-    toast.success(`Starting ${plan.name} plan setup...`);
-    window.location.href = `/api/payments/create-order?plan=${plan.id}&billing=${billing}`;
+
+    setLoading(plan.id);
+    try {
+      const res = await fetch("/api/subscriptions/checkout", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ plan: plan.id, billing }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // If user is not logged in, redirect to login
+        if (res.status === 401) {
+          router.push(`/login?from=/pricing`);
+          return;
+        }
+        throw new Error(data.error ?? "Something went wrong");
+      }
+
+      if (data.url) {
+        window.location.href = data.url;
+      }
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to start checkout";
+      toast.error(message);
+    } finally {
+      setLoading(null);
+    }
   }
 
   return (
@@ -166,7 +195,13 @@ export default function PricingPage() {
       {/* Cards */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-20">
         {PLANS[billing].map((plan, i) => (
-          <PricingCard key={plan.id} plan={plan} index={i} onSelect={handleSelect} />
+          <PricingCard
+            key={plan.id}
+            plan={plan}
+            index={i}
+            onSelect={handleSelect}
+            loading={loading === plan.id}
+          />
         ))}
       </div>
 

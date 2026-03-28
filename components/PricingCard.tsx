@@ -1,6 +1,6 @@
 "use client";
 import { motion } from "framer-motion";
-import { Check } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { Button } from "./ui/Button";
 import { cn } from "@/lib/utils";
 
@@ -18,10 +18,11 @@ export interface PricingPlan {
 interface Props {
   plan:     PricingPlan;
   index?:   number;
+  loading?: boolean;
   onSelect: (plan: PricingPlan) => void;
 }
 
-export default function PricingCard({ plan, index = 0, onSelect }: Props) {
+export default function PricingCard({ plan, index = 0, loading = false, onSelect }: Props) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -67,9 +68,17 @@ export default function PricingCard({ plan, index = 0, onSelect }: Props) {
       <Button
         variant={plan.popular ? "primary" : "secondary"}
         className="w-full"
+        disabled={loading}
         onClick={() => onSelect(plan)}
       >
-        {plan.cta}
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            Redirecting…
+          </span>
+        ) : (
+          plan.cta
+        )}
       </Button>
     </motion.div>
   );
