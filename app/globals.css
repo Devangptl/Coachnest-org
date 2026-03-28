@@ -122,9 +122,18 @@
   /* Form inputs */
   .input-glass {
     @apply w-full bg-input border border-border rounded-lg px-4 py-3
-           text-foreground placeholder-muted-foreground focus:outline-none focus:border-primary/50
-           focus:ring-1 focus:ring-primary/30 transition-all;
+           text-foreground placeholder-muted-foreground focus:outline-none focus:border-orange-500/50
+           focus:ring-1 focus:ring-orange-500/20 hover:border-border/80 transition-all;
   }
+
+  /* Select — remove native arrow, inject custom chevron */
+  select.input-glass {
+    @apply appearance-none cursor-pointer pr-10;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.45)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+  }
+
   .label {
     @apply block text-muted-foreground text-sm font-medium mb-1.5;
   }
@@ -395,6 +404,17 @@ html.light .border-white\/10 { border-color: rgb(24 19 16 / 0.13); }
 html.light .border-white\/15 { border-color: rgb(24 19 16 / 0.17); }
 html.light .border-white\/20 { border-color: rgb(24 19 16 / 0.20); }
 html.light .border-white\/25 { border-color: rgb(24 19 16 / 0.24); }
+
+/* ── Select chevron — light mode uses a dark arrow ──────────────────────── */
+html.light select.input-glass {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(24,19,16,0.45)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+}
+
+/* ── Select option background — match card surface ──────────────────────── */
+html.light select.input-glass option {
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+}
 
 /* ── Glass / shadow overrides ────────────────────────────────────────────── */
 html.light .glass,

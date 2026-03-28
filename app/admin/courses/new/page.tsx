@@ -113,9 +113,9 @@ export default function NewCoursePage() {
               onChange={(e) => setLevel(e.target.value)}
               className="input-glass"
             >
-              <option value="beginner"     className="bg-[#1a1636]">Beginner</option>
-              <option value="intermediate" className="bg-[#1a1636]">Intermediate</option>
-              <option value="advanced"     className="bg-[#1a1636]">Advanced</option>
+              <option value="beginner"    >Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced"    >Advanced</option>
             </select>
           </div>
 

@@ -113,9 +113,9 @@ export default function EditCourseForm({ course }: { course: Course }) {
             onChange={(e) => setLevel(e.target.value)}
             className="input-glass"
           >
-            <option value="beginner" className="bg-[#1a1636]">Beginner</option>
-            <option value="intermediate" className="bg-[#1a1636]">Intermediate</option>
-            <option value="advanced" className="bg-[#1a1636]">Advanced</option>
+            <option value="beginner" className="">Beginner</option>
+            <option value="intermediate" className="">Intermediate</option>
+            <option value="advanced" className="">Advanced</option>
           </select>
         </div>
 
@@ -159,9 +159,9 @@ export default function EditCourseForm({ course }: { course: Course }) {
             onChange={(e) => setStatus(e.target.value)}
             className="input-glass"
           >
-            <option value="DRAFT" className="bg-[#1a1636]">Draft</option>
-            <option value="PUBLISHED" className="bg-[#1a1636]">Published</option>
-            <option value="ARCHIVED" className="bg-[#1a1636]">Archived</option>
+            <option value="DRAFT" className="">Draft</option>
+            <option value="PUBLISHED" className="">Published</option>
+            <option value="ARCHIVED" className="">Archived</option>
           </select>
         </div>
 
