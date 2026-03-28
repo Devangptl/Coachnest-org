@@ -140,6 +140,10 @@ model User {
   userBadges     UserBadge[]
   xpEvents       XpEvent[]
 
+  // Tour Flags
+  hasSeenTour          Boolean  @default(false)
+  hasSeenCommunityTour Boolean  @default(false)
+
   // Community
   forumThreads          ForumThread[]
   forumReplies          ForumReply[]

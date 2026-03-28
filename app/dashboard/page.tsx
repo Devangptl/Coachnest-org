@@ -102,7 +102,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats row */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <div id="tour-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
           {
             label: "Enrolled",
@@ -145,7 +145,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Gamification Panel ──────────────────────────────────────────── */}
-      <div className="grid sm:grid-cols-3 gap-4 mb-10">
+      <div id="tour-gamification" className="grid sm:grid-cols-3 gap-4 mb-10">
         <div className="sm:col-span-2">
           <XpProgressBar
             xp={gameData.xp}

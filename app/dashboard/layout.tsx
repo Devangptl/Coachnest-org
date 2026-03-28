@@ -5,6 +5,8 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import DashboardSidebar from "./DashboardSidebar";
+import OnboardingTour from "@/components/OnboardingTour";
+import { prisma } from "@/lib/prisma";
 
 export default async function DashboardLayout({
   children,
@@ -15,12 +17,21 @@ export default async function DashboardLayout({
   if (!session) redirect("/login");
   if (session.role === "ADMIN" || session.role === "INSTRUCTOR") redirect("/admin");
 
+  const user: any = await prisma.user.findUnique({
+    where: { id: session.userId },
+    select: { hasSeenTour: true } as any,
+  });
+  const hasSeenTour = user?.hasSeenTour ?? false;
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
-      <div className="flex flex-col lg:flex-row lg:gap-8">
-        <DashboardSidebar />
-        <div className="flex-1 min-w-0 animate-fade-in">{children}</div>
+    <>
+      <OnboardingTour initialRun={!hasSeenTour} />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="flex flex-col lg:flex-row lg:gap-8">
+          <DashboardSidebar />
+          <div className="flex-1 min-w-0 animate-fade-in">{children}</div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

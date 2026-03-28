@@ -23,6 +23,7 @@ import {
   GraduationCap,
   Sun,
   Moon,
+  Map,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
@@ -258,6 +259,36 @@ export default function NavbarClient({ session }: Props) {
                         })}
                       </div>
 
+                      {/* Restart Tour */}
+                      <div className="border-t border-border py-1.5">
+                        <button
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            if (pathname.startsWith("/community")) {
+                              localStorage.removeItem("hasSeenCommunityTour");
+                              fetch("/api/user/tour-status", { method: "POST", body: JSON.stringify({ type: "community", status: false }) }).catch(() => {});
+                              if (pathname !== "/community") {
+                                router.push("/community");
+                              } else {
+                                window.dispatchEvent(new Event("restart-community-tour"));
+                              }
+                            } else {
+                              localStorage.removeItem("hasSeenTour");
+                              fetch("/api/user/tour-status", { method: "POST", body: JSON.stringify({ type: "dashboard", status: false }) }).catch(() => {});
+                              if (pathname !== "/dashboard") {
+                                router.push("/dashboard");
+                              } else {
+                                window.dispatchEvent(new Event("restart-dashboard-tour"));
+                              }
+                            }
+                          }}
+                          className="flex items-center gap-2.5 w-full px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <Map className="w-4 h-4" />
+                          Restart Tour
+                        </button>
+                      </div>
+
                       {/* Logout */}
                       <div className="border-t border-border py-1.5">
                         <button
@@ -351,6 +382,32 @@ export default function NavbarClient({ session }: Props) {
                     );
                   })}
                   <div className="border-t border-border my-2" />
+                  <button
+                    onClick={() => {
+                      setMobileOpen(false);
+                      if (pathname.startsWith("/community")) {
+                        localStorage.removeItem("hasSeenCommunityTour");
+                        fetch("/api/user/tour-status", { method: "POST", body: JSON.stringify({ type: "community", status: false }) }).catch(() => {});
+                        if (pathname !== "/community") {
+                          router.push("/community");
+                        } else {
+                          window.dispatchEvent(new Event("restart-community-tour"));
+                        }
+                      } else {
+                        localStorage.removeItem("hasSeenTour");
+                        fetch("/api/user/tour-status", { method: "POST", body: JSON.stringify({ type: "dashboard", status: false }) }).catch(() => {});
+                        if (pathname !== "/dashboard") {
+                          router.push("/dashboard");
+                        } else {
+                          window.dispatchEvent(new Event("restart-dashboard-tour"));
+                        }
+                      }
+                    }}
+                    className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  >
+                    <Map className="w-4 h-4" />
+                    Restart Tour
+                  </button>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"

@@ -77,7 +77,7 @@ export default function CommunityHubPage() {
       </div>
 
       {/* Quick Links Grid */}
-      <div className="grid sm:grid-cols-2 gap-4">
+      <div id="tour-community-quicklinks" className="grid sm:grid-cols-2 gap-4">
         {QUICK_LINKS.map((item) => {
           const Icon = item.icon;
           return (
@@ -104,7 +104,7 @@ export default function CommunityHubPage() {
       </div>
 
       {/* Popular Threads */}
-      <section>
+      <section id="tour-community-threads">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-blue-400" />
@@ -153,7 +153,7 @@ export default function CommunityHubPage() {
       </section>
 
       {/* Active Study Groups */}
-      <section>
+      <section id="tour-community-groups">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
             <Users className="w-4 h-4 text-emerald-400" />

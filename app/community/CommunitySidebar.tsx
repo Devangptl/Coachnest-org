@@ -70,7 +70,7 @@ export default function CommunitySidebar() {
 
   return (
     <>
-      <aside className="hidden lg:block w-64 flex-shrink-0">
+      <aside id="tour-community-sidebar" className="hidden lg:block w-64 flex-shrink-0">
         <div className="sticky top-24 bg-card border border-border rounded-lg p-4 shadow-glass">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
             Community
