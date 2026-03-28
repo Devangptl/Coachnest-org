@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { User, FileText, Globe, Image } from "lucide-react";
@@ -16,6 +17,7 @@ interface ProfileFormProps {
 }
 
 export default function ProfileForm({ initialData }: ProfileFormProps) {
+  const router = useRouter();
   const [form, setForm] = useState(initialData);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
@@ -43,6 +45,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
         setMessage({ type: "error", text: data.error || "Failed to update profile." });
       } else {
         setMessage({ type: "success", text: "Profile updated successfully!" });
+        router.refresh();
       }
     } catch {
       setMessage({ type: "error", text: "Something went wrong. Please try again." });

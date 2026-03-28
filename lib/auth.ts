@@ -14,6 +14,7 @@ export interface SessionPayload {
   email: string;
   role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
   name: string;
+  avatar?: string | null;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────

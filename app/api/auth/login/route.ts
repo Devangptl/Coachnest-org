@@ -36,6 +36,7 @@ export async function POST(req: NextRequest) {
       email: user.email,
       role: user.role,
       name: user.name,
+      avatar: user.avatar,
     });
 
     return NextResponse.json({ message: "Logged in.", role: user.role });

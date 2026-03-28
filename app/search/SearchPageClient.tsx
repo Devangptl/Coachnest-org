@@ -39,13 +39,15 @@ export default function SearchPageClient() {
   const [loading,  setLoading]  = useState(false);
   const [sideOpen, setSideOpen] = useState(false);
 
-  const search = useCallback(async (reset = false) => {
+  const search = useCallback(async (reset = false, overrideQ?: string) => {
     setLoading(true);
     const currentPage = reset ? 1 : page;
     if (reset) setPage(1);
 
+    const actualQ = overrideQ ?? query;
+
     const params = new URLSearchParams({
-      ...(query && { q: query }),
+      ...(actualQ && { q: actualQ }),
       ...(level && { level }),
       sort,
       page:  String(currentPage),
@@ -61,7 +63,7 @@ export default function SearchPageClient() {
 
       // Sync URL
       const urlParams = new URLSearchParams();
-      if (query) urlParams.set("q",     query);
+      if (actualQ) urlParams.set("q",     actualQ);
       if (level) urlParams.set("level", level);
       if (sort !== "popular") urlParams.set("sort", sort);
       router.replace(`/search?${urlParams}`, { scroll: false });
@@ -79,7 +81,7 @@ export default function SearchPageClient() {
       <div className="flex items-center gap-4 mb-8 flex-wrap">
         <SearchBar
           initialValue={query}
-          onSearch={(q) => { setQuery(q); search(true); }}
+          onSearch={(q) => { setQuery(q); search(true, q); }}
           navigateTo={false}
           className="flex-1 min-w-64"
           placeholder="Search 500+ courses..."

@@ -177,9 +177,13 @@ export default function NavbarClient({ session }: Props) {
                   )}
                 >
                   {/* Avatar */}
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
-                    {initials}
-                  </div>
+                  {session.avatar ? (
+                    <img src={session.avatar} alt="Avatar" className="w-8 h-8 rounded-lg object-cover shadow-md" />
+                  ) : (
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
+                      {initials}
+                    </div>
+                  )}
                   <div className="hidden sm:flex flex-col items-start">
                     <span className="text-foreground text-xs font-medium leading-tight">
                       {session.name.split(" ")[0]}
@@ -211,9 +215,13 @@ export default function NavbarClient({ session }: Props) {
                       {/* User info header */}
                       <div className="px-4 py-3.5 border-b border-border">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
-                            {initials}
-                          </div>
+                          {session.avatar ? (
+                            <img src={session.avatar} alt="Avatar" className="w-10 h-10 rounded-lg object-cover shadow-md" />
+                          ) : (
+                            <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-sm font-bold shadow-md">
+                              {initials}
+                            </div>
+                          )}
                           <div className="flex-1 min-w-0">
                             <p className="text-foreground text-sm font-semibold truncate">{session.name}</p>
                             <p className="text-muted-foreground text-xs truncate">{session.email}</p>
@@ -349,9 +357,13 @@ export default function NavbarClient({ session }: Props) {
                 <>
                   <div className="border-t border-border my-2" />
                   <div className="px-4 py-2 flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
-                      {initials}
-                    </div>
+                    {session.avatar ? (
+                      <img src={session.avatar} alt="Avatar" className="w-8 h-8 rounded-lg object-cover" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
+                        {initials}
+                      </div>
+                    )}
                     <div>
                       <p className="text-foreground text-sm font-medium">{session.name}</p>
                       <p className="text-muted-foreground text-xs">{session.email}</p>

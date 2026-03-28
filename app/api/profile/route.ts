@@ -3,7 +3,7 @@
  * PUT  /api/profile — Update profile fields (name, bio, headline, website, avatar)
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from "@/lib/auth";
+import { getSession, setSessionCookie } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -83,6 +83,15 @@ export async function PUT(req: NextRequest) {
         headline: true,
         website: true,
       },
+    });
+
+    // Update the session cookie with the new name so changes reflect globally
+    await setSessionCookie({
+      userId: session.userId,
+      email: session.email,
+      role: session.role,
+      name: updated.name,
+      avatar: updated.avatar,
     });
 
     return NextResponse.json({ user: updated, message: "Profile updated." });
