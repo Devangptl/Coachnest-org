@@ -452,17 +452,18 @@ export default async function HomePage() {
           <FadeInSection>
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
               <div>
-                <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs font-medium mb-4">
+                  <Sparkles className="w-3 h-3" />
                   Categories
-                </span>
-                <h2 className="text-3xl sm:text-4xl font-bold text-white">
+                </div>
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
                   Browse by category
                 </h2>
-                <p className="text-muted-foreground/70 mt-2">Find the perfect course for your goals.</p>
+                <p className="text-muted-foreground mt-2">Find the perfect course for your goals.</p>
               </div>
               <Link
                 href="/courses"
-                className="text-orange-400 hover:text-orange-300 text-sm flex items-center gap-1 transition-colors"
+                className="text-orange-500 hover:text-orange-600 text-sm flex items-center gap-1.5 font-medium transition-colors shrink-0"
               >
                 View all courses <ArrowRight className="w-4 h-4" />
               </Link>
@@ -494,17 +495,25 @@ export default async function HomePage() {
                 <StaggerItem key={cat.slug}>
                   <Link
                     href={`/courses?category=${cat.slug}`}
-                    className="group block backdrop-blur-lg bg-white/[0.05] border border-border rounded-lg p-5 hover:bg-white/[0.1] hover:border-border transition-all duration-300 hover:-translate-y-1"
+                    className="group relative block rounded-xl border border-border/60 bg-secondary/20 p-5 hover:bg-secondary/50 hover:border-border transition-all duration-300 hover:-translate-y-1 overflow-hidden"
                   >
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform shadow-lg`}>
+                    {/* Bottom gradient accent on hover */}
+                    <div className={`absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+
+                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-md`}>
                       {cat.icon ? (
                         <span className="text-xl">{cat.icon}</span>
                       ) : (
-                        <IconComponent className="w-6 h-6 text-white" />
+                        <IconComponent className="w-6 h-6 text-[#fff]" />
                       )}
                     </div>
-                    <h3 className="text-white font-semibold text-sm mb-1">{cat.name}</h3>
-                    <p className="text-white/30 text-xs">{cat.count} course{cat.count !== 1 ? "s" : ""}</p>
+
+                    <h3 className="text-foreground font-semibold text-sm mb-1.5">{cat.name}</h3>
+
+                    <div className="flex items-center justify-between">
+                      <p className="text-muted-foreground text-xs">{cat.count} course{cat.count !== 1 ? "s" : ""}</p>
+                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all duration-200" />
+                    </div>
                   </Link>
                 </StaggerItem>
               );
@@ -524,19 +533,19 @@ export default async function HomePage() {
             <FadeInSection>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10 gap-4">
                 <div>
-                  <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-orange-300 mb-3">
+                  <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-orange-500 mb-3">
                     <Sparkles className="w-3.5 h-3.5" /> Trending Now
                   </div>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white">
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
                     Featured courses
                   </h2>
-                  <p className="text-muted-foreground/70 mt-2 text-[15px]">
+                  <p className="text-muted-foreground mt-2 text-[15px]">
                     Hand-picked by our instructors — start with the best.
                   </p>
                 </div>
                 <Link
                   href="/courses"
-                  className="group inline-flex items-center gap-1.5 bg-white/[0.06] border border-white/[0.1] text-muted-foreground hover:text-white hover:bg-white/[0.1] hover:border-white/[0.2] text-sm font-medium px-4 py-2 rounded-xl transition-all shrink-0"
+                  className="group inline-flex items-center gap-1.5 bg-secondary border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/70 hover:border-border/80 text-sm font-medium px-4 py-2 rounded-xl transition-all shrink-0"
                 >
                   View all courses <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </Link>

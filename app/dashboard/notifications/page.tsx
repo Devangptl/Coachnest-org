@@ -42,7 +42,7 @@ export default async function NotificationsPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Notifications</h1>
+          <h1 className="text-3xl font-bold text-foreground">Notifications</h1>
           <p className="text-muted-foreground mt-1">
             {unreadCount > 0
               ? `You have ${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}.`
@@ -59,7 +59,7 @@ export default async function NotificationsPage() {
       ) : (
         <GlassCard padding="lg">
           <div className="text-center py-12 text-muted-foreground/70">
-            <Bell className="w-12 h-12 mx-auto mb-4 text-white/20" />
+            <Bell className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p>No notifications yet.</p>
           </div>
         </GlassCard>

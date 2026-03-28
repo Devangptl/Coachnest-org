@@ -392,13 +392,13 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
             <GlassCard key={lesson.id} className="space-y-4">
               {/* Edit header */}
               <div className="flex items-center justify-between">
-                <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+                <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                   <Pencil className="w-3.5 h-3.5 text-orange-400" />
                   Edit Lesson
                 </h3>
                 <button
                   onClick={cancelEditing}
-                  className="text-white/30 hover:text-muted-foreground transition-colors p-1"
+                  className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -442,10 +442,10 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
             padding="sm"
             className="flex items-center gap-3 px-4 py-3 group"
           >
-            <GripVertical className="w-4 h-4 text-white/20 cursor-grab flex-shrink-0" />
+            <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab flex-shrink-0" />
             <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
             <div className="flex-1 min-w-0">
-              <p className="text-white text-sm font-medium truncate">
+              <p className="text-foreground text-sm font-medium truncate">
                 {lesson.title}
               </p>
               <p className="text-muted-foreground/70 text-xs">
@@ -495,7 +495,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       {/* Add lesson form */}
       {showForm && (
         <GlassCard className="space-y-4">
-          <h3 className="text-white font-semibold text-sm flex items-center gap-2">
+          <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
             <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
             New Lesson
           </h3>
@@ -533,7 +533,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       {!showForm && !editingId && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border text-muted-foreground hover:text-white hover:border-white/40 hover:bg-secondary transition-all text-sm"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-white/40 hover:bg-secondary transition-all text-sm"
         >
           <PlusCircle className="w-4 h-4" /> Add Lesson
         </button>
@@ -594,9 +594,9 @@ function LessonFormFields({
                 className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm transition-all ${
                   form.type === t
                     ? t === "QUIZ"
-                      ? "bg-amber-500/20 border-amber-400/40 text-white"
-                      : "bg-orange-500/15 border-orange-400/25 text-white"
-                    : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
+                      ? "bg-amber-500/20 border-amber-400/40 text-foreground"
+                      : "bg-orange-500/15 border-orange-400/25 text-foreground"
+                    : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
                 <Icon className="w-4 h-4" />
@@ -659,7 +659,7 @@ function LessonFormFields({
       {/* Free preview toggle */}
       <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
         <div>
-          <p className="text-white text-sm font-medium">Free preview</p>
+          <p className="text-foreground text-sm font-medium">Free preview</p>
           <p className="text-muted-foreground/70 text-xs mt-0.5">Allow non-enrolled users to view this lesson</p>
         </div>
         <button
@@ -797,7 +797,7 @@ function QuizBuilderInline({
             />
 
             <div className="space-y-1.5">
-              <p className="text-white/30 text-[10px] font-semibold uppercase">Options (click circle to mark correct)</p>
+              <p className="text-muted-foreground/50 text-[10px] font-semibold uppercase">Options (click circle to mark correct)</p>
               {q.options.map((opt, oIdx) => (
                 <div key={oIdx} className="flex items-center gap-2">
                   <button
@@ -810,7 +810,7 @@ function QuizBuilderInline({
                     }`}
                     title={opt.correct ? "Correct answer" : "Mark as correct"}
                   >
-                    {opt.correct && <Check className="w-2.5 h-2.5 text-white" />}
+                    {opt.correct && <Check className="w-2.5 h-2.5 text-[#fff]" />}
                   </button>
                   <input
                     type="text"
@@ -823,7 +823,7 @@ function QuizBuilderInline({
                     <button
                       type="button"
                       onClick={() => helpers.removeOption(setQuizForm, qIdx, oIdx)}
-                      className="text-white/20 hover:text-red-400 transition-colors"
+                      className="text-muted-foreground/30 hover:text-red-400 transition-colors"
                     >
                       <X className="w-3.5 h-3.5" />
                     </button>
@@ -842,7 +842,7 @@ function QuizBuilderInline({
         ))}
 
         {quizForm.questions.length === 0 && (
-          <div className="text-center py-6 text-white/30 text-sm">
+          <div className="text-center py-6 text-muted-foreground/50 text-sm">
             <p className="mb-2">No questions added yet.</p>
             <button
               type="button"

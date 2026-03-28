@@ -22,7 +22,7 @@ export default async function AdminBlogsPage() {
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Blog Posts</h1>
+          <h1 className="text-3xl font-bold text-foreground">Blog Posts</h1>
           <p className="text-muted-foreground mt-1">
             {blogs.length} post{blogs.length !== 1 ? "s" : ""} total
           </p>
@@ -34,7 +34,7 @@ export default async function AdminBlogsPage() {
 
       {blogs.length === 0 ? (
         <GlassCard className="text-center py-16">
-          <FileText className="w-12 h-12 text-white/20 mx-auto mb-3" />
+          <FileText className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-muted-foreground mb-4">No blog posts yet.</p>
           <Link href="/admin/blogs/new" className="btn-primary inline-flex items-center gap-2 text-sm">
             <PlusCircle className="w-4 h-4" /> Create First Post
@@ -51,14 +51,14 @@ export default async function AdminBlogsPage() {
             <div className="col-span-2 text-right">Actions</div>
           </div>
 
-          <div className="divide-y divide-white/5">
+          <div className="divide-y divide-border/50">
             {blogs.map((blog) => (
               <div
                 key={blog.id}
                 className="grid grid-cols-12 gap-4 px-4 py-4 items-center hover:bg-secondary transition-colors"
               >
                 <div className="col-span-5 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
+                  <p className="text-foreground text-sm font-medium truncate">
                     {blog.title}
                   </p>
                   {blog.tags && (
@@ -95,7 +95,7 @@ export default async function AdminBlogsPage() {
                 <div className="col-span-2 flex justify-end gap-2">
                   <Link
                     href={`/admin/blogs/${blog.id}/edit`}
-                    className="text-xs text-muted-foreground hover:text-white transition-colors px-2 py-1 rounded-lg hover:bg-secondary"
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-secondary"
                   >
                     Edit
                   </Link>

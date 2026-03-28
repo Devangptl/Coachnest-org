@@ -157,11 +157,11 @@ export default function EditQuizPage() {
       <div className="mb-8">
         <Link
           href="/admin/quizzes"
-          className="text-muted-foreground hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors"
+          className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Quizzes
         </Link>
-        <h1 className="text-3xl font-bold text-white">Edit Quiz</h1>
+        <h1 className="text-3xl font-bold text-foreground">Edit Quiz</h1>
         <p className="text-muted-foreground mt-1">
           {quizInfo?.courseTitle && <span>{quizInfo.courseTitle} &middot; </span>}
           {quizInfo?.title || ""}
@@ -174,7 +174,7 @@ export default function EditQuizPage() {
       <div className="max-w-3xl space-y-6">
         {/* Quiz Info */}
         <GlassCard padding="md">
-          <h3 className="text-white font-semibold mb-4">Quiz Details</h3>
+          <h3 className="text-foreground font-semibold mb-4">Quiz Details</h3>
           <div className="space-y-4">
             <div>
               <label className="label">Quiz Title</label>
@@ -216,7 +216,7 @@ export default function EditQuizPage() {
         {/* Questions */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-white font-semibold">
+            <h3 className="text-foreground font-semibold">
               Questions ({questions.length})
             </h3>
             <Button variant="ghost" size="sm" onClick={addQuestion} className="flex items-center gap-1">
@@ -228,8 +228,8 @@ export default function EditQuizPage() {
             <GlassCard key={qIdx} padding="md">
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <GripVertical className="w-4 h-4 text-white/20" />
-                  <span className="text-white font-semibold text-sm">
+                  <GripVertical className="w-4 h-4 text-muted-foreground/30" />
+                  <span className="text-foreground font-semibold text-sm">
                     Question {qIdx + 1}
                   </span>
                 </div>
@@ -278,7 +278,7 @@ export default function EditQuizPage() {
                         }`}
                         title={opt.correct ? "Correct answer" : "Mark as correct"}
                       >
-                        {opt.correct && <Check className="w-3 h-3 text-white" />}
+                        {opt.correct && <Check className="w-3 h-3 text-[#fff]" />}
                       </button>
                       <input
                         type="text"
@@ -290,7 +290,7 @@ export default function EditQuizPage() {
                       {q.options.length > 2 && (
                         <button
                           onClick={() => removeOption(qIdx, oIdx)}
-                          className="text-white/30 hover:text-red-400 transition-colors"
+                          className="text-muted-foreground/40 hover:text-red-400 transition-colors"
                         >
                           <X className="w-3.5 h-3.5" />
                         </button>

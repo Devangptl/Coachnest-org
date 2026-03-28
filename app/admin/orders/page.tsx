@@ -27,7 +27,7 @@ export default async function AdminOrdersPage() {
   return (
     <div>
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-white">Orders & Revenue</h1>
+        <h1 className="text-2xl font-bold text-foreground">Orders & Revenue</h1>
         <p className="text-muted-foreground text-sm mt-0.5">
           Monitor payments, track revenue, and manage refunds.
         </p>
@@ -68,7 +68,7 @@ export default async function AdminOrdersPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -84,7 +84,7 @@ export default async function AdminOrdersPage() {
       {/* Table */}
       <GlassCard padding="sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-white font-semibold">All Orders</h2>
+          <h2 className="text-foreground font-semibold">All Orders</h2>
           <span className="text-muted-foreground/70 text-sm">{orders.length} total</span>
         </div>
 

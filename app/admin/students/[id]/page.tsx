@@ -219,7 +219,7 @@ export default async function AdminStudentDetailPage({
     <div>
       <Link
         href="/admin/students"
-        className="inline-flex items-center gap-2 text-muted-foreground hover:text-white text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Students
       </Link>

@@ -32,7 +32,7 @@ export default async function AdminCouponsPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Promotions & Coupons</h1>
+          <h1 className="text-3xl font-bold text-foreground">Promotions & Coupons</h1>
           <p className="text-muted-foreground mt-1">
             Create and manage promotional codes for your courses.
           </p>
@@ -56,7 +56,7 @@ export default async function AdminCouponsPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -67,7 +67,7 @@ export default async function AdminCouponsPage() {
       {/* Table */}
       <GlassCard padding="sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-white font-semibold">All Coupons</h2>
+          <h2 className="text-foreground font-semibold">All Coupons</h2>
           <span className="text-muted-foreground/70 text-sm">{coupons.length} total</span>
         </div>
 

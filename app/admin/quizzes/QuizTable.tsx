@@ -58,7 +58,7 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
 
   return (
     <>
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-border/50">
         {quizzes.map((quiz) => (
           <div
             key={quiz.id}
@@ -66,9 +66,9 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
           >
             {/* Quiz / Lesson Name */}
             <div className="col-span-3 min-w-0">
-              <p className="text-white text-sm font-medium truncate">{quiz.title}</p>
+              <p className="text-foreground text-sm font-medium truncate">{quiz.title}</p>
               {quiz.timeLimit && (
-                <p className="text-white/30 text-[10px]">{quiz.timeLimit}min time limit</p>
+                <p className="text-muted-foreground/50 text-[10px]">{quiz.timeLimit}min time limit</p>
               )}
             </div>
 
@@ -82,7 +82,7 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
             <div className="col-span-1 text-sm text-muted-foreground">{quiz.attemptCount}</div>
 
             {/* Avg Score */}
-            <div className="col-span-1 text-sm text-white font-semibold">
+            <div className="col-span-1 text-sm text-foreground font-semibold">
               {quiz.attemptCount > 0 ? `${quiz.avgScore}%` : "—"}
             </div>
 
@@ -91,7 +91,7 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
               {quiz.attemptCount > 0 ? (
                 <Badge variant={getPassRateVariant(quiz.passRate)}>{quiz.passRate}%</Badge>
               ) : (
-                <span className="text-white/30 text-sm">—</span>
+                <span className="text-muted-foreground/50 text-sm">—</span>
               )}
             </div>
 

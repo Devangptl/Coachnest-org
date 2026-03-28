@@ -53,7 +53,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
 
   return (
     <GlassCard>
-      <h2 className="text-lg font-semibold text-white mb-4">Edit Profile</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-4">Edit Profile</h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Name */}
@@ -66,7 +66,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             required
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="Your full name"
           />
         </div>
@@ -80,7 +80,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             type="text"
             value={form.headline}
             onChange={(e) => handleChange("headline", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="e.g. Full Stack Developer | Student"
           />
         </div>
@@ -108,7 +108,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             type="url"
             value={form.website}
             onChange={(e) => handleChange("website", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="https://yourwebsite.com"
           />
         </div>
@@ -122,7 +122,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             type="url"
             value={form.avatar}
             onChange={(e) => handleChange("avatar", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="https://example.com/avatar.jpg"
           />
         </div>
@@ -132,8 +132,8 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
           <div
             className={`text-sm px-4 py-2.5 rounded-xl border ${
               message.type === "success"
-                ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-300"
-                : "bg-red-500/10 border-red-400/30 text-red-300"
+                ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-700 dark:text-emerald-300"
+                : "bg-red-500/10 border-red-400/30 text-red-700 dark:text-red-300"
             }`}
           >
             {message.text}

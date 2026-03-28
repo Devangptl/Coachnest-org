@@ -62,7 +62,7 @@ export default async function OrderHistoryPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Order History</h1>
+        <h1 className="text-3xl font-bold text-foreground">Order History</h1>
         <p className="text-muted-foreground mt-1">
           View your past purchases and payment receipts.
         </p>
@@ -75,7 +75,7 @@ export default async function OrderHistoryPage() {
             <ShoppingCart className="w-6 h-6 text-blue-400" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white">{orders.length}</div>
+            <div className="text-2xl font-bold text-foreground">{orders.length}</div>
             <div className="text-muted-foreground text-sm">Total Orders</div>
           </div>
         </GlassCard>
@@ -84,7 +84,7 @@ export default async function OrderHistoryPage() {
             <Receipt className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-white">
+            <div className="text-2xl font-bold text-foreground">
               ₹{totalSpent.toLocaleString("en-IN")}
             </div>
             <div className="text-muted-foreground text-sm">Total Spent</div>
@@ -106,13 +106,13 @@ export default async function OrderHistoryPage() {
                 />
               ) : (
                 <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                  <ShoppingCart className="w-6 h-6 text-white/20" />
+                  <ShoppingCart className="w-6 h-6 text-muted-foreground/30" />
                 </div>
               )}
 
               {/* Info */}
               <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-sm truncate">
+                <p className="text-foreground font-semibold text-sm truncate">
                   {order.courseTitle}
                 </p>
                 <div className="flex items-center gap-3 mt-1">
@@ -125,7 +125,7 @@ export default async function OrderHistoryPage() {
                     </span>
                   )}
                   {order.stripePaymentId && (
-                    <span className="text-white/30 text-xs font-mono">
+                    <span className="text-muted-foreground/50 text-xs font-mono">
                       #{order.stripePaymentId.slice(-8)}
                     </span>
                   )}
@@ -135,7 +135,7 @@ export default async function OrderHistoryPage() {
               {/* Amount & Status */}
               <div className="flex items-center gap-4 flex-shrink-0">
                 <div className="text-right">
-                  <p className="text-white font-bold">
+                  <p className="text-foreground font-bold">
                     ₹{order.amount.toLocaleString("en-IN")}
                   </p>
                   {order.discountAmount > 0 && (
@@ -162,7 +162,7 @@ export default async function OrderHistoryPage() {
       ) : (
         <GlassCard padding="lg">
           <div className="text-center py-8 text-muted-foreground/70">
-            <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-white/20" />
+            <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="mb-2">No orders yet.</p>
             <Link href="/courses" className="text-orange-400 hover:text-orange-300">
               Browse Courses

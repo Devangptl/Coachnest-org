@@ -38,7 +38,7 @@ export default async function AdminQuizzesPage() {
     <div>
       <div className="mb-8 flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white">Quizzes & Assessments</h1>
+          <h1 className="text-3xl font-bold text-foreground">Quizzes & Assessments</h1>
           <p className="text-muted-foreground mt-1">
             Manage quizzes and track student performance across courses.
           </p>
@@ -62,7 +62,7 @@ export default async function AdminQuizzesPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -76,12 +76,12 @@ export default async function AdminQuizzesPage() {
           {Object.entries(grouped).map(([courseId, group]) => (
             <GlassCard key={courseId} padding="sm">
               <div className="px-4 py-3 border-b border-border">
-                <h2 className="text-white font-semibold">{group.courseTitle}</h2>
+                <h2 className="text-foreground font-semibold">{group.courseTitle}</h2>
                 <span className="text-muted-foreground/70 text-xs">{group.quizzes.length} quiz(zes)</span>
               </div>
 
               {/* Header Row */}
-              <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs text-muted-foreground/70 font-semibold uppercase tracking-wider border-b border-white/5">
+              <div className="grid grid-cols-12 gap-4 px-4 py-2 text-xs text-muted-foreground/70 font-semibold uppercase tracking-wider border-b border-border/50">
                 <div className="col-span-3">Quiz / Lesson</div>
                 <div className="col-span-1">Questions</div>
                 <div className="col-span-1">Pass Mark</div>
@@ -98,7 +98,7 @@ export default async function AdminQuizzesPage() {
       ) : (
         <GlassCard padding="md">
           <div className="text-center py-12 text-muted-foreground/70">
-            <HelpCircle className="w-12 h-12 mx-auto mb-4 text-white/20" />
+            <HelpCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="mb-4">No quizzes created yet.</p>
             <Link href="/admin/quizzes/new" className="text-orange-400 hover:text-orange-300">
               Create your first quiz

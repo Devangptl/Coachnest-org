@@ -61,7 +61,7 @@ export default async function AdminStudentsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Students</h1>
+        <h1 className="text-3xl font-bold text-foreground">Students</h1>
         <p className="text-muted-foreground mt-1">
           Manage student accounts, view profiles, and track activity.
         </p>
@@ -82,7 +82,7 @@ export default async function AdminStudentsPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -98,13 +98,13 @@ export default async function AdminStudentsPage() {
       {/* Table */}
       {students.length === 0 ? (
         <GlassCard className="text-center py-16">
-          <Users className="w-12 h-12 text-white/20 mx-auto mb-3" />
+          <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-muted-foreground">No students have signed up yet.</p>
         </GlassCard>
       ) : (
         <GlassCard padding="sm">
           <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h2 className="text-white font-semibold">All Students</h2>
+            <h2 className="text-foreground font-semibold">All Students</h2>
             <span className="text-muted-foreground/70 text-sm">{students.length} total</span>
           </div>
           <StudentTable students={students.map(s => {

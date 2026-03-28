@@ -49,15 +49,15 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-lg w-full mx-4 border border-border">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-card rounded-lg max-w-lg w-full mx-4 border border-border">
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
           <div>
-            <h2 className="text-lg font-semibold text-white">Send Notification</h2>
+            <h2 className="text-lg font-semibold text-foreground">Send Notification</h2>
             <p className="text-muted-foreground/70 text-sm">To: {studentName}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -69,7 +69,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-orange-400/25 transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-orange-400/25 transition-all"
             >
               <option value="SYSTEM">System</option>
               <option value="COURSE_UPDATE">Course Update</option>
@@ -83,7 +83,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <input
               type="text"
               placeholder="Notification title"
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 transition-all"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all"
               value={title}
               onChange={(e) => { setTitle(e.target.value); setResult(null); }}
             />
@@ -94,7 +94,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <textarea
               rows={3}
               placeholder="Your message to the student..."
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
+              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
               value={message}
               onChange={(e) => { setMessage(e.target.value); setResult(null); }}
             />
@@ -104,8 +104,8 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <div
               className={`text-sm px-4 py-2.5 rounded-xl border ${
                 result.type === "success"
-                  ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-300"
-                  : "bg-red-500/10 border-red-400/30 text-red-300"
+                  ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-700 dark:text-emerald-300"
+                  : "bg-red-500/10 border-red-400/30 text-red-700 dark:text-red-300"
               }`}
             >
               {result.text}

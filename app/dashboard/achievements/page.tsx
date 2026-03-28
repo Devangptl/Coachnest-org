@@ -73,7 +73,7 @@ export default async function AchievementsPage() {
     <div>
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white flex items-center gap-3">
+        <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
           <Trophy className="w-7 h-7 text-orange-400" />
           Achievements
         </h1>
@@ -97,7 +97,7 @@ export default async function AchievementsPage() {
       {/* Badges */}
       <GlassCard className="mb-6">
         <div className="flex items-center justify-between mb-5">
-          <h2 className="text-lg font-semibold text-white flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
             <Medal className="w-5 h-5 text-orange-400" />
             Badges
           </h2>
@@ -119,7 +119,7 @@ export default async function AchievementsPage() {
             >
               <span className={cn("text-3xl", !badge.earned && "grayscale")}>{badge.icon}</span>
               <div>
-                <p className={cn("text-sm font-semibold", badge.earned ? "text-white" : "text-muted-foreground")}>
+                <p className={cn("text-sm font-semibold", badge.earned ? "text-foreground" : "text-muted-foreground")}>
                   {badge.name}
                 </p>
                 <p className="text-[11px] text-muted-foreground mt-0.5 leading-snug">
@@ -143,7 +143,7 @@ export default async function AchievementsPage() {
 
       {/* Leaderboard */}
       <GlassCard>
-        <h2 className="text-lg font-semibold text-white flex items-center gap-2 mb-5">
+        <h2 className="text-lg font-semibold text-foreground flex items-center gap-2 mb-5">
           <Zap className="w-5 h-5 text-yellow-400" />
           Leaderboard
         </h2>
@@ -177,7 +177,7 @@ export default async function AchievementsPage() {
 
                 {/* Name + level */}
                 <div className="flex-1 min-w-0">
-                  <p className={cn("text-sm font-medium truncate", entry.isCurrentUser ? "text-orange-300" : "text-white")}>
+                  <p className={cn("text-sm font-medium truncate", entry.isCurrentUser ? "text-orange-500" : "text-foreground")}>
                     {entry.name} {entry.isCurrentUser && <span className="text-xs text-muted-foreground">(you)</span>}
                   </p>
                   <p className="text-[11px] text-muted-foreground">
@@ -193,7 +193,7 @@ export default async function AchievementsPage() {
                 )}
 
                 {/* XP */}
-                <span className="text-sm font-bold text-white">
+                <span className="text-sm font-bold text-foreground">
                   {entry.xp.toLocaleString()} <span className="text-xs text-muted-foreground font-normal">XP</span>
                 </span>
               </div>

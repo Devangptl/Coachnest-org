@@ -10,6 +10,7 @@ import {
   Play, Clock, Users, Star, Zap, TrendingUp,
   CheckCircle2, ArrowRight,
 } from "lucide-react";
+import { useTheme } from "@/components/ThemeProvider";
 
 /* ── Data ─────────────────────────────────────────────────────────────────── */
 
@@ -55,6 +56,12 @@ export default function HeroShowcase() {
   const [selectedContext, setSelectedContext] = useState<string>("course");
   const [steps, setSteps] = useState(PROGRESS_STEPS);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+
+  // Replaces rgba(255,255,255,X) with warm-dark equivalent in light mode
+  const aw = (opacity: number) =>
+    isLight ? `rgba(24,19,16,${opacity})` : `rgba(255,255,255,${opacity})`;
 
   function toggleStep(id: number) {
     setSteps((prev) =>
@@ -88,10 +95,12 @@ export default function HeroShowcase() {
         transition={{ delay: 0.25, type: "spring", stiffness: 120, damping: 18 }}
       >
         {/* Header with Search */}
-        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06]">
+        <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06]"
+          style={{ borderColor: aw(0.07) }}>
           <Search className="w-3 h-3 text-white/25" />
           <span className="text-white/25 text-[11px] flex-1">Search courses…</span>
-          <div className="w-4 h-4 rounded bg-white/[0.04] flex items-center justify-center">
+          <div className="w-4 h-4 rounded flex items-center justify-center"
+            style={{ background: aw(0.04) }}>
             <span className="text-white/20 text-[8px] font-bold">⌘K</span>
           </div>
         </div>
@@ -109,14 +118,12 @@ export default function HeroShowcase() {
                 onMouseEnter={() => setHoveredCourse(course.id)}
                 onMouseLeave={() => setHoveredCourse(null)}
                 whileTap={{ scale: 0.96 }}
-                className={`relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all duration-250 cursor-pointer ${isActive
-                  ? "bg-white/[0.08] shadow-lg"
-                  : "hover:bg-white/[0.04]"
-                  }`}
+                className="relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all duration-250 cursor-pointer"
                 style={{
+                  background: isActive ? aw(0.08) : "transparent",
                   border: isActive
                     ? `1px solid ${course.color}40`
-                    : "1px solid transparent",
+                    : `1px solid transparent`,
                   boxShadow: isActive
                     ? `0 4px 20px ${course.color}12, inset 0 1px 0 ${course.color}15`
                     : "none",
@@ -133,13 +140,13 @@ export default function HeroShowcase() {
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300"
                   style={{
-                    background: isActive || isHovered ? course.accent : "rgba(255,255,255,0.03)",
+                    background: isActive || isHovered ? course.accent : aw(0.03),
                     boxShadow: isActive ? `0 0 16px ${course.color}15` : "none",
                   }}
                 >
                   <Icon
                     className="w-[18px] h-[18px] transition-all duration-300"
-                    style={{ color: isActive || isHovered ? course.color : "rgba(255,255,255,0.25)" }}
+                    style={{ color: isActive || isHovered ? course.color : aw(0.28) }}
                   />
                 </div>
                 <span
@@ -154,7 +161,8 @@ export default function HeroShowcase() {
         </div>
 
         {/* Footer Actions */}
-        <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.06]">
+        <div className="flex items-center justify-between px-3 py-2 border-t border-white/[0.06]"
+          style={{ borderColor: aw(0.07) }}>
           <button className="text-white/25 text-[10px] hover:text-white/50 transition-colors px-2 py-0.5 rounded hover:bg-white/[0.04]">
             Cancel
           </button>
@@ -174,7 +182,8 @@ export default function HeroShowcase() {
         transition={{ delay: 0.45, type: "spring", stiffness: 120, damping: 18 }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]"
+          style={{ borderColor: aw(0.07) }}>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md bg-orange-500/15 flex items-center justify-center">
               <TrendingUp className="w-3 h-3 text-orange-400" />
@@ -205,8 +214,8 @@ export default function HeroShowcase() {
                 animate={{
                   background: step.done
                     ? "linear-gradient(135deg, #f97316, #ea580c)"
-                    : "rgba(255,255,255,0.04)",
-                  border: step.done ? "none" : "1.5px solid rgba(255,255,255,0.1)",
+                    : aw(0.04),
+                  border: step.done ? "none" : `1.5px solid ${aw(0.12)}`,
                 }}
                 transition={{ duration: 0.2 }}
               >
@@ -235,7 +244,7 @@ export default function HeroShowcase() {
 
         {/* Progress bar */}
         <div className="px-4 pb-3 pt-1">
-          <div className="h-[5px] bg-white/[0.04] rounded-full overflow-hidden relative">
+          <div className="h-[5px] rounded-full overflow-hidden relative" style={{ background: aw(0.05) }}>
             <motion.div
               className="h-full rounded-full"
               style={{
@@ -286,7 +295,7 @@ export default function HeroShowcase() {
         </div>
 
         {/* Progress bar across bottom */}
-        <div className="h-1 w-full bg-white/[0.05]">
+        <div className="h-1 w-full" style={{ background: aw(0.06) }}>
           <motion.div
             className="h-full bg-gradient-to-r from-orange-600 to-orange-400"
             initial={{ width: 0 }}
@@ -360,8 +369,8 @@ export default function HeroShowcase() {
         />
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stopColor="white" stopOpacity="0.5" />
-            <stop offset="100%" stopColor="white" stopOpacity="0" />
+            <stop offset="0%" stopColor={isLight ? "#181310" : "white"} stopOpacity="0.5" />
+            <stop offset="100%" stopColor={isLight ? "#181310" : "white"} stopOpacity="0" />
           </linearGradient>
         </defs>
       </svg>

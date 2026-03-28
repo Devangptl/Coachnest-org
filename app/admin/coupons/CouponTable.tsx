@@ -49,7 +49,7 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
   };
 
   return (
-    <div className="divide-y divide-white/5">
+    <div className="divide-y divide-border/50">
       {coupons.map((coupon) => (
         <div
           key={coupon.id}
@@ -60,7 +60,7 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
             <code className="text-orange-400 font-mono text-sm">{coupon.code}</code>
             <button
               onClick={() => copyCode(coupon.code)}
-              className="text-muted-foreground/70 hover:text-white transition-colors"
+              className="text-muted-foreground/70 hover:text-foreground transition-colors"
               title="Copy code"
             >
               <Copy className="w-3 h-3" />
@@ -69,7 +69,7 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
 
           {/* Discount */}
           <div className="col-span-1">
-            <span className="text-white font-semibold">
+            <span className="text-foreground font-semibold">
               {coupon.discountType === "PERCENTAGE"
                 ? `${coupon.discount}%`
                 : `₹${coupon.discount.toLocaleString("en-IN")}`}

@@ -31,7 +31,7 @@ export default async function AdminEnrollmentsPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">
+        <h1 className="text-3xl font-bold text-foreground">
           Student Enrollments
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -54,7 +54,7 @@ export default async function AdminEnrollmentsPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -70,7 +70,7 @@ export default async function AdminEnrollmentsPage() {
       {/* Table */}
       <GlassCard padding="sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-white font-semibold">Enrollments</h2>
+          <h2 className="text-foreground font-semibold">Enrollments</h2>
           <span className="text-muted-foreground/70 text-sm">{enrollments.length} total</span>
         </div>
 

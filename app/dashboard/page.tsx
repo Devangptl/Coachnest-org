@@ -92,7 +92,7 @@ export default async function DashboardPage() {
     <div>
       {/* Header */}
       <div className="mb-10 animate-fade-in">
-        <h1 className="text-2xl sm:text-4xl font-bold text-white">
+        <h1 className="text-2xl sm:text-4xl font-bold text-foreground">
           Welcome back,{" "}
           <span className="text-orange-400">{session.name.split(" ")[0]}</span>
         </h1>
@@ -136,7 +136,7 @@ export default async function DashboardPage() {
                 <Icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-xs">{stat.label}</div>
               </div>
             </GlassCard>
@@ -161,7 +161,7 @@ export default async function DashboardPage() {
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
             <Clock className="w-5 h-5 text-blue-400" /> Continue Learning
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -183,7 +183,7 @@ export default async function DashboardPage() {
       {/* ─── Not Started ─────────────────────────────────────────────────── */}
       {notStarted.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-white mb-5">
+          <h2 className="text-xl font-semibold text-foreground mb-5">
             Not Started Yet
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -205,7 +205,7 @@ export default async function DashboardPage() {
       {/* ─── Completed ───────────────────────────────────────────────────── */}
       {completed.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-white mb-5 flex items-center gap-2">
+          <h2 className="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
             <Trophy className="w-5 h-5 text-emerald-400" /> Completed Courses
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -227,8 +227,8 @@ export default async function DashboardPage() {
       {/* Empty state */}
       {enrollments.length === 0 && (
         <GlassCard className="text-center py-16">
-          <BookOpen className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <h3 className="text-white text-xl font-semibold mb-2">
+          <BookOpen className="w-16 h-16 text-muted-foreground/25 mx-auto mb-4" />
+          <h3 className="text-foreground text-xl font-semibold mb-2">
             No courses yet
           </h3>
           <p className="text-muted-foreground mb-6">

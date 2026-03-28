@@ -31,7 +31,7 @@ export default function GlassCard({
         // Core glass effect
         "bg-card border border-border rounded-lg shadow-xl",
         // Subtle inner glow on hover
-        "transition-all duration-300 hover:bg-white/[0.15] hover:border-white/30",
+        "transition-all duration-300 hover:bg-secondary hover:border-border/80",
         // Optional stronger glow
         glow && "shadow-2xl shadow-orange-600/15 border-orange-400/25",
         paddingMap[padding],

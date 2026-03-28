@@ -58,12 +58,12 @@ export default function NewCoursePage() {
     <div className="max-w-2xl">
       <Link
         href="/admin/courses"
-        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Courses
       </Link>
 
-      <h1 className="text-3xl font-bold text-white mb-8">Create New Course</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">Create New Course</h1>
 
       <GlassCard>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -123,7 +123,7 @@ export default function NewCoursePage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
               <div>
-                <p className="text-white text-sm font-medium">Free course</p>
+                <p className="text-foreground text-sm font-medium">Free course</p>
                 <p className="text-muted-foreground/70 text-xs mt-0.5">No payment required to enroll</p>
               </div>
               <button
@@ -154,7 +154,7 @@ export default function NewCoursePage() {
           {/* Publish toggle */}
           <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
             <div>
-              <p className="text-white text-sm font-medium">Publish immediately</p>
+              <p className="text-foreground text-sm font-medium">Publish immediately</p>
               <p className="text-muted-foreground/70 text-xs mt-0.5">Students can see and enroll in published courses.</p>
             </div>
             <button

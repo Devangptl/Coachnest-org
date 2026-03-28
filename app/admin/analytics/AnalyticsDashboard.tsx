@@ -7,6 +7,7 @@ import {
 import { Users, BookOpen, TrendingUp, DollarSign, Star } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/Tabs";
 import { format } from "date-fns";
+import { useTheme } from "@/components/ThemeProvider";
 
 interface Props {
   stats:       { totalUsers: number; totalCourses: number; totalEnrollments: number; totalRevenue: number };
@@ -25,16 +26,29 @@ const STAT_CARDS = (stats: Props["stats"]) => [
   { label: "Total Revenue",     value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, icon: DollarSign, color: "bg-amber-500/20  text-amber-400"   },
 ];
 
-const TOOLTIP_STYLE = {
-  contentStyle: { background: "#1a1636", border: "1px solid rgba(255,255,255,.15)", borderRadius: 12, color: "#fff" },
-  labelStyle:   { color: "#a78bfa" },
-};
-
 export default function AnalyticsDashboard({ stats, revenue, topCourses, userGrowth, recentOrders }: Props) {
+  const { theme } = useTheme();
+  const isLight = theme === "light";
+
+  const tooltipStyle = {
+    contentStyle: {
+      background: isLight ? "#ffffff" : "#1a1636",
+      border: `1px solid ${isLight ? "rgba(24,19,16,.12)" : "rgba(255,255,255,.15)"}`,
+      borderRadius: 12,
+      color: isLight ? "#181310" : "#fff",
+    },
+    labelStyle: { color: isLight ? "#c2410c" : "#a78bfa" },
+  };
+
+  const tickColor    = isLight ? "#685e55" : "#a78bfa";
+  const gridColor    = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
+  const areaColor    = isLight ? "#c2410c" : "#7c3aed";
+  const areaGradStop = isLight ? "#c2410c" : "#7c3aed";
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-white">Analytics</h1>
+        <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">Platform-wide insights</p>
       </div>
 
@@ -52,7 +66,7 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
               <Icon className="w-5 h-5" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-white">{value}</p>
+              <p className="text-2xl font-bold text-foreground">{value}</p>
               <p className="text-muted-foreground/70 text-xs">{label}</p>
             </div>
           </motion.div>
@@ -68,21 +82,21 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
 
         <TabsContent value="revenue">
           <div className="glass p-6">
-            <h3 className="text-white font-semibold mb-6">Monthly Revenue (last 6 months)</h3>
+            <h3 className="text-foreground font-semibold mb-6">Monthly Revenue (last 6 months)</h3>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={revenue}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%"  stopColor="#7c3aed" stopOpacity={0.4} />
-                    <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                    <stop offset="5%"  stopColor={areaGradStop} stopOpacity={0.4} />
+                    <stop offset="95%" stopColor={areaGradStop} stopOpacity={0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid stroke="rgba(255,255,255,.06)" strokeDasharray="4 4" />
-                <XAxis dataKey="month"   tick={{ fill: "#a78bfa", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#a78bfa", fontSize: 12 }} axisLine={false} tickLine={false}
+                <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
+                <XAxis dataKey="month"   tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false}
                        tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`} />
-                <Tooltip {...TOOLTIP_STYLE} formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "Revenue"]} />
-                <Area dataKey="revenue" stroke="#7c3aed" strokeWidth={2} fill="url(#revGrad)" />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "Revenue"]} />
+                <Area dataKey="revenue" stroke={areaColor} strokeWidth={2} fill="url(#revGrad)" />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -90,14 +104,14 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
 
         <TabsContent value="users">
           <div className="glass p-6">
-            <h3 className="text-white font-semibold mb-6">New Users (last 6 months)</h3>
+            <h3 className="text-foreground font-semibold mb-6">New Users (last 6 months)</h3>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={userGrowth}>
-                <CartesianGrid stroke="rgba(255,255,255,.06)" strokeDasharray="4 4" />
-                <XAxis dataKey="month" tick={{ fill: "#a78bfa", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: "#a78bfa", fontSize: 12 }} axisLine={false} tickLine={false} />
-                <Tooltip {...TOOLTIP_STYLE} formatter={(v: number) => [v, "New Users"]} />
-                <Bar dataKey="users" fill="#7c3aed" radius={[6, 6, 0, 0]} />
+                <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
+                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <Tooltip {...tooltipStyle} formatter={(v: number) => [v, "New Users"]} />
+                <Bar dataKey="users" fill={areaColor} radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
@@ -107,15 +121,15 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Top Courses */}
         <div className="glass p-6">
-          <h3 className="text-white font-semibold mb-5">Top Courses</h3>
+          <h3 className="text-foreground font-semibold mb-5">Top Courses</h3>
           <div className="space-y-3">
             {topCourses.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-orange-300 text-xs font-bold flex items-center justify-center flex-shrink-0">
+                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">{c.title}</p>
+                  <p className="text-foreground text-sm font-medium truncate">{c.title}</p>
                   <p className="text-muted-foreground/70 text-xs">{c.enrollments} students</p>
                 </div>
                 <div className="flex items-center gap-1 text-amber-400 text-xs">
@@ -129,12 +143,12 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
 
         {/* Recent Orders */}
         <div className="glass p-6">
-          <h3 className="text-white font-semibold mb-5">Recent Orders</h3>
+          <h3 className="text-foreground font-semibold mb-5">Recent Orders</h3>
           <div className="space-y-3">
             {recentOrders.map((o) => (
               <div key={o.id} className="flex items-center gap-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-white text-sm font-medium truncate">
+                  <p className="text-foreground text-sm font-medium truncate">
                     {o.user?.name ?? "—"}
                   </p>
                   <p className="text-muted-foreground/70 text-xs truncate">
@@ -145,7 +159,7 @@ export default function AnalyticsDashboard({ stats, revenue, topCourses, userGro
                   <p className="text-emerald-400 text-sm font-semibold">
                     ₹{Number(o.amount).toLocaleString("en-IN")}
                   </p>
-                  <p className="text-white/30 text-xs">
+                  <p className="text-muted-foreground/50 text-xs">
                     {format(new Date(o.createdAt), "d MMM")}
                   </p>
                 </div>

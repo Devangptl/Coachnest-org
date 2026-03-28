@@ -88,7 +88,7 @@ export default function CourseSidebar({
           </div>
         ) : price ? (
           <div className="flex items-center gap-3 flex-wrap">
-            <span className="text-2xl font-bold text-white">
+            <span className="text-2xl font-bold text-foreground">
               ₹{hasDiscount ? discountNum!.toLocaleString("en-IN") : price.toLocaleString("en-IN")}
             </span>
             {hasDiscount && (
@@ -158,7 +158,7 @@ export default function CourseSidebar({
 
       {/* Course includes */}
       <div className="p-4 space-y-3">
-        <h3 className="text-white font-semibold text-xs">This course includes</h3>
+        <h3 className="text-foreground font-semibold text-xs">This course includes</h3>
         <div className="space-y-2">
           <IncludeItem icon={BookOpen} text={`${lessonCount} lessons`} />
           {totalDuration > 0 && (

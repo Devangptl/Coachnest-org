@@ -93,12 +93,12 @@ export default function CourseHero({
             </div>
 
             {/* Title */}
-            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white leading-tight mb-3">
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-3">
               {title}
             </h1>
 
             {/* Description */}
-            <p className="text-white/55 text-sm sm:text-base leading-relaxed mb-4 max-w-2xl">
+            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-4 max-w-2xl">
               {description}
             </p>
 
@@ -116,7 +116,7 @@ export default function CourseHero({
                             ? "fill-amber-400 text-amber-400"
                             : i < avgRating
                             ? "fill-amber-400/50 text-amber-400"
-                            : "fill-transparent text-white/20"
+                            : "fill-transparent text-muted-foreground/30"
                         }`}
                       />
                     ))}
@@ -137,7 +137,7 @@ export default function CourseHero({
               </div>
               <div>
                 <p className="text-muted-foreground/70 text-[10px]">Created by</p>
-                <p className="text-white font-medium text-xs">{instructorName}</p>
+                <p className="text-foreground font-medium text-xs">{instructorName}</p>
               </div>
             </div>
           </motion.div>
@@ -161,13 +161,13 @@ export default function CourseHero({
                 />
               ) : (
                 <div className="flex items-center justify-center h-full">
-                  <BookOpen className="w-20 h-20 text-white/10" />
+                  <BookOpen className="w-20 h-20 text-muted-foreground/20" />
                 </div>
               )}
               {/* Play button overlay */}
               <div className="absolute inset-0 flex items-center justify-center bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center border border-white/30">
-                  <Play className="w-7 h-7 text-white ml-1" />
+                  <Play className="w-7 h-7 text-[#fff] ml-1" />
                 </div>
               </div>
             </div>
@@ -176,12 +176,12 @@ export default function CourseHero({
             <div className="grid grid-cols-3 gap-2 mt-3">
               <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
                 <BookOpen className="w-3.5 h-3.5 text-orange-400 mx-auto mb-0.5" />
-                <p className="text-white font-semibold text-xs">{lessonCount}</p>
+                <p className="text-foreground font-semibold text-xs">{lessonCount}</p>
                 <p className="text-muted-foreground/70 text-[9px]">Lessons</p>
               </div>
               <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
                 <Clock className="w-3.5 h-3.5 text-blue-400 mx-auto mb-0.5" />
-                <p className="text-white font-semibold text-xs">
+                <p className="text-foreground font-semibold text-xs">
                   {totalDuration > 60
                     ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`
                     : `${totalDuration}m`}
@@ -190,7 +190,7 @@ export default function CourseHero({
               </div>
               <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
                 <Users className="w-3.5 h-3.5 text-green-400 mx-auto mb-0.5" />
-                <p className="text-white font-semibold text-xs">{enrollmentCount}</p>
+                <p className="text-foreground font-semibold text-xs">{enrollmentCount}</p>
                 <p className="text-muted-foreground/70 text-[9px]">Students</p>
               </div>
             </div>
@@ -199,7 +199,7 @@ export default function CourseHero({
       </div>
 
       {/* Bottom separator */}
-      <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+      <div className="h-px bg-border" />
     </div>
   );
 }

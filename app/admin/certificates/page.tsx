@@ -27,7 +27,7 @@ export default async function AdminCertificatesPage({
     <div>
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white">Certificates</h1>
+          <h1 className="text-3xl font-bold text-foreground">Certificates</h1>
           <p className="text-muted-foreground/70 text-sm mt-1">
             {certs.length} certificate{certs.length !== 1 ? "s" : ""} issued
           </p>
@@ -37,21 +37,21 @@ export default async function AdminCertificatesPage({
       {/* Search */}
       <form method="GET" className="mb-6">
         <div className="relative max-w-md">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50" />
           <input
             name="search"
             type="text"
             defaultValue={search ?? ""}
             placeholder="Search by student or course..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-white/[0.06] border border-border text-white text-sm placeholder:text-white/30 focus:outline-none focus:border-orange-400/25 focus:ring-1 focus:ring-orange-400/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:ring-1 focus:ring-orange-400/30 transition-all"
           />
         </div>
       </form>
 
       {certs.length === 0 ? (
         <GlassCard className="text-center py-20">
-          <Award className="w-16 h-16 text-white/20 mx-auto mb-4" />
-          <p className="text-white font-semibold text-lg mb-2">No certificates found</p>
+          <Award className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+          <p className="text-foreground font-semibold text-lg mb-2">No certificates found</p>
           <p className="text-muted-foreground/70 text-sm">
             {search ? "No certificates match your search." : "No certificates have been issued yet."}
           </p>
@@ -73,11 +73,11 @@ export default async function AdminCertificatesPage({
           </div>
 
           {/* Rows */}
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-border/50">
             {certs.map((cert) => (
               <div
                 key={cert.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4 hover:bg-white/[0.03] transition-colors"
+                className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4 hover:bg-secondary/50 transition-colors"
               >
                 {/* Student */}
                 <div className="col-span-4 flex items-center gap-3 min-w-0">
@@ -97,10 +97,10 @@ export default async function AdminCertificatesPage({
                     )}
                   </div>
                   <div className="min-w-0">
-                    <p className="text-white text-sm font-medium truncate">
+                    <p className="text-foreground text-sm font-medium truncate">
                       {cert.user.name}
                     </p>
-                    <p className="text-white/30 text-xs truncate">
+                    <p className="text-muted-foreground/50 text-xs truncate">
                       {cert.user.email}
                     </p>
                   </div>
@@ -108,7 +108,7 @@ export default async function AdminCertificatesPage({
 
                 {/* Course */}
                 <div className="col-span-4 flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-lg bg-white/[0.06] flex items-center justify-center flex-shrink-0 overflow-hidden">
+                  <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
                     {cert.course.thumbnail ? (
                       <Image
                         src={cert.course.thumbnail}
@@ -118,7 +118,7 @@ export default async function AdminCertificatesPage({
                         className="object-cover w-full h-full"
                       />
                     ) : (
-                      <BookOpen className="w-4 h-4 text-white/30" />
+                      <BookOpen className="w-4 h-4 text-muted-foreground/40" />
                     )}
                   </div>
                   <p className="text-muted-foreground text-sm truncate">

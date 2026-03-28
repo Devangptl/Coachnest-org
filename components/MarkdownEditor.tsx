@@ -118,9 +118,9 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
   }, []);
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden bg-white/[0.02]">
+    <div className="rounded-xl border border-border overflow-hidden bg-secondary/30">
       {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-white/[0.08] bg-white/[0.03] flex-wrap">
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border bg-secondary/50 flex-wrap">
         {/* Formatting buttons */}
         {TOOLBAR_ACTIONS.map((action) => (
           <button
@@ -128,7 +128,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
             type="button"
             onClick={() => insertMarkdown(action)}
             title={action.label}
-            className="p-1.5 rounded-lg text-white/35 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+            className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-all"
           >
             <action.icon className="w-3.5 h-3.5" />
           </button>
@@ -139,7 +139,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           type="button"
           onClick={insertCodeBlock}
           title="Code Block"
-          className="p-1.5 rounded-lg text-white/35 hover:text-white/80 hover:bg-white/[0.08] transition-all"
+          className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-all"
         >
           <span className="text-[10px] font-mono font-bold">{"{}"}</span>
         </button>
@@ -153,8 +153,8 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all",
             showPreview
-              ? "bg-orange-500/15 text-orange-300 border border-orange-400/20"
-              : "text-white/35 hover:text-muted-foreground hover:bg-white/[0.05]"
+              ? "bg-orange-500/15 text-orange-500 dark:text-orange-300 border border-orange-400/20"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-secondary/80"
           )}
         >
           {showPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
@@ -168,7 +168,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           {value ? (
             <div className="space-y-4">{renderPreview(value)}</div>
           ) : (
-            <p className="text-white/20 text-sm italic">Nothing to preview yet…</p>
+            <p className="text-muted-foreground/40 text-sm italic">Nothing to preview yet…</p>
           )}
         </div>
       ) : (
@@ -178,7 +178,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           onChange={(e) => onChange(e.target.value)}
           rows={rows}
           placeholder={placeholder || "Write your lesson content here…\n\nUse the toolbar above or write markdown directly:\n# Heading\n**bold** `code` \n- bullet list\n```js\ncode block\n```"}
-          className="w-full bg-transparent px-5 py-4 text-white/85 text-sm font-mono leading-relaxed resize-none focus:outline-none placeholder:text-white/15"
+          className="w-full bg-transparent px-5 py-4 text-foreground text-sm font-mono leading-relaxed resize-none focus:outline-none placeholder:text-muted-foreground/30"
           onKeyDown={(e) => {
             // Tab inserts 2 spaces
             if (e.key === "Tab") {
@@ -196,11 +196,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
       )}
 
       {/* Status bar */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-t border-white/[0.06] bg-white/[0.02]">
-        <span className="text-[10px] text-white/20 font-mono">
+      <div className="flex items-center justify-between px-3 py-1.5 border-t border-border/50 bg-secondary/30">
+        <span className="text-[10px] text-muted-foreground/50 font-mono">
           {value.split("\n").length} lines · {value.length} chars
         </span>
-        <span className="text-[10px] text-white/20">Markdown supported</span>
+        <span className="text-[10px] text-muted-foreground/50">Markdown supported</span>
       </div>
     </div>
   );
@@ -243,7 +243,7 @@ function parseBlocks(raw: string) {
     // Headings
     if (line.startsWith("### ")) {
       elements.push(
-        <h3 key={key++} className="text-sm font-semibold text-white/80 pt-1">
+        <h3 key={key++} className="text-sm font-semibold text-foreground pt-1">
           {renderInlinePreview(line.slice(4))}
         </h3>
       );
@@ -252,7 +252,7 @@ function parseBlocks(raw: string) {
     }
     if (line.startsWith("## ")) {
       elements.push(
-        <h2 key={key++} className="text-base font-semibold text-white/90 border-l-2 border-orange-400/25 pl-3 pt-2">
+        <h2 key={key++} className="text-base font-semibold text-foreground border-l-2 border-orange-400/40 pl-3 pt-2">
           {renderInlinePreview(line.slice(3))}
         </h2>
       );
@@ -261,7 +261,7 @@ function parseBlocks(raw: string) {
     }
     if (line.startsWith("# ")) {
       elements.push(
-        <h1 key={key++} className="text-xl font-bold text-white flex items-center gap-2">
+        <h1 key={key++} className="text-xl font-bold text-foreground flex items-center gap-2">
           <Hash className="w-4 h-4 text-orange-400" />
           {renderInlinePreview(line.slice(2))}
         </h1>
@@ -294,8 +294,8 @@ function parseBlocks(raw: string) {
       elements.push(
         <ul key={key++} className="space-y-1.5 pl-1">
           {items.map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-white/65 text-sm">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500/15 flex-shrink-0" />
+            <li key={j} className="flex items-start gap-2 text-muted-foreground text-sm">
+              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500/40 flex-shrink-0" />
               <span>{renderInlinePreview(item)}</span>
             </li>
           ))}
@@ -314,8 +314,8 @@ function parseBlocks(raw: string) {
       elements.push(
         <ol key={key++} className="space-y-1.5 pl-1">
           {items.map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-white/65 text-sm">
-              <span className="flex-shrink-0 w-4 h-4 rounded bg-orange-500/15 text-orange-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
+            <li key={j} className="flex items-start gap-2 text-muted-foreground text-sm">
+              <span className="flex-shrink-0 w-4 h-4 rounded bg-orange-500/20 text-orange-600 dark:text-orange-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
                 {j + 1}
               </span>
               <span>{renderInlinePreview(item)}</span>
@@ -367,7 +367,7 @@ function renderInlinePreview(text: string): React.ReactNode {
       return (
         <code
           key={i}
-          className="px-1 py-0.5 rounded bg-orange-500/15 text-orange-300 text-[0.85em] font-mono border border-orange-400/25"
+          className="px-1 py-0.5 rounded bg-orange-500/15 text-orange-600 dark:text-orange-300 text-[0.85em] font-mono border border-orange-400/30"
         >
           {part.slice(1, -1)}
         </code>
@@ -378,7 +378,7 @@ function renderInlinePreview(text: string): React.ReactNode {
     return boldParts.map((bp, j) => {
       if (bp.startsWith("**") && bp.endsWith("**")) {
         return (
-          <strong key={`${i}-${j}`} className="font-semibold text-white">
+          <strong key={`${i}-${j}`} className="font-semibold text-foreground">
             {bp.slice(2, -2)}
           </strong>
         );
@@ -402,20 +402,20 @@ function renderInlinePreview(text: string): React.ReactNode {
 
 function PreviewCodeBlock({ lang, code }: { lang: string; code: string }) {
   return (
-    <div className="rounded-lg overflow-hidden border border-white/[0.08] bg-[#0d1117]">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-white/[0.03] border-b border-white/[0.06]">
+    <div className="rounded-lg overflow-hidden border border-border bg-secondary dark:bg-[#0d1117]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-secondary/80 dark:bg-white/[0.03] border-b border-border/50">
         <div className="flex items-center gap-1.5">
-          <Code2 className="w-3 h-3 text-emerald-400" />
-          <span className="text-[10px] font-medium text-white/35 uppercase tracking-wider">{lang}</span>
+          <Code2 className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
+          <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{lang}</span>
         </div>
       </div>
       <pre className="p-3 text-xs leading-relaxed overflow-x-auto">
         {code.split("\n").map((line, i) => (
           <div key={i} className="flex">
-            <span className="select-none text-white/15 text-right w-6 mr-3 flex-shrink-0 font-mono text-[10px] leading-relaxed">
+            <span className="select-none text-muted-foreground/30 text-right w-6 mr-3 flex-shrink-0 font-mono text-[10px] leading-relaxed">
               {i + 1}
             </span>
-            <code className="font-mono text-emerald-300/70">{line || " "}</code>
+            <code className="font-mono text-emerald-700 dark:text-emerald-300/70">{line || " "}</code>
           </div>
         ))}
       </pre>

@@ -36,15 +36,15 @@ export default function QuizAnalyticsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-3xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-border">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-card rounded-lg max-w-3xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-border">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-border px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between z-10">
           <div>
-            <h2 className="text-xl font-bold text-white">Quiz Analytics</h2>
+            <h2 className="text-xl font-bold text-foreground">Quiz Analytics</h2>
             <p className="text-muted-foreground text-sm">{quiz.title} &middot; {quiz.courseTitle}</p>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -75,7 +75,7 @@ export default function QuizAnalyticsModal({
                         <Icon className={`w-5 h-5 ${stat.color}`} />
                       </div>
                       <div>
-                        <div className="text-xl font-bold text-white">{stat.value}</div>
+                        <div className="text-xl font-bold text-foreground">{stat.value}</div>
                         <div className="text-muted-foreground text-xs">{stat.label}</div>
                       </div>
                     </GlassCard>
@@ -85,7 +85,7 @@ export default function QuizAnalyticsModal({
 
               {/* Score Distribution */}
               <GlassCard padding="md">
-                <h3 className="text-white font-semibold mb-4">Score Distribution</h3>
+                <h3 className="text-foreground font-semibold mb-4">Score Distribution</h3>
                 <div className="space-y-2">
                   {analytics.scoreDistribution.map((bucket: any) => {
                     const maxCount = Math.max(...analytics.scoreDistribution.map((b: any) => b.count), 1);
@@ -98,7 +98,7 @@ export default function QuizAnalyticsModal({
                             className="h-full bg-gradient-to-r from-orange-600 to-orange-500 rounded-full flex items-center justify-end pr-2 transition-all"
                             style={{ width: `${Math.max(width, 5)}%` }}
                           >
-                            <span className="text-white text-xs font-semibold">{bucket.count}</span>
+                            <span className="text-[#fff] text-xs font-semibold">{bucket.count}</span>
                           </div>
                         </div>
                       </div>
@@ -110,7 +110,7 @@ export default function QuizAnalyticsModal({
               {/* Per-Question Analytics */}
               {analytics.questionAnalytics && analytics.questionAnalytics.length > 0 && (
                 <GlassCard padding="md">
-                  <h3 className="text-white font-semibold mb-4">Question Difficulty</h3>
+                  <h3 className="text-foreground font-semibold mb-4">Question Difficulty</h3>
                   <div className="space-y-2">
                     {analytics.questionAnalytics.map((q: any, idx: number) => (
                       <div
@@ -118,7 +118,7 @@ export default function QuizAnalyticsModal({
                         className="flex items-center justify-between p-3 bg-secondary rounded-xl"
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="text-white text-sm truncate">
+                          <p className="text-foreground text-sm truncate">
                             Q{idx + 1}: {q.text}
                           </p>
                           <p className="text-muted-foreground/70 text-xs mt-0.5">

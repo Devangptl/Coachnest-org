@@ -94,7 +94,7 @@ export default function SearchPageClient() {
           className="input-glass w-auto text-sm py-2.5"
         >
           {SORT_OPT.map((o) => (
-            <option key={o.value} value={o.value} className="bg-[#1a1636]">
+            <option key={o.value} value={o.value} className="bg-card">
               {o.label}
             </option>
           ))}
@@ -125,8 +125,8 @@ export default function SearchPageClient() {
                         className={cn(
                           "w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all",
                           level === l
-                            ? "bg-orange-500/15 text-orange-300 border border-orange-400/25"
-                            : "text-muted-foreground hover:text-white hover:bg-secondary"
+                            ? "bg-orange-500/15 text-orange-500 border border-orange-400/25"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                         )}
                       >
                         {l || "All levels"}
@@ -186,7 +186,7 @@ export default function SearchPageClient() {
 
           {courses.length === 0 && !loading && (
             <div className="text-center py-20 text-muted-foreground/70">
-              <p className="text-lg font-medium text-white mb-2">No courses found</p>
+              <p className="text-lg font-medium text-foreground mb-2">No courses found</p>
               <p className="text-sm">Try a different keyword or clear the filters</p>
             </div>
           )}

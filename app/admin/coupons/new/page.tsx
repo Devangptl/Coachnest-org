@@ -77,18 +77,18 @@ export default function NewCouponPage() {
       <div className="mb-8">
         <Link
           href="/admin/coupons"
-          className="text-muted-foreground hover:text-white text-sm flex items-center gap-1 mb-4 transition-colors"
+          className="text-muted-foreground hover:text-foreground text-sm flex items-center gap-1 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Back to Coupons
         </Link>
-        <h1 className="text-3xl font-bold text-white">Create Coupon</h1>
+        <h1 className="text-3xl font-bold text-foreground">Create Coupon</h1>
         <p className="text-muted-foreground mt-1">Set up a new promotional code for your courses.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
         {/* Code */}
         <GlassCard padding="md">
-          <h3 className="text-white font-semibold mb-4">Coupon Code</h3>
+          <h3 className="text-foreground font-semibold mb-4">Coupon Code</h3>
           <div className="space-y-3">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -118,7 +118,7 @@ export default function NewCouponPage() {
 
         {/* Discount */}
         <GlassCard padding="md">
-          <h3 className="text-white font-semibold mb-4">Discount Details</h3>
+          <h3 className="text-foreground font-semibold mb-4">Discount Details</h3>
           <div className="space-y-4">
             <div>
               <label className="label">Discount Type</label>
@@ -130,8 +130,8 @@ export default function NewCouponPage() {
                     onClick={() => setForm({ ...form, discountType: type })}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
                       form.discountType === type
-                        ? "bg-orange-500/20 border-orange-400/25 text-white"
-                        : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
+                        ? "bg-orange-500/20 border-orange-400/25 text-foreground"
+                        : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                     }`}
                   >
                     {type === "PERCENTAGE" ? "Percentage (%)" : "Fixed Amount (₹)"}
@@ -178,7 +178,7 @@ export default function NewCouponPage() {
 
         {/* Limits */}
         <GlassCard padding="md">
-          <h3 className="text-white font-semibold mb-4">Limits</h3>
+          <h3 className="text-foreground font-semibold mb-4">Limits</h3>
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="label">Max Uses (empty = unlimited)</label>

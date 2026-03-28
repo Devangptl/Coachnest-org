@@ -159,7 +159,7 @@ function NotificationCard({
       {/* Content */}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
-          <p className="text-white font-semibold text-sm">{notification.title}</p>
+          <p className="text-foreground font-semibold text-sm">{notification.title}</p>
           {!notification.read && (
             <span className="w-2 h-2 rounded-full bg-orange-400 flex-shrink-0" />
           )}
@@ -167,7 +167,7 @@ function NotificationCard({
         <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
           {notification.body}
         </p>
-        <p className="text-white/30 text-xs mt-1.5">
+        <p className="text-muted-foreground/50 text-xs mt-1.5">
           {formatDate(notification.createdAt)}
         </p>
       </div>

@@ -28,7 +28,7 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
 
   return (
     <>
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-border/50">
         {enrollments.map((enrollment) => (
           <div
             key={enrollment.id}
@@ -36,7 +36,7 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
           >
             {/* Student Info */}
             <div className="col-span-3 min-w-0">
-              <p className="text-white text-sm font-medium truncate">
+              <p className="text-foreground text-sm font-medium truncate">
                 {enrollment.user.name}
               </p>
               <p className="text-muted-foreground/70 text-xs truncate mt-0.5">
@@ -46,7 +46,7 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
 
             {/* Course */}
             <div className="col-span-2 min-w-0">
-              <p className="text-white text-sm truncate">
+              <p className="text-foreground text-sm truncate">
                 {enrollment.course.title}
               </p>
             </div>

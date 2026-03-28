@@ -21,9 +21,12 @@ import {
   Settings,
   FileText,
   GraduationCap,
+  Sun,
+  Moon,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
+import { useTheme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -61,6 +64,7 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 export default function NavbarClient({ session }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme, toggle } = useTheme();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -124,6 +128,22 @@ export default function NavbarClient({ session }: Props) {
 
         {/* ── Right side ──────────────────────────────────────── */}
         <div className="flex items-center gap-2">
+          {/* Theme toggle */}
+          <button
+            onClick={toggle}
+            aria-label="Toggle theme"
+            className={cn(
+              "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
+              "text-muted-foreground hover:text-foreground hover:bg-secondary"
+            )}
+          >
+            {theme === "dark" ? (
+              <Sun className="w-4 h-4" />
+            ) : (
+              <Moon className="w-4 h-4" />
+            )}
+          </button>
+
           {/* Search icon */}
           <Link
             href="/search"

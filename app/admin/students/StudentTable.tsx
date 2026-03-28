@@ -43,7 +43,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
         <div className="col-span-2 text-right">Actions</div>
       </div>
 
-      <div className="divide-y divide-white/5">
+      <div className="divide-y divide-border/50">
         {students.map((student) => (
           <div
             key={student.id}
@@ -65,7 +65,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
                 )}
               </div>
               <div className="min-w-0">
-                <p className="text-white text-sm font-medium truncate">
+                <p className="text-foreground text-sm font-medium truncate">
                   {student.name}
                 </p>
                 <p className="text-muted-foreground/70 text-xs truncate">{student.email}</p>

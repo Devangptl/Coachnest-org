@@ -62,18 +62,18 @@ export default function OrderDetailsModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-card flex items-center justify-center">
-      <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
+    <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center">
+      <div className="bg-card rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-border">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-slate-900 to-slate-800 border-b border-border px-6 py-4 flex items-center justify-between">
+        <div className="sticky top-0 bg-card border-b border-border px-6 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {statusIcon[order.status]}
             <div>
-              <h2 className="text-xl font-bold text-white">Order Details</h2>
+              <h2 className="text-xl font-bold text-foreground">Order Details</h2>
               <code className="text-muted-foreground/70 text-xs font-mono">{order.id}</code>
             </div>
           </div>
-          <button onClick={onClose} className="text-muted-foreground hover:text-white transition-colors">
+          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -82,7 +82,7 @@ export default function OrderDetailsModal({
         <div className="p-6 space-y-6">
           {/* Status Timeline */}
           <GlassCard padding="md">
-            <h3 className="text-white font-semibold mb-4">Status</h3>
+            <h3 className="text-foreground font-semibold mb-4">Status</h3>
             <div className="flex items-center gap-4">
               <Badge variant={statusVariant[order.status] || "gray"}>
                 {order.status}
@@ -95,30 +95,30 @@ export default function OrderDetailsModal({
 
           {/* Customer Info */}
           <GlassCard padding="md">
-            <h3 className="text-white font-semibold mb-4">Customer</h3>
+            <h3 className="text-foreground font-semibold mb-4">Customer</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Name:</span>
-                <span className="text-white">{order.studentName}</span>
+                <span className="text-foreground">{order.studentName}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Email:</span>
-                <span className="text-white">{order.studentEmail}</span>
+                <span className="text-foreground">{order.studentEmail}</span>
               </div>
             </div>
           </GlassCard>
 
           {/* Course & Payment */}
           <GlassCard padding="md">
-            <h3 className="text-white font-semibold mb-4">Payment</h3>
+            <h3 className="text-foreground font-semibold mb-4">Payment</h3>
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Course:</span>
-                <span className="text-white">{order.courseTitle}</span>
+                <span className="text-foreground">{order.courseTitle}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Amount:</span>
-                <span className="text-white font-semibold">
+                <span className="text-foreground font-semibold">
                   ₹{order.amount.toLocaleString("en-IN")}
                 </span>
               </div>
@@ -138,7 +138,7 @@ export default function OrderDetailsModal({
               )}
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Date:</span>
-                <span className="text-white">{formatDate(order.createdAt)}</span>
+                <span className="text-foreground">{formatDate(order.createdAt)}</span>
               </div>
             </div>
           </GlassCard>
@@ -146,7 +146,7 @@ export default function OrderDetailsModal({
           {/* Refund Section */}
           {order.status === "PAID" && (
             <GlassCard padding="md">
-              <h3 className="text-white font-semibold mb-4">Refund</h3>
+              <h3 className="text-foreground font-semibold mb-4">Refund</h3>
               {!showRefund ? (
                 <Button
                   variant="danger"

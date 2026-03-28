@@ -156,15 +156,15 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
       <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2">
           <LayoutList className="w-4 h-4 text-orange-400" />
-          <span className="text-white font-semibold text-sm">Lessons</span>
+          <span className="text-foreground font-semibold text-sm">Lessons</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-white/30 bg-secondary px-2.5 py-1 rounded-full">
+          <span className="text-xs text-muted-foreground/60 bg-secondary px-2.5 py-1 rounded-full">
             {completedCount}/{lessons.length}
           </span>
           <button
             onClick={() => setShowSidebar(false)}
-            className="hidden lg:flex p-1.5 hover:bg-secondary rounded-md text-muted-foreground/70 hover:text-white transition-colors"
+            className="hidden lg:flex p-1.5 hover:bg-secondary rounded-md text-muted-foreground/70 hover:text-foreground transition-colors"
             title="Close sidebar"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -203,8 +203,8 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 isLocked && "opacity-50 cursor-not-allowed",
                 isActive
                   ? "bg-orange-500/10 border-l-[3px] border-l-orange-500"
-                  : "border-l-[3px] border-l-transparent hover:bg-white/[0.04]",
-                i !== lessons.length - 1 && "border-b border-b-white/[0.04]"
+                  : "border-l-[3px] border-l-transparent hover:bg-secondary",
+                i !== lessons.length - 1 && "border-b border-b-border/50"
               )}
             >
               {/* Number / status */}
@@ -219,13 +219,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   : "bg-white/[0.04]"
               )}>
                 {isLocked ? (
-                  <Lock className="w-3.5 h-3.5 text-white/20" />
+                  <Lock className="w-3.5 h-3.5 text-muted-foreground/30" />
                 ) : isCompleted ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : isActive ? (
                   <div className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-pulse" />
                 ) : (
-                  <span className="text-xs text-white/30 font-medium">{i + 1}</span>
+                  <span className="text-xs text-muted-foreground/50 font-medium">{i + 1}</span>
                 )}
               </div>
 
@@ -233,7 +233,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               <div className="flex-1 min-w-0">
                 <p className={cn(
                   "text-xs font-medium leading-tight mb-0.5 truncate",
-                  isActive ? "text-white" : isCompleted ? "text-emerald-300/80" : "text-muted-foreground"
+                  isActive ? "text-foreground font-semibold" : isCompleted ? "text-emerald-600 dark:text-emerald-300/80" : "text-muted-foreground"
                 )}>
                   {lesson.title}
                 </p>
@@ -243,7 +243,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     {config.label}
                   </span>
                   {lesson.duration && (
-                    <span className="text-[10px] text-white/25 flex items-center gap-0.5">
+                    <span className="text-[10px] text-muted-foreground/50 flex items-center gap-0.5">
                       <Clock className="w-2.5 h-2.5" />
                       {lesson.duration}m
                     </span>
@@ -325,16 +325,16 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(true)}
-                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all z-10"
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
                 title="Show Lessons"
               >
                 <LayoutList className="w-5 h-5" />
               </button>
             )}
             <div className="w-24 h-24 rounded-xl bg-secondary border border-border flex items-center justify-center mb-6">
-              <Lock className="w-12 h-12 text-white/15" />
+              <Lock className="w-12 h-12 text-muted-foreground/25" />
             </div>
-            <h3 className="text-white text-2xl font-bold mb-3">
+            <h3 className="text-foreground text-2xl font-bold mb-3">
               Enroll to Access Content
             </h3>
             <p className="text-muted-foreground/70 text-base max-w-md leading-relaxed">
@@ -356,7 +356,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {!showSidebar && (
                     <button
                       onClick={() => setShowSidebar(true)}
-                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all flex-shrink-0 z-10"
+                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all flex-shrink-0 z-10"
                       title="Show Lessons"
                     >
                       <LayoutList className="w-5 h-5" />
@@ -377,7 +377,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   })()}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-white/30 text-[10px] font-medium">
+                      <span className="text-muted-foreground/50 text-[10px] font-medium">
                         Lesson {activeIndex + 1} of {lessons.length}
                       </span>
                       {activeLesson.isFree && (
@@ -387,13 +387,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                         </span>
                       )}
                       {activeLesson.duration && (
-                        <span className="flex items-center gap-1 text-[9px] text-white/25">
+                        <span className="flex items-center gap-1 text-[9px] text-muted-foreground/50">
                           <Clock className="w-2.5 h-2.5" />
                           {activeLesson.duration} min
                         </span>
                       )}
                     </div>
-                    <h2 className="text-white font-bold text-base sm:text-lg leading-tight truncate">
+                    <h2 className="text-foreground font-bold text-base sm:text-lg leading-tight truncate">
                       {activeLesson.title}
                     </h2>
                   </div>
@@ -404,7 +404,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => setIsFullscreen(true)}
-                      className="flex items-center justify-center w-9 h-9 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all"
+                      className="flex items-center justify-center w-9 h-9 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       title="Full Screen (F)"
                     >
                       <Maximize2 className="w-4 h-4" />
@@ -416,7 +416,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                         "flex items-center gap-2 text-xs px-4 py-2 rounded-xl border transition-all font-semibold",
                         completed[activeLesson.id]
                           ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                          : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
+                          : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                       )}
                     >
                       {completed[activeLesson.id] ? (
@@ -458,10 +458,10 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 ) : activeLesson.content ? (
                   <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
                 ) : (
-                  <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
-                    <FileText className="w-14 h-14 text-white/10 mx-auto mb-4" />
-                    <p className="text-white/30 text-base">No content added yet.</p>
-                    <p className="text-white/20 text-sm mt-1">Content will appear here once the instructor adds it.</p>
+                  <div className="bg-secondary/50 border border-border rounded-xl px-6 py-16 text-center">
+                    <FileText className="w-14 h-14 text-muted-foreground/25 mx-auto mb-4" />
+                    <p className="text-muted-foreground/60 text-base">No content added yet.</p>
+                    <p className="text-muted-foreground/40 text-sm mt-1">Content will appear here once the instructor adds it.</p>
                   </div>
                 )}
 
@@ -470,13 +470,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {prev ? (
                     <button
                       onClick={() => selectLesson(prev.id)}
-                      className="flex items-center gap-3 text-muted-foreground hover:text-white transition-colors group px-4 py-3 rounded-xl hover:bg-secondary border border-transparent hover:border-border"
+                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group px-4 py-3 rounded-xl hover:bg-secondary border border-transparent hover:border-border"
                     >
                       <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-secondary transition-colors">
                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                       </div>
                       <div className="text-left">
-                        <p className="text-[10px] text-white/25 mb-0.5 font-medium uppercase tracking-wide">Previous</p>
+                        <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Previous</p>
                         <p className="text-sm font-semibold truncate max-w-[180px]">{prev.title}</p>
                       </div>
                     </button>
@@ -486,10 +486,10 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {next ? (
                     <button
                       onClick={() => selectLesson(next.id)}
-                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-orange-300 hover:text-white px-4 py-3 rounded-xl transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15"
+                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-4 py-3 rounded-xl transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15"
                     >
                       <div className="text-right">
-                        <p className="text-[10px] text-white/25 mb-0.5 font-medium uppercase tracking-wide">Next</p>
+                        <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Next</p>
                         <p className="text-sm font-semibold truncate max-w-[180px]">{next.title}</p>
                       </div>
                       <div className="w-9 h-9 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/20 transition-colors">
@@ -523,7 +523,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                         <Award className="w-6 h-6 text-amber-400" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-white font-bold text-sm">🎉 Course Completed!</h3>
+                        <h3 className="text-foreground font-bold text-sm">🎉 Course Completed!</h3>
                         <p className="text-muted-foreground/70 text-xs mt-0.5">You&apos;ve finished all lessons. Claim your certificate now!</p>
                       </div>
                       <button
@@ -543,7 +543,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 )}
 
                 {/* Keyboard shortcut hint */}
-                <p className="text-white/15 text-[10px] text-center mt-4 hidden lg:block">
+                <p className="text-muted-foreground/30 text-[10px] text-center mt-4 hidden lg:block">
                   Use ← → arrow keys to navigate between lessons
                 </p>
               </div>
@@ -554,13 +554,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(true)}
-                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all z-10"
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
                 title="Show Lessons"
               >
                 <LayoutList className="w-5 h-5" />
               </button>
             )}
-            <BookOpen className="w-14 h-14 text-white/10 mx-auto mb-4" />
+            <BookOpen className="w-14 h-14 text-muted-foreground/20 mx-auto mb-4" />
             <p className="text-muted-foreground/70 text-lg">No lessons in this course yet.</p>
           </div>
         )}
@@ -575,7 +575,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-[9999] flex flex-col bg-[#0a0a0f]"
+              className="fixed inset-0 z-[9999] flex flex-col bg-background"
             >
               {/* ── Top bar ── */}
               <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border bg-white/[0.02] flex-shrink-0">
@@ -594,17 +594,17 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   })()}
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <span className="text-white/30 text-xs font-medium">
+                      <span className="text-muted-foreground/50 text-xs font-medium">
                         Lesson {activeIndex + 1} of {lessons.length}
                       </span>
                       {activeLesson.duration && (
-                        <span className="flex items-center gap-1 text-[10px] text-white/25">
+                        <span className="flex items-center gap-1 text-[10px] text-muted-foreground/50">
                           <Clock className="w-2.5 h-2.5" />
                           {activeLesson.duration} min
                         </span>
                       )}
                     </div>
-                    <h2 className="text-white font-bold text-lg leading-tight truncate">
+                    <h2 className="text-foreground font-bold text-lg leading-tight truncate">
                       {activeLesson.title}
                     </h2>
                   </div>
@@ -619,7 +619,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       "flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all font-semibold",
                       completed[activeLesson.id]
                         ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                        : "bg-secondary border-border text-muted-foreground hover:text-white hover:bg-secondary"
+                        : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                     )}
                   >
                     {completed[activeLesson.id] ? (
@@ -635,7 +635,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {/* Exit fullscreen */}
                   <button
                     onClick={() => setIsFullscreen(false)}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-white hover:bg-secondary transition-all"
+                    className="flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                     title="Exit Full Screen (Esc)"
                   >
                     <Minimize2 className="w-4.5 h-4.5" />
@@ -679,7 +679,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 {prev ? (
                   <button
                     onClick={() => selectLesson(prev.id)}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-white transition-colors px-3 py-2 rounded-xl hover:bg-secondary text-sm"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-xl hover:bg-secondary text-sm"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span className="hidden sm:inline truncate max-w-[200px]">{prev.title}</span>
@@ -687,14 +687,14 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   </button>
                 ) : <span />}
 
-                <p className="text-white/15 text-[10px] hidden lg:block">
+                <p className="text-muted-foreground/30 text-[10px] hidden lg:block">
                   ← → navigate · Esc exit
                 </p>
 
                 {next ? (
                   <button
                     onClick={() => selectLesson(next.id)}
-                    className="flex items-center gap-2 text-orange-300 hover:text-white bg-orange-500/15 border border-orange-400/20 px-3 py-2 rounded-xl hover:bg-orange-500/15 transition-all text-sm"
+                    className="flex items-center gap-2 text-primary hover:text-foreground bg-orange-500/15 border border-orange-400/20 px-3 py-2 rounded-xl hover:bg-orange-500/15 transition-all text-sm"
                   >
                     <span className="hidden sm:inline truncate max-w-[200px]">{next.title}</span>
                     <span className="sm:hidden">Next</span>
@@ -824,7 +824,7 @@ function renderInline(text: string) {
       return (
         <code
           key={i}
-          className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-orange-300 text-[0.85em] font-mono border border-orange-400/25"
+          className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-orange-400/25"
         >
           {part.slice(1, -1)}
         </code>
@@ -834,7 +834,7 @@ function renderInline(text: string) {
     const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
     return boldParts.map((bp, j) => {
       if (bp.startsWith("**") && bp.endsWith("**")) {
-        return <strong key={`${i}-${j}`} className="font-semibold text-white">{bp.slice(2, -2)}</strong>;
+        return <strong key={`${i}-${j}`} className="font-semibold text-foreground">{bp.slice(2, -2)}</strong>;
       }
       return <span key={`${i}-${j}`}>{bp}</span>;
     });
@@ -860,7 +860,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
         </div>
         <button
           onClick={handleCopy}
-          className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-muted-foreground transition-colors px-2 py-1 rounded-md hover:bg-white/[0.05]"
+          className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 hover:text-muted-foreground transition-colors px-2 py-1 rounded-md hover:bg-secondary"
         >
           {copied ? (
             <>
@@ -920,9 +920,9 @@ function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: ()
 
   if (error || !quiz) {
     return (
-      <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
-        <HelpCircle className="w-14 h-14 text-white/10 mx-auto mb-4" />
-        <p className="text-white/30 text-base">{error || "No quiz available for this lesson."}</p>
+      <div className="bg-secondary/50 border border-border rounded-xl px-6 py-16 text-center">
+        <HelpCircle className="w-14 h-14 text-muted-foreground/25 mx-auto mb-4" />
+        <p className="text-muted-foreground/60 text-base">{error || "No quiz available for this lesson."}</p>
       </div>
     );
   }
@@ -941,22 +941,22 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
   const blocks = useMemo(() => parseContent(content), [content]);
 
   return (
-    <div className="rounded-xl border border-white/[0.06] overflow-hidden">
+    <div className="rounded-xl border border-border overflow-hidden">
       {/* Article header */}
-      <div className="bg-white/[0.02] border-b border-white/[0.06] px-6 sm:px-8 py-3 flex items-center gap-2">
+      <div className="bg-secondary/50 border-b border-border px-6 sm:px-8 py-3 flex items-center gap-2">
         <Type className="w-3.5 h-3.5 text-orange-400" />
-        <span className="text-[11px] font-medium text-white/30 uppercase tracking-wider">Lesson Content</span>
+        <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">Lesson Content</span>
       </div>
 
       {/* Content body */}
-      <div className="px-6 sm:px-8 py-6 sm:py-8 bg-white/[0.015]">
+      <div className="px-6 sm:px-8 py-6 sm:py-8 bg-card">
         <TextHighlighter lessonId={lessonId} isEnrolled={isEnrolled}>
           <div className="max-w-3xl mx-auto space-y-5">
             {blocks.map((block, i) => {
               switch (block.type) {
                 case "h1":
                   return (
-                    <h1 key={i} data-block-index={i} className="text-2xl font-bold text-white flex items-center gap-3 pt-2 pb-1">
+                    <h1 key={i} data-block-index={i} className="text-2xl font-bold text-foreground flex items-center gap-3 pt-2 pb-1">
                       <Hash className="w-5 h-5 text-orange-400 flex-shrink-0" />
                       {block.text}
                     </h1>
@@ -966,14 +966,14 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                     <h2
                       key={i}
                       data-block-index={i}
-                      className="text-lg font-semibold text-white/90 border-l-2 border-orange-400/25 pl-3 pt-3"
+                      className="text-lg font-semibold text-foreground border-l-2 border-orange-400/40 pl-3 pt-3"
                     >
                       {block.text}
                     </h2>
                   );
                 case "h3":
                   return (
-                    <h3 key={i} data-block-index={i} className="text-base font-semibold text-white/80 pt-2">
+                    <h3 key={i} data-block-index={i} className="text-base font-semibold text-foreground/80 pt-2">
                       {block.text}
                     </h3>
                   );
@@ -995,7 +995,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                     <ol key={i} data-block-index={i} className="space-y-2 pl-1">
                       {block.items.map((item, j) => (
                         <li key={j} className="flex items-start gap-3 text-muted-foreground text-sm leading-relaxed">
-                          <span className="flex-shrink-0 w-5 h-5 rounded-md bg-orange-500/15 text-orange-300 text-[11px] font-bold flex items-center justify-center mt-0.5">
+                          <span className="flex-shrink-0 w-5 h-5 rounded-md bg-orange-500/15 text-primary text-[11px] font-bold flex items-center justify-center mt-0.5">
                             {j + 1}
                           </span>
                           <span>{renderInline(item)}</span>
@@ -1005,7 +1005,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                   );
                 case "paragraph":
                   return (
-                    <p key={i} data-block-index={i} className="text-white/65 text-sm leading-[1.85] tracking-wide">
+                    <p key={i} data-block-index={i} className="text-muted-foreground text-sm leading-[1.85] tracking-wide">
                       {renderInline(block.text)}
                     </p>
                   );

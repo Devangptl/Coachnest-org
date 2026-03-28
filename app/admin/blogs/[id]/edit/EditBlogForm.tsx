@@ -66,12 +66,12 @@ export default function EditBlogForm({ blog }: Props) {
     <div className="max-w-3xl">
       <Link
         href="/admin/blogs"
-        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-white text-sm mb-6 transition-colors"
+        className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
       >
         <ArrowLeft className="w-4 h-4" /> Back to Blog Posts
       </Link>
 
-      <h1 className="text-3xl font-bold text-white mb-8">Edit Post</h1>
+      <h1 className="text-3xl font-bold text-foreground mb-8">Edit Post</h1>
 
       <GlassCard>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -137,7 +137,7 @@ export default function EditBlogForm({ blog }: Props) {
           {/* Publish toggle */}
           <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
             <div>
-              <p className="text-white text-sm font-medium">Published</p>
+              <p className="text-foreground text-sm font-medium">Published</p>
               <p className="text-muted-foreground/70 text-xs mt-0.5">Published posts are visible to everyone.</p>
             </div>
             <button

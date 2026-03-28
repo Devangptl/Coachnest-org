@@ -175,7 +175,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-start justify-between gap-3 flex-wrap mb-2">
               <div>
-                <h1 className="text-xl font-bold text-white leading-tight">{student.name}</h1>
+                <h1 className="text-xl font-bold text-foreground leading-tight">{student.name}</h1>
                 {student.headline && (
                   <p className="text-muted-foreground text-sm mt-0.5">{student.headline}</p>
                 )}
@@ -194,7 +194,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               </span>
               {student.website && (
                 <a href={student.website} target="_blank" rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 hover:text-white transition-colors">
+                  className="flex items-center gap-1.5 hover:text-foreground transition-colors">
                   <Globe className="w-3.5 h-3.5 text-orange-400/70" /> Website
                 </a>
               )}
@@ -241,7 +241,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                 <Icon className={cn("w-4 h-4", s.color)} />
               </div>
               <div className="min-w-0">
-                <p className="text-base font-bold text-white leading-tight">{s.value}</p>
+                <p className="text-base font-bold text-foreground leading-tight">{s.value}</p>
                 <p className="text-muted-foreground/60 text-xs">{s.label}</p>
               </div>
             </GlassCard>
@@ -262,7 +262,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               value={currentRole}
               onChange={(e) => handleRoleChange(e.target.value)}
               disabled={roleLoading}
-              className="bg-secondary border border-border rounded-lg px-2.5 py-1.5 text-white text-xs focus:outline-none focus:border-orange-400/30 transition-all"
+              className="bg-secondary border border-border rounded-lg px-2.5 py-1.5 text-foreground text-xs focus:outline-none focus:border-orange-400/30 transition-all"
             >
               <option value="STUDENT">Student</option>
               <option value="INSTRUCTOR">Instructor</option>
@@ -303,8 +303,8 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               className={cn(
                 "flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-sm font-medium transition-all whitespace-nowrap border",
                 isActive
-                  ? "bg-orange-500/10 text-white border-orange-500/20"
-                  : "text-muted-foreground hover:text-white hover:bg-secondary border-transparent"
+                  ? "bg-orange-500/10 text-foreground border-orange-500/20"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary border-transparent"
               )}
             >
               <Icon className={cn("w-3.5 h-3.5", isActive ? "text-orange-400" : "text-muted-foreground/50")} />
@@ -350,7 +350,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                     )}
                   >
                     <span className={cn("text-2xl leading-none", !badge.earned && "grayscale opacity-60")}>{badge.icon}</span>
-                    <p className={cn("text-[11px] font-semibold leading-tight", badge.earned ? "text-white" : "text-muted-foreground")}>
+                    <p className={cn("text-[11px] font-semibold leading-tight", badge.earned ? "text-foreground" : "text-muted-foreground")}>
                       {badge.name}
                     </p>
                     {badge.earned && badge.earnedAt && (
@@ -400,13 +400,13 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               <div className="col-span-2">Enrolled</div>
               <div className="col-span-3 text-right">Status</div>
             </div>
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-border/50">
               {student.enrollments.length === 0 ? (
                 <p className="text-center py-10 text-muted-foreground/50 text-sm">No enrollments yet.</p>
               ) : student.enrollments.map((e) => (
                 <div key={e.id} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
                   <div className="col-span-4 min-w-0">
-                    <p className="text-white text-sm font-medium truncate">{e.course.title}</p>
+                    <p className="text-foreground text-sm font-medium truncate">{e.course.title}</p>
                     <p className="text-muted-foreground/50 text-xs">{e.completedLessons}/{e.totalLessons} lessons</p>
                   </div>
                   <div className="col-span-3">
@@ -439,16 +439,16 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               <div className="col-span-1">Date</div>
               <div className="col-span-2 text-right">Status</div>
             </div>
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-border/50">
               {student.orders.length === 0 ? (
                 <p className="text-center py-10 text-muted-foreground/50 text-sm">No orders yet.</p>
               ) : student.orders.map((o) => (
                 <div key={o.id} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
                   <div className="col-span-3 text-muted-foreground/50 text-xs font-mono truncate">{o.id.slice(0, 10)}…</div>
                   <div className="col-span-4 min-w-0">
-                    <p className="text-white text-sm truncate">{o.course?.title || "—"}</p>
+                    <p className="text-foreground text-sm truncate">{o.course?.title || "—"}</p>
                   </div>
-                  <div className="col-span-2 text-white text-sm font-semibold">
+                  <div className="col-span-2 text-foreground text-sm font-semibold">
                     {o.currency === "INR" ? "₹" : o.currency}{o.amount.toLocaleString()}
                   </div>
                   <div className="col-span-1">
@@ -468,14 +468,14 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               <div className="col-span-8">Course</div>
               <div className="col-span-4 text-right">Issued</div>
             </div>
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-border/50">
               {student.certificates.length === 0 ? (
                 <p className="text-center py-10 text-muted-foreground/50 text-sm">No certificates yet.</p>
               ) : student.certificates.map((c) => (
                 <div key={c.id} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
                   <div className="col-span-8 flex items-center gap-2 min-w-0">
                     <Award className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span className="text-white text-sm truncate">{c.course.title}</span>
+                    <span className="text-foreground text-sm truncate">{c.course.title}</span>
                   </div>
                   <div className="col-span-4 text-right text-muted-foreground/50 text-xs">{formatDate(c.issuedAt)}</div>
                 </div>
@@ -494,16 +494,16 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               <div className="col-span-2 text-center">Time</div>
               <div className="col-span-2 text-right">Result</div>
             </div>
-            <div className="divide-y divide-white/[0.04]">
+            <div className="divide-y divide-border/50">
               {student.quizAttempts.length === 0 ? (
                 <p className="text-center py-10 text-muted-foreground/50 text-sm">No quiz attempts yet.</p>
               ) : student.quizAttempts.map((a) => (
                 <div key={a.id} className="grid grid-cols-12 gap-3 px-4 py-3 items-center hover:bg-secondary/40 transition-colors">
                   <div className="col-span-4 min-w-0">
-                    <p className="text-white text-sm truncate">{a.quiz.title}</p>
+                    <p className="text-foreground text-sm truncate">{a.quiz.title}</p>
                     <p className="text-muted-foreground/50 text-xs">{formatDate(a.createdAt)}</p>
                   </div>
-                  <div className="col-span-2 text-center font-semibold text-sm text-white">{a.score}%</div>
+                  <div className="col-span-2 text-center font-semibold text-sm text-foreground">{a.score}%</div>
                   <div className="col-span-2 text-center text-muted-foreground text-sm">{a.quiz.passMark}%</div>
                   <div className="col-span-2 text-center text-muted-foreground text-sm">
                     {a.timeTaken ? `${Math.floor(a.timeTaken / 60)}m ${a.timeTaken % 60}s` : "—"}
@@ -519,18 +519,18 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
         {/* Reviews */}
         {activeTab === "reviews" && (
-          <div className="divide-y divide-white/[0.04]">
+          <div className="divide-y divide-border/50">
             {student.reviews.length === 0 ? (
               <p className="text-center py-10 text-muted-foreground/50 text-sm">No reviews yet.</p>
             ) : student.reviews.map((r) => (
               <div key={r.id} className="px-4 py-4 hover:bg-secondary/40 transition-colors">
                 <div className="flex items-center justify-between mb-1.5">
-                  <span className="text-white text-sm font-medium">{r.course.title}</span>
+                  <span className="text-foreground text-sm font-medium">{r.course.title}</span>
                   <span className="text-muted-foreground/50 text-xs">{formatDate(r.createdAt)}</span>
                 </div>
                 <div className="flex items-center gap-1 mb-1.5">
                   {Array.from({ length: 5 }, (_, i) => (
-                    <Star key={i} className={cn("w-3.5 h-3.5", i < r.rating ? "text-yellow-400 fill-yellow-400" : "text-white/15")} />
+                    <Star key={i} className={cn("w-3.5 h-3.5", i < r.rating ? "text-yellow-400 fill-yellow-400" : "text-muted-foreground/20")} />
                   ))}
                   <span className="text-muted-foreground/50 text-xs ml-1">{r.rating}/5</span>
                 </div>

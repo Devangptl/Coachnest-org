@@ -56,10 +56,10 @@ export default function SearchBar({
           onFocus={() => setFocused(true)}
           onBlur={()  => setFocused(false)}
           placeholder={placeholder}
-          className="flex-1 bg-transparent text-white placeholder-white/30 focus:outline-none text-sm"
+          className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 focus:outline-none text-sm"
         />
         {value && (
-          <button type="button" onClick={clear} className="text-white/30 hover:text-white transition-colors">
+          <button type="button" onClick={clear} className="text-muted-foreground/50 hover:text-foreground transition-colors">
             <X className="w-4 h-4" />
           </button>
         )}

@@ -74,7 +74,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
         <div className="flex flex-col sm:flex-row gap-6 sm:gap-10">
           {/* Left: big average */}
           <div className="flex flex-col items-center justify-center sm:min-w-[140px]">
-            <span className="text-5xl font-bold text-white mb-2">
+            <span className="text-5xl font-bold text-foreground mb-2">
               {avgRating > 0 ? avgRating.toFixed(1) : "—"}
             </span>
             <div className="flex items-center gap-0.5 mb-1.5">
@@ -86,7 +86,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                       ? "fill-amber-400 text-amber-400"
                       : i < avgRating
                       ? "fill-amber-400/50 text-amber-400"
-                      : "fill-transparent text-white/20"
+                      : "fill-transparent text-muted-foreground/30"
                   }`}
                 />
               ))}
@@ -119,7 +119,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                       transition={{ duration: 0.6, delay: (5 - star) * 0.1 }}
                     />
                   </div>
-                  <span className="text-white/30 text-xs w-8 font-medium">
+                  <span className="text-muted-foreground/50 text-xs w-8 font-medium">
                     {count}
                   </span>
                 </button>
@@ -131,7 +131,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
         {/* Filter + Sort controls */}
         <div className="flex flex-wrap items-center justify-between gap-3 mt-6 pt-5 border-t border-white/[0.06]">
           <div className="flex items-center gap-2 flex-wrap">
-            <Filter className="w-3.5 h-3.5 text-white/30" />
+            <Filter className="w-3.5 h-3.5 text-muted-foreground/50" />
             {[5, 4, 3, 2, 1].map((star) => (
               <button
                 key={star}
@@ -149,14 +149,14 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
             {filterRating && (
               <button
                 onClick={() => setFilterRating(null)}
-                className="text-xs text-white/30 hover:text-muted-foreground transition-colors ml-1"
+                className="text-xs text-muted-foreground/50 hover:text-muted-foreground transition-colors ml-1"
               >
                 Clear
               </button>
             )}
           </div>
           <div className="flex items-center gap-1.5">
-            <SortAsc className="w-3.5 h-3.5 text-white/30" />
+            <SortAsc className="w-3.5 h-3.5 text-muted-foreground/50" />
             {(["recent", "highest", "lowest"] as SortOption[]).map((opt) => (
               <button
                 key={opt}
@@ -199,11 +199,11 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
         </div>
       ) : filteredReviews.length === 0 ? (
         <div className="backdrop-blur-md bg-secondary border border-border rounded-lg py-16 text-center">
-          <MessageSquareText className="w-14 h-14 text-white/10 mx-auto mb-4" />
+          <MessageSquareText className="w-14 h-14 text-muted-foreground/20 mx-auto mb-4" />
           <p className="text-muted-foreground/70 text-base mb-1">
             {filterRating ? `No ${filterRating}-star reviews yet` : "No reviews yet"}
           </p>
-          <p className="text-white/25 text-sm">
+          <p className="text-muted-foreground/50 text-sm">
             {filterRating ? "Try a different filter" : "Be the first to review!"}
           </p>
         </div>

@@ -91,7 +91,7 @@ export default function CourseContent({
           >
             {/* About this course */}
             <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-400" />
                 About This Course
               </h2>
@@ -102,7 +102,7 @@ export default function CourseContent({
 
             {/* What you'll learn */}
             <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-400" />
                 What You&apos;ll Learn
               </h2>
@@ -127,7 +127,7 @@ export default function CourseContent({
 
             {/* Quick curriculum preview */}
             <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-1 flex items-center gap-2">
+              <h2 className="text-xl font-bold text-foreground mb-1 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Course Content
               </h2>
@@ -192,15 +192,15 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
             key={lesson.id}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors"
           >
-            <span className="text-white/30 text-xs w-5 text-right flex-shrink-0">
+            <span className="text-muted-foreground/40 text-xs w-5 text-right flex-shrink-0">
               {i + 1}
             </span>
             {lesson.completed ? (
               <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 flex-shrink-0" />
             ) : (
-              <Circle className="w-4.5 h-4.5 text-white/20 flex-shrink-0" />
+              <Circle className="w-4.5 h-4.5 text-muted-foreground/30 flex-shrink-0" />
             )}
-            <Icon className="w-4 h-4 text-white/30 flex-shrink-0" />
+            <Icon className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
             <span className="text-muted-foreground text-sm flex-1 truncate">{lesson.title}</span>
             {lesson.isFree && (
               <span className="text-[10px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-400/20">
@@ -208,7 +208,7 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
               </span>
             )}
             {lesson.duration && (
-              <span className="text-white/30 text-xs flex items-center gap-1">
+              <span className="text-muted-foreground/50 text-xs flex items-center gap-1">
                 <Clock className="w-3 h-3" />
                 {lesson.duration}m
               </span>

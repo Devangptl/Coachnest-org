@@ -114,7 +114,7 @@ export default async function QuizHistoryPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-white">Quiz History</h1>
+        <h1 className="text-3xl font-bold text-foreground">Quiz History</h1>
         <p className="text-muted-foreground mt-1">
           Track your quiz performance and review past attempts.
         </p>
@@ -135,7 +135,7 @@ export default async function QuizHistoryPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-2xl font-bold text-white">{stat.value}</div>
+                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -158,15 +158,15 @@ export default async function QuizHistoryPage() {
                   />
                 ) : (
                   <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
-                    <HelpCircle className="w-6 h-6 text-white/20" />
+                    <HelpCircle className="w-6 h-6 text-muted-foreground/30" />
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
-                  <p className="text-white font-semibold text-sm truncate">{quiz.lessonTitle}</p>
+                  <p className="text-foreground font-semibold text-sm truncate">{quiz.lessonTitle}</p>
                   <p className="text-muted-foreground/70 text-xs truncate">{quiz.courseTitle}</p>
                   <div className="flex items-center gap-3 mt-1.5">
-                    <span className="text-white/30 text-xs">{quiz.questionCount} questions</span>
-                    <span className="text-white/30 text-xs">Pass: {quiz.passMark}%</span>
+                    <span className="text-muted-foreground/50 text-xs">{quiz.questionCount} questions</span>
+                    <span className="text-muted-foreground/50 text-xs">Pass: {quiz.passMark}%</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 flex-shrink-0">
@@ -175,7 +175,7 @@ export default async function QuizHistoryPage() {
                     <p className={`text-lg font-bold ${quiz.hasPassed ? "text-emerald-400" : "text-red-400"}`}>
                       {quiz.bestScore}%
                     </p>
-                    <p className="text-white/30 text-[10px]">Best Score</p>
+                    <p className="text-muted-foreground/50 text-[10px]">Best Score</p>
                   </div>
                   <Badge variant={quiz.hasPassed ? "green" : "red"}>
                     {quiz.hasPassed ? "Passed" : "Not Passed"}
@@ -190,40 +190,40 @@ export default async function QuizHistoryPage() {
               </div>
 
               {/* Attempt history */}
-              <div className="border-t border-white/[0.06] pt-3">
-                <p className="text-white/30 text-xs font-semibold uppercase tracking-wider mb-2">
+              <div className="border-t border-border/50 pt-3">
+                <p className="text-muted-foreground/50 text-xs font-semibold uppercase tracking-wider mb-2">
                   Attempts ({quiz.attemptCount})
                 </p>
                 <div className="space-y-1.5">
                   {quiz.attempts.slice(0, 5).map((attempt, idx) => (
                     <div
                       key={attempt.id}
-                      className="flex items-center gap-3 px-3 py-2 bg-white/[0.02] rounded-lg"
+                      className="flex items-center gap-3 px-3 py-2 bg-secondary/30 rounded-lg"
                     >
-                      <span className="text-white/20 text-xs w-5">#{quiz.attemptCount - idx}</span>
+                      <span className="text-muted-foreground/40 text-xs w-5">#{quiz.attemptCount - idx}</span>
                       {attempt.passed ? (
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 flex-shrink-0" />
                       ) : (
                         <XCircle className="w-3.5 h-3.5 text-red-400 flex-shrink-0" />
                       )}
-                      <span className="text-white text-sm font-semibold w-12">{attempt.score}%</span>
+                      <span className="text-foreground text-sm font-semibold w-12">{attempt.score}%</span>
                       <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
                         <div
                           className={`h-full rounded-full ${attempt.passed ? "bg-emerald-500" : "bg-red-500"}`}
                           style={{ width: `${attempt.score}%` }}
                         />
                       </div>
-                      <div className="flex items-center gap-1 text-white/30 text-xs flex-shrink-0">
+                      <div className="flex items-center gap-1 text-muted-foreground/50 text-xs flex-shrink-0">
                         <Clock className="w-3 h-3" />
                         {formatDuration(attempt.timeTaken)}
                       </div>
-                      <span className="text-white/20 text-xs flex-shrink-0">
+                      <span className="text-muted-foreground/40 text-xs flex-shrink-0">
                         {formatDate(attempt.createdAt)}
                       </span>
                     </div>
                   ))}
                   {quiz.attemptCount > 5 && (
-                    <p className="text-white/20 text-xs text-center">
+                    <p className="text-muted-foreground/40 text-xs text-center">
                       +{quiz.attemptCount - 5} more attempt{quiz.attemptCount - 5 > 1 ? "s" : ""}
                     </p>
                   )}
@@ -235,9 +235,9 @@ export default async function QuizHistoryPage() {
       ) : (
         <GlassCard padding="lg">
           <div className="text-center py-12 text-muted-foreground/70">
-            <HelpCircle className="w-12 h-12 mx-auto mb-4 text-white/20" />
+            <HelpCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="mb-2">No quiz attempts yet.</p>
-            <p className="text-white/30 text-sm">
+            <p className="text-muted-foreground/50 text-sm">
               Start a course and take quizzes to see your history here.
             </p>
             <Link href="/courses" className="text-orange-400 hover:text-orange-300 text-sm mt-3 inline-block">

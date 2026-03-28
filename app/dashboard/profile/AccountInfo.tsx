@@ -22,7 +22,7 @@ export default function AccountInfo({ email, createdAt, stats }: AccountInfoProp
 
   return (
     <GlassCard>
-      <h2 className="text-lg font-semibold text-white mb-4">Account Overview</h2>
+      <h2 className="text-lg font-semibold text-foreground mb-4">Account Overview</h2>
 
       <div className="grid sm:grid-cols-2 gap-4 mb-5">
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
@@ -48,7 +48,7 @@ export default function AccountInfo({ email, createdAt, stats }: AccountInfoProp
               className="bg-secondary border border-border rounded-xl p-3 text-center"
             >
               <Icon className={`w-4 h-4 ${stat.color} mx-auto mb-1`} />
-              <div className="text-xl font-bold text-white">{stat.value}</div>
+              <div className="text-xl font-bold text-foreground">{stat.value}</div>
               <div className="text-muted-foreground/70 text-xs">{stat.label}</div>
             </div>
           );

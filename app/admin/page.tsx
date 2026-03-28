@@ -33,7 +33,7 @@ export default async function AdminOverviewPage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">
           Admin Overview
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -56,7 +56,7 @@ export default async function AdminOverviewPage() {
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-3xl font-bold text-white">{stat.value}</div>
+                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-sm">{stat.label}</div>
               </div>
             </GlassCard>
@@ -77,7 +77,7 @@ export default async function AdminOverviewPage() {
       {/* Recent courses table */}
       <GlassCard padding="sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-white font-semibold flex items-center gap-2">
+          <h2 className="text-foreground font-semibold flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-orange-400" />
             Recent Courses
           </h2>
@@ -86,14 +86,14 @@ export default async function AdminOverviewPage() {
           </Link>
         </div>
 
-        <div className="divide-y divide-white/5">
+        <div className="divide-y divide-border/50">
           {recentCourses.map((course) => (
             <div
               key={course.id}
               className="flex items-center justify-between px-4 py-3 hover:bg-secondary transition-colors"
             >
               <div className="flex-1 min-w-0">
-                <p className="text-white text-sm font-medium truncate">
+                <p className="text-foreground text-sm font-medium truncate">
                   {course.title}
                 </p>
                 <p className="text-muted-foreground/70 text-xs mt-0.5">
@@ -115,7 +115,7 @@ export default async function AdminOverviewPage() {
                 </span>
                 <Link
                   href={`/admin/courses/${course.id}/edit`}
-                  className="text-muted-foreground/70 hover:text-white text-xs transition-colors"
+                  className="text-muted-foreground/70 hover:text-foreground text-xs transition-colors"
                 >
                   Edit
                 </Link>

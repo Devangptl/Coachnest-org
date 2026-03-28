@@ -30,7 +30,7 @@ export default function StudentSearch() {
           <input
             type="text"
             placeholder="Search by name or email..."
-            className="w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-xl pl-10 pr-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && handleSearch()}

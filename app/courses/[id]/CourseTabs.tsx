@@ -42,7 +42,7 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
             onClick={() => onTabChange(tab.id)}
             className={cn(
               "relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200",
-              isActive ? "text-white" : "text-muted-foreground/70 hover:text-white/65"
+              isActive ? "text-foreground" : "text-muted-foreground/70 hover:text-foreground/80"
             )}
           >
             {isActive && (
@@ -66,7 +66,7 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
                   "text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full font-bold transition-all",
                   isActive
                     ? `${tab.color} bg-secondary`
-                    : "bg-white/[0.06] text-white/30"
+                    : "bg-secondary text-muted-foreground/50"
                 )}>
                   {count}
                 </span>
