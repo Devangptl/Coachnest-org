@@ -223,7 +223,7 @@ export default async function DashboardPage() {
       )}
 
       {/* ─── Gamification Panel ──────────────────────────────────────────── */}
-      <div id="tour-gamification" className="grid sm:grid-cols-2 gap-4 mb-10">
+      <div id="tour-gamification" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
         <div className="">
           <XpProgressBar
             xp={gameData.xp}

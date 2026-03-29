@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Twitter, Github, Linkedin, Youtube, Mail } from "lucide-react";
+import ThemeToggle from "./ThemeToggle";
 
 const PLATFORM_LINKS = [
   { label: "Browse Courses", href: "/courses" },
@@ -161,7 +162,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="border-t border-white/5 py-6 flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="border-t border-white/5 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <p className="text-white/20 text-xs">
               &copy; {new Date().getFullYear()} CoachNest. All rights reserved.
@@ -171,8 +172,9 @@ export default function Footer() {
               All systems operational
             </div>
           </div>
-          <div className="flex items-center gap-4">
-            <p className="text-white/15 text-xs">
+          <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-end">
+            <ThemeToggle />
+            <p className="text-white/15 text-xs hidden sm:block">
               Built with Next.js, Tailwind CSS &amp; Prisma
             </p>
             <Link

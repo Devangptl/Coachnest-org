@@ -21,13 +21,11 @@ import {
   Settings,
   FileText,
   GraduationCap,
-  Sun,
-  Moon,
   Map,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
-import { useTheme } from "./ThemeProvider";
+import SearchModal from "./SearchModal";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -65,10 +63,10 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 export default function NavbarClient({ session }: Props) {
   const pathname = usePathname();
   const router = useRouter();
-  const { theme, toggle } = useTheme();
-  const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled,     setScrolled]     = useState(false);
+  const [mobileOpen,   setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [searchOpen,   setSearchOpen]   = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Scroll listener for navbar background
@@ -78,6 +76,18 @@ export default function NavbarClient({ session }: Props) {
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Cmd+K / Ctrl+K opens search modal
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setSearchOpen((o) => !o);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, []);
 
   // Close user menu on outside click
@@ -129,35 +139,21 @@ export default function NavbarClient({ session }: Props) {
 
         {/* ── Right side ──────────────────────────────────────── */}
         <div className="flex items-center gap-2">
-          {/* Theme toggle */}
+          {/* Search button — opens modal */}
           <button
-            onClick={toggle}
-            aria-label="Toggle theme"
+            onClick={() => setSearchOpen(true)}
             className={cn(
-              "flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-              "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            )}
-          >
-            {theme === "dark" ? (
-              <Sun className="w-4 h-4" />
-            ) : (
-              <Moon className="w-4 h-4" />
-            )}
-          </button>
-
-          {/* Search icon */}
-          <Link
-            href="/search"
-            className={cn(
-              "hidden lg:flex items-center justify-center w-9 h-9 rounded-lg transition-all duration-200",
-              pathname === "/search"
-                ? "bg-secondary text-foreground border border-border"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
+              "hidden lg:flex items-center gap-2 rounded-lg transition-all duration-200 px-3 py-2",
+              "bg-secondary/60 hover:bg-secondary border border-border text-muted-foreground hover:text-foreground"
             )}
             aria-label="Search"
           >
-            <Search className="w-4 h-4" />
-          </Link>
+            <Search className="w-4 h-4 flex-shrink-0" />
+            <span className="text-sm text-muted-foreground/60 hidden xl:block">Search…</span>
+            <kbd className="hidden xl:flex items-center gap-0.5 text-[10px] text-muted-foreground/40 border border-border rounded px-1.5 py-0.5 ml-1">
+              ⌘K
+            </kbd>
+          </button>
 
           {session ? (
             <>
@@ -329,6 +325,15 @@ export default function NavbarClient({ session }: Props) {
             </div>
           )}
 
+          {/* Mobile search icon */}
+          <button
+            onClick={() => setSearchOpen(true)}
+            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+            aria-label="Search"
+          >
+            <Search className="w-4 h-4" />
+          </button>
+
           {/* Mobile hamburger */}
           {!session && (
             <button
@@ -453,6 +458,9 @@ export default function NavbarClient({ session }: Props) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* ── Search modal (global, rendered at nav level) ─── */}
+      <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
     </nav>
   );
 }
