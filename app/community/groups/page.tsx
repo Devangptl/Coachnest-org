@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Users, Plus, Search, Lock, Globe, Key } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Group {
   id: string;
@@ -21,6 +23,7 @@ interface Group {
 
 export default function StudyGroupsPage() {
   const router = useRouter();
+  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -29,7 +32,6 @@ export default function StudyGroupsPage() {
   const [newDesc, setNewDesc] = useState("");
   const [creating, setCreating] = useState(false);
 
-  // Join with code state
   const [showJoinCode, setShowJoinCode] = useState(false);
   const [inviteCode, setInviteCode] = useState("");
   const [joining, setJoining] = useState(false);
@@ -46,6 +48,10 @@ export default function StudyGroupsPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  function handleLockedClick() {
+    toast("Study groups require a Pro subscription.", { icon: "🔒" });
+  }
 
   async function handleCreate() {
     if (!newName.trim()) return;
@@ -80,13 +86,12 @@ export default function StudyGroupsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to join group");
-      
       toast.success("Successfully joined the group!");
       setShowJoinCode(false);
       setInviteCode("");
-      router.push(`/community/groups/${data.groupId}`); // redirect to the group
-    } catch (e: any) {
-      toast.error(e.message || "Failed to join group");
+      router.push(`/community/groups/${data.groupId}`);
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Failed to join group");
     } finally {
       setJoining(false);
     }
@@ -98,27 +103,56 @@ export default function StudyGroupsPage() {
 
   return (
     <div className="py-8 space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Study Groups</h1>
           <p className="text-muted-foreground text-sm mt-1">Find or create groups to learn with peers.</p>
         </div>
-        <div className="flex items-center gap-3">
-          <button
-            onClick={() => setShowJoinCode(true)}
-            className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-          >
-            <Key className="w-4 h-4" /> Join with Code
-          </button>
-          <button
-            onClick={() => setShowCreate(true)}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-          >
-            <Plus className="w-4 h-4" /> Create Group
-          </button>
+
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {hasInstructorQA ? (
+            <>
+              <button
+                onClick={() => setShowJoinCode(true)}
+                className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+              >
+                <Key className="w-4 h-4" /> Join with Code
+              </button>
+              <button
+                onClick={() => setShowCreate(true)}
+                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
+              >
+                <Plus className="w-4 h-4" /> Create Group
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={handleLockedClick}
+                disabled={subLoading}
+                className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-medium px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
+                title="Requires Pro subscription"
+              >
+                <Lock className="w-3.5 h-3.5" /> Join with Code
+              </button>
+              <button
+                onClick={handleLockedClick}
+                disabled={subLoading}
+                className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
+                title="Requires Pro subscription"
+              >
+                <Lock className="w-3.5 h-3.5" /> Create Group
+              </button>
+            </>
+          )}
         </div>
       </div>
 
+      {/* Pro upgrade notice */}
+      {!subLoading && !hasInstructorQA && <CommunityProNotice action="create-group" />}
+
+      {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
         <input
@@ -130,6 +164,7 @@ export default function StudyGroupsPage() {
         />
       </div>
 
+      {/* Groups grid */}
       {loading ? (
         <div className="grid sm:grid-cols-2 gap-4">
           {[1,2,3,4].map(i => (
@@ -169,9 +204,7 @@ export default function StudyGroupsPage() {
                   <Users className="w-3 h-3" />
                   {g._count.members}/{g.maxMembers} members
                 </span>
-                <span className="text-muted-foreground/50 text-xs">
-                  by {g.createdBy.name}
-                </span>
+                <span className="text-muted-foreground/50 text-xs">by {g.createdBy.name}</span>
               </div>
             </Link>
           ))}
@@ -229,6 +262,7 @@ export default function StudyGroupsPage() {
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g. Advanced React Study Group"
+                  autoFocus
                   className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50"
                 />
               </div>

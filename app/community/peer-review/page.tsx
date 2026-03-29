@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ClipboardCheck, Plus, FileText, Star } from "lucide-react";
+import { ClipboardCheck, Plus, FileText, Star, Lock } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Assignment {
   id: string;
@@ -15,6 +17,7 @@ interface Assignment {
 }
 
 export default function PeerReviewPage() {
+  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
   const [tab, setTab] = useState<"submissions" | "review-queue">("submissions");
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -35,6 +38,10 @@ export default function PeerReviewPage() {
   }
 
   useEffect(() => { load(); }, [tab]);
+
+  function handleLockedClick() {
+    toast("Peer review requires a Pro subscription.", { icon: "🔒" });
+  }
 
   async function handleCreate() {
     if (!newTitle.trim() || !newContent.trim()) return;
@@ -61,18 +68,34 @@ export default function PeerReviewPage() {
 
   return (
     <div className="py-8 space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Peer Review</h1>
           <p className="text-muted-foreground text-sm mt-1">Submit work for feedback or review others&apos; assignments.</p>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" /> Submit Work
-        </button>
+
+        {hasInstructorQA ? (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors flex-shrink-0"
+          >
+            <Plus className="w-4 h-4" /> Submit Work
+          </button>
+        ) : (
+          <button
+            onClick={handleLockedClick}
+            disabled={subLoading}
+            className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed flex-shrink-0 opacity-60"
+            title="Requires Pro subscription"
+          >
+            <Lock className="w-3.5 h-3.5" /> Submit Work
+          </button>
+        )}
       </div>
+
+      {/* Pro upgrade notice */}
+      {!subLoading && !hasInstructorQA && <CommunityProNotice action="peer-review" />}
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-secondary rounded-lg w-fit">
@@ -105,7 +128,9 @@ export default function PeerReviewPage() {
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <ClipboardCheck className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">
-            {tab === "submissions" ? "No submissions yet. Submit your work for peer feedback!" : "No assignments in the review queue."}
+            {tab === "submissions"
+              ? "No submissions yet. Submit your work for peer feedback!"
+              : "No assignments in the review queue."}
           </p>
         </div>
       ) : (
@@ -152,6 +177,7 @@ export default function PeerReviewPage() {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="e.g. My React Portfolio Project"
+                  autoFocus
                   className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50"
                 />
               </div>

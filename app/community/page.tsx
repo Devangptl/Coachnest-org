@@ -7,8 +7,9 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   MessageSquare, Users, ClipboardCheck, Activity,
-  ArrowRight, TrendingUp, Clock, Flame
+  ArrowRight, TrendingUp, Clock, Flame, Lock, Zap
 } from "lucide-react";
+import { useSubscription } from "@/hooks/useSubscription";
 
 interface Thread {
   id: string;
@@ -34,13 +35,14 @@ interface FeedEvent {
 }
 
 const QUICK_LINKS = [
-  { icon: MessageSquare, title: "Discussion Forums", desc: "Ask questions, get answers, share knowledge.", href: "/community/forums", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
-  { icon: Users, title: "Study Groups", desc: "Form groups, track progress together, earn group XP.", href: "/community/groups", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
-  { icon: ClipboardCheck, title: "Peer Review", desc: "Submit work, give & receive structured feedback.", href: "/community/peer-review", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
-  { icon: Activity, title: "Activity Feed", desc: "See badges earned, milestones, and community wins.", href: "/community/feed", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
+  { icon: MessageSquare, title: "Discussion Forums", desc: "Ask questions, get answers, share knowledge.", href: "/community/forums", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", proWrite: true },
+  { icon: Users, title: "Study Groups", desc: "Form groups, track progress together, earn group XP.", href: "/community/groups", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", proWrite: true },
+  { icon: ClipboardCheck, title: "Peer Review", desc: "Submit work, give & receive structured feedback.", href: "/community/peer-review", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", proWrite: true },
+  { icon: Activity, title: "Activity Feed", desc: "See badges earned, milestones, and community wins.", href: "/community/feed", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20", proWrite: false },
 ];
 
 export default function CommunityHubPage() {
+  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [events, setEvents] = useState<FeedEvent[]>([]);
@@ -66,42 +68,93 @@ export default function CommunityHubPage() {
     load();
   }, []);
 
+  // Only show lock badges once subscription state is known
+  const showLocks = !subLoading && !hasInstructorQA;
+
   return (
     <div className="py-8 space-y-10">
       {/* Hero */}
-      <div>
-        <h1 className="text-3xl font-bold text-foreground mb-2">Community Hub</h1>
-        <p className="text-muted-foreground text-sm max-w-lg">
-          Connect with fellow learners — ask questions, join study groups, review peers&apos; work, and celebrate wins together.
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground mb-2">Community Hub</h1>
+          <p className="text-muted-foreground text-sm max-w-lg">
+            Connect with fellow learners — ask questions, join study groups, review peers&apos; work, and celebrate wins together.
+          </p>
+        </div>
+        {/* Pro badge for PRO users */}
+        {!subLoading && hasInstructorQA && (
+          <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 mt-1">
+            ✓ Pro Member
+          </span>
+        )}
       </div>
 
       {/* Quick Links Grid */}
       <div id="tour-community-quicklinks" className="grid sm:grid-cols-2 gap-4">
         {QUICK_LINKS.map((item) => {
           const Icon = item.icon;
+          const isLocked = item.proWrite && showLocks;
+
           return (
             <Link
               key={item.href}
               href={item.href}
-              className="group rounded-xl border border-border bg-card hover:bg-secondary/50 p-5 transition-all hover:border-white/15 hover:-translate-y-0.5"
+              className={`group rounded-xl border p-5 transition-all hover:-translate-y-0.5 relative overflow-hidden ${
+                isLocked
+                  ? "border-border bg-card/60 hover:bg-secondary/30"
+                  : "border-border bg-card hover:bg-secondary/50 hover:border-white/15"
+              }`}
             >
               <div className="flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl ${item.bg} border flex items-center justify-center flex-shrink-0`}>
+                <div className={`w-10 h-10 rounded-xl ${item.bg} border flex items-center justify-center flex-shrink-0 ${isLocked ? "opacity-50" : ""}`}>
                   <Icon className={`w-5 h-5 ${item.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground font-semibold text-sm mb-1 group-hover:text-white transition-colors flex items-center gap-2">
+                  <p className={`font-semibold text-sm mb-1 flex items-center gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground group-hover:text-white"}`}>
                     {item.title}
-                    <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-70 group-hover:translate-x-0 transition-all" />
+                    {isLocked ? (
+                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500/70 border border-emerald-500/20">
+                        <Lock className="w-2.5 h-2.5" /> Write: Pro
+                      </span>
+                    ) : (
+                      <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-70 group-hover:translate-x-0 transition-all" />
+                    )}
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
+                  {isLocked && (
+                    <p className="text-emerald-500/60 text-[11px] mt-1.5 flex items-center gap-1">
+                      <Zap className="w-3 h-3" /> Read-only · Upgrade to post
+                    </p>
+                  )}
                 </div>
               </div>
             </Link>
           );
         })}
       </div>
+
+      {/* Upgrade CTA for non-PRO users */}
+      {showLocks && (
+        <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/8 to-emerald-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+              <Zap className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <p className="text-foreground font-semibold text-sm">Unlock the full community experience</p>
+              <p className="text-muted-foreground text-xs mt-0.5">
+                Post threads, create study groups, and submit peer reviews with a Pro subscription.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/pricing"
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
+          >
+            <Zap className="w-3.5 h-3.5" /> Upgrade to Pro
+          </Link>
+        </div>
+      )}
 
       {/* Popular Threads */}
       <section id="tour-community-threads">

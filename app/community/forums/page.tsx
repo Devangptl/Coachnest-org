@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { MessageSquare, Plus, Search, Filter, CheckCircle } from "lucide-react";
+import { MessageSquare, Plus, Search, CheckCircle, Lock } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Thread {
   id: string;
@@ -18,9 +20,11 @@ interface Thread {
 }
 
 export default function ForumsPage() {
+  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [sort, setSort] = useState<"recent" | "popular">("recent");
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
@@ -28,10 +32,10 @@ export default function ForumsPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
-  async function load(p = 1) {
+  async function load(p = 1, s = sort) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/community/forums?page=${p}&sort=recent`);
+      const res = await fetch(`/api/community/forums?page=${p}&sort=${s}`);
       const data = await res.json();
       setThreads(data.threads || []);
       setTotalPages(data.totalPages || 1);
@@ -41,7 +45,11 @@ export default function ForumsPage() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(1, sort); }, [sort]);
+
+  function handleLockedClick() {
+    toast("Forums require a Pro subscription.", { icon: "🔒" });
+  }
 
   async function handleCreate() {
     if (!newTitle.trim() || !newBody.trim()) return;
@@ -71,29 +79,60 @@ export default function ForumsPage() {
 
   return (
     <div className="py-8 space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Discussion Forums</h1>
           <p className="text-muted-foreground text-sm mt-1">Ask questions, share knowledge, and learn together.</p>
         </div>
-        <button
-          onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
-        >
-          <Plus className="w-4 h-4" /> New Thread
-        </button>
+
+        {hasInstructorQA ? (
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors flex-shrink-0"
+          >
+            <Plus className="w-4 h-4" /> New Thread
+          </button>
+        ) : (
+          <button
+            onClick={handleLockedClick}
+            disabled={subLoading}
+            className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed flex-shrink-0 opacity-60"
+            title="Requires Pro subscription"
+          >
+            <Lock className="w-3.5 h-3.5" /> New Thread
+          </button>
+        )}
       </div>
 
-      {/* Search */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search discussions..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
-        />
+      {/* Pro upgrade notice */}
+      {!subLoading && !hasInstructorQA && <CommunityProNotice action="post" />}
+
+      {/* Toolbar — search + sort */}
+      <div className="flex items-center gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search discussions..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
+          />
+        </div>
+        <div className="flex gap-1 p-1 bg-secondary rounded-lg flex-shrink-0">
+          {(["recent", "popular"] as const).map((s) => (
+            <button
+              key={s}
+              onClick={() => setSort(s)}
+              className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all capitalize ${
+                sort === s ? "bg-card text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {s}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Thread List */}
@@ -107,7 +146,7 @@ export default function ForumsPage() {
         <div className="rounded-xl border border-border bg-card p-12 text-center">
           <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">
-            {search ? "No threads match your search." : "No discussions yet. Start one!"}
+            {search ? "No threads match your search." : "No discussions yet. Be the first to start one!"}
           </p>
         </div>
       ) : (
@@ -121,7 +160,11 @@ export default function ForumsPage() {
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    {t.isPinned && <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">Pinned</span>}
+                    {t.isPinned && (
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">
+                        Pinned
+                      </span>
+                    )}
                     {t.isResolved && (
                       <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                         <CheckCircle className="w-3 h-3" /> Resolved
@@ -177,6 +220,7 @@ export default function ForumsPage() {
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="What's your question or topic?"
+                  autoFocus
                   className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50"
                 />
               </div>

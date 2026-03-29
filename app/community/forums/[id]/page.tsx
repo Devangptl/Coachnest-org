@@ -4,6 +4,8 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronUp, ChevronDown, MessageSquare, Send, Clock, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSubscription } from "@/hooks/useSubscription";
+import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Reply {
   id: string;
@@ -30,6 +32,7 @@ interface Thread {
 
 export default function ThreadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
+  const { hasInstructorQA } = useSubscription();
   const [thread, setThread] = useState<Thread | null>(null);
   const [loading, setLoading] = useState(true);
   const [replyBody, setReplyBody] = useState("");
@@ -191,27 +194,31 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
         )}
       </div>
 
-      {/* Reply Form */}
-      <div className="rounded-xl border border-border bg-card p-5">
-        <h3 className="text-sm font-semibold text-foreground mb-3">Post a Reply</h3>
-        <textarea
-          rows={4}
-          value={replyBody}
-          onChange={(e) => setReplyBody(e.target.value)}
-          placeholder="Write your reply..."
-          className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
-        />
-        <div className="flex justify-end mt-3">
-          <button
-            onClick={handleReply}
-            disabled={sending || !replyBody.trim()}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-          >
-            <Send className="w-4 h-4" />
-            {sending ? "Posting…" : "Post Reply"}
-          </button>
+      {/* Reply Form / Upgrade notice */}
+      {hasInstructorQA ? (
+        <div className="rounded-xl border border-border bg-card p-5">
+          <h3 className="text-sm font-semibold text-foreground mb-3">Post a Reply</h3>
+          <textarea
+            rows={4}
+            value={replyBody}
+            onChange={(e) => setReplyBody(e.target.value)}
+            placeholder="Write your reply..."
+            className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
+          />
+          <div className="flex justify-end mt-3">
+            <button
+              onClick={handleReply}
+              disabled={sending || !replyBody.trim()}
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+            >
+              <Send className="w-4 h-4" />
+              {sending ? "Posting…" : "Post Reply"}
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <CommunityProNotice action="reply" />
+      )}
     </div>
   );
 }

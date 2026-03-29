@@ -8,6 +8,7 @@ import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
+import PlanSuggestionBanner from "@/components/PlanSuggestionBanner";
 
 async function getCourses() {
   return prisma.course.findMany({
@@ -42,6 +43,9 @@ export default async function CoursesPage() {
         </p>
         <SearchBar className="max-w-md" placeholder="Search courses..." />
       </div>
+
+      {/* Contextual plan suggestion for FREE users */}
+      <PlanSuggestionBanner context="free-courses" dismissKey="courses-catalog" className="mb-6" />
 
       {/* Category pills */}
       {categories.length > 0 && (

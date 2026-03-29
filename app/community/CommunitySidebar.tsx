@@ -3,24 +3,26 @@
 /**
  * CommunitySidebar — sub-navigation for the community hub.
  * Desktop: persistent sidebar. Mobile: floating toggle + drawer.
+ * Shows PRO badges on write-gated sections for FREE/BASIC users.
  */
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  MessageSquare, Users, ClipboardCheck, Activity, Menu, X, Compass
+  MessageSquare, Users, ClipboardCheck, Activity, Menu, X, Compass, Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const navItems = [
-  { label: "Hub",          href: "/community",              icon: Compass },
-  { label: "Forums",       href: "/community/forums",       icon: MessageSquare },
-  { label: "Study Groups", href: "/community/groups",       icon: Users },
-  { label: "Peer Review",  href: "/community/peer-review",  icon: ClipboardCheck },
-  { label: "Activity Feed",href: "/community/feed",         icon: Activity },
+  { label: "Hub",           href: "/community",             icon: Compass,       proRequired: false },
+  { label: "Forums",        href: "/community/forums",      icon: MessageSquare, proRequired: true  },
+  { label: "Study Groups",  href: "/community/groups",      icon: Users,         proRequired: true  },
+  { label: "Peer Review",   href: "/community/peer-review", icon: ClipboardCheck, proRequired: true },
+  { label: "Activity Feed", href: "/community/feed",        icon: Activity,      proRequired: false },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ onNavigate, isPro }: { onNavigate?: () => void; isPro: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -31,6 +33,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             ? pathname === "/community"
             : pathname.startsWith(item.href);
         const Icon = item.icon;
+        const locked = item.proRequired && !isPro;
 
         return (
           <Link
@@ -46,21 +49,48 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           >
             <Icon
               className={cn(
-                "w-4 h-4",
-                isActive ? "text-emerald-400" : "text-muted-foreground"
+                "w-4 h-4 flex-shrink-0",
+                isActive ? "text-emerald-400" : locked ? "text-muted-foreground/50" : "text-muted-foreground"
               )}
             />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+
+            {/* PRO badge — only for locked items on non-PRO plans */}
+            {locked && (
+              <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500/70 border border-emerald-500/20 flex-shrink-0">
+                <Lock className="w-2.5 h-2.5" />
+                Pro
+              </span>
+            )}
           </Link>
         );
       })}
+
+      {/* Plan upgrade nudge in sidebar for FREE/BASIC users */}
+      {!isPro && (
+        <div className="mt-4 pt-4 border-t border-border">
+          <Link
+            href="/pricing"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium bg-emerald-500/8 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15 transition-all"
+          >
+            <span className="w-5 h-5 rounded bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+              ⚡
+            </span>
+            Upgrade to Pro
+          </Link>
+        </div>
+      )}
     </nav>
   );
 }
 
 export default function CommunitySidebar() {
   const pathname = usePathname();
+  const { hasInstructorQA, isLoading } = useSubscription();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  // isPro: show unlocked state; default to true while loading to avoid flicker
+  const isPro = isLoading ? true : hasInstructorQA;
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   useEffect(() => {
@@ -75,7 +105,7 @@ export default function CommunitySidebar() {
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
             Community
           </p>
-          <NavLinks />
+          <NavLinks isPro={isPro} />
         </div>
       </aside>
 
@@ -106,7 +136,7 @@ export default function CommunitySidebar() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <NavLinks onNavigate={() => setMobileOpen(false)} />
+            <NavLinks onNavigate={() => setMobileOpen(false)} isPro={isPro} />
           </div>
         </div>
       )}

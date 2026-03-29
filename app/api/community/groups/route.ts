@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPlanAccess } from "@/services/subscription.service";
 import crypto from "crypto";
 
 export async function GET(req: NextRequest) {
@@ -42,6 +43,14 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+    const planAccess = await getPlanAccess(session.userId);
+    if (!planAccess.hasInstructorQA) {
+      return NextResponse.json(
+        { error: "Creating study groups requires a Pro or Enterprise subscription.", requiredPlan: "PRO" },
+        { status: 403 }
+      );
+    }
 
     const { name, description, courseId, maxMembers, isPublic } = await req.json();
     if (!name?.trim()) {
