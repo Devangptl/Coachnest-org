@@ -9,8 +9,9 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import {
   Crown, Zap, Building2, CheckCircle2, XCircle,
-  Clock, AlertCircle, Loader2, ExternalLink, RefreshCcw,
+  Clock, AlertCircle, Loader2, ExternalLink, RefreshCcw, TrendingUp, RefreshCw,
 } from "lucide-react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 
@@ -20,12 +21,20 @@ type PlanType   = "FREE" | "BASIC" | "PRO" | "ENTERPRISE";
 type SubStatus  = "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIAL";
 
 interface Subscription {
-  id:         string;
-  plan:       PlanType;
-  status:     SubStatus;
-  startDate:  string;
-  endDate:    string | null;
+  id:          string;
+  plan:        PlanType;
+  status:      SubStatus;
+  startDate:   string;
+  endDate:     string | null;
+  cancelledAt: string | null;
   trialEndsAt: string | null;
+}
+
+interface PlanAccessData {
+  isActive:        boolean;
+  enrollmentLimit: number | null;
+  enrolledCount:   number;
+  limitReached:    boolean;
 }
 
 // ─── Plan metadata ────────────────────────────────────────────────────────────
@@ -52,7 +61,7 @@ const PLAN_META: Record<PlanType, {
     color: "text-blue-400",
     bg: "bg-blue-500/10",
     border: "border-blue-500/20",
-    features: ["All-access to paid courses", "Download certificates", "Priority support", "Mobile app access"],
+    features: ["Access to paid courses (up to 5)", "Download certificates", "Priority support", "Mobile app access"],
   },
   PRO: {
     label: "Pro",
@@ -94,27 +103,59 @@ export default function SubscriptionPage() {
   const searchParams = useSearchParams();
 
   const [sub,          setSub]          = useState<Subscription | null>(null);
+  const [planAccess,   setPlanAccess]   = useState<PlanAccessData | null>(null);
   const [loading,      setLoading]      = useState(true);
+  const [syncing,      setSyncing]      = useState(false);
   const [cancelling,   setCancelling]   = useState(false);
-  const [portalLoading, setPortalLoading] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const [billing,      setBilling]      = useState<"monthly" | "yearly">("monthly");
 
-  // Show success toast when redirected back from Stripe
-  useEffect(() => {
-    if (searchParams.get("success") === "true") {
-      toast.success("Subscription activated! Welcome to all-access. 🎉");
-      router.replace("/dashboard/subscription");
-    }
-  }, [searchParams, router]);
+  const isSuccessRedirect = searchParams.get("success") === "true";
+  const sessionId         = searchParams.get("session_id");
 
-  // Load subscription status
   useEffect(() => {
-    fetch("/api/subscriptions/status")
-      .then((r) => r.json())
-      .then((data) => setSub(data.subscription ?? null))
-      .catch(() => toast.error("Could not load subscription"))
-      .finally(() => setLoading(false));
+    let cancelled = false;
+
+    async function loadAndSync() {
+      try {
+        // Step 1 — if returning from Stripe checkout, sync the subscription first
+        if (isSuccessRedirect) {
+          const syncRes = await fetch("/api/subscriptions/sync", {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ sessionId: sessionId ?? undefined }),
+          });
+          if (!syncRes.ok) {
+            const err = await syncRes.json().catch(() => ({}));
+            console.warn("[subscription] sync failed:", err.error);
+          }
+        }
+
+        // Step 2 — load fresh status from DB
+        const r    = await fetch("/api/subscriptions/status");
+        const data = await r.json();
+
+        if (!cancelled) {
+          setSub(data.subscription ?? null);
+          setPlanAccess(data.planAccess ?? null);
+          setLoading(false);
+
+          if (isSuccessRedirect && data.subscription?.plan && data.subscription.plan !== "FREE") {
+            toast.success("Subscription activated! Welcome to all-access.");
+            router.replace("/dashboard/subscription");
+          }
+        }
+      } catch {
+        if (!cancelled) {
+          setLoading(false);
+          toast.error("Could not load subscription");
+        }
+      }
+    }
+
+    loadAndSync();
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSubscribe(planId: string) {
@@ -151,35 +192,55 @@ export default function SubscriptionPage() {
     }
   }
 
-  async function handleBillingPortal() {
-    setPortalLoading(true);
+  async function handleSync() {
+    setSyncing(true);
     try {
-      const res  = await fetch("/api/subscriptions/portal", { method: "POST" });
+      const res  = await fetch("/api/subscriptions/sync", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to open portal");
-      if (data.url) window.location.href = data.url;
+      if (!res.ok) throw new Error(data.error ?? "Sync failed");
+
+      // Reload status
+      const r2    = await fetch("/api/subscriptions/status");
+      const data2 = await r2.json();
+      setSub(data2.subscription ?? null);
+      setPlanAccess(data2.planAccess ?? null);
+      toast.success("Subscription synced!");
     } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Could not open billing portal");
+      toast.error(err instanceof Error ? err.message : "Could not sync subscription");
     } finally {
-      setPortalLoading(false);
+      setSyncing(false);
     }
   }
+
 
   // ── Loading skeleton ───────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-secondary rounded-lg" />
-        <div className="h-48 bg-secondary rounded-xl" />
-        <div className="h-64 bg-secondary rounded-xl" />
+      <div className="max-w-3xl mx-auto space-y-6">
+        {isSuccessRedirect && (
+          <div className="flex items-center gap-3 bg-orange-500/10 border border-orange-400/20 rounded-xl px-5 py-4">
+            <Loader2 className="w-5 h-5 text-orange-400 animate-spin flex-shrink-0" />
+            <div>
+              <p className="text-orange-300 font-semibold text-sm">Activating your subscription…</p>
+              <p className="text-orange-400/60 text-xs">This takes just a moment.</p>
+            </div>
+          </div>
+        )}
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-48 bg-secondary rounded-lg" />
+          <div className="h-48 bg-secondary rounded-xl" />
+          <div className="h-64 bg-secondary rounded-xl" />
+        </div>
       </div>
     );
   }
 
   const meta        = sub ? PLAN_META[sub.plan]   : null;
   const statusMeta  = sub ? STATUS_META[sub.status] : null;
-  const isActive    = sub && (sub.status === "ACTIVE" || sub.status === "TRIAL");
+  // CANCELLED subs with future endDate still have active access
+  const isActive    = planAccess?.isActive ?? false;
   const isPaidPlan  = sub && sub.plan !== "FREE";
+  const BASIC_LIMIT = 5;
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -268,18 +329,48 @@ export default function SubscriptionPage() {
             </ul>
           </div>
 
+          {/* BASIC usage bar */}
+          {sub.plan === "BASIC" && isActive && planAccess && (
+            <div className="mt-5 pt-5 border-t border-border">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold">Course Slots</p>
+                <span className={`text-xs font-semibold ${planAccess.limitReached ? "text-amber-400" : "text-muted-foreground"}`}>
+                  {planAccess.enrolledCount} / {BASIC_LIMIT} used
+                </span>
+              </div>
+              <div className="w-full bg-secondary rounded-full h-2">
+                <div
+                  className={`h-2 rounded-full transition-all ${planAccess.limitReached ? "bg-amber-400" : "bg-orange-400"}`}
+                  style={{ width: `${Math.min(100, (planAccess.enrolledCount / BASIC_LIMIT) * 100)}%` }}
+                />
+              </div>
+              {planAccess.limitReached ? (
+                <p className="text-xs text-amber-400 mt-2 flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5" />
+                  All slots used.{" "}
+                  <Link href="/pricing" className="underline hover:text-amber-300">Upgrade to PRO</Link>
+                  {" "}for unlimited access.
+                </p>
+              ) : (
+                <p className="text-xs text-muted-foreground/60 mt-2">
+                  {BASIC_LIMIT - planAccess.enrolledCount} slot{BASIC_LIMIT - planAccess.enrolledCount !== 1 ? "s" : ""} remaining.
+                  Upgrade to PRO for unlimited.
+                </p>
+              )}
+            </div>
+          )}
+
           {/* Actions */}
           <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              onClick={handleBillingPortal}
-              disabled={portalLoading}
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm font-medium text-foreground transition-colors disabled:opacity-50"
+            <Link
+              href="/dashboard/billing"
+              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm font-medium text-foreground transition-colors"
             >
-              {portalLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <ExternalLink className="w-4 h-4" />}
+              <ExternalLink className="w-4 h-4" />
               Manage Billing
-            </button>
+            </Link>
 
-            {isActive && sub.status !== "CANCELLED" && (
+            {isActive && sub?.status !== "CANCELLED" && (
               <button
                 onClick={handleCancel}
                 disabled={cancelling}
@@ -312,9 +403,17 @@ export default function SubscriptionPage() {
             <Crown className="w-7 h-7 text-orange-400" />
           </div>
           <h2 className="text-xl font-bold text-foreground mb-2">No Active Subscription</h2>
-          <p className="text-muted-foreground text-sm max-w-sm mx-auto">
+          <p className="text-muted-foreground text-sm max-w-sm mx-auto mb-5">
             Subscribe to get all-access to every course on CoachNest — no per-course purchases needed.
           </p>
+          <button
+            onClick={handleSync}
+            disabled={syncing}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-secondary hover:bg-secondary/80 text-sm font-medium text-muted-foreground transition-colors disabled:opacity-50"
+          >
+            {syncing ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+            Already purchased? Sync from Stripe
+          </button>
         </motion.div>
       )}
 

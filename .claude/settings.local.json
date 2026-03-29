@@ -30,7 +30,18 @@
       "Bash(grep -E \"\\\\.\\(json|ts|js|yaml\\)$\")",
       "Bash(wc -l /d/Devang/Claude/learning/components/*.tsx)",
       "Bash(grep -E \"\\\\.tsx$\")",
-      "Bash(grep -r Subscription /d/Devang/Claude/learning/app/api --include=*.ts)"
+      "Bash(grep -r Subscription /d/Devang/Claude/learning/app/api --include=*.ts)",
+      "Bash(find D:DevangClaudelearningappcourses -name *.tsx -o -name *.ts)",
+      "Bash(taskkill /F /IM node.exe)",
+      "Bash(cmd /c \"taskkill /F /IM node.exe\" 2>&1)",
+      "Bash(cmd /c \"taskkill /F /IM node.exe && echo killed\" 2>&1)",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Write-Output 'Processes stopped'\")",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Write-Output done\")",
+      "Bash(node -e \":*)",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 1; Write-Output done\")",
+      "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue; Start-Sleep -Seconds 2; Write-Output 'stopped'\")",
+      "Bash(curl:*)",
+      "Bash(node:*)"
     ]
   }
 }

@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";
 import { handlePaymentSuccess } from "@/services/payment.service";
 import {
+  handleSubscriptionCheckoutCompleted,
   handleSubscriptionCreated,
   handleSubscriptionUpdated,
   handleSubscriptionDeleted,
@@ -38,14 +39,17 @@ export async function POST(req: NextRequest) {
       case "checkout.session.completed": {
         const session = event.data.object;
 
-        // Only handle one-time payments here; subscription sessions are handled
-        // by customer.subscription.created below.
         if (session.mode === "payment") {
+          // One-time course purchase
           const paymentIntentId =
             typeof session.payment_intent === "string"
               ? session.payment_intent
               : session.payment_intent?.id ?? "";
           await handlePaymentSuccess(session.id, paymentIntentId);
+        } else if (session.mode === "subscription") {
+          // Write the subscription record immediately so the success page
+          // always finds it — don't wait for customer.subscription.created
+          await handleSubscriptionCheckoutCompleted(session);
         }
         break;
       }

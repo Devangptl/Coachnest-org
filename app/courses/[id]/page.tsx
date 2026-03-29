@@ -11,6 +11,7 @@ import CourseContent from "./CourseContent";
 import CourseSidebar from "./CourseSidebar";
 import CourseLayout from "./CourseLayout";
 import PaymentStatus from "./PaymentStatus";
+import { getPlanAccess, planMeetsRequirement } from "@/services/subscription.service";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -41,10 +42,23 @@ const getCourseById = unstable_cache(
 );
 
 // User-specific data — not cached
-async function getUserCourseData(courseId: string, lessonIds: string[], userId?: string) {
-  if (!userId) return { isEnrolled: false, completedLessonIds: [] as string[], isWishlisted: false };
+async function getUserCourseData(
+  courseId: string,
+  courseMinPlan: string,
+  isFree: boolean,
+  lessonIds: string[],
+  userId?: string
+) {
+  const empty = {
+    isEnrolled:         false,
+    canAccessViaSub:    false,
+    completedLessonIds: [] as string[],
+    isWishlisted:       false,
+    planAccess:         null as Awaited<ReturnType<typeof getPlanAccess>> | null,
+  };
+  if (!userId) return empty;
 
-  const [enrollment, completedRows, wishlisted, subscription] = await Promise.all([
+  const [enrollment, completedRows, wishlisted, planAccess] = await Promise.all([
     prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
     }),
@@ -55,32 +69,31 @@ async function getUserCourseData(courseId: string, lessonIds: string[], userId?:
     prisma.wishlist.findUnique({
       where: { userId_courseId: { userId, courseId } },
     }),
-    prisma.subscription.findUnique({
-      where:  { userId },
-      select: { plan: true, status: true, endDate: true },
-    }),
+    getPlanAccess(userId),
   ]);
 
-  // All-access: any active paid subscription grants course access
-  const hasAllAccess =
-    subscription !== null &&
-    subscription.plan !== "FREE" &&
-    (subscription.status === "ACTIVE" || subscription.status === "TRIAL") &&
-    (subscription.endDate === null || subscription.endDate > new Date());
+  // Subscription-based access: only for paid courses
+  // Free courses are accessible to all — no slot needed
+  const meetsMinPlan = planMeetsRequirement(planAccess.plan, courseMinPlan);
+  const canAccessViaSub =
+    !isFree &&
+    planAccess.isActive &&
+    planAccess.canAccessPaidCourses &&
+    meetsMinPlan &&
+    !planAccess.limitReached;
 
-  // Auto-enroll subscriber so progress tracking works
-  if (hasAllAccess && !enrollment) {
-    await prisma.enrollment.upsert({
-      where:  { userId_courseId: { userId, courseId } },
-      create: { userId, courseId },
-      update: {},
-    });
-  }
+  // NOTE: We do NOT auto-enroll here.
+  // Viewing a course page is free and must never consume a subscription slot.
+  // A slot is only consumed when the user explicitly clicks "Access Now",
+  // which calls POST /api/subscriptions/enroll.
+  // isEnrolled is true only if an actual enrollment record exists.
 
   return {
-    isEnrolled: Boolean(enrollment) || hasAllAccess,
+    isEnrolled:         Boolean(enrollment),
+    canAccessViaSub,
     completedLessonIds: completedRows.map((p) => p.lessonId),
-    isWishlisted: Boolean(wishlisted),
+    isWishlisted:       Boolean(wishlisted),
+    planAccess,
   };
 }
 
@@ -95,11 +108,21 @@ export default async function CourseDetailPage({ params }: Props) {
 
   // User-specific data (parallel fetch, uncached)
   const session = await getSession();
-  const { isEnrolled, completedLessonIds, isWishlisted } = await getUserCourseData(
+  const {
+    isEnrolled, canAccessViaSub, completedLessonIds, isWishlisted, planAccess,
+  } = await getUserCourseData(
     id,
+    course.minPlan,
+    course.isFree,
     course.lessons.map((l: { id: string }) => l.id),
     session?.userId
   );
+
+  // A subscriber who hasn't clicked "Access Now" yet can still view lesson list
+  // but lesson content is locked until enrollment. Admins/instructors always have access.
+  const hasContentAccess =
+    isEnrolled || canAccessViaSub ||
+    session?.role === "ADMIN" || session?.role === "INSTRUCTOR";
 
   const totalDuration = course.lessons.reduce((sum: number, l: { duration?: number | null }) => sum + (l.duration ?? 0), 0);
 
@@ -133,14 +156,16 @@ export default async function CourseDetailPage({ params }: Props) {
 
       {/* ── Main content: two-column layout with toggleable sidebar ── */}
       <CourseLayout
-        isEnrolled={isEnrolled || session?.role === "ADMIN" || session?.role === "INSTRUCTOR"}
+        isEnrolled={hasContentAccess}
         sidebar={
           <CourseSidebar
             courseId={course.id}
             price={priceNum}
             discountPrice={discountNum}
             isFree={course.isFree}
+            courseMinPlan={course.minPlan}
             isEnrolled={isEnrolled}
+            canAccessViaSub={canAccessViaSub}
             isWishlisted={isWishlisted}
             isLoggedIn={Boolean(session)}
             userRole={session?.role ?? null}
@@ -148,6 +173,7 @@ export default async function CourseDetailPage({ params }: Props) {
             totalDuration={totalDuration}
             language={course.language}
             level={course.level}
+            planAccess={planAccess}
           />
         }
       >
@@ -155,7 +181,7 @@ export default async function CourseDetailPage({ params }: Props) {
           courseId={course.id}
           description={course.description}
           lessons={lessonsWithCompletion}
-          isEnrolled={isEnrolled || session?.role === "ADMIN" || session?.role === "INSTRUCTOR"}
+          isEnrolled={hasContentAccess}
           isLoggedIn={Boolean(session)}
           reviewCount={course._count.reviews}
         />

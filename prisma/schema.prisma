@@ -208,6 +208,7 @@ model Course {
   price         Decimal?      @db.Decimal(10, 2)
   discountPrice Decimal?      @db.Decimal(10, 2)
   isFree        Boolean       @default(false)
+  minPlan       PlanType      @default(BASIC)
   level         String        @default("beginner")
   language      String        @default("English")
   totalDuration Int           @default(0)
@@ -416,6 +417,7 @@ model Subscription {
   status        SubStatus @default(ACTIVE)
   startDate     DateTime  @default(now())
   endDate       DateTime?
+  cancelledAt   DateTime?
   trialEndsAt   DateTime?
   stripeSubId String?
 

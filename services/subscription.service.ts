@@ -3,13 +3,42 @@
  *
  * Plan access rules:
  *   FREE       → no paid courses
- *   BASIC      → all-access (up to 5 courses tracked separately in UI)
- *   PRO        → all-access, unlimited
- *   ENTERPRISE → all-access + team features
+ *   BASIC      → paid courses, up to BASIC_COURSE_LIMIT enrolled
+ *   PRO        → all paid courses, unlimited
+ *   ENTERPRISE → all paid courses, unlimited + team features
+ *
+ * minPlan on Course controls which plan tier is required:
+ *   BASIC → accessible to BASIC, PRO, ENTERPRISE
+ *   PRO   → accessible to PRO and ENTERPRISE only
  */
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import type Stripe from "stripe";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+export const BASIC_COURSE_LIMIT = 5;
+
+/**
+ * Stripe API "2026-03-25.dahlia" (SDK v21) moved current_period_start/end
+ * from the Subscription root to sub.items.data[0]. This helper reads from
+ * the item level first, then falls back to root-level (older API versions).
+ */
+function getPeriodDates(sub: Stripe.Subscription) {
+  const s = sub as any;
+  const item  = s.items?.data?.[0];
+  const start = item?.current_period_start ?? s.current_period_start ?? s.billing_cycle_anchor ?? s.created;
+  const end   = item?.current_period_end   ?? s.current_period_end   ?? (start + 30 * 24 * 60 * 60);
+  return {
+    startDate: new Date(start * 1000),
+    endDate:   new Date(end   * 1000),
+  };
+}
+
+/** Numeric rank for plan comparison (higher = more access) */
+const PLAN_RANK: Record<string, number> = {
+  FREE: 0, BASIC: 1, PRO: 2, ENTERPRISE: 3,
+};
 
 // ─── Stripe Price IDs ─────────────────────────────────────────────────────────
 
@@ -27,6 +56,123 @@ const PRICE_IDS: Record<string, Record<string, string | undefined>> = {
     yearly:  process.env.STRIPE_PRICE_ENTERPRISE_YEARLY,
   },
 };
+
+// ─── PlanAccess type ──────────────────────────────────────────────────────────
+
+export interface PlanAccess {
+  /** Subscription is currently valid — paid content is accessible */
+  isActive: boolean;
+  /** Has any paid plan (false for FREE or no subscription) */
+  isPaid: boolean;
+  plan: "FREE" | "BASIC" | "PRO" | "ENTERPRISE";
+  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIAL" | null;
+  endDate: string | null;
+  cancelledAt: string | null;
+  trialEndsAt: string | null;
+
+  // BASIC-specific limits
+  /** null for PRO/ENTERPRISE (unlimited) */
+  enrollmentLimit: number | null;
+  /** Current total enrollments for this user */
+  enrolledCount: number;
+  /** true when BASIC user has used all 5 slots */
+  limitReached: boolean;
+
+  // Feature flags (derived from plan)
+  canAccessPaidCourses: boolean;
+  /** PRO or ENTERPRISE: can access courses with minPlan=PRO */
+  canAccessProCourses: boolean;
+  hasCertificates: boolean;
+  hasOfflineDownloads: boolean;
+  hasAiRecommendations: boolean;
+  hasInstructorQA: boolean;
+  hasTeamManagement: boolean;
+}
+
+// ─── getPlanAccess ────────────────────────────────────────────────────────────
+
+export async function getPlanAccess(userId: string): Promise<PlanAccess> {
+  const [sub, enrolledCount] = await Promise.all([
+    prisma.subscription.findUnique({
+      where:  { userId },
+      select: {
+        plan: true, status: true,
+        endDate: true, startDate: true,
+        cancelledAt: true, trialEndsAt: true,
+      },
+    }),
+    // Only count paid course enrollments — free courses don't use subscription slots
+    prisma.enrollment.count({
+      where: { userId, course: { isFree: false } },
+    }),
+  ]);
+
+  if (!sub || sub.plan === "FREE") {
+    return noAccess(enrolledCount);
+  }
+
+  // A CANCELLED subscription still grants access until endDate (period end)
+  const now = new Date();
+  const isActive =
+    (sub.status === "ACTIVE" || sub.status === "TRIAL") &&
+    (sub.endDate === null || sub.endDate > now)
+    ||
+    (sub.status === "CANCELLED" &&
+     sub.endDate !== null &&
+     sub.endDate > now);
+
+  const plan = sub.plan as PlanAccess["plan"];
+
+  const enrollmentLimit  = plan === "BASIC" ? BASIC_COURSE_LIMIT : null;
+  const limitReached     = plan === "BASIC" && enrolledCount >= BASIC_COURSE_LIMIT;
+
+  const isBasic      = plan === "BASIC";
+  const isPro        = plan === "PRO" || plan === "ENTERPRISE";
+  const isEnterprise = plan === "ENTERPRISE";
+
+  return {
+    isActive,
+    isPaid: true,
+    plan,
+    status: sub.status as PlanAccess["status"],
+    endDate:     sub.endDate     ? sub.endDate.toISOString()     : null,
+    cancelledAt: sub.cancelledAt ? sub.cancelledAt.toISOString() : null,
+    trialEndsAt: sub.trialEndsAt ? sub.trialEndsAt.toISOString() : null,
+
+    enrollmentLimit,
+    enrolledCount,
+    limitReached: isActive ? limitReached : false,
+
+    canAccessPaidCourses: isActive,
+    canAccessProCourses:  isActive && isPro,
+    hasCertificates:      isActive,
+    hasOfflineDownloads:  isActive && isPro,
+    hasAiRecommendations: isActive && isPro,
+    hasInstructorQA:      isActive && isPro,
+    hasTeamManagement:    isActive && isEnterprise,
+  };
+
+  function noAccess(count: number): PlanAccess {
+    return {
+      isActive: false, isPaid: false,
+      plan: sub?.plan as PlanAccess["plan"] ?? "FREE",
+      status: sub?.status as PlanAccess["status"] ?? null,
+      endDate: null, cancelledAt: null, trialEndsAt: null,
+      enrollmentLimit: null, enrolledCount: count, limitReached: false,
+      canAccessPaidCourses: false, canAccessProCourses: false,
+      hasCertificates: false, hasOfflineDownloads: false,
+      hasAiRecommendations: false, hasInstructorQA: false, hasTeamManagement: false,
+    };
+  }
+}
+
+/** Check whether a user's plan meets or exceeds the course's minPlan requirement */
+export function planMeetsRequirement(
+  userPlan: string,
+  courseMinPlan: string
+): boolean {
+  return (PLAN_RANK[userPlan] ?? 0) >= (PLAN_RANK[courseMinPlan] ?? 0);
+}
 
 // ─── Create Stripe Subscription Checkout Session ──────────────────────────────
 
@@ -57,7 +203,6 @@ export async function createSubscriptionCheckout(
   const stripe  = getStripe();
   const appUrl  = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
 
-  // Get or create a Stripe Customer so billing history is preserved
   let customerId = user.stripeCustomerId ?? undefined;
   if (!customerId) {
     const customer = await stripe.customers.create({
@@ -73,13 +218,15 @@ export async function createSubscriptionCheckout(
   }
 
   const session = await stripe.checkout.sessions.create({
-    mode:                 "subscription",
-    customer:             customerId,
-    payment_method_types: ["card"],
-    line_items:           [{ price: priceId, quantity: 1 }],
-    metadata:             { userId, plan: plan.toUpperCase(), billing },
-    subscription_data:    { metadata: { userId, plan: plan.toUpperCase(), billing } },
-    success_url: `${appUrl}/dashboard/subscription?success=true`,
+    mode:                        "subscription",
+    customer:                    customerId,
+    payment_method_types:        ["card"],
+    billing_address_collection:  "required",   // required by RBI for Indian merchants
+    customer_update:             { address: "auto", name: "auto" }, // persist billing info to customer
+    line_items:                  [{ price: priceId, quantity: 1 }],
+    metadata:                    { userId, plan: plan.toUpperCase(), billing },
+    subscription_data:           { metadata: { userId, plan: plan.toUpperCase(), billing } },
+    success_url: `${appUrl}/dashboard/subscription?success=true&session_id={CHECKOUT_SESSION_ID}`,
     cancel_url:  `${appUrl}/pricing?cancelled=true`,
   });
 
@@ -92,20 +239,14 @@ export async function getUserSubscription(userId: string) {
   return prisma.subscription.findUnique({ where: { userId } });
 }
 
-// ─── Access check — true when any paid plan is active ─────────────────────────
+// ─── Access check (backward-compat shim — use getPlanAccess for new code) ─────
 
 export async function hasAllAccess(userId: string): Promise<boolean> {
-  const sub = await prisma.subscription.findUnique({
-    where:  { userId },
-    select: { status: true, plan: true, endDate: true },
-  });
-  if (!sub || sub.plan === "FREE") return false;
-  if (sub.status !== "ACTIVE" && sub.status !== "TRIAL") return false;
-  if (sub.endDate && sub.endDate < new Date()) return false;
-  return true;
+  const access = await getPlanAccess(userId);
+  return access.isActive && access.canAccessPaidCourses;
 }
 
-// ─── Cancel subscription (at period end) ─────────────────────────────────────
+// ─── Cancel subscription (at period end, preserve access until then) ──────────
 
 export async function cancelSubscription(userId: string) {
   const sub = await prisma.subscription.findUnique({
@@ -116,13 +257,23 @@ export async function cancelSubscription(userId: string) {
   if (sub.status === "CANCELLED") throw new Error("Subscription is already cancelled.");
 
   const stripe = getStripe();
-  await stripe.subscriptions.update(sub.stripeSubId, {
+
+  // cancel_at_period_end=true: Stripe keeps billing active until period end
+  // The returned object contains current_period_end so we can set a precise endDate
+  const updated = await stripe.subscriptions.update(sub.stripeSubId, {
     cancel_at_period_end: true,
   });
 
+  const { endDate: cancelEndDate } = getPeriodDates(updated);
+
   await prisma.subscription.update({
     where: { userId },
-    data:  { status: "CANCELLED" },
+    data:  {
+      status:      "CANCELLED",
+      cancelledAt: new Date(),
+      // Preserve access until the paid period actually ends
+      endDate:     cancelEndDate,
+    },
   });
 
   return { success: true };
@@ -149,42 +300,102 @@ export async function createBillingPortalSession(userId: string) {
   return { url: session.url };
 }
 
+// ─── Checkout session completed (subscription mode) ───────────────────────────
+//
+// This fires BEFORE the user is redirected back from Stripe, so writing the
+// subscription record here guarantees it exists when the success page loads.
+// The customer.subscription.created webhook may arrive later — it is idempotent.
+
+export async function handleSubscriptionCheckoutCompleted(
+  session: Stripe.Checkout.Session
+) {
+  const userId = session.metadata?.userId;
+  const plan   = session.metadata?.plan;
+  if (!userId || !plan || session.mode !== "subscription") return;
+
+  const subId = typeof session.subscription === "string"
+    ? session.subscription
+    : (session.subscription as Stripe.Subscription | null)?.id;
+  if (!subId) return;
+
+  const stripe = getStripe();
+  const sub    = await stripe.subscriptions.retrieve(subId, {
+    expand: ["items.data.price"],
+  });
+
+  const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
+  const limitNote = plan === "BASIC"
+    ? `Access up to ${BASIC_COURSE_LIMIT} courses.`
+    : "Unlimited access to every course.";
+
+  const { startDate, endDate } = getPeriodDates(sub);
+
+  await prisma.subscription.upsert({
+    where:  { userId },
+    create: {
+      userId,
+      plan:        plan as "BASIC" | "PRO" | "ENTERPRISE",
+      status:      sub.status === "trialing" ? "TRIAL" : "ACTIVE",
+      stripeSubId: sub.id,
+      startDate,
+      endDate,
+      trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : undefined,
+    },
+    update: {
+      plan:        plan as "BASIC" | "PRO" | "ENTERPRISE",
+      status:      sub.status === "trialing" ? "TRIAL" : "ACTIVE",
+      stripeSubId: sub.id,
+      startDate,
+      endDate,
+      trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : undefined,
+      cancelledAt: null,
+    },
+  });
+
+  // Send activation notification
+  await prisma.notification.create({
+    data: {
+      userId,
+      title: `${planLabel} Plan Activated!`,
+      body:  `Welcome to CoachNest ${planLabel}. ${limitNote} Start learning now!`,
+      type:  "PURCHASE",
+      link:  "/courses",
+    },
+  });
+}
+
 // ─── Webhook handlers ─────────────────────────────────────────────────────────
 
+// handleSubscriptionCreated is kept for direct Stripe Dashboard / API activations
+// that bypass the Checkout flow. For normal checkouts, handleSubscriptionCheckoutCompleted
+// already wrote the record, so this upsert is idempotent.
 export async function handleSubscriptionCreated(event: Stripe.Event) {
   const sub    = event.data.object as Stripe.Subscription;
   const userId = sub.metadata?.userId;
   const plan   = sub.metadata?.plan;
   if (!userId || !plan) return;
 
+  const { startDate, endDate } = getPeriodDates(sub);
+
   await prisma.subscription.upsert({
     where:  { userId },
     create: {
       userId,
-      plan:       plan as "BASIC" | "PRO" | "ENTERPRISE",
-      status:     sub.status === "trialing" ? "TRIAL" : "ACTIVE",
+      plan:        plan as "BASIC" | "PRO" | "ENTERPRISE",
+      status:      sub.status === "trialing" ? "TRIAL" : "ACTIVE",
       stripeSubId: sub.id,
-      startDate:  new Date((sub as any).current_period_start * 1000),
-      endDate:    new Date((sub as any).current_period_end   * 1000),
+      startDate,
+      endDate,
       trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : undefined,
     },
     update: {
-      plan:       plan as "BASIC" | "PRO" | "ENTERPRISE",
-      status:     sub.status === "trialing" ? "TRIAL" : "ACTIVE",
+      plan:        plan as "BASIC" | "PRO" | "ENTERPRISE",
+      status:      sub.status === "trialing" ? "TRIAL" : "ACTIVE",
       stripeSubId: sub.id,
-      startDate:  new Date((sub as any).current_period_start * 1000),
-      endDate:    new Date((sub as any).current_period_end   * 1000),
+      startDate,
+      endDate,
       trialEndsAt: sub.trial_end ? new Date(sub.trial_end * 1000) : undefined,
-    },
-  });
-
-  await prisma.notification.create({
-    data: {
-      userId,
-      title: `${plan} Plan Activated! 🎉`,
-      body:  "You now have all-access to every course. Start learning now!",
-      type:  "PURCHASE",
-      link:  "/courses",
+      cancelledAt: null,
     },
   });
 }
@@ -199,12 +410,11 @@ export async function handleSubscriptionUpdated(event: Stripe.Event) {
   else if (sub.cancel_at_period_end)      status = "CANCELLED";
   else if (sub.status !== "active")       status = "EXPIRED";
 
+  const { endDate } = getPeriodDates(sub);
+
   await prisma.subscription.update({
     where: { userId },
-    data:  {
-      status,
-      endDate: new Date((sub as any).current_period_end * 1000),
-    },
+    data:  { status, endDate },
   });
 }
 
@@ -222,7 +432,7 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
     data: {
       userId,
       title: "Subscription Ended",
-      body:  "Your subscription has expired. Renew anytime to regain all-access.",
+      body:  "Your subscription has expired. Renew anytime to regain access.",
       type:  "SYSTEM",
       link:  "/pricing",
     },
@@ -230,7 +440,7 @@ export async function handleSubscriptionDeleted(event: Stripe.Event) {
 }
 
 export async function handleInvoicePaymentFailed(event: Stripe.Event) {
-  const invoice = event.data.object as Stripe.Invoice;
+  const invoice    = event.data.object as Stripe.Invoice;
   const customerId = typeof invoice.customer === "string"
     ? invoice.customer
     : invoice.customer?.id;

@@ -8,7 +8,14 @@ import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { ShoppingCart, Receipt, ArrowRight } from "lucide-react";
+import { ShoppingCart, Receipt, ArrowRight, Crown } from "lucide-react";
+
+async function getUserSubscription(userId: string) {
+  return prisma.subscription.findUnique({
+    where: { userId },
+    select: { plan: true, status: true, startDate: true, endDate: true, stripeSubId: true },
+  });
+}
 
 async function getUserOrders(userId: string) {
   const orders = await prisma.order.findMany({
@@ -53,7 +60,10 @@ export default async function OrderHistoryPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const orders = await getUserOrders(session.userId);
+  const [orders, subscription] = await Promise.all([
+    getUserOrders(session.userId),
+    getUserSubscription(session.userId),
+  ]);
 
   const totalSpent = orders
     .filter((o) => o.status === "PAID")
@@ -91,6 +101,48 @@ export default async function OrderHistoryPage() {
           </div>
         </GlassCard>
       </div>
+
+      {/* Subscription Billing */}
+      {subscription && subscription.plan !== "FREE" && (
+        <div className="mb-8">
+          <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
+            <Crown className="w-5 h-5 text-orange-400" /> Active Subscription
+          </h2>
+          <GlassCard className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-12 h-12 rounded-xl bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+                <Crown className="w-6 h-6 text-orange-400" />
+              </div>
+              <div>
+                <p className="text-foreground font-semibold">{subscription.plan} Plan</p>
+                <div className="flex items-center gap-3 mt-0.5">
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                    subscription.status === "ACTIVE" ? "bg-emerald-500/20 text-emerald-400" :
+                    subscription.status === "TRIAL"  ? "bg-blue-500/20 text-blue-400" :
+                    subscription.status === "CANCELLED" ? "bg-amber-500/20 text-amber-400" :
+                    "bg-red-500/20 text-red-400"
+                  }`}>
+                    {subscription.status.charAt(0) + subscription.status.slice(1).toLowerCase()}
+                  </span>
+                  {subscription.startDate && (
+                    <span className="text-muted-foreground/70 text-xs">
+                      Since {formatDate(subscription.startDate)}
+                    </span>
+                  )}
+                  {subscription.endDate && (
+                    <span className="text-muted-foreground/70 text-xs">
+                      · Renews {formatDate(subscription.endDate)}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <Link href="/dashboard/subscription" className="text-orange-400 hover:text-orange-300 transition-colors flex-shrink-0">
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </GlassCard>
+        </div>
+      )}
 
       {/* Orders List */}
       {orders.length > 0 ? (
