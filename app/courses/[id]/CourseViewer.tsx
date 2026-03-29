@@ -29,10 +29,12 @@ import {
   Maximize2,
   Minimize2,
   X,
+  Headphones,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuizPlayer from "@/components/QuizPlayer";
 import TextHighlighter from "@/components/TextHighlighter";
+import LessonAudioPlayer from "@/components/LessonAudioPlayer";
 import toast from "react-hot-toast";
 
 interface Lesson {
@@ -71,6 +73,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
   const [showSidebar, setShowSidebar] = useState(true);
   const [downloadingCert, setDownloadingCert] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [showAudioPlayer, setShowAudioPlayer] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const activeLesson = lessons.find((l) => l.id === activeLessonId);
@@ -126,6 +129,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
 
   const selectLesson = useCallback((id: string) => {
     setActiveLessonId(id);
+    setShowAudioPlayer(false);
     contentRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, []);
 
@@ -402,6 +406,21 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 {/* Actions — only for enrolled users */}
                 {isEnrolled && (
                   <div className="flex items-center gap-2 flex-shrink-0">
+                    {activeLesson.type === "TEXT" && activeLesson.content && (
+                      <button
+                        onClick={() => setShowAudioPlayer((v) => !v)}
+                        className={cn(
+                          "flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border transition-all font-medium",
+                          showAudioPlayer
+                            ? "bg-blue-500/20 border-blue-400/30 text-blue-400"
+                            : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
+                        )}
+                        title="Listen to lesson"
+                      >
+                        <Headphones className="w-4 h-4" />
+                        <span className="hidden sm:inline">{showAudioPlayer ? "Hide Audio" : "Listen"}</span>
+                      </button>
+                    )}
                     <button
                       onClick={() => setIsFullscreen(true)}
                       className="flex items-center justify-center w-9 h-9 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
@@ -456,7 +475,27 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     />
                   </div>
                 ) : activeLesson.content ? (
-                  <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
+                  <>
+                    <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
+                    <AnimatePresence>
+                      {showAudioPlayer && activeLesson.type === "TEXT" && (
+                        <motion.div
+                          key="audio-player"
+                          initial={{ opacity: 0, y: 16 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 16 }}
+                          transition={{ duration: 0.25, ease: "easeOut" }}
+                          className="mt-6"
+                        >
+                          <LessonAudioPlayer
+                            text={activeLesson.content}
+                            lessonTitle={activeLesson.title}
+                            onClose={() => setShowAudioPlayer(false)}
+                          />
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </>
                 ) : (
                   <div className="bg-secondary/50 border border-border rounded-xl px-6 py-16 text-center">
                     <FileText className="w-14 h-14 text-muted-foreground/25 mx-auto mb-4" />

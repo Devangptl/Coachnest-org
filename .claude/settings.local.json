@@ -43,7 +43,12 @@
       "Bash(curl:*)",
       "Bash(node:*)",
       "Bash(powershell -Command \"Stop-Process -Name node -Force -ErrorAction SilentlyContinue\")",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(grep -r \"audio\\\\|audio/\\\\|AudioContext\\\\|HTMLAudioElement\\\\|<audio\" /d/Devang/Claude/learning/app --include=*.tsx --include=*.ts)",
+      "Bash(grep:*)",
+      "Bash(head -3 app/courses/[id]/page.tsx)",
+      "Bash(head -1 app/\\\\\\(auth\\\\\\)/login/page.tsx app/\\\\\\(auth\\\\\\)/signup/page.tsx app/admin/AdminSidebar.tsx app/admin/analytics/AnalyticsDashboard.tsx)",
+      "Bash(npx kill-port:*)"
     ]
   }
 }
