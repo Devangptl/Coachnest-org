@@ -95,6 +95,29 @@ const CATEGORY_COLORS: Record<string, string> = {
   default: "from-slate-500 to-gray-600",
 };
 
+// Soft background wash colours that match each category gradient
+const CATEGORY_BG: Record<string, string> = {
+  "web-development": "from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/20",
+  react:             "from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-500/20",
+  design:            "from-pink-500/10 via-rose-500/5 to-transparent border-pink-500/20",
+  database:          "from-emerald-500/10 via-green-500/5 to-transparent border-emerald-500/20",
+  mobile:            "from-amber-500/10 via-orange-500/5 to-transparent border-amber-500/20",
+  ai:                "from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20",
+  analytics:         "from-teal-500/10 via-cyan-500/5 to-transparent border-teal-500/20",
+  default:           "from-slate-500/10 via-gray-500/5 to-transparent border-slate-500/20",
+};
+
+const CATEGORY_GLOW: Record<string, string> = {
+  "web-development": "group-hover:shadow-orange-500/20",
+  react:             "group-hover:shadow-cyan-500/20",
+  design:            "group-hover:shadow-pink-500/20",
+  database:          "group-hover:shadow-emerald-500/20",
+  mobile:            "group-hover:shadow-amber-500/20",
+  ai:                "group-hover:shadow-indigo-500/20",
+  analytics:         "group-hover:shadow-teal-500/20",
+  default:           "group-hover:shadow-slate-500/20",
+};
+
 export default async function HomePage() {
   const [courses, categories, stats] = await Promise.all([
     getFeaturedCourses(),
@@ -450,22 +473,25 @@ export default async function HomePage() {
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           <FadeInSection>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-14 gap-4">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs font-medium mb-4">
+                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs font-semibold uppercase tracking-wider mb-4">
                   <Sparkles className="w-3 h-3" />
-                  Categories
+                  Explore Topics
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
                   Browse by category
                 </h2>
-                <p className="text-muted-foreground mt-2">Find the perfect course for your goals.</p>
+                <p className="text-muted-foreground mt-2 text-[15px]">
+                  Explore curated paths across the skills that matter most.
+                </p>
               </div>
               <Link
                 href="/courses"
-                className="text-orange-500 hover:text-orange-600 text-sm flex items-center gap-1.5 font-medium transition-colors shrink-0"
+                className="group inline-flex items-center gap-1.5 bg-secondary border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/70 text-sm font-medium px-4 py-2 rounded-xl transition-all shrink-0"
               >
-                View all courses <ArrowRight className="w-4 h-4" />
+                All courses
+                <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
           </FadeInSection>
@@ -473,52 +499,94 @@ export default async function HomePage() {
           <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" staggerDelay={0.06}>
             {(categories.length > 0
               ? categories.map((cat) => ({
-                name: cat.name,
-                slug: cat.slug,
-                count: cat._count.courses,
-                icon: cat.icon,
-              }))
+                  name: cat.name,
+                  slug: cat.slug,
+                  count: cat._count.courses,
+                  icon: cat.icon,
+                }))
               : [
-                { name: "Web Development", slug: "web-development", count: 12, icon: null },
-                { name: "React & Next.js", slug: "react", count: 8, icon: null },
-                { name: "UI/UX Design", slug: "design", count: 6, icon: null },
-                { name: "Databases", slug: "database", count: 5, icon: null },
-                { name: "Mobile Dev", slug: "mobile", count: 4, icon: null },
-                { name: "AI & ML", slug: "ai", count: 7, icon: null },
-                { name: "Data Analytics", slug: "analytics", count: 3, icon: null },
-                { name: "DevOps", slug: "default", count: 4, icon: null },
-              ]
-            ).map((cat) => {
+                  { name: "Web Development", slug: "web-development", count: 12, icon: null },
+                  { name: "React & Next.js", slug: "react",           count: 8,  icon: null },
+                  { name: "UI/UX Design",    slug: "design",          count: 6,  icon: null },
+                  { name: "Databases",       slug: "database",        count: 5,  icon: null },
+                  { name: "Mobile Dev",      slug: "mobile",          count: 4,  icon: null },
+                  { name: "AI & ML",         slug: "ai",              count: 7,  icon: null },
+                  { name: "Data Analytics",  slug: "analytics",       count: 3,  icon: null },
+                  { name: "DevOps",          slug: "default",         count: 4,  icon: null },
+                ]
+            ).map((cat, idx) => {
               const IconComponent = CATEGORY_ICONS[cat.slug] ?? CATEGORY_ICONS.default;
-              const gradient = CATEGORY_COLORS[cat.slug] ?? CATEGORY_COLORS.default;
+              const gradient      = CATEGORY_COLORS[cat.slug] ?? CATEGORY_COLORS.default;
+              const bgWash        = CATEGORY_BG[cat.slug]     ?? CATEGORY_BG.default;
+              const glow          = CATEGORY_GLOW[cat.slug]   ?? CATEGORY_GLOW.default;
+              const isPopular     = idx < 2; // first two get a "Popular" tag
+
               return (
                 <StaggerItem key={cat.slug}>
                   <Link
                     href={`/courses?category=${cat.slug}`}
-                    className="group relative block rounded-xl border border-border/60 bg-secondary/20 p-5 hover:bg-secondary/50 hover:border-border transition-all duration-300 hover:-translate-y-1 overflow-hidden"
+                    className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${bgWash} p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl ${glow} overflow-hidden`}
                   >
-                    {/* Bottom gradient accent on hover */}
-                    <div className={`absolute inset-x-0 bottom-0 h-0.5 bg-gradient-to-r ${gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`} />
+                    {/* Subtle radial glow from icon area */}
+                    <div className={`absolute top-0 left-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-[0.07] rounded-full -translate-x-8 -translate-y-8 group-hover:opacity-[0.13] transition-opacity duration-300`} />
 
-                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform duration-300 shadow-md`}>
+                    {/* Popular badge */}
+                    {isPopular && (
+                      <span className="absolute top-3 right-3 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/25">
+                        Popular
+                      </span>
+                    )}
+
+                    {/* Icon */}
+                    <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-105 group-hover:rotate-[-2deg] transition-transform duration-300`}>
+                      {/* Inner shine */}
+                      <div className="absolute inset-0 rounded-2xl bg-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                       {cat.icon ? (
-                        <span className="text-xl">{cat.icon}</span>
+                        <span className="text-2xl relative z-10">{cat.icon}</span>
                       ) : (
-                        <IconComponent className="w-6 h-6 text-[#fff]" />
+                        <IconComponent className="w-6 h-6 text-white relative z-10" />
                       )}
                     </div>
 
-                    <h3 className="text-foreground font-semibold text-sm mb-1.5">{cat.name}</h3>
+                    {/* Name */}
+                    <h3 className="text-foreground font-bold text-sm leading-snug mb-2 group-hover:text-white transition-colors duration-200">
+                      {cat.name}
+                    </h3>
 
-                    <div className="flex items-center justify-between">
-                      <p className="text-muted-foreground text-xs">{cat.count} course{cat.count !== 1 ? "s" : ""}</p>
-                      <ArrowRight className="w-3.5 h-3.5 text-muted-foreground/30 group-hover:text-orange-500 group-hover:translate-x-0.5 transition-all duration-200" />
+                    {/* Footer row */}
+                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.06]">
+                      <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r ${gradient} bg-opacity-15 text-white/70`}>
+                        {cat.count} course{cat.count !== 1 ? "s" : ""}
+                      </span>
+                      <span className="flex items-center gap-1 text-muted-foreground/40 group-hover:text-white/70 text-xs font-medium transition-all duration-200 group-hover:gap-1.5">
+                        Explore
+                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-200" />
+                      </span>
                     </div>
                   </Link>
                 </StaggerItem>
               );
             })}
           </StaggerChildren>
+
+          {/* Bottom CTA strip */}
+          <FadeInSection>
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.02] px-6 py-5">
+              <div>
+                <p className="text-foreground font-semibold text-sm">Can&apos;t find your topic?</p>
+                <p className="text-muted-foreground text-xs mt-0.5">
+                  Browse the full catalog — 340+ courses across all skill levels.
+                </p>
+              </div>
+              <Link
+                href="/courses"
+                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shrink-0"
+              >
+                <BookOpen className="w-4 h-4" />
+                Browse all courses
+              </Link>
+            </div>
+          </FadeInSection>
         </div>
       </section>
 
