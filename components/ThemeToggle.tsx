@@ -14,23 +14,17 @@ export default function ThemeToggle({ className }: Props) {
   return (
     <button
       onClick={toggle}
-      aria-label="Toggle theme"
+      aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
       className={cn(
-        "flex items-center gap-2 px-3 py-1.5 rounded-lg border transition-all",
+        "flex items-center justify-center w-9 h-9 rounded-lg border transition-all",
         "bg-white/[0.04] border-white/[0.08] text-white/30 hover:text-white/70 hover:bg-white/[0.07] hover:border-white/[0.15]",
         className
       )}
     >
       {theme === "dark" ? (
-        <>
-          <Sun className="w-3.5 h-3.5" />
-          <span className="text-xs font-medium">Light mode</span>
-        </>
+        <Sun className="w-4 h-4" />
       ) : (
-        <>
-          <Moon className="w-3.5 h-3.5" />
-          <span className="text-xs font-medium">Dark mode</span>
-        </>
+        <Moon className="w-4 h-4" />
       )}
     </button>
   );

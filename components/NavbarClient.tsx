@@ -26,6 +26,7 @@ import {
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
+import ThemeToggle from "./ThemeToggle";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -154,6 +155,11 @@ export default function NavbarClient({ session }: Props) {
               ⌘K
             </kbd>
           </button>
+
+          {/* Theme toggle — desktop */}
+          <div className="hidden lg:block">
+            <ThemeToggle />
+          </div>
 
           {session ? (
             <>
@@ -425,6 +431,9 @@ export default function NavbarClient({ session }: Props) {
                     <Map className="w-4 h-4" />
                     Restart Tour
                   </button>
+                  <div className="px-2 py-1">
+                    <ThemeToggle />
+                  </div>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"
@@ -438,6 +447,9 @@ export default function NavbarClient({ session }: Props) {
               {!session && (
                 <>
                   <div className="border-t border-border my-2" />
+                  <div className="px-2 py-1">
+                    <ThemeToggle />
+                  </div>
                   <div className="flex gap-2 px-2">
                     <Link
                       href="/login"
