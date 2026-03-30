@@ -48,7 +48,9 @@
       "Bash(grep:*)",
       "Bash(head -3 app/courses/[id]/page.tsx)",
       "Bash(head -1 app/\\\\\\(auth\\\\\\)/login/page.tsx app/\\\\\\(auth\\\\\\)/signup/page.tsx app/admin/AdminSidebar.tsx app/admin/analytics/AnalyticsDashboard.tsx)",
-      "Bash(npx kill-port:*)"
+      "Bash(npx kill-port:*)",
+      "Bash(cd:*)",
+      "Bash(npx tsx -e \":*)"
     ]
   }
 }

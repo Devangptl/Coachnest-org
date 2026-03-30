@@ -18,11 +18,11 @@ export async function GET(req: NextRequest) {
     const where: Record<string, unknown> = { status: "PUBLISHED" as const };
 
     if (tag) {
-      where.tags = { contains: tag };
+      where.tags = { contains: tag, mode: "insensitive" };
     }
 
     const finalWhere = search
-      ? { ...where, OR: [{ title: { contains: search } }, { content: { contains: search } }] }
+      ? { ...where, OR: [{ title: { contains: search, mode: "insensitive" } }, { content: { contains: search, mode: "insensitive" } }] }
       : where;
 
     const blogs = await prisma.blog.findMany({

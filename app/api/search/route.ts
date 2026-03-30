@@ -23,9 +23,9 @@ export async function GET(req: NextRequest) {
     const where: Prisma.CourseWhereInput = {
       status: "PUBLISHED",
       ...(q && { OR: [
-        { title:       { contains: q } },
-        { description: { contains: q } },
-        { shortDesc:   { contains: q } },
+        { title:       { contains: q, mode: "insensitive" } },
+        { description: { contains: q, mode: "insensitive" } },
+        { shortDesc:   { contains: q, mode: "insensitive" } },
       ]}),
       ...(category && { category: { slug: category } }),
       ...(level    && { level }),

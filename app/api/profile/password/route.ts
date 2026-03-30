@@ -1,10 +1,9 @@
 /**
- * PUT /api/profile/password — Change current user's password.
+ * PUT /api/profile/password — Change current user's password via Supabase Auth.
  */
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { supabase, supabaseAdmin } from "@/lib/supabase";
 
 export async function PUT(req: NextRequest) {
   const session = await getSession();
@@ -29,28 +28,35 @@ export async function PUT(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: session.userId },
-      select: { password: true },
+    // ── 1. Verify current password via Supabase Auth ──────────────────────────
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email:    session.email,
+      password: currentPassword,
     });
 
-    if (!user) {
-      return NextResponse.json({ error: "User not found." }, { status: 404 });
-    }
-
-    const valid = await bcrypt.compare(currentPassword, user.password);
-    if (!valid) {
+    if (signInError) {
       return NextResponse.json(
         { error: "Current password is incorrect." },
         { status: 403 }
       );
     }
 
-    const hashed = await bcrypt.hash(newPassword, 12);
-    await prisma.user.update({
-      where: { id: session.userId },
-      data: { password: hashed },
-    });
+    // ── 2. Look up Supabase Auth user by email ────────────────────────────────
+    const { data: { users }, error: listError } = await supabaseAdmin.auth.admin.listUsers();
+    if (listError) throw listError;
+
+    const authUser = users.find((u) => u.email === session.email);
+    if (!authUser) {
+      return NextResponse.json({ error: "Auth user not found." }, { status: 404 });
+    }
+
+    // ── 3. Update password in Supabase Auth ───────────────────────────────────
+    const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(
+      authUser.id,
+      { password: newPassword }
+    );
+
+    if (updateError) throw updateError;
 
     return NextResponse.json({ message: "Password changed successfully." });
   } catch (error) {

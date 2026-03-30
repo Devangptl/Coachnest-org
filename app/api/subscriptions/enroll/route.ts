@@ -24,18 +24,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "courseId is required" }, { status: 400 });
   }
 
-  // Fetch course and plan access in parallel
-  const [course, planAccess] = await Promise.all([
+  // Fetch course, plan access, and existing enrollment in parallel
+  const [course, planAccess, existingEnrollment] = await Promise.all([
     prisma.course.findUnique({
       where:  { id: courseId },
       select: { id: true, status: true, minPlan: true, isFree: true },
     }),
     getPlanAccess(session.userId),
+    prisma.enrollment.findUnique({
+      where:  { userId_courseId: { userId: session.userId, courseId } },
+      select: { courseId: true },
+    }),
   ]);
 
   if (!course || course.status === "ARCHIVED") {
     return NextResponse.json({ error: "Course not found" }, { status: 404 });
   }
+
+  // ── Already enrolled — bypass all plan/limit checks ──────────────────────
+  // Users keep access to courses they enrolled in regardless of current plan state.
+  if (existingEnrollment) {
+    const enrolledCount = await prisma.enrollment.count({
+      where: { userId: session.userId, course: { isFree: false } },
+    });
+    return NextResponse.json({
+      success:          true,
+      alreadyEnrolled:  true,
+      enrolledCount,
+      enrollmentLimit:  planAccess.plan === "BASIC" ? BASIC_COURSE_LIMIT : null,
+      slotsRemaining:   planAccess.plan === "BASIC"
+        ? Math.max(0, BASIC_COURSE_LIMIT - enrolledCount)
+        : null,
+    });
+  }
+
+  // ── New enrollment — run subscription and plan checks ────────────────────
 
   // Must have an active paid subscription
   if (!planAccess.isActive || !planAccess.canAccessPaidCourses) {
@@ -67,15 +90,8 @@ export async function POST(req: Request) {
     );
   }
 
-  const alreadyEnrolled = await prisma.enrollment.findUnique({
-    where: { userId_courseId: { userId: session.userId, courseId } },
-    select: { courseId: true },
-  });
-
-  await prisma.enrollment.upsert({
-    where:  { userId_courseId: { userId: session.userId, courseId } },
-    create: { userId: session.userId, courseId },
-    update: {},
+  await prisma.enrollment.create({
+    data: { userId: session.userId, courseId },
   });
 
   // Re-count paid enrollments so the client can update the slot display immediately
@@ -85,7 +101,7 @@ export async function POST(req: Request) {
 
   return NextResponse.json({
     success:        true,
-    alreadyEnrolled: Boolean(alreadyEnrolled),
+    alreadyEnrolled: false,
     enrolledCount:  newEnrolledCount,
     enrollmentLimit: planAccess.plan === "BASIC" ? BASIC_COURSE_LIMIT : null,
     slotsRemaining: planAccess.plan === "BASIC"

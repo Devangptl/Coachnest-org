@@ -1,11 +1,9 @@
 /**
  * POST /api/auth/login
- * Verifies credentials and issues a session cookie.
+ * Signs in with Supabase Auth. Session cookies are set automatically.
  */
 import { NextRequest, NextResponse } from "next/server";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
-import { setSessionCookie } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,28 +16,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({ where: { email } });
+    const supabase = await createSupabaseServerClient();
 
-    // Use a constant-time comparison to avoid timing attacks
-    const passwordMatch =
-      user ? await bcrypt.compare(password, user.password) : false;
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (!user || !passwordMatch) {
+    if (error || !data.user) {
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 }
       );
     }
 
-    await setSessionCookie({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      name: user.name,
-      avatar: user.avatar,
-    });
+    const role = (data.user.app_metadata?.role ?? "STUDENT") as string;
 
-    return NextResponse.json({ message: "Logged in.", role: user.role });
+    return NextResponse.json({ message: "Logged in.", role });
   } catch (error) {
     console.error("[login]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

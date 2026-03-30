@@ -1,11 +1,12 @@
 /**
  * POST /api/auth/logout
- * Clears the session cookie.
+ * Signs out from Supabase Auth and clears the session cookies.
  */
 import { NextResponse } from "next/server";
-import { clearSessionCookie } from "@/lib/auth";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export async function POST() {
-  await clearSessionCookie();
+  const supabase = await createSupabaseServerClient();
+  await supabase.auth.signOut();
   return NextResponse.json({ message: "Logged out." });
 }

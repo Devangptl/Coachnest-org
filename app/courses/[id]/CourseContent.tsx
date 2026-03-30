@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseTabs from "./CourseTabs";
 import CourseProgress from "./CourseProgress";
@@ -48,6 +48,13 @@ export default function CourseContent({
   reviewCount,
 }: Props) {
   const [activeTab, setActiveTab] = useState("overview");
+
+  // Auto-switch to curriculum when Access Now enrollment completes
+  useEffect(() => {
+    function onOpenCurriculum() { setActiveTab("curriculum"); }
+    window.addEventListener("course:open-curriculum", onOpenCurriculum);
+    return () => window.removeEventListener("course:open-curriculum", onOpenCurriculum);
+  }, []);
 
   // Live completion state — shared between progress bar, viewer, and overview
   const [completedMap, setCompletedMap] = useState<Record<string, boolean>>(

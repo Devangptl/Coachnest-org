@@ -156,7 +156,7 @@ export default async function CourseDetailPage({ params }: Props) {
 
       {/* ── Main content: two-column layout with toggleable sidebar ── */}
       <CourseLayout
-        isEnrolled={hasContentAccess}
+        isEnrolled={isEnrolled}
         sidebar={
           <CourseSidebar
             courseId={course.id}

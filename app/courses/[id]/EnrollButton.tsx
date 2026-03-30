@@ -122,6 +122,8 @@ export default function EnrollButton({
         } else {
           toast.success("You're in! Start learning now.");
         }
+        // Switch to the curriculum tab so the user lands directly on lesson content
+        window.dispatchEvent(new CustomEvent("course:open-curriculum"));
         router.refresh();
       } else {
         toast.error(data.error ?? "Enrollment failed.");

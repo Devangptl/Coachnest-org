@@ -3,7 +3,8 @@
  * PUT  /api/profile — Update profile fields (name, bio, headline, website, avatar)
  */
 import { NextRequest, NextResponse } from "next/server";
-import { getSession, setSessionCookie } from "@/lib/auth";
+import { getSession } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
@@ -85,13 +86,9 @@ export async function PUT(req: NextRequest) {
       },
     });
 
-    // Update the session cookie with the new name so changes reflect globally
-    await setSessionCookie({
-      userId: session.userId,
-      email: session.email,
-      role: session.role,
-      name: updated.name,
-      avatar: updated.avatar,
+    // Sync updated name/avatar into Supabase user_metadata so getSession() reflects changes
+    await supabaseAdmin.auth.admin.updateUserById(session.userId, {
+      user_metadata: { name: updated.name, avatar: updated.avatar },
     });
 
     return NextResponse.json({ user: updated, message: "Profile updated." });
