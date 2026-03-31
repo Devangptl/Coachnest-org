@@ -10,7 +10,8 @@ import { prisma } from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
-    const { name, email, password } = await req.json();
+    const { name, email, password, role: rawRole } = await req.json();
+    const role = rawRole === "INSTRUCTOR" ? "INSTRUCTOR" : "STUDENT";
 
     if (!name || !email || !password) {
       return NextResponse.json(
@@ -54,28 +55,30 @@ export async function POST(req: NextRequest) {
 
     // ── 3. Set role in app_metadata (service role only) ───────────────────────
     await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
-      app_metadata: { role: "STUDENT" },
+      app_metadata: { role },
     });
 
-    // ── 4. Create profile row in public.users + BASIC subscription ───────────
-    const [user] = await prisma.$transaction([
-      prisma.user.create({
-        data: {
-          id:    data.user.id, // UUID from auth.users — keeps both tables in sync
-          name,
-          email,
-        },
-      }),
-      prisma.subscription.create({
+    // ── 4. Create profile row + subscription (students get BASIC; instructors get none) ──
+    const user = await prisma.user.create({
+      data: {
+        id:   data.user.id,
+        name,
+        email,
+        role: role as "STUDENT" | "INSTRUCTOR",
+      },
+    });
+
+    // Only students need a subscription slot system
+    if (role === "STUDENT") {
+      await prisma.subscription.create({
         data: {
           userId:    data.user.id,
           plan:      "BASIC",
           status:    "ACTIVE",
           startDate: new Date(),
-          // No endDate — BASIC plan persists until the user upgrades or cancels
         },
-      }),
-    ]);
+      });
+    }
 
     return NextResponse.json(
       { message: "Account created.", userId: user.id },

@@ -22,6 +22,7 @@ import {
   FileText,
   GraduationCap,
   Map,
+  BookOpen,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
@@ -41,10 +42,11 @@ const DROPDOWN_LINKS = {
     { href: "/dashboard/certificates", label: "Certificates", icon: Award },
   ],
   INSTRUCTOR: [
-    { href: "/dashboard", label: "My Dashboard", icon: LayoutDashboard },
-    { href: "/admin", label: "Manage Courses", icon: Settings },
-    { href: "/admin/courses/new", label: "Create Course", icon: PlusCircle },
-    { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/instructor",              label: "My Portal",      icon: LayoutDashboard },
+    { href: "/instructor/courses",      label: "My Courses",     icon: BookOpen },
+    { href: "/instructor/courses/new",  label: "Create Course",  icon: PlusCircle },
+    { href: "/instructor/students",     label: "My Students",    icon: Users },
+    { href: "/instructor/analytics",    label: "Analytics",      icon: BarChart3 },
   ],
   ADMIN: [
     { href: "/admin", label: "Admin Dashboard", icon: Shield },

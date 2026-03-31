@@ -15,7 +15,8 @@ export default async function AdminLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
-  if (session.role === "STUDENT") redirect("/dashboard");
+  if (session.role === "STUDENT")    redirect("/dashboard");
+  if (session.role === "INSTRUCTOR") redirect("/instructor");
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">

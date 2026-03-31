@@ -5,21 +5,22 @@
  *
  * Responsibilities:
  *  1. Refresh the Supabase access token if it is near expiry (via getUser).
- *  2. Protect /dashboard and /admin routes — redirect to /login if no session.
+ *  2. Protect /dashboard, /admin, /instructor routes — redirect to /login if no session.
  *  3. Prevent authenticated users from hitting /login or /signup.
- *  4. Guard /admin to admins and instructors only.
+ *  4. Guard /admin for ADMIN only.
+ *  5. Guard /instructor for INSTRUCTOR only (ADMIN can visit too).
+ *  6. Redirect INSTRUCTOR away from /dashboard → /instructor.
+ *  7. Redirect STUDENT away from /admin and /instructor → /dashboard.
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 
-const PROTECTED = ["/dashboard", "/admin"];
+const PROTECTED  = ["/dashboard", "/admin", "/instructor"];
 const AUTH_ONLY  = ["/login", "/signup"];
 
 export async function middleware(req: NextRequest) {
-  // Start with a passthrough response — we may swap it out below
   let res = NextResponse.next({ request: req });
 
-  // Create a Supabase client that can read and refresh cookies
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -27,7 +28,6 @@ export async function middleware(req: NextRequest) {
       cookies: {
         getAll: () => req.cookies.getAll(),
         setAll: (cookiesToSet) => {
-          // Write refreshed tokens to both the request and the response
           cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
           res = NextResponse.next({ request: req });
           cookiesToSet.forEach(({ name, value, options }) =>
@@ -38,13 +38,12 @@ export async function middleware(req: NextRequest) {
     }
   );
 
-  // Validate the session — also refreshes the access token when needed
   const { data: { user } } = await supabase.auth.getUser();
 
   const { pathname } = req.nextUrl;
   const role = (user?.app_metadata?.role ?? "STUDENT") as string;
 
-  // ── 1. Protect dashboard + admin ─────────────────────────────────────────
+  // ── 1. Protect dashboard + admin + instructor ─────────────────────────────
   if (PROTECTED.some((p) => pathname.startsWith(p))) {
     if (!user) {
       const loginUrl = req.nextUrl.clone();
@@ -53,15 +52,28 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Only ADMIN and INSTRUCTOR may access /admin
-    if (pathname.startsWith("/admin") && role === "STUDENT") {
+    // /admin — ADMIN only (INSTRUCTOR has their own /instructor portal)
+    if (pathname.startsWith("/admin") && role !== "ADMIN") {
+      const dest = role === "INSTRUCTOR" ? "/instructor" : "/dashboard";
+      return NextResponse.redirect(new URL(dest, req.url));
+    }
+
+    // /instructor — INSTRUCTOR and ADMIN only
+    if (pathname.startsWith("/instructor") && role === "STUDENT") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
+    }
+
+    // /dashboard — STUDENT only (instructors + admins have their own portals)
+    if (pathname.startsWith("/dashboard") && role === "INSTRUCTOR") {
+      return NextResponse.redirect(new URL("/instructor", req.url));
     }
   }
 
-  // ── 2. Redirect authenticated users away from auth pages ─────────────────
+  // ── 2. Redirect authenticated users away from auth pages ──────────────────
   if (AUTH_ONLY.includes(pathname) && user) {
-    const dest = role === "STUDENT" ? "/dashboard" : "/admin";
+    let dest = "/dashboard";
+    if (role === "INSTRUCTOR") dest = "/instructor";
+    if (role === "ADMIN")      dest = "/admin";
     return NextResponse.redirect(new URL(dest, req.url));
   }
 
