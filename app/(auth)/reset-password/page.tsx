@@ -40,12 +40,25 @@ function ResetPasswordForm() {
 
   const strength = passwordStrength(password);
 
-  // Supabase auto-exchanges the ?code= on client init and fires PASSWORD_RECOVERY.
-  // Because that can happen before this component mounts (missed event), we also
-  // call getSession() as a fallback — whichever resolves first wins.
   useEffect(() => {
-    const code = new URLSearchParams(window.location.search).get("code");
-    if (!code) { setStatus("invalid"); return; }
+    const hash   = new URLSearchParams(window.location.hash.slice(1));
+    const search = new URLSearchParams(window.location.search);
+
+    // Supabase puts errors in the hash fragment before we even load —
+    // detect and bail immediately instead of waiting for a timeout.
+    if (hash.get("error")) {
+      setStatus("invalid");
+      return;
+    }
+
+    const code        = search.get("code");           // PKCE flow
+    const accessToken = hash.get("access_token");     // implicit flow
+    const tokenType   = hash.get("type");
+
+    if (!code && !accessToken) {
+      setStatus("invalid");
+      return;
+    }
 
     let settled = false;
     const settle = (valid: boolean) => {
@@ -54,17 +67,18 @@ function ResetPasswordForm() {
       setStatus(valid ? "ready" : "invalid");
     };
 
-    // 1. Subscribe first so we don't miss a future event
+    // Subscribe first so we don't miss the event
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "PASSWORD_RECOVERY") settle(true);
+      // implicit flow signs the user in directly
+      if (event === "SIGNED_IN" && tokenType === "recovery") settle(true);
     });
 
-    // 2. Check if the exchange already completed before we subscribed
+    // Fallback: exchange may have completed before we subscribed
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) settle(true);
     });
 
-    // 3. Give up after 8 s if neither path succeeded
     const timer = setTimeout(() => settle(false), 8000);
 
     return () => { subscription.unsubscribe(); clearTimeout(timer); };
@@ -118,7 +132,8 @@ function ResetPasswordForm() {
         </div>
         <h2 className="text-xl font-bold text-foreground mb-2">Link expired or invalid</h2>
         <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-          This reset link is no longer valid. Reset links expire after 1 hour and can only be used once.
+          This reset link has expired or already been used. Links expire after 1 hour and can only be used once.
+          Request a new one below.
         </p>
         <Link href="/forgot-password" className="btn-primary inline-flex">
           Request a new link
