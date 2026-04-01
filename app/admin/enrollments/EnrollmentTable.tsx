@@ -28,6 +28,8 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
 
   return (
     <>
+      <div className="overflow-x-auto">
+      <div className="min-w-[600px]">
       <div className="divide-y divide-border/50">
         {enrollments.map((enrollment) => (
           <div
@@ -95,6 +97,8 @@ export default function EnrollmentTable({ enrollments }: { enrollments: any[] })
             </div>
           </div>
         ))}
+      </div>
+      </div>
       </div>
 
       {/* Details Modal */}

@@ -233,17 +233,17 @@ export default function SearchModal({ open, onClose }: Props) {
           />
 
           {/* ── Wrapper ───────────────────────────────────────────────────── */}
-          <div className="fixed inset-0 z-[201] flex items-start justify-center px-4 pt-[5vh] pointer-events-none">
+          <div className="fixed inset-0 z-[201] flex items-start justify-center px-3 sm:px-4 pt-[2vh] sm:pt-[5vh] pointer-events-none">
             <motion.div
               initial={{ opacity: 0, y: -16, scale: 0.97 }}
               animate={{ opacity: 1, y: 0,   scale: 1    }}
               exit={{    opacity: 0, y: -10,  scale: 0.98 }}
               transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-[780px] pointer-events-auto"
+              className="w-full max-w-[780px] pointer-events-auto max-h-[96dvh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className="relative rounded-2xl overflow-hidden border border-white/[0.09] shadow-[0_24px_80px_rgba(0,0,0,0.7)]"
+                className="relative rounded-2xl overflow-hidden border border-white/[0.09] shadow-[0_24px_80px_rgba(0,0,0,0.7)] flex flex-col"
                 style={{ background: "hsl(var(--card))" }}
               >
                 {/* Orange top glow line */}
@@ -313,7 +313,7 @@ export default function SearchModal({ open, onClose }: Props) {
                 <div className="h-px bg-white/[0.06]" />
 
                 {/* ── Scrollable body ───────────────────────────────────── */}
-                <div className="overflow-y-auto overscroll-contain max-h-[62vh] relative">
+                <div className="overflow-y-auto overscroll-contain max-h-[55vh] sm:max-h-[62vh] relative">
 
                   {/* ── Empty state (no query) ─────────────────────────── */}
                   {isEmpty && (

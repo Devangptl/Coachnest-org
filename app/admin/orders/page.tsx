@@ -88,6 +88,8 @@ export default async function AdminOrdersPage() {
           <span className="text-muted-foreground/70 text-sm">{orders.length} total</span>
         </div>
 
+        <div className="overflow-x-auto">
+        <div className="min-w-[600px]">
         {/* Header Row */}
         <div className="grid grid-cols-12 gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 border-b border-border">
           <div className="col-span-2">Order ID</div>
@@ -99,6 +101,8 @@ export default async function AdminOrdersPage() {
         </div>
 
         <OrderTable orders={orders} />
+        </div>
+        </div>
 
         {orders.length === 0 && (
           <div className="text-center py-12 text-muted-foreground/70">

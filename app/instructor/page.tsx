@@ -44,12 +44,12 @@ export default async function InstructorDashboard() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Welcome back, {session!.name.split(" ")[0]}</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Welcome back, {session!.name.split(" ")[0]}</h1>
           <p className="text-muted-foreground text-sm mt-0.5">Here&apos;s how your courses are doing</p>
         </div>
-        <Link href="/instructor/courses/new" className="btn-primary flex items-center gap-2 text-sm">
+        <Link href="/instructor/courses/new" className="btn-primary flex items-center gap-2 text-sm flex-shrink-0">
           <PlusCircle className="w-4 h-4" /> New Course
         </Link>
       </div>

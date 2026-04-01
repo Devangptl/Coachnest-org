@@ -37,7 +37,7 @@ export default async function CoursesPage() {
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
       {/* Header */}
       <div className="mb-8 animate-fade-in">
-        <h1 className="text-4xl font-bold text-white mb-2">All Courses</h1>
+        <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">All Courses</h1>
         <p className="text-muted-foreground mb-6">
           {courses.length} course{courses.length !== 1 ? "s" : ""} available
         </p>

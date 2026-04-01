@@ -32,6 +32,8 @@ export default function StudentTable({ students }: { students: Student[] }) {
 
   return (
     <>
+      <div className="overflow-x-auto">
+      <div className="min-w-[680px]">
       {/* Header */}
       <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
         <div className="col-span-3">Student</div>
@@ -133,6 +135,8 @@ export default function StudentTable({ students }: { students: Student[] }) {
             </div>
           </div>
         ))}
+      </div>
+      </div>
       </div>
 
       {/* Notification Modal */}

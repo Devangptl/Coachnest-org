@@ -58,6 +58,8 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
 
   return (
     <>
+      <div className="overflow-x-auto">
+      <div className="min-w-[600px]">
       <div className="divide-y divide-border/50">
         {quizzes.map((quiz) => (
           <div
@@ -147,6 +149,8 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
             </div>
           </div>
         ))}
+      </div>
+      </div>
       </div>
 
       {selectedQuiz && modalType === "preview" && (

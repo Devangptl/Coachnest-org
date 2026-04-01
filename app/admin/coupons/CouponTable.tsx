@@ -49,6 +49,8 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
   };
 
   return (
+    <div className="overflow-x-auto">
+    <div className="min-w-[560px]">
     <div className="divide-y divide-border/50">
       {coupons.map((coupon) => (
         <div
@@ -120,6 +122,8 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
           </div>
         </div>
       ))}
+    </div>
+    </div>
     </div>
   );
 }
