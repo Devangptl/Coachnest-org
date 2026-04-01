@@ -40,27 +40,32 @@ function ResetPasswordForm() {
 
   const strength = passwordStrength(password);
 
-  // Listen for Supabase's PASSWORD_RECOVERY event.
-  // Supabase client automatically detects ?code= in the URL and completes
-  // the PKCE exchange internally — we must NOT call exchangeCodeForSession manually.
+  // Supabase auto-exchanges the ?code= on client init and fires PASSWORD_RECOVERY.
+  // Because that can happen before this component mounts (missed event), we also
+  // call getSession() as a fallback — whichever resolves first wins.
   useEffect(() => {
     const code = new URLSearchParams(window.location.search).get("code");
     if (!code) { setStatus("invalid"); return; }
 
     let settled = false;
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const settle = (valid: boolean) => {
       if (settled) return;
-      if (event === "PASSWORD_RECOVERY") {
-        settled = true;
-        setStatus("ready");
-      }
+      settled = true;
+      setStatus(valid ? "ready" : "invalid");
+    };
+
+    // 1. Subscribe first so we don't miss a future event
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") settle(true);
     });
 
-    // Fallback: if the event never fires within 6 s the link is invalid/expired
-    const timer = setTimeout(() => {
-      if (!settled) { settled = true; setStatus("invalid"); }
-    }, 6000);
+    // 2. Check if the exchange already completed before we subscribed
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) settle(true);
+    });
+
+    // 3. Give up after 8 s if neither path succeeded
+    const timer = setTimeout(() => settle(false), 8000);
 
     return () => { subscription.unsubscribe(); clearTimeout(timer); };
   }, []);
