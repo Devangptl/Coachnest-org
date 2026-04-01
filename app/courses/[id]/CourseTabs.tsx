@@ -20,31 +20,31 @@ const TABS: Tab[] = [
     id: "overview",
     label: "Overview",
     icon: BookOpen,
-    color: "text-blue-400",
-    activeBg: "bg-gradient-to-br from-blue-500/20 via-blue-500/12 to-indigo-500/8",
-    activeText: "text-blue-300",
-    activeBorder: "border-blue-400/30",
-    glowColor: "shadow-blue-500/20",
+    color: "text-blue-600 dark:text-blue-400",
+    activeBg: "bg-blue-500/10 ",
+    activeText: "text-blue-700 dark:text-blue-300",
+    activeBorder: "border-blue-500/20 dark:border-blue-400/30",
+    glowColor: "shadow-blue-500/10",
   },
   {
     id: "curriculum",
     label: "Curriculum",
     icon: ListChecks,
-    color: "text-orange-400",
-    activeBg: "bg-gradient-to-br from-orange-500/20 via-orange-500/12 to-amber-500/8",
-    activeText: "text-orange-300",
-    activeBorder: "border-orange-400/30",
-    glowColor: "shadow-orange-500/20",
+    color: "text-orange-600 dark:text-orange-400",
+    activeBg: "bg-orange-500/10",
+    activeText: "text-orange-700 dark:text-orange-300",
+    activeBorder: "border-orange-500/20 dark:border-orange-400/30",
+    glowColor: "shadow-orange-500/10",
   },
   {
     id: "reviews",
     label: "Reviews",
     icon: MessageSquare,
-    color: "text-amber-400",
-    activeBg: "bg-gradient-to-br from-amber-500/18 via-amber-500/10 to-yellow-500/6",
-    activeText: "text-amber-300",
-    activeBorder: "border-amber-400/25",
-    glowColor: "shadow-amber-500/15",
+    color: "text-amber-600 dark:text-amber-400",
+    activeBg: "bg-amber-500/10",
+    activeText: "text-amber-700 dark:text-amber-300",
+    activeBorder: "border-amber-500/20 dark:border-amber-400/25",
+    glowColor: "shadow-amber-500/10",
   },
 ];
 
@@ -62,14 +62,14 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
       <div className="lg:hidden absolute inset-0 bg-background/70 backdrop-blur-xl border-b border-border/40" />
 
       <div className="relative px-4 sm:px-6 lg:px-0 py-2.5 lg:py-0">
-        <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-2xl p-1.5 gap-1 shadow-sm">
+        <div className="flex items-center bg-secondary/50 dark:bg-white/[0.04] border border-border/50 dark:border-white/[0.08] rounded-2xl p-1.5 gap-1 shadow-sm">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;
             const count =
               tab.id === "reviews" ? reviewCount :
-              tab.id === "curriculum" ? lessonCount :
-              undefined;
+                tab.id === "curriculum" ? lessonCount :
+                  undefined;
 
             return (
               <button
@@ -81,14 +81,14 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
                   "min-h-[46px] sm:min-h-[44px] px-2.5 sm:px-4 py-2.5",
                   isActive
                     ? "text-foreground"
-                    : "text-muted-foreground/55 hover:text-muted-foreground/80 active:scale-[0.96] active:bg-white/[0.03]"
+                    : "text-muted-foreground hover:text-foreground active:scale-[0.96] active:bg-black/5 dark:active:bg-white/[0.03]"
                 )}
               >
                 {isActive && (
                   <motion.div
                     layoutId="course-tab-indicator"
                     className={cn(
-                      "absolute inset-0 rounded-xl border shadow-lg",
+                      "absolute inset-0 rounded-xl border shadow-sm dark:shadow-lg",
                       tab.activeBg,
                       tab.activeBorder,
                       tab.glowColor
@@ -114,8 +114,8 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
                     <span className={cn(
                       "text-[9px] sm:text-[10px] min-w-[18px] sm:min-w-[20px] text-center px-1 sm:px-1.5 py-0.5 rounded-full font-bold transition-all leading-none",
                       isActive
-                        ? `${tab.color} bg-white/[0.08]`
-                        : "bg-white/[0.04] text-muted-foreground/40"
+                        ? `${tab.color} bg-black/5 dark:bg-white/[0.08]`
+                        : "bg-black/5 dark:bg-white/[0.04] text-muted-foreground/70 dark:text-muted-foreground/40"
                     )}>
                       {count}
                     </span>
