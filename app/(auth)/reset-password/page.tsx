@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, FormEvent, Suspense } from "react";
+import { useState, useEffect, FormEvent } from "react";
 import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
 import { Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle, ShieldAlert } from "lucide-react";
 import { supabaseClient as supabase } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -31,9 +30,6 @@ function passwordStrength(pwd: string) {
 // ── Inner component (needs useSearchParams) ─────────────────────────────────
 
 function ResetPasswordForm() {
-  const router       = useRouter();
-  const searchParams = useSearchParams();
-
   const [status,      setStatus]      = useState<"loading" | "ready" | "invalid" | "done">("loading");
   const [password,    setPassword]    = useState("");
   const [confirm,     setConfirm]     = useState("");
@@ -44,24 +40,30 @@ function ResetPasswordForm() {
 
   const strength = passwordStrength(password);
 
-  // Exchange the one-time code Supabase puts in the URL for a live session
+  // Listen for Supabase's PASSWORD_RECOVERY event.
+  // Supabase client automatically detects ?code= in the URL and completes
+  // the PKCE exchange internally — we must NOT call exchangeCodeForSession manually.
   useEffect(() => {
-    const code = searchParams.get("code");
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (!code) { setStatus("invalid"); return; }
 
-    if (!code) {
-      setStatus("invalid");
-      return;
-    }
+    let settled = false;
 
-    supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-      if (error) {
-        console.error("[reset-password] exchangeCodeForSession:", error.message);
-        setStatus("invalid");
-      } else {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (settled) return;
+      if (event === "PASSWORD_RECOVERY") {
+        settled = true;
         setStatus("ready");
       }
     });
-  }, [searchParams]);
+
+    // Fallback: if the event never fires within 6 s the link is invalid/expired
+    const timer = setTimeout(() => {
+      if (!settled) { settled = true; setStatus("invalid"); }
+    }, 6000);
+
+    return () => { subscription.unsubscribe(); clearTimeout(timer); };
+  }, []);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -262,21 +264,15 @@ export default function ResetPasswordPage() {
         </div>
 
         <div className="rounded-2xl border border-border bg-card shadow-card p-8">
-          <Suspense fallback={
-            <div className="flex justify-center py-8">
-              <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
-            </div>
-          }>
-            <div className="mb-7">
-              <h1 className="text-2xl font-bold text-foreground mb-1.5 tracking-tight">
-                Set new password
-              </h1>
-              <p className="text-muted-foreground text-sm">
-                Choose a strong password for your account.
-              </p>
-            </div>
-            <ResetPasswordForm />
-          </Suspense>
+          <div className="mb-7">
+            <h1 className="text-2xl font-bold text-foreground mb-1.5 tracking-tight">
+              Set new password
+            </h1>
+            <p className="text-muted-foreground text-sm">
+              Choose a strong password for your account.
+            </p>
+          </div>
+          <ResetPasswordForm />
         </div>
 
         <p className="text-center text-sm text-muted-foreground mt-6">
