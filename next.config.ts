@@ -7,6 +7,7 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "uploadthing.com" },
+      { protocol: "https", hostname: "i0.wp.com" },
     ],
     formats: ["image/avif", "image/webp"],
   },

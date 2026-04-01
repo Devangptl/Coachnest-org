@@ -9,13 +9,43 @@ interface Tab {
   label: string;
   icon: React.ElementType;
   color: string;
-  activeColor: string;
+  activeBg: string;
+  activeText: string;
+  activeBorder: string;
+  glowColor: string;
 }
 
 const TABS: Tab[] = [
-  { id: "overview", label: "Overview", icon: BookOpen, color: "text-blue-400", activeColor: "from-blue-500/20 to-orange-500/15 border-blue-400/25" },
-  { id: "curriculum", label: "Curriculum", icon: ListChecks, color: "text-orange-400", activeColor: "from-orange-600/20 to-orange-500/15 border-orange-400/25" },
-  { id: "reviews", label: "Reviews", icon: MessageSquare, color: "text-amber-400", activeColor: "from-amber-500/15 to-orange-500/15 border-amber-400/20" },
+  {
+    id: "overview",
+    label: "Overview",
+    icon: BookOpen,
+    color: "text-blue-400",
+    activeBg: "bg-gradient-to-br from-blue-500/20 via-blue-500/12 to-indigo-500/8",
+    activeText: "text-blue-300",
+    activeBorder: "border-blue-400/30",
+    glowColor: "shadow-blue-500/20",
+  },
+  {
+    id: "curriculum",
+    label: "Curriculum",
+    icon: ListChecks,
+    color: "text-orange-400",
+    activeBg: "bg-gradient-to-br from-orange-500/20 via-orange-500/12 to-amber-500/8",
+    activeText: "text-orange-300",
+    activeBorder: "border-orange-400/30",
+    glowColor: "shadow-orange-500/20",
+  },
+  {
+    id: "reviews",
+    label: "Reviews",
+    icon: MessageSquare,
+    color: "text-amber-400",
+    activeBg: "bg-gradient-to-br from-amber-500/18 via-amber-500/10 to-yellow-500/6",
+    activeText: "text-amber-300",
+    activeBorder: "border-amber-400/25",
+    glowColor: "shadow-amber-500/15",
+  },
 ];
 
 interface Props {
@@ -27,54 +57,75 @@ interface Props {
 
 export default function CourseTabs({ activeTab, onTabChange, reviewCount, lessonCount }: Props) {
   return (
-    <div className="flex items-center backdrop-blur-xl bg-white/[0.04] border border-border rounded-xl p-1">
-      {TABS.map((tab) => {
-        const isActive = activeTab === tab.id;
-        const Icon = tab.icon;
-        const count =
-          tab.id === "reviews" ? reviewCount :
-          tab.id === "curriculum" ? lessonCount :
-          undefined;
+    <div className="course-tabs-wrapper sticky top-[60px] z-30 -mx-4 sm:-mx-6 lg:mx-0">
+      {/* Frosted glass backdrop — mobile only */}
+      <div className="lg:hidden absolute inset-0 bg-background/70 backdrop-blur-xl border-b border-border/40" />
 
-        return (
-          <button
-            key={tab.id}
-            onClick={() => onTabChange(tab.id)}
-            className={cn(
-              "relative flex-1 flex items-center justify-center gap-1.5 px-4 py-2 rounded-lg text-xs font-medium transition-all duration-200",
-              isActive ? "text-foreground" : "text-muted-foreground/70 hover:text-foreground/80"
-            )}
-          >
-            {isActive && (
-              <motion.div
-                layoutId="course-tab-bg"
+      <div className="relative px-4 sm:px-6 lg:px-0 py-2.5 lg:py-0">
+        <div className="flex items-center bg-white/[0.04] border border-white/[0.08] rounded-2xl p-1.5 gap-1 shadow-sm">
+          {TABS.map((tab) => {
+            const isActive = activeTab === tab.id;
+            const Icon = tab.icon;
+            const count =
+              tab.id === "reviews" ? reviewCount :
+              tab.id === "curriculum" ? lessonCount :
+              undefined;
+
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "absolute inset-0 bg-gradient-to-r border rounded-xl",
-                  tab.activeColor
-                )}
-                transition={{ type: "spring", stiffness: 400, damping: 30 }}
-              />
-            )}
-            <span className="relative flex items-center gap-2">
-              <Icon className={cn(
-                "w-[18px] h-[18px] transition-all duration-200",
-                isActive ? tab.color : "text-current"
-              )} />
-              <span className="font-semibold">{tab.label}</span>
-              {count !== undefined && count > 0 && (
-                <span className={cn(
-                  "text-[10px] min-w-[20px] text-center px-1.5 py-0.5 rounded-full font-bold transition-all",
+                  "relative flex-1 flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 select-none",
+                  // 44px+ touch targets for mobile accessibility
+                  "min-h-[46px] sm:min-h-[44px] px-2.5 sm:px-4 py-2.5",
                   isActive
-                    ? `${tab.color} bg-secondary`
-                    : "bg-secondary text-muted-foreground/50"
-                )}>
-                  {count}
+                    ? "text-foreground"
+                    : "text-muted-foreground/55 hover:text-muted-foreground/80 active:scale-[0.96] active:bg-white/[0.03]"
+                )}
+              >
+                {isActive && (
+                  <motion.div
+                    layoutId="course-tab-indicator"
+                    className={cn(
+                      "absolute inset-0 rounded-xl border shadow-lg",
+                      tab.activeBg,
+                      tab.activeBorder,
+                      tab.glowColor
+                    )}
+                    transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                  />
+                )}
+                <span className="relative z-[1] flex items-center gap-1.5 sm:gap-2">
+                  <Icon
+                    className={cn(
+                      "w-[17px] h-[17px] sm:w-[18px] sm:h-[18px] transition-colors duration-200 flex-shrink-0",
+                      isActive ? tab.color : "text-current"
+                    )}
+                  />
+                  <span className={cn(
+                    "font-semibold leading-none transition-colors duration-200",
+                    "text-[12.5px] sm:text-[13px]",
+                    isActive && tab.activeText
+                  )}>
+                    {tab.label}
+                  </span>
+                  {count !== undefined && count > 0 && (
+                    <span className={cn(
+                      "text-[9px] sm:text-[10px] min-w-[18px] sm:min-w-[20px] text-center px-1 sm:px-1.5 py-0.5 rounded-full font-bold transition-all leading-none",
+                      isActive
+                        ? `${tab.color} bg-white/[0.08]`
+                        : "bg-white/[0.04] text-muted-foreground/40"
+                    )}>
+                      {count}
+                    </span>
+                  )}
                 </span>
-              )}
-            </span>
-          </button>
-        );
-      })}
+              </button>
+            );
+          })}
+        </div>
+      </div>
     </div>
   );
 }

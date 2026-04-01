@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import CourseHero from "./CourseHero";
 import CourseContent from "./CourseContent";
-import CourseSidebar from "./CourseSidebar";
+import CourseEnrollBar from "./CourseEnrollBar";
 import CourseLayout from "./CourseLayout";
 import PaymentStatus from "./PaymentStatus";
 import { getPlanAccess, planMeetsRequirement } from "@/services/subscription.service";
@@ -157,8 +157,8 @@ export default async function CourseDetailPage({ params }: Props) {
       {/* ── Main content: two-column layout with toggleable sidebar ── */}
       <CourseLayout
         isEnrolled={isEnrolled}
-        sidebar={
-          <CourseSidebar
+        enrollBar={
+          <CourseEnrollBar
             courseId={course.id}
             price={priceNum}
             discountPrice={discountNum}
@@ -169,11 +169,11 @@ export default async function CourseDetailPage({ params }: Props) {
             isWishlisted={isWishlisted}
             isLoggedIn={Boolean(session)}
             userRole={session?.role ?? null}
+            planAccess={planAccess}
             lessonCount={course.lessons.length}
             totalDuration={totalDuration}
             language={course.language}
             level={course.level}
-            planAccess={planAccess}
           />
         }
       >

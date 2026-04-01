@@ -237,7 +237,7 @@ export default function EnrollButton({
       <button
         onClick={handleSubscriptionEnroll}
         disabled={loading}
-        className="btn-primary w-full flex items-center justify-center gap-2"
+        className="btn-primary flex items-center justify-center gap-2 py-2 px-6 text-sm"
       >
         {loading ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Enrolling…</>
@@ -311,7 +311,7 @@ export default function EnrollButton({
       <button
         onClick={handleEnroll}
         disabled={loading}
-        className="btn-primary w-full flex items-center justify-center gap-2"
+        className="btn-primary flex items-center justify-center gap-2 py-2 px-6 text-sm"
       >
         {loading ? (
           <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>

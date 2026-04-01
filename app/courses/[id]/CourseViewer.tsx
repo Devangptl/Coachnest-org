@@ -157,7 +157,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
   const sidebarContent = (
     <>
       {/* Sidebar header */}
-      <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border flex-shrink-0">
+      <div className="flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2">
           <LayoutList className="w-4 h-4 text-orange-400" />
           <span className="text-foreground font-semibold text-sm">Lessons</span>
@@ -200,14 +200,16 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               onClick={() => {
                 if (isLocked) return;
                 selectLesson(lesson.id);
+                // Auto-collapse sidebar on mobile after selecting
+                if (window.innerWidth < 1024) setShowSidebar(false);
               }}
               disabled={isLocked}
               className={cn(
-                "flex items-center gap-3 w-full px-5 py-3.5 text-left transition-all",
+                "flex items-center gap-3 w-full px-4 sm:px-5 py-3.5 text-left transition-all min-h-[52px]",
                 isLocked && "opacity-50 cursor-not-allowed",
                 isActive
                   ? "bg-orange-500/10 border-l-[3px] border-l-orange-500"
-                  : "border-l-[3px] border-l-transparent hover:bg-secondary",
+                  : "border-l-[3px] border-l-transparent hover:bg-secondary active:bg-secondary/80",
                 i !== lessons.length - 1 && "border-b border-b-border/50"
               )}
             >
@@ -236,7 +238,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               {/* Info */}
               <div className="flex-1 min-w-0">
                 <p className={cn(
-                  "text-xs font-medium leading-tight mb-0.5 truncate",
+                  "text-[13px] sm:text-xs font-medium leading-tight mb-0.5 truncate",
                   isActive ? "text-foreground font-semibold" : isCompleted ? "text-emerald-600 dark:text-emerald-300/80" : "text-muted-foreground"
                 )}>
                   {lesson.title}
@@ -288,6 +290,46 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
         )}
       </AnimatePresence>
 
+      {/* ── Mobile toggle — now ABOVE sidebar for better UX ── */}
+      <button
+        onClick={() => setShowSidebar(!showSidebar)}
+        className="lg:hidden flex items-center justify-between gap-3 px-4 py-3.5 bg-white/[0.04] border-b border-border min-h-[52px] active:bg-white/[0.06] transition-colors"
+      >
+        <div className="flex items-center gap-3 min-w-0 flex-1">
+          <div className="relative flex-shrink-0">
+            <LayoutList className="w-5 h-5 text-orange-400" />
+            {/* Mini circular progress on icon */}
+            <svg className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5" viewBox="0 0 12 12">
+              <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary" />
+              <circle
+                cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2"
+                className="text-orange-400"
+                strokeDasharray={`${lessons.length > 0 ? (completedCount / lessons.length) * 31.4 : 0} 31.4`}
+                strokeLinecap="round"
+                transform="rotate(-90 6 6)"
+              />
+            </svg>
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+              {activeLesson?.title ?? "Select lesson"}
+            </p>
+            <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+              Lesson {activeIndex + 1} of {lessons.length} · {completedCount} completed
+            </p>
+          </div>
+        </div>
+        <div className={cn(
+          "w-8 h-8 rounded-lg flex items-center justify-center bg-secondary flex-shrink-0 transition-all",
+          showSidebar && "bg-orange-500/15"
+        )}>
+          <ChevronDown className={cn(
+            "w-4 h-4 text-muted-foreground/70 transition-transform duration-300",
+            showSidebar && "rotate-180 text-orange-400"
+          )} />
+        </div>
+      </button>
+
       <AnimatePresence initial={false} mode="wait">
         {showSidebar && (
           <motion.div
@@ -295,32 +337,15 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="lg:hidden flex flex-col border-b border-border bg-white/[0.02]"
+            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+            className="lg:hidden flex flex-col border-b border-border bg-white/[0.02] overflow-hidden"
           >
-            <div className="w-full flex flex-col max-h-[500px]">
+            <div className="w-full flex flex-col max-h-[55vh]">
               {sidebarContent}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-
-      {/* ── Mobile toggle ── */}
-      <button
-        onClick={() => setShowSidebar(!showSidebar)}
-        className="lg:hidden flex items-center justify-between gap-3 px-5 py-3 bg-white/[0.03] border-b border-border"
-      >
-        <div className="flex items-center gap-2 text-sm">
-          <LayoutList className="w-4 h-4 text-orange-400" />
-          <span className="text-muted-foreground truncate">
-            {activeIndex + 1}. {activeLesson?.title ?? "Select lesson"}
-          </span>
-        </div>
-        <ChevronDown className={cn(
-          "w-4 h-4 text-muted-foreground/70 transition-transform",
-          showSidebar && "rotate-180"
-        )} />
-      </button>
 
       {/* ── Right: Content area ── */}
       <div className="flex-1 min-w-0 flex flex-col relative">
@@ -355,8 +380,9 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               transition={{ duration: 0.2 }}
             >
               {/* Lesson header */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 px-5 sm:px-6 py-3.5 border-b border-border">
-                <div className="flex items-center gap-3.5 min-w-0">
+              <div className="flex flex-col gap-3 px-4 sm:px-6 py-3 sm:py-3.5 border-b border-border">
+                {/* Top row: icon + title */}
+                <div className="flex items-center gap-3 min-w-0">
                   {!showSidebar && (
                     <button
                       onClick={() => setShowSidebar(true)}
@@ -372,15 +398,15 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     const Icon = config.icon;
                     return (
                       <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border",
+                        "w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 border",
                         config.bg, config.border
                       )}>
-                        <Icon className={cn("w-5 h-5", config.color)} />
+                        <Icon className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)} />
                       </div>
                     );
                   })()}
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 mb-0.5 flex-wrap">
                       <span className="text-muted-foreground/50 text-[10px] font-medium">
                         Lesson {activeIndex + 1} of {lessons.length}
                       </span>
@@ -397,7 +423,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                         </span>
                       )}
                     </div>
-                    <h2 className="text-foreground font-bold text-base sm:text-lg leading-tight truncate">
+                    <h2 className="text-foreground font-bold text-[15px] sm:text-lg leading-tight truncate">
                       {activeLesson.title}
                     </h2>
                   </div>
@@ -405,12 +431,12 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
 
                 {/* Actions — only for enrolled users */}
                 {isEnrolled && (
-                  <div className="flex items-center gap-2 flex-shrink-0">
+                  <div className="flex items-center gap-2 flex-shrink-0 -mt-0.5">
                     {activeLesson.type === "TEXT" && activeLesson.content && (
                       <button
                         onClick={() => setShowAudioPlayer((v) => !v)}
                         className={cn(
-                          "flex items-center gap-1.5 text-xs px-3 py-2 rounded-xl border transition-all font-medium",
+                          "flex items-center gap-1.5 text-xs min-h-[40px] px-3 py-2 rounded-xl border transition-all font-medium",
                           showAudioPlayer
                             ? "bg-blue-500/20 border-blue-400/30 text-blue-400"
                             : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -423,7 +449,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     )}
                     <button
                       onClick={() => setIsFullscreen(true)}
-                      className="flex items-center justify-center w-9 h-9 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                      className="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       title="Full Screen (F)"
                     >
                       <Maximize2 className="w-4 h-4" />
@@ -432,7 +458,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       onClick={() => toggleComplete(activeLesson.id)}
                       disabled={marking}
                       className={cn(
-                        "flex items-center gap-2 text-xs px-4 py-2 rounded-xl border transition-all font-semibold",
+                        "flex items-center gap-2 text-xs min-h-[40px] px-3 sm:px-4 py-2 rounded-xl border transition-all font-semibold ml-auto",
                         completed[activeLesson.id]
                           ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
                           : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -449,14 +475,15 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       ) : (
                         <Circle className="w-4 h-4" />
                       )}
-                      <span>{completed[activeLesson.id] ? "Completed" : "Mark Complete"}</span>
+                      <span className="hidden xs:inline sm:inline">{completed[activeLesson.id] ? "Completed" : "Mark Complete"}</span>
+                      <span className="xs:hidden sm:hidden">{completed[activeLesson.id] ? "Done" : "Complete"}</span>
                     </button>
                   </div>
                 )}
               </div>
 
               {/* Content body */}
-              <div className="px-6 sm:px-8 py-6 sm:py-8">
+              <div className="px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
                 {activeLesson.type === "QUIZ" ? (
                   <QuizLoader
                     lessonId={activeLesson.id}
@@ -505,38 +532,38 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 )}
 
                 {/* Navigation */}
-                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-border">
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-3 mt-6 sm:mt-8 pt-5 sm:pt-6 border-t border-border">
                   {prev ? (
                     <button
                       onClick={() => selectLesson(prev.id)}
-                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-colors group px-4 py-3 rounded-xl hover:bg-secondary border border-transparent hover:border-border"
+                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground active:scale-[0.98] transition-all group px-3 sm:px-4 py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border min-h-[52px]"
                     >
                       <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-secondary transition-colors">
                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
                       </div>
-                      <div className="text-left">
+                      <div className="text-left min-w-0">
                         <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Previous</p>
-                        <p className="text-sm font-semibold truncate max-w-[180px]">{prev.title}</p>
+                        <p className="text-[13px] sm:text-sm font-semibold truncate max-w-[160px] sm:max-w-[180px]">{prev.title}</p>
                       </div>
                     </button>
                   ) : (
-                    <span />
+                    <span className="hidden sm:block" />
                   )}
                   {next ? (
                     <button
                       onClick={() => selectLesson(next.id)}
-                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-4 py-3 rounded-xl transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15"
+                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground active:scale-[0.98] px-3 sm:px-4 py-3 rounded-xl transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15 min-h-[52px]"
                     >
-                      <div className="text-right">
+                      <div className="text-right min-w-0 flex-1 sm:flex-initial">
                         <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Next</p>
-                        <p className="text-sm font-semibold truncate max-w-[180px]">{next.title}</p>
+                        <p className="text-[13px] sm:text-sm font-semibold truncate max-w-[200px] sm:max-w-[180px]">{next.title}</p>
                       </div>
                       <div className="w-9 h-9 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-500/20 transition-colors">
                         <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                       </div>
                     </button>
                   ) : (
-                    <div className="flex items-center gap-2.5 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-5 py-3 rounded-xl text-sm">
+                    <div className="flex items-center justify-center gap-2.5 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-5 py-3 rounded-xl text-sm min-h-[52px]">
                       <Sparkles className="w-5 h-5" />
                       You&apos;ve reached the end!
                     </div>
