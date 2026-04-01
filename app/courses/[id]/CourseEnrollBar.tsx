@@ -109,7 +109,7 @@ export default function CourseEnrollBar({
 
           {/* Enroll button — flex grow removed so it stays compact */}
           <div className="border-t sm:border-t-0 sm:border-l border-white/[0.06] pt-4 sm:pt-0 sm:pl-6 ml-auto">
-            <div className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-end gap-3">
               <div className="w-full sm:w-auto">
                 {userRole === "STUDENT" && (
                   <EnrollButton
@@ -138,26 +138,27 @@ export default function CourseEnrollBar({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex w-full sm:w-auto gap-2">
+              <div className="flex w-full sm:w-auto gap-2 justify-center sm:justify-start flex-shrink-0 mt-3 sm:mt-0">
                 {/* Wishlist */}
                 {isLoggedIn && (
-                  <div className="flex-1 sm:flex-initial">
-                    <WishlistButton courseId={courseId} initialState={isWishlisted} className="w-full sm:w-10 h-10 flex items-center justify-center" />
-                  </div>
+                  <WishlistButton 
+                    courseId={courseId} 
+                    initialState={isWishlisted} 
+                    className="flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center shadow-inner !rounded-xl" 
+                  />
                 )}
 
                 {/* Share */}
                 <button
                   onClick={handleCopyLink}
-                  className="flex-1 sm:flex-initial sm:w-10 h-10 flex items-center justify-center rounded-xl border border-white/[0.08] hover:border-border hover:bg-white/[0.04] text-muted-foreground/60 hover:text-muted-foreground transition-all"
+                  className="flex-shrink-0 w-[46px] h-[46px] flex items-center justify-center rounded-xl border border-white/[0.08] hover:border-white/[0.15] bg-black/20 hover:bg-black/30 text-muted-foreground/70 hover:text-foreground transition-all shadow-inner"
                   title="Share this course"
                 >
                   {copied ? (
                     <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   ) : (
-                    <Share2 className="w-5 h-5" />
+                    <Share2 className="w-4 h-4" />
                   )}
-                  <span className="sm:hidden ml-2 text-sm">Share</span>
                 </button>
               </div>
             </div>

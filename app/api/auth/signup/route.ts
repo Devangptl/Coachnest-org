@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
       await prisma.subscription.create({
         data: {
           userId:    data.user.id,
-          plan:      "BASIC",
+          plan:      "FREE",
           status:    "ACTIVE",
           startDate: new Date(),
         },

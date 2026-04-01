@@ -57,7 +57,7 @@ interface Props {
 
 export default function CourseTabs({ activeTab, onTabChange, reviewCount, lessonCount }: Props) {
   return (
-    <div className="course-tabs-wrapper sticky top-[60px] z-30 -mx-4 sm:-mx-6 lg:mx-0">
+    <div className="course-tabs-wrapper relative -mx-4 sm:-mx-6 lg:mx-0">
       {/* Frosted glass backdrop — mobile only */}
       <div className="lg:hidden absolute inset-0 bg-background/70 backdrop-blur-xl border-b border-border/40" />
 
