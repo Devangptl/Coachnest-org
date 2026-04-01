@@ -6,6 +6,8 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import NavbarWrapper from "@/components/NavbarWrapper";
+import MainWrapper from "@/components/MainWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -56,10 +58,9 @@ export default function RootLayout({
             <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-amber-600/[.04] rounded-full blur-3xl" />
           </div>
 
-          <Navbar />
+          <NavbarWrapper><Navbar /></NavbarWrapper>
 
-          {/* Push content below the fixed navbar */}
-          <main className="pt-24 min-h-screen">{children}</main>
+          <MainWrapper>{children}</MainWrapper>
 
           {/* Global toast notifications */}
           <ToasterProvider />

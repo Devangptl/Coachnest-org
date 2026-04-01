@@ -572,3 +572,27 @@ html.light .to-yellow-500\/10    { --tw-gradient-to: rgb(234 179 8   / 0.07) var
 html.light .shadow-xl.shadow-orange-500\/5 {
   box-shadow: 0 10px 25px rgba(204,85,8,0.06);
 }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   AUTH PAGES — light mode tweaks
+   ══════════════════════════════════════════════════════════════════════════ */
+
+/* hero-gradient-text on the light cream panel: deepen orange so it pops */
+html.light .hero-gradient-text {
+  background: linear-gradient(
+    90deg,
+    #c2410c 0%,
+    #ea580c 25%,
+    #d97706 50%,
+    #ea580c 75%,
+    #c2410c 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Ensure the form-panel link / forgot-password orange is readable on light bg */
+html.light .text-orange-500 { color: #b84800; }
+html.light .hover\:text-orange-400:hover { color: #c2550e; }

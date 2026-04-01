@@ -58,12 +58,18 @@ export async function POST(req: NextRequest) {
       app_metadata: { role },
     });
 
-    // ── 4. Create profile row + subscription (students get BASIC; instructors get none) ──
-    const user = await prisma.user.create({
-      data: {
+    // ── 4. Upsert profile row — the on_auth_user_created trigger may have already
+    //       inserted a minimal row; upsert ensures name/role are always correct.
+    const user = await prisma.user.upsert({
+      where: { id: data.user.id },
+      create: {
         id:   data.user.id,
         name,
         email,
+        role: role as "STUDENT" | "INSTRUCTOR",
+      },
+      update: {
+        name,
         role: role as "STUDENT" | "INSTRUCTOR",
       },
     });
