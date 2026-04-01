@@ -792,6 +792,7 @@ type Block =
   | { type: "code"; lang: string; code: string }
   | { type: "list"; items: string[] }
   | { type: "numlist"; items: string[] }
+  | { type: "image"; src: string; alt: string }
   | { type: "paragraph"; text: string };
 
 function parseContent(raw: string): Block[] {
@@ -854,6 +855,16 @@ function parseContent(raw: string): Block[] {
       blocks.push({ type: "numlist", items });
       continue;
     }
+    
+    // Image block ![alt](url)
+    if (/^!\[([^\]]*)\]\(([^)]+)\)$/.test(line.trim())) {
+      const match = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
+      if (match) {
+        blocks.push({ type: "image", src: match[2], alt: match[1] });
+        i++;
+        continue;
+      }
+    }
 
     // Empty line → skip
     if (line.trim() === "") {
@@ -882,27 +893,53 @@ function parseContent(raw: string): Block[] {
   return blocks;
 }
 
-function renderInline(text: string) {
-  // Split on inline code `...`
+function renderInline(text: string): React.ReactNode {
+  // 1. Split on inline code `...`
   const parts = text.split(/(`[^`]+`)/g);
-  return parts.map((part, i) => {
+  
+  return parts.flatMap((part, i) => {
     if (part.startsWith("`") && part.endsWith("`")) {
       return (
         <code
-          key={i}
+          key={`code-${i}`}
           className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-orange-400/25"
         >
           {part.slice(1, -1)}
         </code>
       );
     }
-    // Bold **text**
-    const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
-    return boldParts.map((bp, j) => {
-      if (bp.startsWith("**") && bp.endsWith("**")) {
-        return <strong key={`${i}-${j}`} className="font-semibold text-foreground">{bp.slice(2, -2)}</strong>;
+
+    // 2. Split on markdown links [text](url)
+    const linkParts = part.split(/(\[[^\]]+\]\([^)]+\))/g);
+    return linkParts.flatMap((lp, j) => {
+      const linkMatch = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
+      if (linkMatch) {
+         const [_, linkText, url] = linkMatch;
+         return (
+           <a 
+             key={`link-${i}-${j}`} 
+             href={url} 
+             target="_blank" 
+             rel="noopener noreferrer" 
+             className="text-orange-500 hover:text-orange-400 hover:underline font-medium decoration-orange-500/30 underline-offset-4 transition-all inline-flex items-center gap-1"
+           >
+             {linkText}
+           </a>
+         );
       }
-      return <span key={`${i}-${j}`}>{bp}</span>;
+
+      // 3. Bold **text**
+      const boldParts = lp.split(/(\*\*[^*]+\*\*)/g);
+      return boldParts.map((bp, k) => {
+        if (bp.startsWith("**") && bp.endsWith("**")) {
+          return (
+            <strong key={`bold-${i}-${j}-${k}`} className="font-semibold text-foreground">
+              {bp.slice(2, -2)}
+            </strong>
+          );
+        }
+        return <span key={`text-${i}-${j}-${k}`}>{bp}</span>;
+      });
     });
   });
 }
@@ -1074,6 +1111,25 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
                     <p key={i} data-block-index={i} className="text-muted-foreground text-sm leading-[1.85] tracking-wide">
                       {renderInline(block.text)}
                     </p>
+                  );
+                case "image":
+                  return (
+                    <div key={i} data-block-index={i} className="my-8 group relative flex flex-col items-center">
+                      <div className="relative max-w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl transition-all duration-700 bg-card/40">
+                         {/* eslint-disable-next-line @next/next/no-img-element */}
+                         <img 
+                           src={block.src} 
+                           alt={block.alt} 
+                           className="max-h-[600px] w-auto h-auto object-contain transition-transform duration-700 group-hover:scale-[1.02]"
+                         />
+                         <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+                      </div>
+                      {block.alt && (
+                        <p className="mt-4 text-center text-xs text-muted-foreground/50 font-medium italic tracking-wide px-4">
+                          {block.alt}
+                        </p>
+                      )}
+                    </div>
                   );
               }
             })}
