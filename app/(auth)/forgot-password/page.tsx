@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { Mail, ArrowRight, ArrowLeft, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { supabaseClient as supabase } from "@/lib/supabase/client";
 
 export default function ForgotPasswordPage() {
   const [email,   setEmail]   = useState("");
@@ -16,14 +17,17 @@ export default function ForgotPasswordPage() {
     setLoading(true);
 
     try {
-      const res  = await fetch("/api/auth/forgot-password", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ email }),
-      });
-      const data = await res.json();
+      const redirectTo =
+        `${window.location.origin}/reset-password`;
 
-      if (!res.ok) { setError(data.error ?? "Something went wrong."); return; }
+      // Must call from the browser so Supabase stores the PKCE
+      // code_verifier in THIS browser's localStorage. Calling it
+      // server-side (API route) loses the verifier → link always fails.
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo,
+      });
+
+      if (error) { setError(error.message); return; }
 
       setSent(true);
     } catch {
