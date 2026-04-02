@@ -18,7 +18,7 @@ export default function CompareSection() {
   return (
     <section className="py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
       {/* Background Ambience */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/5 to-transparent pointer-events-none" />
+      <div className="absolute inset-0  pointer-events-none" />
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-orange-500/10 rounded-[100%] blur-[100px] pointer-events-none" />
 
       <div className="max-w-4xl mx-auto relative z-10">

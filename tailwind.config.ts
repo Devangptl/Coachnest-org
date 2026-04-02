@@ -121,6 +121,9 @@ const config: Config = {
         glow:  "0 0 20px rgba(217,112,65,.25)",
         card:  "0 2px 12px rgba(0,0,0,.35)",
       },
+       maxWidth: {
+        "8xl": "90rem",
+      },
     },
   },
   plugins: [tailwindcssAnimate],

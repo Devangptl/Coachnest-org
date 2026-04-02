@@ -128,10 +128,10 @@ export default function NavbarClient({ session }: Props) {
     : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 py-3">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-3">
       <div
         className={cn(
-          "max-w-7xl mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-3 transition-all duration-300 border",
+          "max-w-8xl mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-3 transition-all duration-300 border",
           "bg-card border-border shadow-glass"
         )}
       >
@@ -363,7 +363,7 @@ export default function NavbarClient({ session }: Props) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="lg:hidden max-w-7xl mx-auto mt-2 overflow-hidden"
+            className="lg:hidden max-w-8xl mx-auto mt-2 overflow-hidden"
           >
             <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/50 p-4 space-y-1">
               {session && (

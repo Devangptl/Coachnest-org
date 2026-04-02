@@ -6,8 +6,8 @@ export default function CourseDetailLoading() {
     <div className="pb-10">
       {/* ── Hero skeleton ───────────────────────────────────── */}
       <div className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-orange-700/10 to-orange-500/10" />
-        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-6">
+        <div className="absolute inset-0 " />
+        <div className="relative  pt-5 pb-6">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 mb-4">
             <div className="skeleton h-3 w-10 rounded" />
@@ -75,7 +75,7 @@ export default function CourseDetailLoading() {
       </div>
 
       {/* ── Main content tabs & enroll bar ── */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+      <div className=" mt-5">
         {/* Enroll bar skeleton */}
         <div className="mb-6 backdrop-blur-xl bg-white/[0.04] border border-border rounded-2xl overflow-hidden shadow-sm">
           <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-white/[0.06] flex flex-col sm:flex-row sm:items-center justify-between gap-4">

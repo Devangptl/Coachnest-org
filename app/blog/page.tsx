@@ -54,7 +54,7 @@ export default async function BlogPage() {
   const [{ blogs, nextCursor }, tags] = await Promise.all([getInitialBlogs(), getAllTags()]);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+    <div className="max-w-8xl mx-auto px-4 sm:px-6 py-12">
       {/* Header */}
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/20 rounded-full px-4 py-1.5 mb-4">

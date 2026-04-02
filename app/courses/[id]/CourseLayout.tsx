@@ -10,7 +10,7 @@ interface Props {
 
 export default function CourseLayout({ children, enrollBar }: Props) {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-5">
+    <div className="max-w-8xl mx-auto mt-5">
       {/* ── Enrollment CTA bar + Course Includes ── */}
       <div className="mb-6">
         {enrollBar}

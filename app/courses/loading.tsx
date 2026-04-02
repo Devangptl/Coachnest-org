@@ -3,7 +3,7 @@
  */
 export default function CoursesLoading() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div className=" pb-16">
       {/* Header */}
       <div className="mb-10">
         <div className="skeleton h-10 w-52 rounded-xl mb-3" />

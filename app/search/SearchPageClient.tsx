@@ -76,7 +76,7 @@ export default function SearchPageClient() {
   useEffect(() => { search(); },    [page]);           // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div className=" pb-16">
       {/* Top bar */}
       <div className="flex items-center gap-4 mb-8 flex-wrap">
         <SearchBar

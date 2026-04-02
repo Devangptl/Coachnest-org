@@ -118,6 +118,17 @@ const CATEGORY_GLOW: Record<string, string> = {
   default:           "group-hover:shadow-slate-500/20",
 };
 
+const CATEGORY_ICON_COLOR: Record<string, string> = {
+  "web-development": "text-orange-500",
+  react:             "text-cyan-500",
+  design:            "text-pink-500",
+  database:          "text-emerald-500",
+  mobile:            "text-amber-500",
+  ai:                "text-indigo-500",
+  analytics:         "text-teal-500",
+  default:           "text-slate-400",
+};
+
 export default async function HomePage() {
   const [courses, categories, stats] = await Promise.all([
     getFeaturedCourses(),
@@ -130,15 +141,15 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           HERO SECTION — Split layout: text left, interactive showcase right
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-[100vh] flex items-center px-4 sm:px-6 lg:px-8 -mt-24 pt-24">
+      <section className="relative min-h-[100vh] flex items-center -mt-24 pt-24">
         <HeroBackground />
 
-        <div className="max-w-7xl mx-auto w-full relative z-10 py-10">
+        <div className="max-w-8xl mx-auto w-full relative z-10 py-10">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* ── Left: Text Content ────────────────────────────────────── */}
             <div className="text-left relative max-w-lg">
               {/* Subtle background glow for the text area */}
-              <div className="absolute -top-10 -left-10 w-48 h-48 bg-orange-500/10 rounded-full blur-[80px] pointer-events-none" />
+              <div className="absolute -top-10 -left-10 w-48 h- rounded-full blur-[80px] pointer-events-none" />
 
               {/* Announcement badge */}
               <FadeInSection delay={0}>
@@ -160,7 +171,7 @@ export default async function HomePage() {
                   <span className="block text-4xl sm:text-5xl lg:text-6xl mb-2 whitespace-nowrap">
                     <RotatingWords
                       words={["Engineering", "System Design", "AI & ML", "Full-Stack", "Data Science"]}
-                      className="text-orange-400 drop-shadow-[0_0_15px_rgba(249,115,22,0.3)]"
+                      className="text-orange-400 "
                     />
                   </span>
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500 text-2xl sm:text-3xl lg:text-4xl block pb-1">
@@ -275,7 +286,7 @@ export default async function HomePage() {
           TRUSTED BY / SOCIAL PROOF BAR
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="relative py-12">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="">
           <FadeInSection>
             <p className="text-center text-white/30 text-sm uppercase tracking-widest mb-8">
               Trusted by learners from top companies
@@ -294,8 +305,8 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           WHY COACHNEST — 6 feature cards
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-12 ">
+        <div className="max-w-8xl mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -378,12 +389,12 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           HOW IT WORKS — 4-step process
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-28 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      <section className="py-28  relative overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/8 to-transparent" />
         {/* Decorative blobs */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="max-w-6xl mx-auto relative">
+        <div className="max-w-8xl mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-20">
               <span className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
@@ -470,33 +481,34 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           BROWSE BY CATEGORY
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-24 ">
+        <div className="max-w-8xl mx-auto">
           <FadeInSection>
-            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-14 gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
               <div>
-                <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-500 text-xs font-semibold uppercase tracking-wider mb-4">
-                  <Sparkles className="w-3 h-3" />
+                <p className="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-3">
                   Explore Topics
-                </div>
-                <h2 className="text-3xl sm:text-4xl font-bold text-foreground">
+                </p>
+                <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
                   Browse by category
                 </h2>
-                <p className="text-muted-foreground mt-2 text-[15px]">
+                <p className="text-muted-foreground mt-2.5 text-[15px] max-w-md">
                   Explore curated paths across the skills that matter most.
                 </p>
               </div>
               <Link
                 href="/courses"
-                className="group inline-flex items-center gap-1.5 bg-secondary border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/70 text-sm font-medium px-4 py-2 rounded-xl transition-all shrink-0"
+                className="group inline-flex items-center gap-1.5 text-orange-500 hover:text-orange-400 text-sm font-semibold transition-colors shrink-0 pb-1"
               >
-                All courses
+                View all courses
                 <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
               </Link>
             </div>
+            {/* Section accent line */}
+            <div className="w-10 h-0.5 bg-orange-500 rounded-full mb-12" />
           </FadeInSection>
 
-          <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4" staggerDelay={0.06}>
+          <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" staggerDelay={0.05}>
             {(categories.length > 0
               ? categories.map((cat) => ({
                   name: cat.name,
@@ -514,54 +526,42 @@ export default async function HomePage() {
                   { name: "Data Analytics",  slug: "analytics",       count: 3,  icon: null },
                   { name: "DevOps",          slug: "default",         count: 4,  icon: null },
                 ]
-            ).map((cat, idx) => {
-              const IconComponent = CATEGORY_ICONS[cat.slug] ?? CATEGORY_ICONS.default;
-              const gradient      = CATEGORY_COLORS[cat.slug] ?? CATEGORY_COLORS.default;
-              const bgWash        = CATEGORY_BG[cat.slug]     ?? CATEGORY_BG.default;
-              const glow          = CATEGORY_GLOW[cat.slug]   ?? CATEGORY_GLOW.default;
-              const isPopular     = idx < 2; // first two get a "Popular" tag
+            ).map((cat) => {
+              const IconComponent = CATEGORY_ICONS[cat.slug]      ?? CATEGORY_ICONS.default;
+              const iconColor     = CATEGORY_ICON_COLOR[cat.slug] ?? CATEGORY_ICON_COLOR.default;
 
               return (
                 <StaggerItem key={cat.slug}>
                   <Link
                     href={`/courses?category=${cat.slug}`}
-                    className={`group relative flex flex-col rounded-2xl border bg-gradient-to-br ${bgWash} p-5 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-xl ${glow} overflow-hidden`}
+                    className="group relative flex flex-col rounded-xl border border-border bg-card hover:border-orange-500/35 hover:shadow-md transition-all duration-200 p-5 overflow-hidden"
                   >
-                    {/* Subtle radial glow from icon area */}
-                    <div className={`absolute top-0 left-0 w-32 h-32 bg-gradient-to-br ${gradient} opacity-[0.07] rounded-full -translate-x-8 -translate-y-8 group-hover:opacity-[0.13] transition-opacity duration-300`} />
+                    {/* Left accent bar — slides in on hover */}
+                    <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-250 rounded-r-sm" />
 
-                    {/* Popular badge */}
-                    {isPopular && (
-                      <span className="absolute top-3 right-3 text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-orange-500/15 text-orange-400 border border-orange-500/25">
-                        Popular
-                      </span>
-                    )}
-
-                    {/* Icon */}
-                    <div className={`relative w-14 h-14 rounded-2xl bg-gradient-to-br ${gradient} flex items-center justify-center mb-5 shadow-lg group-hover:scale-105 group-hover:rotate-[-2deg] transition-transform duration-300`}>
-                      {/* Inner shine */}
-                      <div className="absolute inset-0 rounded-2xl bg-white/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    {/* Icon tile */}
+                    <div className="w-11 h-11 rounded-lg bg-secondary flex items-center justify-center mb-4 group-hover:bg-orange-500/10 transition-colors duration-200 shrink-0">
                       {cat.icon ? (
-                        <span className="text-2xl relative z-10">{cat.icon}</span>
+                        <span className="text-xl">{cat.icon}</span>
                       ) : (
-                        <IconComponent className="w-6 h-6 text-white relative z-10" />
+                        <IconComponent className={`w-5 h-5 ${iconColor} group-hover:text-orange-500 transition-colors duration-200`} />
                       )}
                     </div>
 
-                    {/* Name */}
-                    <h3 className="text-foreground font-bold text-sm leading-snug mb-2 group-hover:text-white transition-colors duration-200">
+                    {/* Category name */}
+                    <h3 className="text-foreground font-semibold text-sm leading-snug mb-1">
                       {cat.name}
                     </h3>
 
-                    {/* Footer row */}
-                    <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.06]">
-                      <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full bg-gradient-to-r ${gradient} bg-opacity-15 text-white/70`}>
-                        {cat.count} course{cat.count !== 1 ? "s" : ""}
-                      </span>
-                      <span className="flex items-center gap-1 text-muted-foreground/40 group-hover:text-white/70 text-xs font-medium transition-all duration-200 group-hover:gap-1.5">
-                        Explore
-                        <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-200" />
-                      </span>
+                    {/* Course count */}
+                    <p className="text-muted-foreground text-xs">
+                      {cat.count} course{cat.count !== 1 ? "s" : ""}
+                    </p>
+
+                    {/* Footer */}
+                    <div className="flex items-center gap-1 mt-4 pt-3 border-t border-border/50 text-muted-foreground/40 group-hover:text-orange-500 text-xs font-medium transition-colors duration-200">
+                      Explore
+                      <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform duration-200" />
                     </div>
                   </Link>
                 </StaggerItem>
@@ -571,7 +571,7 @@ export default async function HomePage() {
 
           {/* Bottom CTA strip */}
           <FadeInSection>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-white/8 bg-white/[0.02] px-6 py-5">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-secondary/20 px-6 py-5">
               <div>
                 <p className="text-foreground font-semibold text-sm">Can&apos;t find your topic?</p>
                 <p className="text-muted-foreground text-xs mt-0.5">
@@ -580,7 +580,7 @@ export default async function HomePage() {
               </div>
               <Link
                 href="/courses"
-                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-xl transition-colors shrink-0"
+                className="flex items-center gap-2 bg-orange-600 hover:bg-orange-500 text-white text-sm font-semibold px-5 py-2.5 rounded-lg transition-colors shrink-0"
               >
                 <BookOpen className="w-4 h-4" />
                 Browse all courses
@@ -594,9 +594,9 @@ export default async function HomePage() {
           FEATURED COURSES — Premium Compact
       ═══════════════════════════════════════════════════════════════════════════ */}
       {courses.length > 0 && (
-        <section className="py-20 px-4 sm:px-6 lg:px-8 relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/15 to-transparent" />
-          <div className="max-w-6xl mx-auto relative">
+        <section className="py-20  relative">
+          <div className="absolute inset-0 " />
+          <div className="max-w-8xl mx-auto relative">
             {/* Section Header */}
             <FadeInSection>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10 gap-4">
@@ -756,8 +756,8 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           BIG STATS SECTION
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-24  relative">
+        <div className="max-w-8xl mx-auto">
           <div className="backdrop-blur-lg bg-gradient-to-br from-orange-600/10 to-orange-500/10 border border-border rounded-xl p-10 sm:p-16 relative overflow-hidden">
             {/* Background decorations */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px]" />
@@ -792,7 +792,7 @@ export default async function HomePage() {
           LEARNING EXPERIENCE — Split section
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-8xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <FadeInSection direction="right">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -898,9 +898,9 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           TESTIMONIALS
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/15 to-transparent" />
-        <div className="max-w-6xl mx-auto relative">
+      <section className="py-24  relative">
+        <div className="absolute inset-0 " />
+        <div className="max-w-8xl mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-16">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -974,8 +974,8 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           BECOME AN INSTRUCTOR
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+      <section className="py-24 ">
+        <div className="max-w-8xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <FadeInSection direction="right">
               <div className="backdrop-blur-lg bg-gradient-to-br from-orange-600/10 to-orange-500/10 border border-orange-400/20 rounded-xl p-10 relative overflow-hidden">
@@ -1038,8 +1038,8 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           FAQ
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8 relative">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/15 to-transparent" />
+      <section className="py-24  relative">
+        <div className="absolute inset-0 " />
         <div className="max-w-3xl mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-12">
@@ -1109,7 +1109,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           FINAL CTA
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 ">
         <div className="max-w-5xl mx-auto">
           <FadeInSection>
             <div className="relative backdrop-blur-lg bg-gradient-to-br from-orange-600/15 to-orange-500/15 border border-orange-400/20 rounded-xl p-10 sm:p-16 text-center overflow-hidden">

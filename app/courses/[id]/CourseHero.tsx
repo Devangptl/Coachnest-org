@@ -48,10 +48,10 @@ export default function CourseHero({
   return (
     <div className="relative overflow-hidden">
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" />
-      <div className="absolute inset-0 bg-gradient-to-r from-orange-700/10 to-orange-500/10" />
+      {/* <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-r from-orange-700/10 to-orange-500/10" /> */}
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-6">
+      <div className="relative max-w-8xl mx-auto pt-5 pb-6">
         {/* Breadcrumb */}
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
@@ -149,7 +149,7 @@ export default function CourseHero({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-orange-700/30 to-orange-700/30 border border-border shadow-xl shadow-orange-600/15 group">
+            <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-orange-500/30 to-orange-700/30 border border-border shadow-xl shadow-orange-500/5 group">
               {thumbnail ? (
                 <Image
                   src={thumbnail}
