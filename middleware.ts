@@ -4,6 +4,8 @@
  * Uses @supabase/ssr to refresh the Supabase session token and protect routes.
  *
  * Responsibilities:
+ *  0. Launch mode (NEXT_PUBLIC_LAUNCH_MODE=true) — redirect everything to /launch;
+ *     when false, /launch itself redirects to /.
  *  1. Refresh the Supabase access token if it is near expiry (via getUser).
  *  2. Protect /dashboard, /admin, /instructor routes — redirect to /login if no session.
  *  3. Prevent authenticated users from hitting /login or /signup.
@@ -19,6 +21,24 @@ const PROTECTED  = ["/dashboard", "/admin", "/instructor"];
 const AUTH_ONLY  = ["/login", "/signup"];
 
 export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl;
+
+  // ── 0. Launch / Coming-Soon mode ─────────────────────────────────────────
+  const LAUNCH_MODE = process.env.NEXT_PUBLIC_LAUNCH_MODE === "true";
+
+  if (LAUNCH_MODE) {
+    // Allow /launch through; redirect everything else to /launch
+    if (!pathname.startsWith("/launch")) {
+      return NextResponse.redirect(new URL("/launch", req.url));
+    }
+    return NextResponse.next({ request: req });
+  }
+
+  // When not in launch mode, block direct access to /launch
+  if (pathname.startsWith("/launch")) {
+    return NextResponse.redirect(new URL("/", req.url));
+  }
+
   let res = NextResponse.next({ request: req });
 
   const supabase = createServerClient(
@@ -40,7 +60,6 @@ export async function middleware(req: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { pathname } = req.nextUrl;
   const role = (user?.app_metadata?.role ?? "STUDENT") as string;
 
   // ── 1. Protect dashboard + admin + instructor ─────────────────────────────

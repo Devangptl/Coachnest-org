@@ -770,3 +770,14 @@ model ActivityFeedEvent {
   @@index([createdAt])
   @@map("activity_feed_events")
 }
+
+// ─── Launch: Waitlist ─────────────────────────────────────────────────────────
+
+model WaitlistEntry {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("waitlist_entries")
+}
