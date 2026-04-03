@@ -61,8 +61,8 @@ export default function InstructorSidebar() {
     <>
       {/* Desktop */}
       <aside className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-24 bg-card border border-border rounded-lg p-4 shadow-glass">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
+        <div className="sticky top-20 bg-card border border-border rounded-lg p-3 shadow-glass">
+          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Instructor Panel
           </p>
           <NavLinks />

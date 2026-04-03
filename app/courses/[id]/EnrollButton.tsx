@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, Tag, X, Crown, Lock } from "lucide-react";
+import { Loader2, CheckCircle2, Tag, X, Crown, Lock, PlayCircle } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import type { PlanAccess } from "@/services/subscription.service";
@@ -188,9 +188,18 @@ export default function EnrollButton({
 
   if (enrolled) {
     return (
-      <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-4 py-3 text-emerald-400 text-sm font-medium justify-center">
-        <CheckCircle2 className="w-4 h-4" />
-        {hasActiveSub ? "Enrolled via subscription" : "Enrolled"}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-3 py-2.5 text-emerald-400 text-sm font-medium">
+          <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+          {hasActiveSub ? "Enrolled via subscription" : "Enrolled"}
+        </div>
+        <button
+          onClick={() => window.dispatchEvent(new CustomEvent("course:open-curriculum"))}
+          className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-orange-600/20"
+        >
+          <PlayCircle className="w-4 h-4 flex-shrink-0" />
+          Continue Learning
+        </button>
       </div>
     );
   }

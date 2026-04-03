@@ -19,8 +19,8 @@ export default async function AdminLayout({
   if (session.role === "INSTRUCTOR") redirect("/instructor");
 
   return (
-    <div className=" pb-16">
-      <div className="flex flex-col lg:flex-row lg:gap-8">
+    <div className="pb-8">
+      <div className="flex flex-col lg:flex-row lg:gap-6">
         {/* Sidebar owns its own nav items — no icon props cross the boundary */}
         <AdminSidebar />
 

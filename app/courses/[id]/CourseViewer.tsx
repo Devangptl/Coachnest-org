@@ -271,8 +271,8 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
   );
 
   return (
-    <div ref={contentRef} className="flex flex-col lg:flex-row gap-0 lg:gap-0 rounded-lg overflow-hidden border border-border backdrop-blur-md bg-white/[0.03]">
-      {/* ── Left: Lesson sidebar ── */}
+    <div ref={contentRef} className="flex flex-col lg:flex-row gap-0 lg:gap-0 rounded-lg lg:overflow-hidden border border-border backdrop-blur-md bg-white/[0.03]">
+      {/* ── Left: Lesson sidebar (desktop only) ── */}
       <AnimatePresence initial={false} mode="wait">
         {showSidebar && (
           <motion.div
@@ -290,62 +290,65 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
         )}
       </AnimatePresence>
 
-      {/* ── Mobile toggle — now ABOVE sidebar for better UX ── */}
-      <button
-        onClick={() => setShowSidebar(!showSidebar)}
-        className="lg:hidden flex items-center justify-between gap-3 px-4 py-3.5 bg-white/[0.04] border-b border-border min-h-[52px] active:bg-white/[0.06] transition-colors"
-      >
-        <div className="flex items-center gap-3 min-w-0 flex-1">
-          <div className="relative flex-shrink-0">
-            <LayoutList className="w-5 h-5 text-orange-400" />
-            {/* Mini circular progress on icon */}
-            <svg className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5" viewBox="0 0 12 12">
-              <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary" />
-              <circle
-                cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2"
-                className="text-orange-400"
-                strokeDasharray={`${lessons.length > 0 ? (completedCount / lessons.length) * 31.4 : 0} 31.4`}
-                strokeLinecap="round"
-                transform="rotate(-90 6 6)"
-              />
-            </svg>
-          </div>
-          <div className="min-w-0 flex-1">
-            <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
-              {activeLesson?.title ?? "Select lesson"}
-            </p>
-            <p className="text-[11px] text-muted-foreground/50 mt-0.5">
-              Lesson {activeIndex + 1} of {lessons.length} · {completedCount} completed
-            </p>
-          </div>
-        </div>
-        <div className={cn(
-          "w-8 h-8 rounded-lg flex items-center justify-center bg-secondary flex-shrink-0 transition-all",
-          showSidebar && "bg-orange-500/15"
-        )}>
-          <ChevronDown className={cn(
-            "w-4 h-4 text-muted-foreground/70 transition-transform duration-300",
-            showSidebar && "rotate-180 text-orange-400"
-          )} />
-        </div>
-      </button>
-
-      <AnimatePresence initial={false} mode="wait">
-        {showSidebar && (
-          <motion.div
-            key="mobile-sidebar"
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
-            className="lg:hidden flex flex-col border-b border-border bg-white/[0.02] overflow-hidden"
-          >
-            <div className="w-full flex flex-col max-h-[55vh]">
-              {sidebarContent}
+      {/* ── Mobile: sticky toggle + lesson list ── */}
+      <div className="lg:hidden sticky top-16 z-20 bg-card border-b border-border shadow-md shadow-black/20">
+        {/* Toggle button */}
+        <button
+          onClick={() => setShowSidebar(!showSidebar)}
+          className="flex w-full items-center justify-between gap-3 px-4 py-3.5 bg-white/[0.04] min-h-[52px] active:bg-white/[0.06] transition-colors"
+        >
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="relative flex-shrink-0">
+              <LayoutList className="w-5 h-5 text-orange-400" />
+              <svg className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5" viewBox="0 0 12 12">
+                <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary" />
+                <circle
+                  cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2"
+                  className="text-orange-400"
+                  strokeDasharray={`${lessons.length > 0 ? (completedCount / lessons.length) * 31.4 : 0} 31.4`}
+                  strokeLinecap="round"
+                  transform="rotate(-90 6 6)"
+                />
+              </svg>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <div className="min-w-0 flex-1">
+              <p className="text-[13px] font-semibold text-foreground truncate leading-tight">
+                {activeLesson?.title ?? "Select lesson"}
+              </p>
+              <p className="text-[11px] text-muted-foreground/50 mt-0.5">
+                Lesson {activeIndex + 1} of {lessons.length} · {completedCount} completed
+              </p>
+            </div>
+          </div>
+          <div className={cn(
+            "w-8 h-8 rounded-lg flex items-center justify-center bg-secondary flex-shrink-0 transition-all",
+            showSidebar && "bg-orange-500/15"
+          )}>
+            <ChevronDown className={cn(
+              "w-4 h-4 text-muted-foreground/70 transition-transform duration-300",
+              showSidebar && "rotate-180 text-orange-400"
+            )} />
+          </div>
+        </button>
+
+        {/* Expandable lesson list */}
+        <AnimatePresence initial={false} mode="wait">
+          {showSidebar && (
+            <motion.div
+              key="mobile-sidebar"
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.4, 0, 0.2, 1] }}
+              className="flex flex-col bg-white/[0.02] overflow-hidden border-t border-border"
+            >
+              <div className="w-full flex flex-col max-h-[55vh]">
+                {sidebarContent}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
 
       {/* ── Right: Content area ── */}
       <div className="flex-1 min-w-0 flex flex-col relative">
@@ -503,7 +506,6 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   </div>
                 ) : activeLesson.content ? (
                   <>
-                    <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
                     <AnimatePresence>
                       {showAudioPlayer && activeLesson.type === "TEXT" && (
                         <motion.div
@@ -512,7 +514,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 16 }}
                           transition={{ duration: 0.25, ease: "easeOut" }}
-                          className="mt-6"
+                          className="mb-6"
                         >
                           <LessonAudioPlayer
                             text={activeLesson.content}
@@ -522,6 +524,8 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                         </motion.div>
                       )}
                     </AnimatePresence>
+                    <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
+                  
                   </>
                 ) : (
                   <div className="bg-secondary/50 border border-border rounded-xl px-6 py-16 text-center">
@@ -641,7 +645,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.25 }}
-              className="fixed inset-0 z-[9999] flex flex-col bg-background"
+              className="fixed inset-0 z-[9999] flex flex-col bg-background max-w-8xl mx-auto"
             >
               {/* ── Top bar ── */}
               <div className="flex items-center justify-between gap-4 px-6 py-4 border-b border-border bg-white/[0.02] flex-shrink-0">
@@ -711,7 +715,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
 
               {/* ── Scrollable content ── */}
               <div className="flex-1 overflow-y-auto">
-                <div className="max-w-4xl mx-auto px-6 sm:px-10 py-8 sm:py-12">
+                <div className=" mx-auto px-6 sm:px-10 py-8 sm:py-12">
                   {activeLesson.type === "QUIZ" ? (
                     <QuizLoader
                       lessonId={activeLesson.id}
@@ -1054,7 +1058,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
       {/* Content body */}
       <div className="px-6 sm:px-8 py-6 sm:py-8 bg-card">
         <TextHighlighter lessonId={lessonId} isEnrolled={isEnrolled}>
-          <div className="max-w-3xl mx-auto space-y-5">
+          <div className="space-y-5">
             {blocks.map((block, i) => {
               switch (block.type) {
                 case "h1":
