@@ -25,7 +25,7 @@ export default async function AdminLayout({
         <AdminSidebar />
 
         {/* Page content */}
-        <div className="flex-1 min-w-0 animate-fade-in">{children}</div>
+        <div className="flex-1 min-w-0 animate-fade-in mt-4">{children}</div>
       </div>
     </div>
   );
