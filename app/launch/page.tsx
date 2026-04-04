@@ -118,7 +118,7 @@ export default function LaunchPage() {
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, delay: 0.15 }}
-          className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-[-0.04em] leading-[1.1] max-w-3xl mb-6"
+          className="text-4xl sm:text-4xl lg:text-5xl font-bold tracking-[-0.04em] leading-[1.1] max-w-3xl mb-6"
         >
           We&apos;re launching{" "}
           <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 bg-clip-text text-transparent">
@@ -138,7 +138,7 @@ export default function LaunchPage() {
         </motion.p>
 
         {/* Countdown */}
-        <motion.div
+        {/* <motion.div
           initial={{ opacity: 0, y: 24 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.55, delay: 0.3 }}
@@ -157,7 +157,7 @@ export default function LaunchPage() {
               </span>
             </div>
           ))}
-        </motion.div>
+        </motion.div> */}
 
         {/* Email / waitlist form */}
         <motion.div
