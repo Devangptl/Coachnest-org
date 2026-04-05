@@ -266,7 +266,7 @@ export async function cancelSubscription(userId: string) {
 
   const { endDate: cancelEndDate } = getPeriodDates(updated);
 
-  await prisma.subscription.update({
+  const dbSub = await prisma.subscription.update({
     where: { userId },
     data:  {
       status:      "CANCELLED",
@@ -276,7 +276,37 @@ export async function cancelSubscription(userId: string) {
     },
   });
 
-  return { success: true };
+  return { success: true, subscription: dbSub };
+}
+
+// ─── Resume subscription (undo cancel_at_period_end) ─────────────────────────
+
+export async function resumeSubscription(userId: string) {
+  const sub = await prisma.subscription.findUnique({
+    where:  { userId },
+    select: { stripeSubId: true, status: true },
+  });
+  if (!sub?.stripeSubId) throw new Error("No subscription found.");
+  if (sub.status !== "CANCELLED") throw new Error("Subscription is not in a cancelled state.");
+
+  const stripe = getStripe();
+
+  const updated = await stripe.subscriptions.update(sub.stripeSubId, {
+    cancel_at_period_end: false,
+  });
+
+  const { endDate } = getPeriodDates(updated);
+
+  const dbSub = await prisma.subscription.update({
+    where: { userId },
+    data:  {
+      status:      "ACTIVE",
+      cancelledAt: null,
+      endDate,
+    },
+  });
+
+  return { success: true, subscription: dbSub };
 }
 
 // ─── Stripe Customer Portal (billing management) ──────────────────────────────
