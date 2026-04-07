@@ -258,13 +258,26 @@ export async function cancelSubscription(userId: string) {
 
   const stripe = getStripe();
 
-  // cancel_at_period_end=true: Stripe keeps billing active until period end
-  // The returned object contains current_period_end so we can set a precise endDate
+  // cancel_at_period_end=true: Stripe sets cancel_at to the exact period end timestamp.
+  // Use cancel_at directly — it's the most reliable source with API version 2026-03-25.dahlia
+  // where current_period_end moved to the item level and may not be on the top-level object.
   const updated = await stripe.subscriptions.update(sub.stripeSubId, {
     cancel_at_period_end: true,
   });
 
-  const { endDate: cancelEndDate } = getPeriodDates(updated);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cancelAt = (updated as any).cancel_at as number | null | undefined;
+  let cancelEndDate: Date;
+
+  if (cancelAt) {
+    cancelEndDate = new Date(cancelAt * 1000);
+  } else {
+    // Fallback: retrieve with expanded items to get period dates
+    const fullSub = await stripe.subscriptions.retrieve(sub.stripeSubId, {
+      expand: ["items"],
+    });
+    cancelEndDate = getPeriodDates(fullSub).endDate;
+  }
 
   const dbSub = await prisma.subscription.update({
     where: { userId },
@@ -440,7 +453,13 @@ export async function handleSubscriptionUpdated(event: Stripe.Event) {
   else if (sub.cancel_at_period_end)      status = "CANCELLED";
   else if (sub.status !== "active")       status = "EXPIRED";
 
-  const { endDate } = getPeriodDates(sub);
+  // For CANCELLED: use cancel_at (exact period end set by Stripe when cancel_at_period_end=true)
+  // For others: use getPeriodDates
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cancelAt = (sub as any).cancel_at as number | null | undefined;
+  const endDate = (status === "CANCELLED" && cancelAt)
+    ? new Date(cancelAt * 1000)
+    : getPeriodDates(sub).endDate;
 
   await prisma.subscription.update({
     where: { userId },

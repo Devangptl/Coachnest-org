@@ -21,11 +21,12 @@ interface Props {
   courseMinPlan: string;
   isEnrolled: boolean;
   canAccessViaSub: boolean;
+  /** User had subscription-based enrollment but their subscription has since expired */
+  subscriptionExpiredForCourse: boolean;
   isWishlisted: boolean;
   isLoggedIn: boolean;
   userRole: string | null;
   planAccess: PlanAccess | null;
-  // --- newly added props for course includes ---
   lessonCount: number;
   totalDuration: number;
   language: string;
@@ -34,7 +35,8 @@ interface Props {
 
 export default function CourseEnrollBar({
   courseId, price, discountPrice, isFree, courseMinPlan,
-  isEnrolled, canAccessViaSub, isWishlisted, isLoggedIn, userRole,
+  isEnrolled, canAccessViaSub, subscriptionExpiredForCourse,
+  isWishlisted, isLoggedIn, userRole,
   planAccess,
   lessonCount, totalDuration, language, level,
 }: Props) {
@@ -116,6 +118,7 @@ export default function CourseEnrollBar({
                     courseId={courseId}
                     isEnrolled={isEnrolled}
                     canAccessViaSub={canAccessViaSub}
+                    subscriptionExpiredForCourse={subscriptionExpiredForCourse}
                     isFree={isFree}
                     price={hasDiscount ? discountNum : price}
                     courseMinPlan={courseMinPlan}

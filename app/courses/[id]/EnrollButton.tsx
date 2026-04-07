@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, Tag, X, Crown, Lock, PlayCircle } from "lucide-react";
+import { Loader2, CheckCircle2, Tag, X, Crown, Lock, PlayCircle, AlertCircle, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import type { PlanAccess } from "@/services/subscription.service";
@@ -18,6 +18,8 @@ interface Props {
   isEnrolled: boolean;
   /** Subscriber has plan access rights — clicking "Access Now" will enroll and consume a slot */
   canAccessViaSub: boolean;
+  /** User previously enrolled via subscription but the subscription has since expired */
+  subscriptionExpiredForCourse: boolean;
   isFree: boolean;
   price: number | null;
   courseMinPlan: string;
@@ -33,7 +35,8 @@ interface CouponData {
 }
 
 export default function EnrollButton({
-  courseId, isEnrolled: initialEnrolled, canAccessViaSub, isFree, price,
+  courseId, isEnrolled: initialEnrolled, canAccessViaSub,
+  subscriptionExpiredForCourse, isFree, price,
   courseMinPlan, planAccess,
 }: Props) {
   const router = useRouter();
@@ -235,6 +238,25 @@ export default function EnrollButton({
           className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
         >
           <Crown className="w-4 h-4" /> Upgrade for Unlimited Access
+        </Link>
+      </div>
+    );
+  }
+
+  // Subscription expired — user had access via a past subscription that is now expired.
+  // Show a resubscribe prompt instead of a purchase CTA, since they enrolled via sub.
+  if (subscriptionExpiredForCourse && !hasActiveSub) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-xl px-4 py-3 text-yellow-300 text-sm font-medium justify-center">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          Subscription expired — access paused
+        </div>
+        <Link
+          href="/dashboard/subscription"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
+        >
+          <RefreshCcw className="w-4 h-4" /> Resubscribe to regain access
         </Link>
       </div>
     );

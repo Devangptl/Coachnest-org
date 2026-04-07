@@ -50,11 +50,12 @@ async function getUserCourseData(
   userId?: string
 ) {
   const empty = {
-    isEnrolled:         false,
-    canAccessViaSub:    false,
-    completedLessonIds: [] as string[],
-    isWishlisted:       false,
-    planAccess:         null as Awaited<ReturnType<typeof getPlanAccess>> | null,
+    isEnrolled:                  false,
+    canAccessViaSub:             false,
+    subscriptionExpiredForCourse: false,
+    completedLessonIds:          [] as string[],
+    isWishlisted:                false,
+    planAccess:                  null as Awaited<ReturnType<typeof getPlanAccess>> | null,
   };
   if (!userId) return empty;
 
@@ -72,25 +73,67 @@ async function getUserCourseData(
     getPlanAccess(userId),
   ]);
 
-  // Subscription-based access: only for paid courses
-  // Free courses are accessible to all — no slot needed
+  // ── Determine effective enrollment ──────────────────────────────────────────
+  //
+  // Access rules:
+  //   • Free course      → permanent access (no subscription needed)
+  //   • Paid + Order     → permanent access (course was directly purchased)
+  //   • Paid + sub only  → access is ACTIVE only while the subscription is active
+  //                        (CANCELLED subscriptions within the billing period still count as active)
+  //
+  // This prevents subscription-enrolled courses from becoming permanently free
+  // after the subscription expires — the Enrollment record stays in the DB but
+  // access is gated on planAccess.isActive.
+
+  let isEnrolled = false;
+  let subscriptionExpiredForCourse = false;
+
+  if (enrollment) {
+    if (isFree) {
+      // Free courses: permanent access once enrolled
+      isEnrolled = true;
+    } else {
+      // Paid course: check whether this was a direct purchase or subscription enrollment
+      const paidOrder = await prisma.order.findFirst({
+        where:  { userId, courseId, status: "PAID" },
+        select: { id: true },
+      });
+
+      if (paidOrder) {
+        // Direct purchase → permanent access regardless of subscription
+        isEnrolled = true;
+      } else {
+        // Subscription enrollment → access tied to subscription status
+        if (planAccess.isActive) {
+          isEnrolled = true;
+        } else {
+          // Subscription has expired — user had access but lost it
+          isEnrolled = false;
+          subscriptionExpiredForCourse = true;
+        }
+      }
+    }
+  }
+
+  // ── Can enroll via active subscription (not yet enrolled) ──────────────────
+  //
+  // NOTE: We do NOT auto-enroll here. Viewing is free and must never consume
+  // a subscription slot. A slot is consumed only when the user clicks "Access Now"
+  // (POST /api/subscriptions/enroll).
+
   const meetsMinPlan = planMeetsRequirement(planAccess.plan, courseMinPlan);
   const canAccessViaSub =
     !isFree &&
+    !isEnrolled &&                    // not already counted above
     planAccess.isActive &&
     planAccess.canAccessPaidCourses &&
     meetsMinPlan &&
     !planAccess.limitReached;
 
-  // NOTE: We do NOT auto-enroll here.
-  // Viewing a course page is free and must never consume a subscription slot.
-  // A slot is only consumed when the user explicitly clicks "Access Now",
-  // which calls POST /api/subscriptions/enroll.
-  // isEnrolled is true only if an actual enrollment record exists.
-
   return {
-    isEnrolled:         Boolean(enrollment),
+    isEnrolled,
     canAccessViaSub,
+    subscriptionExpiredForCourse,
     completedLessonIds: completedRows.map((p) => p.lessonId),
     isWishlisted:       Boolean(wishlisted),
     planAccess,
@@ -109,7 +152,8 @@ export default async function CourseDetailPage({ params }: Props) {
   // User-specific data (parallel fetch, uncached)
   const session = await getSession();
   const {
-    isEnrolled, canAccessViaSub, completedLessonIds, isWishlisted, planAccess,
+    isEnrolled, canAccessViaSub, subscriptionExpiredForCourse,
+    completedLessonIds, isWishlisted, planAccess,
   } = await getUserCourseData(
     id,
     course.minPlan,
@@ -118,8 +162,8 @@ export default async function CourseDetailPage({ params }: Props) {
     session?.userId
   );
 
-  // A subscriber who hasn't clicked "Access Now" yet can still view lesson list
-  // but lesson content is locked until enrollment. Admins/instructors always have access.
+  // Admins and instructors always have full content access.
+  // For students: enrolled (active sub or direct purchase) or can access via active sub.
   const hasContentAccess =
     isEnrolled || canAccessViaSub ||
     session?.role === "ADMIN" || session?.role === "INSTRUCTOR";
@@ -166,6 +210,7 @@ export default async function CourseDetailPage({ params }: Props) {
             courseMinPlan={course.minPlan}
             isEnrolled={isEnrolled}
             canAccessViaSub={canAccessViaSub}
+            subscriptionExpiredForCourse={subscriptionExpiredForCourse}
             isWishlisted={isWishlisted}
             isLoggedIn={Boolean(session)}
             userRole={session?.role ?? null}
