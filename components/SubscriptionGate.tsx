@@ -104,7 +104,7 @@ export default function SubscriptionGate({
   if (isLoading) {
     // Render a neutral skeleton so layout doesn't jump
     return (
-      <div className="animate-pulse rounded-xl bg-secondary/40 min-h-[80px]" />
+      <div className="animate-pulse rounded-md bg-secondary/40 min-h-[80px]" />
     );
   }
 
@@ -169,7 +169,7 @@ function CardGate({
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
         <Link
           href="/pricing"
-          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-6 py-2.5 rounded-xl transition-colors"
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-6 py-2.5 rounded-md transition-colors"
         >
           <Zap className="w-4 h-4" />
           {ctaText ?? `Upgrade to ${config.requiredPlan}`}
@@ -202,7 +202,7 @@ function InlineGate({
   const badge = PLAN_BADGE_COLORS[config.requiredPlan];
 
   return (
-    <div className="flex items-center justify-between gap-4 p-4 rounded-xl border border-border bg-secondary/40">
+    <div className="flex items-center justify-between gap-4 p-4 rounded-md border border-border bg-secondary/40">
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0">
           <Lock className="w-3.5 h-3.5 text-white/40" />
@@ -239,7 +239,7 @@ function BannerGate({
   const badge = PLAN_BADGE_COLORS[config.requiredPlan];
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-md border border-amber-500/20 bg-amber-500/5">
       <div className="flex items-start gap-3">
         <Lock className="w-4 h-4 text-amber-400 mt-0.5 flex-shrink-0" />
         <div>

@@ -89,7 +89,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
     return (
       <div className="py-8 space-y-4">
         <div className="h-8 w-32 rounded bg-secondary/50 animate-pulse" />
-        <div className="h-48 rounded-xl bg-secondary/50 animate-pulse" />
+        <div className="h-48 rounded-md bg-secondary/50 animate-pulse" />
         <div className="space-y-3">
           {[1,2,3].map(i => <div key={i} className="h-24 rounded-lg bg-secondary/50 animate-pulse" />)}
         </div>
@@ -113,7 +113,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
       </Link>
 
       {/* Thread */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-md border border-border bg-card p-6">
         <div className="flex items-center gap-2 mb-3">
           {thread.isPinned && <span className="text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full">Pinned</span>}
           {thread.isResolved && (
@@ -146,14 +146,14 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
           {thread.replies.length} {thread.replies.length === 1 ? "Reply" : "Replies"}
         </h2>
         {thread.replies.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <div className="rounded-md border border-border bg-card p-8 text-center">
             <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-40" />
             <p className="text-muted-foreground text-sm">No replies yet. Be the first!</p>
           </div>
         ) : (
           <div className="space-y-3">
             {thread.replies.filter(r => !r.parentId).map((reply) => (
-              <div key={reply.id} className="rounded-xl border border-border bg-card p-5">
+              <div key={reply.id} className="rounded-md border border-border bg-card p-5">
                 <div className="flex gap-3">
                   {/* Vote buttons */}
                   <div className="flex flex-col items-center gap-1 pt-1">
@@ -196,7 +196,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
 
       {/* Reply Form / Upgrade notice */}
       {hasInstructorQA ? (
-        <div className="rounded-xl border border-border bg-card p-5">
+        <div className="rounded-md border border-border bg-card p-5">
           <h3 className="text-sm font-semibold text-foreground mb-3">Post a Reply</h3>
           <textarea
             rows={4}

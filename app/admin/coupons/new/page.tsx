@@ -128,7 +128,7 @@ export default function NewCouponPage() {
                     key={type}
                     type="button"
                     onClick={() => setForm({ ...form, discountType: type })}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all border ${
                       form.discountType === type
                         ? "bg-orange-500/20 border-orange-400/25 text-foreground"
                         : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -156,7 +156,7 @@ export default function NewCouponPage() {
             </div>
 
             {form.discount && (
-              <div className="p-3 bg-secondary rounded-xl border border-border">
+              <div className="p-3 bg-secondary rounded-md border border-border">
                 <p className="text-muted-foreground text-xs">Preview on ₹{samplePrice} course:</p>
                 <p className="text-emerald-400 font-semibold">
                   Save ₹{previewDiscount.toFixed(0)} → Pay ₹{(samplePrice - previewDiscount).toFixed(0)}

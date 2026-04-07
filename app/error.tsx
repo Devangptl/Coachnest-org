@@ -23,7 +23,7 @@ export default function GlobalError({ error, reset }: Props) {
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4">
       <GlassCard className="max-w-md w-full text-center py-16 animate-fade-in">
-        <div className="w-20 h-20 rounded-xl bg-red-500/20 border border-red-400/30 flex items-center justify-center mx-auto mb-6">
+        <div className="w-20 h-20 rounded-md bg-red-500/20 border border-red-400/30 flex items-center justify-center mx-auto mb-6">
           <AlertTriangle className="w-10 h-10 text-red-400" />
         </div>
         <h2 className="text-2xl font-bold text-white mb-3">

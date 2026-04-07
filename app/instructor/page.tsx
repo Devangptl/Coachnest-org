@@ -60,7 +60,7 @@ export default async function InstructorDashboard() {
           const Icon = s.icon;
           return (
             <GlassCard key={s.label} className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-xl ${s.bg} flex items-center justify-center flex-shrink-0`}>
+              <div className={`w-12 h-12 rounded-md ${s.bg} flex items-center justify-center flex-shrink-0`}>
                 <Icon className={`w-6 h-6 ${s.color}`} />
               </div>
               <div>
@@ -93,7 +93,7 @@ export default async function InstructorDashboard() {
           <GlassCard padding="sm">
             <div className="divide-y divide-border/50">
               {courses.map((course) => (
-                <div key={course.id} className="flex items-center gap-4 px-4 py-3.5 hover:bg-secondary/50 transition-colors">
+                <div key={course.id} className="flex items-center gap-4 px-4 py-3.5  transition-colors">
                   {course.thumbnail ? (
                     <img src={course.thumbnail} alt="" className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-border" />
                   ) : (

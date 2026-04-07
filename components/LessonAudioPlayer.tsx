@@ -317,7 +317,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
         {/* Header row */}
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
               <Headphones className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="min-w-0">
@@ -371,7 +371,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
             <button
               onClick={handlePrev}
               disabled={para === 0 || isLoading}
-              className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white/80 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-9 h-9 rounded-md bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white/80 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               title="Previous section"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -426,7 +426,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
             <button
               onClick={handleNext}
               disabled={para >= total - 1 || isLoading}
-              className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white/80 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-9 h-9 rounded-md bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white/80 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               title="Next section"
             >
               <ChevronRight className="w-4 h-4" />
@@ -440,7 +440,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
                   animate={{ opacity: 1, scale: 1 }}
                   exit={{ opacity: 0, scale: 0.7 }}
                   onClick={handleStop}
-                  className="w-9 h-9 rounded-xl bg-white/5 hover:bg-red-500/15 border border-white/[0.08] hover:border-red-500/30 text-white/40 hover:text-red-400 flex items-center justify-center transition-all"
+                  className="w-9 h-9 rounded-md bg-white/5 hover:bg-red-500/15 border border-white/[0.08] hover:border-red-500/30 text-white/40 hover:text-red-400 flex items-center justify-center transition-all"
                   title="Stop"
                 >
                   <Square className="w-3.5 h-3.5" />

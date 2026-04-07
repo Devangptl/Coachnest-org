@@ -202,7 +202,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="py-8 space-y-4">
         <div className="h-8 w-32 rounded bg-secondary/50 animate-pulse" />
-        <div className="h-60 rounded-xl bg-secondary/50 animate-pulse" />
+        <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
       </div>
     );
   }
@@ -234,7 +234,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       </Link>
 
       {/* ── Group Header ──────────────────────────────────── */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-md border border-border bg-card p-6">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div>
             <div className="flex items-center gap-2 mb-2">
@@ -314,7 +314,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </h2>
           <div className="grid sm:grid-cols-2 gap-3">
             {group.members.map((m) => (
-              <div key={m.userId} className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card">
+              <div key={m.userId} className="flex items-center gap-3 p-4 rounded-md border border-border bg-card">
                 <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
                   {m.user.avatar ? (
                     <img src={m.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
@@ -357,7 +357,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
               {[1,2,3].map(i => <div key={i} className="h-28 rounded-lg bg-secondary/50 animate-pulse" />)}
             </div>
           ) : notes.length === 0 ? (
-            <div className="rounded-xl border border-border bg-card p-10 text-center">
+            <div className="rounded-md border border-border bg-card p-10 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
               <p className="text-muted-foreground text-sm">No shared notes yet.</p>
               {isMember && (
@@ -367,7 +367,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (
-                <div key={note.id} className="rounded-xl border border-border bg-card p-5">
+                <div key={note.id} className="rounded-md border border-border bg-card p-5">
                   <h3 className="text-foreground font-semibold text-sm mb-2">{note.title}</h3>
                   <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap line-clamp-6">
                     {note.content}
@@ -437,19 +437,19 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           {progressLoading ? (
             <div className="space-y-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-xl bg-secondary/50 animate-pulse" />)}
+                {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-md bg-secondary/50 animate-pulse" />)}
               </div>
-              <div className="h-60 rounded-xl bg-secondary/50 animate-pulse" />
+              <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
             </div>
           ) : !progress ? (
-            <div className="rounded-xl border border-border bg-card p-10 text-center">
+            <div className="rounded-md border border-border bg-card p-10 text-center">
               <BarChart3 className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
               <p className="text-muted-foreground text-sm">Progress data unavailable.</p>
             </div>
           ) : (
             <>
               {/* Group XP Banner */}
-              <div className="rounded-xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-emerald-600/10 p-5 flex items-center gap-4">
+              <div className="rounded-md border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-emerald-600/10 p-5 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
                   <Zap className="w-7 h-7 text-emerald-400" />
                 </div>
@@ -470,7 +470,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 ].map((stat) => {
                   const Icon = stat.icon;
                   return (
-                    <div key={stat.label} className="rounded-xl border border-border bg-card p-4 text-center">
+                    <div key={stat.label} className="rounded-md border border-border bg-card p-4 text-center">
                       <div className={`w-8 h-8 rounded-lg ${stat.bg} border flex items-center justify-center mx-auto mb-2`}>
                         <Icon className={`w-4 h-4 ${stat.color}`} />
                       </div>
@@ -488,7 +488,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 </h2>
                 <div className="space-y-2">
                   {progress.members.map((m, i) => (
-                    <div key={m.user?.id} className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card">
+                    <div key={m.user?.id} className="flex items-center gap-4 p-4 rounded-md border border-border bg-card">
                       {/* Rank */}
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         i === 0 ? "bg-amber-500/15 text-amber-400 border border-amber-500/25" :

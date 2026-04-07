@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 function StatSkeleton() {
   return (
     <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
-      <Skeleton className="w-11 h-11 rounded-xl" />
+      <Skeleton className="w-11 h-11 rounded-md" />
       <div className="space-y-2">
         <Skeleton h="h-7" w="w-12" />
         <Skeleton h="h-3" w="w-20" />
@@ -34,7 +34,7 @@ export default function DashboardLoading() {
     <div>
       {/* Greeting */}
       <div className="mb-10 animate-pulse">
-        <Skeleton className="h-10 w-72 rounded-xl mb-2" />
+        <Skeleton className="h-10 w-72 rounded-md mb-2" />
         <Skeleton className="h-4 w-48 rounded-lg" />
       </div>
 

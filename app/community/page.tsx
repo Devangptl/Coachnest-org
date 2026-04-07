@@ -72,7 +72,7 @@ export default function CommunityHubPage() {
   const showLocks = !subLoading && !hasInstructorQA;
 
   return (
-    <div className="py-8 space-y-10">
+    <div className="py-5 space-y-10">
       {/* Hero */}
       <div className="flex items-start justify-between gap-4">
         <div>
@@ -99,18 +99,18 @@ export default function CommunityHubPage() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group rounded-xl border p-5 transition-all hover:-translate-y-0.5 relative overflow-hidden ${
+              className={`group rounded-md border p-5 transition-all relative overflow-hidden ${
                 isLocked
-                  ? "border-border bg-card/60 hover:bg-secondary/30"
-                  : "border-border bg-card hover:bg-secondary/50 hover:border-white/15"
+                  ? "border-border bg-card hover:border-primary/30 cursor-not-allowed"
+                  : "border-border bg-card hover:border-primary/30"
               }`}
             >
               <div className="flex items-start gap-4">
-                <div className={`w-10 h-10 rounded-xl ${item.bg} border flex items-center justify-center flex-shrink-0 ${isLocked ? "opacity-50" : ""}`}>
+                <div className={`w-10 h-10 rounded-md ${item.bg} border flex items-center justify-center flex-shrink-0 ${isLocked ? "opacity-50" : ""}`}>
                   <Icon className={`w-5 h-5 ${item.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-sm mb-1 flex items-center gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground group-hover:text-white"}`}>
+                  <p className={`font-semibold text-sm mb-1 flex items-center gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground"}`}>
                     {item.title}
                     {isLocked ? (
                       <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500/70 border border-emerald-500/20">
@@ -137,7 +137,7 @@ export default function CommunityHubPage() {
       {showLocks && (
         <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/8 to-emerald-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+            <div className="w-9 h-9 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
               <Zap className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
@@ -149,7 +149,7 @@ export default function CommunityHubPage() {
           </div>
           <Link
             href="/pricing"
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-xl transition-colors flex-shrink-0"
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0"
           >
             <Zap className="w-3.5 h-3.5" /> Upgrade to Pro
           </Link>
@@ -174,7 +174,7 @@ export default function CommunityHubPage() {
             ))}
           </div>
         ) : threads.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <div className="rounded-md border border-border bg-card p-8 text-center">
             <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
             <p className="text-muted-foreground text-sm">No discussions yet. Be the first to start one!</p>
             <Link href="/community/forums" className="inline-flex items-center gap-1.5 mt-3 text-emerald-400 text-xs font-medium hover:underline">
@@ -187,10 +187,10 @@ export default function CommunityHubPage() {
               <Link
                 key={t.id}
                 href={`/community/forums/${t.id}`}
-                className="flex items-center justify-between p-4 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-all group"
+                className="flex items-center justify-between p-4 rounded-lg border border-border bg-card transition-all group"
               >
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground text-sm font-medium truncate group-hover:text-white transition-colors">{t.title}</p>
+                  <p className="text-foreground text-sm font-medium truncate transition-colors">{t.title}</p>
                   <p className="text-muted-foreground text-xs mt-0.5">
                     by {t.author.name} · {new Date(t.createdAt).toLocaleDateString()}
                   </p>
@@ -223,7 +223,7 @@ export default function CommunityHubPage() {
             ))}
           </div>
         ) : groups.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <div className="rounded-md border border-border bg-card p-8 text-center">
             <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
             <p className="text-muted-foreground text-sm">No study groups yet. Create one!</p>
             <Link href="/community/groups" className="inline-flex items-center gap-1.5 mt-3 text-emerald-400 text-xs font-medium hover:underline">
@@ -236,9 +236,9 @@ export default function CommunityHubPage() {
               <Link
                 key={g.id}
                 href={`/community/groups/${g.id}`}
-                className="p-4 rounded-lg border border-border bg-card hover:bg-secondary/50 transition-all group"
+                className="p-4 rounded-lg border border-border bg-card transition-all group"
               >
-                <p className="text-foreground text-sm font-semibold group-hover:text-white transition-colors">{g.name}</p>
+                <p className="text-foreground text-sm font-semibold transition-colors">{g.name}</p>
                 {g.description && (
                   <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{g.description}</p>
                 )}
@@ -270,7 +270,7 @@ export default function CommunityHubPage() {
             ))}
           </div>
         ) : events.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <div className="rounded-md border border-border bg-card p-8 text-center">
             <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
             <p className="text-muted-foreground text-sm">No activity yet. Start learning and contributing!</p>
           </div>

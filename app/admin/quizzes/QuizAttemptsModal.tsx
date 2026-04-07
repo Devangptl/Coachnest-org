@@ -86,7 +86,7 @@ export default function QuizAttemptsModal({
                     { label: "Pass Rate", value: `${passRate}%` },
                     { label: "Avg Time", value: avgTime > 0 ? formatDuration(avgTime) : "—" },
                   ].map((s) => (
-                    <div key={s.label} className="bg-secondary border border-border rounded-xl p-3 text-center">
+                    <div key={s.label} className="bg-secondary border border-border rounded-md p-3 text-center">
                       <p className="text-lg font-bold text-foreground">{s.value}</p>
                       <p className="text-muted-foreground/70 text-xs">{s.label}</p>
                     </div>
@@ -144,7 +144,7 @@ export default function QuizAttemptsModal({
                       {/* Expanded: per-question answer breakdown */}
                       {isExpanded && questions.length > 0 && (
                         <div className="px-3 pb-4 pt-1">
-                          <div className="bg-secondary/30 border border-border/50 rounded-xl p-3 space-y-2">
+                          <div className="bg-secondary/30 border border-border/50 rounded-md p-3 space-y-2">
                             <p className="text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider mb-2">
                               Answer Breakdown
                             </p>

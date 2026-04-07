@@ -45,7 +45,7 @@ export default async function InstructorStudentsPage() {
           </div>
           <div className="divide-y divide-border/50">
             {enrollments.map((e) => (
-              <div key={`${e.userId}-${e.courseId}`} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center hover:bg-secondary/50 transition-colors">
+              <div key={`${e.userId}-${e.courseId}`} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center  transition-colors">
                 <div className="col-span-4 flex items-center gap-3 min-w-0">
                   {e.user.avatar ? (
                     <img src={e.user.avatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />

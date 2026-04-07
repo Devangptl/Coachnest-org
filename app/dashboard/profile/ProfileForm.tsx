@@ -69,7 +69,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             required
             value={form.name}
             onChange={(e) => handleChange("name", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="Your full name"
           />
         </div>
@@ -83,7 +83,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             type="text"
             value={form.headline}
             onChange={(e) => handleChange("headline", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="e.g. Full Stack Developer | Student"
           />
         </div>
@@ -97,7 +97,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             rows={3}
             value={form.bio}
             onChange={(e) => handleChange("bio", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all resize-none"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-white text-sm placeholder-white/30 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all resize-none"
             placeholder="Tell us about yourself..."
           />
         </div>
@@ -111,7 +111,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             type="url"
             value={form.website}
             onChange={(e) => handleChange("website", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="https://yourwebsite.com"
           />
         </div>
@@ -125,7 +125,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
             type="url"
             value={form.avatar}
             onChange={(e) => handleChange("avatar", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="https://example.com/avatar.jpg"
           />
         </div>
@@ -133,7 +133,7 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
         {/* Message */}
         {message && (
           <div
-            className={`text-sm px-4 py-2.5 rounded-xl border ${
+            className={`text-sm px-4 py-2.5 rounded-md border ${
               message.type === "success"
                 ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-700 dark:text-emerald-300"
                 : "bg-red-500/10 border-red-400/30 text-red-700 dark:text-red-300"

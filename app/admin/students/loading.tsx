@@ -8,7 +8,7 @@ export default function StudentsLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-28 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-28 rounded-md mb-2" />
         <Skeleton className="h-4 w-72 rounded-lg" />
       </div>
 
@@ -19,7 +19,7 @@ export default function StudentsLoading() {
             key={i}
             className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
-            <Skeleton className="w-12 h-12 rounded-xl" />
+            <Skeleton className="w-12 h-12 rounded-md" />
             <div className="space-y-2">
               <Skeleton h="h-8" w="w-14" />
               <Skeleton h="h-4" w="w-28" />
@@ -30,7 +30,7 @@ export default function StudentsLoading() {
 
       {/* Search bar */}
       <div className="mb-6 animate-pulse">
-        <Skeleton className="h-10 w-72 rounded-xl" />
+        <Skeleton className="h-10 w-72 rounded-md" />
       </div>
 
       {/* Student table */}

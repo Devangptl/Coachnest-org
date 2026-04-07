@@ -36,7 +36,7 @@ export default function RefundPolicyPage() {
           {/* Header */}
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                 <RefreshCw className="w-5 h-5 text-emerald-400/70" />
               </div>
               <div>
@@ -52,17 +52,17 @@ export default function RefundPolicyPage() {
 
           {/* Quick summary cards */}
           <div className="grid sm:grid-cols-3 gap-4 mb-12">
-            <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-5">
+            <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-5">
               <CheckCircle className="w-6 h-6 text-emerald-400/70 mb-3" />
               <p className="text-white/80 font-semibold text-sm mb-1">30-Day Guarantee</p>
               <p className="text-white/35 text-xs leading-relaxed">Full refund within 30 days of purchase on most courses.</p>
             </div>
-            <div className="rounded-xl border border-white/10 bg-white/[.02] p-5">
+            <div className="rounded-md border border-white/10 bg-white/[.02] p-5">
               <Clock className="w-6 h-6 text-white/30 mb-3" />
               <p className="text-white/80 font-semibold text-sm mb-1">5-10 Business Days</p>
               <p className="text-white/35 text-xs leading-relaxed">Typical time for funds to appear in your account.</p>
             </div>
-            <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-5">
+            <div className="rounded-md border border-red-500/20 bg-red-500/5 p-5">
               <XCircle className="w-6 h-6 text-red-400/60 mb-3" />
               <p className="text-white/80 font-semibold text-sm mb-1">No Limit Exceeded</p>
               <p className="text-white/35 text-xs leading-relaxed">Refund requests must be made within 30 days of purchase.</p>
@@ -73,7 +73,7 @@ export default function RefundPolicyPage() {
 
             {/* Sticky table of contents */}
             <aside className="hidden lg:block">
-              <div className="sticky top-28 rounded-xl border border-white/8 bg-white/[.03] p-4">
+              <div className="sticky top-28 rounded-md border border-white/8 bg-white/[.03] p-4">
                 <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Contents</p>
                 <ul className="space-y-1.5">
                   {SECTIONS.map((s) => (
@@ -172,7 +172,7 @@ export default function RefundPolicyPage() {
 
               <Section id="contact" title="8. Contact Us">
                 <p>If you have any questions about our refund policy or need help with a refund request, please get in touch:</p>
-                <div className="rounded-xl border border-white/10 bg-white/[.03] p-5 not-prose">
+                <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
                   <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Support Team</p>
                   <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 text-sm transition-colors">
                     Submit a support request →
@@ -196,9 +196,9 @@ export default function RefundPolicyPage() {
                 <Link
                   key={doc.href}
                   href={doc.href}
-                  className="rounded-xl border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-4 group transition-all"
+                  className="rounded-md border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-4 group transition-all"
                 >
-                  <p className="text-white/70 text-sm font-medium group-hover:text-white transition-colors mb-1">{doc.label}</p>
+                  <p className="text-white/70 text-sm font-medium  transition-colors mb-1">{doc.label}</p>
                   <p className="text-white/30 text-xs">{doc.desc}</p>
                 </Link>
               ))}

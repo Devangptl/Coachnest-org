@@ -131,7 +131,7 @@ export default async function QuizHistoryPage() {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+              <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
                 <Icon className={`w-6 h-6 ${stat.color}`} />
               </div>
               <div>
@@ -154,10 +154,10 @@ export default async function QuizHistoryPage() {
                   <img
                     src={quiz.courseThumbnail}
                     alt=""
-                    className="w-14 h-14 rounded-xl object-cover flex-shrink-0"
+                    className="w-14 h-14 rounded-md object-cover flex-shrink-0"
                   />
                 ) : (
-                  <div className="w-14 h-14 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+                  <div className="w-14 h-14 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
                     <HelpCircle className="w-6 h-6 text-muted-foreground/30" />
                   </div>
                 )}

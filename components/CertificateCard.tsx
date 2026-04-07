@@ -43,7 +43,7 @@ export default function CertificateCard({ cert }: Props) {
   return (
     <div className="glass p-5 flex gap-4 items-start hover:bg-white/[.12] transition-colors">
       {/* Thumbnail */}
-      <div className="w-16 h-16 rounded-xl overflow-hidden bg-orange-500/15 flex-shrink-0 relative">
+      <div className="w-16 h-16 rounded-md overflow-hidden bg-orange-500/15 flex-shrink-0 relative">
         {cert.course.thumbnail ? (
           <Image src={cert.course.thumbnail} alt={cert.course.title} fill className="object-cover" />
         ) : (

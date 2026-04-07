@@ -134,7 +134,7 @@ export default async function DashboardPage() {
           const Icon = stat.icon;
           return (
             <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+              <div className="w-11 h-11 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
                 <Icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div>
@@ -151,7 +151,7 @@ export default async function DashboardPage() {
         <GlassCard className="mb-8 border-orange-400/20">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-xl bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+              <div className="w-11 h-11 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
                 <Crown className="w-5 h-5 text-orange-400" />
               </div>
               <div>
@@ -208,7 +208,7 @@ export default async function DashboardPage() {
       ) : (
         <GlassCard className="flex items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+            <div className="w-11 h-11 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
               <Zap className="w-5 h-5 text-yellow-400" />
             </div>
             <div>

@@ -533,7 +533,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       {!showForm && !editingId && (
         <button
           onClick={() => setShowForm(true)}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-white/40 hover:bg-secondary transition-all text-sm"
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-md border border-dashed border-border text-muted-foreground hover:text-foreground hover:border-white/40 hover:bg-secondary transition-all text-sm"
         >
           <PlusCircle className="w-4 h-4" /> Add Lesson
         </button>
@@ -591,7 +591,7 @@ function LessonFormFields({
                 key={t}
                 type="button"
                 onClick={() => setForm({ ...form, type: t })}
-                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border text-sm transition-all ${
+                className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-md border text-sm transition-all ${
                   form.type === t
                     ? t === "QUIZ"
                       ? "bg-amber-500/20 border-amber-400/40 text-foreground"
@@ -657,7 +657,7 @@ function LessonFormFields({
       )}
 
       {/* Free preview toggle */}
-      <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
+      <div className="flex items-center justify-between bg-secondary border border-border rounded-md px-4 py-3">
         <div>
           <p className="text-foreground text-sm font-medium">Free preview</p>
           <p className="text-muted-foreground/70 text-xs mt-0.5">Allow non-enrolled users to view this lesson</p>
@@ -704,7 +704,7 @@ function QuizBuilderInline({
   }
 
   return (
-    <div className="space-y-4 border border-amber-400/20 rounded-xl p-4 bg-amber-500/5">
+    <div className="space-y-4 border border-amber-400/20 rounded-md p-4 bg-amber-500/5">
       <div className="flex items-center gap-2 mb-1">
         <HelpCircle className="w-4 h-4 text-amber-400" />
         <span className="text-amber-400 text-sm font-semibold">Quiz Configuration</span>
@@ -764,7 +764,7 @@ function QuizBuilderInline({
         </div>
 
         {quizForm.questions.map((q, qIdx) => (
-          <div key={qIdx} className="bg-secondary border border-border rounded-xl p-3 space-y-3">
+          <div key={qIdx} className="bg-secondary border border-border rounded-md p-3 space-y-3">
             <div className="flex items-start justify-between">
               <span className="text-muted-foreground text-xs font-semibold">Q{qIdx + 1}</span>
               <div className="flex items-center gap-2">

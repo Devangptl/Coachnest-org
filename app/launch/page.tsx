@@ -147,7 +147,7 @@ export default function LaunchPage() {
           {COUNTDOWN_UNITS.map((label, i) => (
             <div
               key={label}
-              className="glass flex flex-col items-center justify-center rounded-xl p-4 sm:p-6 min-w-[70px] sm:min-w-[90px]"
+              className="glass flex flex-col items-center justify-center rounded-md p-4 sm:p-6 min-w-[70px] sm:min-w-[90px]"
             >
               <span className="text-3xl sm:text-4xl font-bold text-foreground tabular-nums leading-none">
                 {String(values[i]).padStart(2, "0")}
@@ -167,7 +167,7 @@ export default function LaunchPage() {
           className="w-full max-w-md mb-10"
         >
           {submitted ? (
-            <div className="glass border-orange-400/30 shadow-glow flex items-center justify-center gap-2.5 py-4 px-6 rounded-xl text-orange-400 font-medium">
+            <div className="glass border-orange-400/30 shadow-glow flex items-center justify-center gap-2.5 py-4 px-6 rounded-md text-orange-400 font-medium">
               <Sparkles className="w-4 h-4 shrink-0" />
               You&apos;re on the list — we&apos;ll be in touch!
             </div>

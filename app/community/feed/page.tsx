@@ -68,7 +68,7 @@ export default function ActivityFeedPage() {
           ))}
         </div>
       ) : events.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-12 text-center">
+        <div className="rounded-md border border-border bg-card p-12 text-center">
           <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">No activity yet. Start learning and contributing to see updates here!</p>
         </div>
@@ -82,7 +82,7 @@ export default function ActivityFeedPage() {
               return (
                 <div
                   key={e.id}
-                  className="flex items-center gap-4 p-4 rounded-xl border border-border bg-card hover:bg-secondary/30 transition-all"
+                  className="flex items-center gap-4 p-4 rounded-md border border-border bg-card hover:bg-secondary/30 transition-all"
                 >
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">

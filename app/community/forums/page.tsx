@@ -117,7 +117,7 @@ export default function ForumsPage() {
             placeholder="Search discussions..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
+            className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary/20 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
           />
         </div>
         <div className="flex gap-1 p-1 bg-secondary rounded-lg flex-shrink-0">
@@ -143,7 +143,7 @@ export default function ForumsPage() {
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-12 text-center">
+        <div className="rounded-md border border-border bg-card p-12 text-center">
           <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">
             {search ? "No threads match your search." : "No discussions yet. Be the first to start one!"}
@@ -155,7 +155,7 @@ export default function ForumsPage() {
             <Link
               key={t.id}
               href={`/community/forums/${t.id}`}
-              className="block p-5 rounded-xl border border-border bg-card hover:bg-secondary/50 transition-all group"
+              className="block p-5 rounded-md border border-border bg-card transition-all group"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
@@ -171,7 +171,7 @@ export default function ForumsPage() {
                       </span>
                     )}
                   </div>
-                  <p className="text-foreground font-semibold text-sm group-hover:text-white transition-colors">{t.title}</p>
+                  <p className="text-foreground font-semibold text-sm  transition-colors">{t.title}</p>
                   <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{t.body}</p>
                   <p className="text-muted-foreground/60 text-xs mt-2">
                     {t.author.name} · {new Date(t.createdAt).toLocaleDateString()}

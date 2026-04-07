@@ -8,7 +8,7 @@ export default function AnalyticsLoading() {
     <div className="space-y-8">
       {/* Header */}
       <div className="animate-pulse">
-        <Skeleton className="h-9 w-32 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-32 rounded-md mb-2" />
         <Skeleton className="h-4 w-48 rounded-lg" />
       </div>
 
@@ -19,7 +19,7 @@ export default function AnalyticsLoading() {
             key={i}
             className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
-            <Skeleton className="w-11 h-11 rounded-xl" />
+            <Skeleton className="w-11 h-11 rounded-md" />
             <div className="space-y-2">
               <Skeleton h="h-7" w="w-20" />
               <Skeleton h="h-3" w="w-24" />
@@ -34,7 +34,7 @@ export default function AnalyticsLoading() {
           <Skeleton className="h-9 w-24 rounded-lg" />
           <Skeleton className="h-9 w-28 rounded-lg" />
         </div>
-        <Skeleton className="h-64 w-full rounded-xl" />
+        <Skeleton className="h-64 w-full rounded-md" />
       </div>
 
       {/* Bottom row: Top Courses + Recent Orders */}

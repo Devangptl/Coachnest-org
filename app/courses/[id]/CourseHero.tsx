@@ -149,7 +149,7 @@ export default function CourseHero({
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
-            <div className="relative aspect-video rounded-xl overflow-hidden bg-gradient-to-br from-orange-500/30 to-orange-700/30 border border-border shadow-xl shadow-orange-500/5 group">
+            <div className="relative aspect-video rounded-md overflow-hidden bg-gradient-to-br from-orange-500/30 to-orange-700/30 border border-border shadow-xl shadow-orange-500/5 group">
               {thumbnail ? (
                 <Image
                   src={thumbnail}

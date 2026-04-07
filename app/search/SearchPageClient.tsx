@@ -201,7 +201,7 @@ export default function SearchPageClient() {
                   key={p}
                   onClick={() => setPage(p)}
                   className={cn(
-                    "w-9 h-9 rounded-xl text-sm font-medium transition-all",
+                    "w-9 h-9 rounded-md text-sm font-medium transition-all",
                     page === p
                       ? "bg-orange-500 text-white"
                       : "bg-secondary text-muted-foreground hover:bg-secondary"

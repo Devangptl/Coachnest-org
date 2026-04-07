@@ -39,7 +39,7 @@ export default function LessonList({
             key={lesson.id}
             onClick={() => onSelectLesson?.(lesson.id)}
             className={cn(
-              "flex items-center gap-3 p-3 rounded-xl text-left transition-all w-full",
+              "flex items-center gap-3 p-3 rounded-md text-left transition-all w-full",
               isActive
                 ? "bg-gradient-to-r from-orange-600/25 to-orange-500/15 border border-orange-400/25"
                 : "hover:bg-secondary border border-transparent"

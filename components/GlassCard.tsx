@@ -29,11 +29,11 @@ export default function GlassCard({
     <div
       className={cn(
         // Core glass effect
-        "bg-card border border-border rounded-lg shadow-xl",
+        "bg-card border border-border rounded-lg",
         // Subtle inner glow on hover
-        "transition-all duration-300 hover:bg-secondary hover:border-border/80",
+        "transition-all duration-300 hover:shadow-glow",
         // Optional stronger glow
-        glow && "shadow-2xl shadow-orange-600/15 border-orange-400/25",
+        glow && "",
         paddingMap[padding],
         className
       )}

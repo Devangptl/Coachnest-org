@@ -228,7 +228,7 @@ export default function SearchModal({ open, onClose }: Props) {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-[200] bg-black/80 backdrop-blur-xl"
+            className="fixed inset-0 z-[200] bg-black/20 backdrop-blur-sm"
             onClick={onClose}
           />
 
@@ -243,7 +243,7 @@ export default function SearchModal({ open, onClose }: Props) {
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className="relative rounded-2xl overflow-hidden border border-white/[0.09] shadow-[0_24px_80px_rgba(0,0,0,0.7)] flex flex-col"
+                className="relative rounded-2xl overflow-hidden border border-border shadow-[0 5px 12px rgba(0,0,0,1)] flex flex-col"
                 style={{ background: "hsl(var(--card))" }}
               >
                 {/* Orange top glow line */}
@@ -405,7 +405,7 @@ export default function SearchModal({ open, onClose }: Props) {
                             onClick={() => open_course(c.id)}
                             onMouseEnter={() => setFocused(i)}
                             className={cn(
-                              "flex items-center gap-2.5 px-2.5 py-2 rounded-xl transition-all group border",
+                              "flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all group border",
                               focused === i
                                 ? "bg-orange-500/[0.07] border-orange-400/[0.15]"
                                 : "border-transparent hover:bg-white/[0.035] hover:border-white/[0.07]"
@@ -472,7 +472,7 @@ export default function SearchModal({ open, onClose }: Props) {
                   {/* ── No results ─────────────────────────────────────── */}
                   {!loading && query && courses.length === 0 && (
                     <div className="flex flex-col items-center py-8 text-center">
-                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-2.5">
+                      <div className="w-10 h-10 rounded-md bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-2.5">
                         <Search className="w-4 h-4 text-white/15" />
                       </div>
                       <p className="text-sm font-medium text-foreground/50">No results for "{query}"</p>

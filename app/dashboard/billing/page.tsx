@@ -131,11 +131,11 @@ export default function BillingPage() {
   // ── Loading ────────────────────────────────────────────────────────────────
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6 animate-pulse">
+      <div className="space-y-6 animate-pulse">
         <div className="h-8 w-40 bg-secondary rounded-lg" />
-        <div className="h-32 bg-secondary rounded-xl" />
-        <div className="h-40 bg-secondary rounded-xl" />
-        <div className="h-64 bg-secondary rounded-xl" />
+        <div className="h-32 bg-secondary rounded-md" />
+        <div className="h-40 bg-secondary rounded-md" />
+        <div className="h-64 bg-secondary rounded-md" />
       </div>
     );
   }
@@ -146,7 +146,7 @@ export default function BillingPage() {
 
   return (
     <StripeProvider>
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="space-y-8">
 
         {/* ── Page header ──────────────────────────────────────────────────── */}
         <div className="flex items-center justify-between flex-wrap gap-3">
@@ -171,7 +171,7 @@ export default function BillingPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-xl border border-border p-5"
+            className="glass rounded-md border border-border p-5"
           >
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-3">
@@ -258,7 +258,7 @@ export default function BillingPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="glass rounded-xl border border-border p-5"
+          className="glass rounded-md border border-border p-5"
         >
           <div className="flex items-center justify-between mb-5">
             <h2 className="font-semibold text-foreground flex items-center gap-2">
@@ -276,7 +276,7 @@ export default function BillingPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
-          className="glass rounded-xl border border-border overflow-hidden"
+          className="glass rounded-md border border-border overflow-hidden"
         >
           <div className="px-5 py-4 border-b border-border flex items-center gap-2">
             <Receipt className="w-4 h-4 text-orange-400" />
@@ -372,7 +372,7 @@ export default function BillingPage() {
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-xl border border-border p-8 text-center"
+            className="glass rounded-md border border-border p-8 text-center"
           >
             <Crown className="w-10 h-10 text-orange-400/40 mx-auto mb-3" />
             <h3 className="font-semibold text-foreground mb-1">No active subscription</h3>
@@ -381,7 +381,7 @@ export default function BillingPage() {
             </p>
             <Link
               href="/dashboard/subscription"
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-md bg-gradient-to-r from-orange-500 to-orange-400 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
             >
               <Crown className="w-4 h-4" /> View Plans
             </Link>
@@ -393,7 +393,7 @@ export default function BillingPage() {
       <Dialog open={showCancelDialog} onOpenChange={(v) => !v && setShowCancelDialog(false)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-1">
+            <div className="w-12 h-12 rounded-md bg-red-500/10 flex items-center justify-center mb-1">
               <CalendarX2 className="w-6 h-6 text-red-400" />
             </div>
             <DialogTitle>Cancel subscription?</DialogTitle>
@@ -418,14 +418,14 @@ export default function BillingPage() {
           <div className="flex gap-3 mt-2">
             <button
               onClick={() => setShowCancelDialog(false)}
-              className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-secondary/60 transition-all"
+              className="flex-1 py-2.5 rounded-md border border-border text-sm font-medium text-foreground hover:bg-secondary/60 transition-all"
             >
               Keep subscription
             </button>
             <button
               onClick={handleConfirmCancel}
               disabled={cancelling}
-              className="flex-1 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-2.5 rounded-md bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {cancelling
                 ? <><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>

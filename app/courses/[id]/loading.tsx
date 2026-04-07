@@ -28,8 +28,8 @@ export default function CourseDetailLoading() {
               </div>
               
               {/* Title */}
-              <div className="skeleton h-10 w-full max-w-lg rounded-xl mb-3" />
-              <div className="skeleton h-10 w-2/3 max-w-md rounded-xl mb-3" />
+              <div className="skeleton h-10 w-full max-w-lg rounded-md mb-3" />
+              <div className="skeleton h-10 w-2/3 max-w-md rounded-md mb-3" />
 
               {/* Description */}
               <div className="space-y-2 mb-4">
@@ -56,7 +56,7 @@ export default function CourseDetailLoading() {
 
             {/* Right thumbnail */}
             <div className="lg:w-[360px] flex-shrink-0">
-              <div className="skeleton aspect-video w-full rounded-xl" />
+              <div className="skeleton aspect-video w-full rounded-md" />
               <div className="grid grid-cols-3 gap-2 mt-3">
                 {Array.from({ length: 3 }).map((_, i) => (
                   <div key={i} className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center flex flex-col items-center gap-1.5">
@@ -83,8 +83,8 @@ export default function CourseDetailLoading() {
              <div className="flex flex-col sm:flex-row gap-2">
                 <div className="skeleton h-10 w-full sm:w-32 rounded-lg" />
                 <div className="flex gap-2">
-                  <div className="skeleton h-[46px] w-[46px] rounded-xl" />
-                  <div className="skeleton h-[46px] w-[46px] rounded-xl" />
+                  <div className="skeleton h-[46px] w-[46px] rounded-md" />
+                  <div className="skeleton h-[46px] w-[46px] rounded-md" />
                 </div>
              </div>
           </div>
@@ -104,7 +104,7 @@ export default function CourseDetailLoading() {
         {/* Tabs & Content */}
         <div className="w-full space-y-4 sm:space-y-6">
            {/* Tab bar */}
-           <div className="flex gap-2 p-1.5 bg-secondary/30 rounded-xl w-max border border-border/50">
+           <div className="flex gap-2 p-1.5 bg-secondary/30 rounded-md w-max border border-border/50">
              <div className="skeleton h-9 w-24 rounded-lg" />
              <div className="skeleton h-9 w-24 rounded-lg" />
              <div className="skeleton h-9 w-24 rounded-lg" />

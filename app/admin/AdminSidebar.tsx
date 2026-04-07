@@ -99,7 +99,7 @@ export default function AdminSidebar() {
       {/* ── Mobile: floating toggle button ──────────────────────────── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-xl bg-gradient-to-br from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-md bg-gradient-to-br from-orange-600 to-orange-500 text-white shadow-lg shadow-orange-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open admin menu"
       >
         <Menu className="w-5 h-5" />

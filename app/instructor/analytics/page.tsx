@@ -48,7 +48,7 @@ export default async function InstructorAnalyticsPage() {
           const Icon = s.icon;
           return (
             <GlassCard key={s.label} className="flex flex-col gap-3">
-              <div className={`w-10 h-10 rounded-xl ${s.bg} flex items-center justify-center`}>
+              <div className={`w-10 h-10 rounded-md ${s.bg} flex items-center justify-center`}>
                 <Icon className={`w-5 h-5 ${s.color}`} />
               </div>
               <div>
@@ -83,7 +83,7 @@ export default async function InstructorAnalyticsPage() {
                   ? course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length
                   : null;
                 return (
-                  <div key={course.id} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center hover:bg-secondary/50 transition-colors">
+                  <div key={course.id} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center  transition-colors">
                     <div className="col-span-5 min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{course.title}</p>
                       <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border mt-0.5 ${

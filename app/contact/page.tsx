@@ -108,7 +108,7 @@ export default function ContactPage() {
           {CONTACT_CARDS.map(({ icon: Icon, title, detail, sub, iconColor, bgColor }) => (
             <div
               key={title}
-              className="rounded-xl border border-border/60 bg-secondary/20 p-5 flex gap-4 transition-all hover:bg-secondary/50 hover:border-border"
+              className="rounded-md border border-border/60 bg-secondary/20 p-5 flex gap-4 transition-all  hover:border-border"
             >
               <div className={`w-9 h-9 rounded-lg ${bgColor} border flex items-center justify-center shrink-0 mt-0.5`}>
                 <Icon className={`w-4 h-4 ${iconColor}`} />
@@ -130,7 +130,7 @@ export default function ContactPage() {
           {/* Sidebar */}
           <div className="lg:col-span-2 space-y-4">
             {/* How Can We Help */}
-            <div className="rounded-xl border border-border/60 bg-secondary/20 p-6">
+            <div className="rounded-md border border-border/60 bg-secondary/20 p-6">
               <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-orange-500" />
                 How Can We Help?
@@ -152,7 +152,7 @@ export default function ContactPage() {
             </div>
 
             {/* FAQ */}
-            <div className="rounded-xl border border-border/60 bg-secondary/20 p-6">
+            <div className="rounded-md border border-border/60 bg-secondary/20 p-6">
               <h2 className="text-base font-bold text-foreground mb-4">
                 Frequently Asked Questions
               </h2>
@@ -172,7 +172,7 @@ export default function ContactPage() {
             </div>
 
             {/* Response time */}
-            <div className="rounded-xl border border-orange-500/20 bg-orange-500/5 p-5 flex gap-3 items-center">
+            <div className="rounded-md border border-orange-500/20 bg-orange-500/5 p-5 flex gap-3 items-center">
               <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
                 <Clock className="w-4 h-4 text-orange-500" />
               </div>

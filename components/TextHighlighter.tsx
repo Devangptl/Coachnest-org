@@ -205,7 +205,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-[#1a1a2e] border border-border rounded-xl shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2">
+            <div className="bg-[#1a1a2e] border border-border rounded-md shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2">
               {/* Color picker */}
               <div className="flex items-center gap-1.5 px-1">
                 <Palette className="w-3 h-3 text-white/30" />
@@ -256,7 +256,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-[#1a1a2e] border border-border rounded-xl shadow-2xl shadow-black/50 px-2.5 py-2 flex items-center gap-1.5">
+            <div className="bg-[#1a1a2e] border border-border rounded-md shadow-2xl shadow-black/50 px-2.5 py-2 flex items-center gap-1.5">
               <button
                 onClick={() => removeHighlight(activeHighlight.id)}
                 className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-red-500/15 border border-red-400/20 text-red-400 hover:bg-red-500/25 transition-all font-medium"

@@ -101,7 +101,7 @@ export default function CommunitySidebar() {
   return (
     <>
       <aside id="tour-community-sidebar" className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-24 bg-card border border-border rounded-lg p-4 shadow-glass">
+        <div className="sticky top-20 bg-card border border-border rounded-lg p-4 shadow-glass">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
             Community
           </p>
@@ -111,7 +111,7 @@ export default function CommunitySidebar() {
 
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open community menu"
       >
         <Menu className="w-5 h-5" />

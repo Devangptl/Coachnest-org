@@ -79,7 +79,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
     return (
       <div className="py-8 space-y-4">
         <div className="h-8 w-32 rounded bg-secondary/50 animate-pulse" />
-        <div className="h-60 rounded-xl bg-secondary/50 animate-pulse" />
+        <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
       </div>
     );
   }
@@ -106,7 +106,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
       </Link>
 
       {/* Assignment */}
-      <div className="rounded-xl border border-border bg-card p-6">
+      <div className="rounded-md border border-border bg-card p-6">
         <div className="flex items-center gap-2 mb-3">
           <FileText className="w-5 h-5 text-purple-400" />
           <h1 className="text-xl font-bold text-foreground">{assignment.title}</h1>
@@ -131,14 +131,14 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
           Reviews ({assignment.reviews.length})
         </h2>
         {assignment.reviews.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center">
+          <div className="rounded-md border border-border bg-card p-8 text-center">
             <Star className="w-8 h-8 text-muted-foreground mx-auto mb-2 opacity-40" />
             <p className="text-muted-foreground text-sm">No reviews yet.</p>
           </div>
         ) : (
           <div className="space-y-3">
             {assignment.reviews.map((r) => (
-              <div key={r.id} className="rounded-xl border border-border bg-card p-5">
+              <div key={r.id} className="rounded-md border border-border bg-card p-5">
                 <div className="flex items-center gap-1 mb-2">
                   {[1,2,3,4,5].map((s) => (
                     <Star key={s} className={`w-4 h-4 ${s <= r.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`} />
@@ -167,7 +167,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
 
       {/* Submit Review Form */}
       {!isOwnSubmission && !alreadyReviewed && (
-        <div className="rounded-xl border border-border bg-card p-6">
+        <div className="rounded-md border border-border bg-card p-6">
           <h3 className="text-sm font-semibold text-foreground mb-4">Write a Review</h3>
 
           {/* Star Rating */}
@@ -235,7 +235,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
       )}
 
       {alreadyReviewed && !isOwnSubmission && (
-        <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 text-center">
+        <div className="rounded-md border border-emerald-500/20 bg-emerald-500/5 p-4 text-center">
           <p className="text-emerald-400 text-sm font-medium">✓ You&apos;ve already reviewed this assignment</p>
         </div>
       )}

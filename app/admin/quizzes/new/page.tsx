@@ -184,7 +184,7 @@ export default function NewQuizPage() {
               {lessonsLoading ? (
                 <div className="input-glass w-full flex items-center text-muted-foreground/50 text-sm">Loading lessons...</div>
               ) : lessons.length === 0 ? (
-                <div className="bg-amber-500/10 border border-amber-400/20 rounded-xl px-4 py-3 text-amber-400 text-sm">
+                <div className="bg-amber-500/10 border border-amber-400/20 rounded-md px-4 py-3 text-amber-400 text-sm">
                   <HelpCircle className="w-4 h-4 inline mr-2" />
                   All lessons already have quizzes. Create a new lesson with QUIZ type from the course editor instead.
                 </div>

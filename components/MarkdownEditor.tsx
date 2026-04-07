@@ -118,7 +118,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
   }, []);
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden bg-secondary/30">
+    <div className="rounded-md border border-border overflow-hidden bg-secondary/30">
       {/* Toolbar */}
       <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border bg-secondary/50 flex-wrap">
         {/* Formatting buttons */}

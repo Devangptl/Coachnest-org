@@ -9,14 +9,14 @@ export default function CertificatesLoading() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8 animate-pulse">
         <div>
-          <Skeleton className="h-9 w-36 rounded-xl mb-2" />
+          <Skeleton className="h-9 w-36 rounded-md mb-2" />
           <Skeleton className="h-4 w-40 rounded-lg" />
         </div>
       </div>
 
       {/* Search */}
       <div className="mb-6 animate-pulse">
-        <Skeleton className="h-10 w-72 rounded-xl" />
+        <Skeleton className="h-10 w-72 rounded-md" />
       </div>
 
       {/* Table */}

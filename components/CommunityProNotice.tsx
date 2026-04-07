@@ -39,7 +39,7 @@ export default function CommunityProNotice({ action }: Props) {
     <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-br from-emerald-500/10 to-emerald-600/5 p-5">
       <div className="flex items-start gap-4">
         {/* Icon */}
-        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
           <Lock className="w-4.5 h-4.5 text-emerald-400" style={{ width: "18px", height: "18px" }} />
         </div>
 

@@ -8,7 +8,7 @@ export default function AdminLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-44 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-44 rounded-md mb-2" />
         <Skeleton className="h-4 w-64 rounded-lg" />
       </div>
 
@@ -19,7 +19,7 @@ export default function AdminLoading() {
             key={i}
             className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
-            <Skeleton className="w-12 h-12 rounded-xl" />
+            <Skeleton className="w-12 h-12 rounded-md" />
             <div className="space-y-2">
               <Skeleton h="h-8" w="w-16" />
               <Skeleton h="h-4" w="w-24" />

@@ -147,7 +147,7 @@ export default function NavbarClient({ session }: Props) {
             onClick={() => setSearchOpen(true)}
             className={cn(
               "hidden lg:flex items-center gap-2 rounded-lg transition-all duration-200 px-2.5 py-1.5",
-              "bg-secondary/60 hover:bg-secondary border border-border text-muted-foreground hover:text-foreground"
+              "bg-secondary/20  border border-border text-muted-foreground hover:text-foreground"
             )}
             aria-label="Search"
           >
@@ -174,7 +174,7 @@ export default function NavbarClient({ session }: Props) {
                 <button
                   onClick={() => setUserMenuOpen((o) => !o)}
                   className={cn(
-                    "flex items-center gap-2 rounded-xl px-2 py-1 transition-all duration-200",
+                    "flex items-center gap-2 rounded-md px-2 py-1 transition-all duration-200",
                     userMenuOpen
                       ? "bg-secondary border border-border"
                       : "hover:bg-secondary border border-transparent"

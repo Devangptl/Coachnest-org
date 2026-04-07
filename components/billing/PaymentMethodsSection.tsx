@@ -114,8 +114,8 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
   if (loading) {
     return (
       <div className="space-y-3 animate-pulse">
-        <div className="h-20 bg-secondary/40 rounded-xl" />
-        <div className="h-20 bg-secondary/40 rounded-xl" />
+        <div className="h-20 bg-secondary/40 rounded-md" />
+        <div className="h-20 bg-secondary/40 rounded-md" />
       </div>
     );
   }
@@ -137,7 +137,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className={cn(
-                  "flex items-center gap-4 rounded-xl border p-4 transition-colors",
+                  "flex items-center gap-4 rounded-md border p-4 transition-colors",
                   m.isDefault
                     ? "border-orange-400/30 bg-orange-500/5"
                     : "border-border bg-secondary/20 hover:bg-secondary/30"
@@ -207,7 +207,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
         </AnimatePresence>
 
         {methods.length === 0 && (
-          <div className="flex items-center gap-3 rounded-xl border border-dashed border-border p-5 text-muted-foreground">
+          <div className="flex items-center gap-3 rounded-md border border-dashed border-border p-5 text-muted-foreground">
             <CreditCard className="w-8 h-8 opacity-30 flex-shrink-0" />
             <div>
               <p className="text-sm">No payment methods saved.</p>
@@ -221,7 +221,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
         {/* Add card button */}
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full flex items-center justify-center gap-2 rounded-xl border border-dashed border-border hover:border-orange-400/40 hover:bg-orange-500/5 py-3 text-sm font-medium text-muted-foreground hover:text-orange-400 transition-all"
+          className="w-full flex items-center justify-center gap-2 rounded-md border border-dashed border-border hover:border-orange-400/40 hover:bg-orange-500/5 py-3 text-sm font-medium text-muted-foreground hover:text-orange-400 transition-all"
         >
           <Plus className="w-4 h-4" />
           Add new card

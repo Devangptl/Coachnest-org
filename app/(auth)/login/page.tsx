@@ -103,7 +103,7 @@ export default function LoginPage() {
 
               {/* Achievement badge */}
               <div className="absolute -top-3.5 -right-2 z-10 flex items-center gap-2
-                              rounded-xl border border-border bg-card shadow-md px-3 py-2">
+                              rounded-md border border-border bg-card shadow-md px-3 py-2">
                 <div className="w-6 h-6 rounded-full bg-amber-400/20 flex items-center justify-center flex-shrink-0">
                   <Award className="w-3.5 h-3.5 text-amber-400" />
                 </div>
@@ -117,7 +117,7 @@ export default function LoginPage() {
               <div className="rounded-2xl border border-border bg-card shadow-card p-5">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-5">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-400
+                  <div className="w-10 h-10 rounded-md bg-gradient-to-br from-orange-500 to-amber-400
                                   flex items-center justify-center flex-shrink-0
                                   shadow-lg shadow-orange-500/20">
                     <BookOpen className="w-5 h-5 text-white" />

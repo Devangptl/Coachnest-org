@@ -222,7 +222,7 @@ export default function SignupPage() {
           </div>
 
           {/* Role selector */}
-          <div className="grid grid-cols-2 gap-2 mb-6 p-1 rounded-xl bg-secondary border border-border">
+          <div className="grid grid-cols-2 gap-2 mb-6 p-1 rounded-md bg-secondary border border-border">
             {(["STUDENT", "INSTRUCTOR"] as Role[]).map((r) => {
               const Icon   = r === "STUDENT" ? User : GraduationCap;
               const active = role === r;

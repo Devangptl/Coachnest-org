@@ -48,7 +48,7 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
       initial={{ opacity: 0, y: -8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className={`relative overflow-hidden backdrop-blur-md bg-gradient-to-r ${bgColor} border rounded-xl`}
+      className={`relative overflow-hidden backdrop-blur-md bg-gradient-to-r ${bgColor} border rounded-md`}
     >
       {/* Subtle background shimmer */}
       {percent > 0 && percent < 100 && (

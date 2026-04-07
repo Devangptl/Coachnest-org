@@ -157,7 +157,7 @@ export default function OrderDetailsModal({
                 </Button>
               ) : (
                 <div className="space-y-3">
-                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-md">
                     <p className="text-red-400 text-sm">
                       This will refund ₹{order.amount.toLocaleString("en-IN")} to the customer.
                     </p>

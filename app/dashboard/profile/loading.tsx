@@ -17,7 +17,7 @@ export default function ProfileLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-52 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-52 rounded-md mb-2" />
         <Skeleton className="h-4 w-72 rounded-lg" />
       </div>
 

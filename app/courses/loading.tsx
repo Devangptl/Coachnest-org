@@ -6,14 +6,14 @@ export default function CoursesLoading() {
     <div className=" pb-16">
       {/* Header */}
       <div className="mb-10">
-        <div className="skeleton h-10 w-52 rounded-xl mb-3" />
+        <div className="skeleton h-10 w-52 rounded-md mb-3" />
         <div className="skeleton h-4 w-72 rounded-lg" />
       </div>
 
       {/* Filter bar */}
       <div className="flex flex-wrap gap-3 mb-8">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="skeleton h-10 w-24 rounded-xl" />
+          <div key={i} className="skeleton h-10 w-24 rounded-md" />
         ))}
       </div>
 

@@ -195,7 +195,7 @@ export default function AdminMessageDetailPage({
 
         {/* Sender Info */}
         <div className="flex items-start gap-4 mb-6 pb-6 border-b border-border">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-400/20 flex items-center justify-center flex-shrink-0">
+          <div className="w-12 h-12 rounded-md bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-400/20 flex items-center justify-center flex-shrink-0">
             <User className="w-6 h-6 text-orange-400" />
           </div>
           <div className="min-w-0 flex-1">

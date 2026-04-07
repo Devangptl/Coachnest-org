@@ -7,7 +7,7 @@ export default function AdminMessagesLoading() {
       {/* Header skeleton */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-xl skeleton" />
+          <div className="w-10 h-10 rounded-md skeleton" />
           <div className="h-8 w-40 rounded-lg skeleton" />
         </div>
         <div className="h-4 w-32 rounded skeleton mt-1.5" />

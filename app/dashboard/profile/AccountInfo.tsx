@@ -45,7 +45,7 @@ export default function AccountInfo({ email, createdAt, stats }: AccountInfoProp
           return (
             <div
               key={stat.label}
-              className="bg-secondary border border-border rounded-xl p-3 text-center"
+              className="bg-secondary border border-border rounded-md p-3 text-center"
             >
               <Icon className={`w-4 h-4 ${stat.color} mx-auto mb-1`} />
               <div className="text-xl font-bold text-foreground">{stat.value}</div>

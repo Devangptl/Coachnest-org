@@ -81,7 +81,7 @@ export default async function OrderHistoryPage() {
       {/* Summary */}
       <div className="grid grid-cols-2 gap-4 mb-8">
         <GlassCard className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+          <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
             <ShoppingCart className="w-6 h-6 text-blue-400" />
           </div>
           <div>
@@ -90,7 +90,7 @@ export default async function OrderHistoryPage() {
           </div>
         </GlassCard>
         <GlassCard className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+          <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
             <Receipt className="w-6 h-6 text-emerald-400" />
           </div>
           <div>
@@ -110,7 +110,7 @@ export default async function OrderHistoryPage() {
           </h2>
           <GlassCard className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-xl bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+              <div className="w-12 h-12 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
                 <Crown className="w-6 h-6 text-orange-400" />
               </div>
               <div>
@@ -154,10 +154,10 @@ export default async function OrderHistoryPage() {
                 <img
                   src={order.courseThumbnail}
                   alt=""
-                  className="w-16 h-16 rounded-xl object-cover flex-shrink-0"
+                  className="w-16 h-16 rounded-md object-cover flex-shrink-0"
                 />
               ) : (
-                <div className="w-16 h-16 rounded-xl bg-secondary flex items-center justify-center flex-shrink-0">
+                <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
                   <ShoppingCart className="w-6 h-6 text-muted-foreground/30" />
                 </div>
               )}

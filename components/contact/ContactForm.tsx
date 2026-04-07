@@ -92,7 +92,7 @@ export default function ContactForm() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="rounded-xl border border-border/60 bg-secondary/20 p-10 text-center"
+        className="rounded-md border border-border/60 bg-secondary/20 p-10 text-center"
       >
         <motion.div
           initial={{ scale: 0 }}
@@ -123,7 +123,7 @@ export default function ContactForm() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.2 }}
-      className="rounded-xl border border-border/60 bg-secondary/20 p-6 sm:p-8 space-y-5"
+      className="rounded-md border border-border/60 bg-secondary/20 p-6 sm:p-8 space-y-5"
     >
       {/* Name */}
       <div>

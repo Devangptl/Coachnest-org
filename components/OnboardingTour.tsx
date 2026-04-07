@@ -75,7 +75,7 @@ function CustomTooltip({
               {index > 0 && (
                 <button
                   {...backProps}
-                  className="p-2 text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary rounded-xl transition-all active:scale-95"
+                  className="p-2 text-muted-foreground hover:text-foreground bg-secondary/50 hover:bg-secondary rounded-md transition-all active:scale-95"
                   aria-label="Previous step"
                 >
                   <ArrowLeft className="w-4 h-4" />
@@ -84,7 +84,7 @@ function CustomTooltip({
               
               <button
                 {...primaryProps}
-                className="flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-br from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 px-5 py-2 rounded-xl shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] transition-all active:scale-95"
+                className="flex items-center gap-2 text-sm font-bold text-white bg-gradient-to-br from-orange-600 to-orange-500 hover:from-orange-500 hover:to-orange-400 px-5 py-2 rounded-md shadow-[0_4px_14px_0_rgba(249,115,22,0.39)] hover:shadow-[0_6px_20px_rgba(249,115,22,0.23)] transition-all active:scale-95"
               >
                 {index === size - 1 ? "Finish" : "Next"}
                 {index < size - 1 && <ArrowRight className="w-4 h-4" />}

@@ -19,7 +19,7 @@ export default function TestimonialCard({ name, role, comment, rating, avatar, d
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-50px" }}
       transition={{ duration: 0.5, delay }}
-      className="backdrop-blur-lg bg-white/[0.07] border border-border rounded-lg p-6 hover:bg-white/[0.12] hover:border-white/25 transition-all duration-300 group"
+      className="backdrop-blur-lg bg-secondary/20 border border-border rounded-lg p-6 hover:bg-secondary/30 hover:border-primary/30 transition-all duration-300 group"
     >
       <Quote className="w-8 h-8 text-orange-400/30 mb-4" />
       <p className="text-muted-foreground text-sm leading-relaxed mb-6">{comment}</p>

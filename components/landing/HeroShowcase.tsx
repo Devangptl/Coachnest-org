@@ -118,7 +118,7 @@ export default function HeroShowcase() {
                 onMouseEnter={() => setHoveredCourse(course.id)}
                 onMouseLeave={() => setHoveredCourse(null)}
                 whileTap={{ scale: 0.96 }}
-                className="relative flex flex-col items-center gap-1.5 p-2.5 rounded-xl transition-all duration-250 cursor-pointer"
+                className="relative flex flex-col items-center gap-1.5 p-2.5 rounded-md transition-all duration-250 cursor-pointer"
                 style={{
                   background: isActive ? aw(0.08) : "transparent",
                   border: isActive
@@ -138,7 +138,7 @@ export default function HeroShowcase() {
                   />
                 )}
                 <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300"
+                  className="w-10 h-10 rounded-md flex items-center justify-center transition-all duration-300"
                   style={{
                     background: isActive || isHovered ? course.accent : aw(0.03),
                     boxShadow: isActive ? `0 0 16px ${course.color}15` : "none",
@@ -227,10 +227,10 @@ export default function HeroShowcase() {
               </motion.div>
               <span
                 className={`text-[11px] transition-all duration-200 ${step.done
-                  ? "text-white/35 line-through decoration-white/20"
+                  ? "text-white/35 decoration-white/20"
                   : step.id === completedCount + 1
                     ? "text-white/80 font-medium"
-                    : "text-white/50 group-hover:text-white/70"
+                    : "text-white/50"
                   }`}
               >
                 {step.text}
@@ -276,9 +276,7 @@ export default function HeroShowcase() {
         animate={{ opacity: 1, y: 0, x: 0 }}
         transition={{ delay: 0.35, type: "spring", stiffness: 120, damping: 18 }}
       >
-        <div className="px-3.5 py-3 flex items-start gap-3 relative overflow-hidden">
-          {/* subtle background glow */}
-          <div className="absolute top-0 right-0 w-24 h-24 bg-orange-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/4" />
+        <div className="px-3.5 py-3 flex items-start gap-3">
 
           <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 border border-orange-500/30">
             <Play className="w-3.5 h-3.5 text-orange-400 ml-0.5" />
@@ -324,7 +322,7 @@ export default function HeroShowcase() {
             className="hero-showcase-card flex items-center gap-3 px-3.5 py-3 w-[210px]"
           >
             <div
-              className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0"
+              className="w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0"
               style={{
                 background: `linear-gradient(135deg, ${activeCourse.color}20, ${activeCourse.color}08)`,
                 border: `1px solid ${activeCourse.color}20`,

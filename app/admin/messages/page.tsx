@@ -119,7 +119,7 @@ export default function AdminMessagesPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-orange-500/15 border border-orange-400/25 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-md bg-orange-500/15 border border-orange-400/25 flex items-center justify-center">
               <MessageSquare className="w-5 h-5 text-orange-400" />
             </div>
             Messages

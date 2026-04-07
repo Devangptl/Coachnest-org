@@ -26,7 +26,7 @@ export default function StreakCounter({ streak, longestStreak, compact = false }
   }
 
   return (
-    <div className="bg-card border border-border rounded-xl p-5">
+    <div className="bg-card border border-border rounded-md p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-1">

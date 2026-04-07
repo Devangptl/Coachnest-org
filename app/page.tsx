@@ -148,8 +148,6 @@ export default async function HomePage() {
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* ── Left: Text Content ────────────────────────────────────── */}
             <div className="text-left relative max-w-lg">
-              {/* Subtle background glow for the text area */}
-              <div className="absolute -top-10 -left-10 w-48 h- rounded-full blur-[80px] pointer-events-none" />
 
               {/* Announcement badge */}
               <FadeInSection delay={0}>
@@ -161,7 +159,7 @@ export default async function HomePage() {
                   <span className="text-white/80 text-xs font-medium">
                     The ultimate platform for developers
                   </span>
-                  <ArrowRight className="w-3 h-3 text-white/40 group-hover:text-white/80 group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="w-3 h-3 text-white/40 /80 group-hover:translate-x-0.5 transition-all" />
                 </div>
               </FadeInSection>
 
@@ -214,7 +212,7 @@ export default async function HomePage() {
 
               {/* Social proof */}
               <FadeInSection delay={0.45}>
-                <div className="mt-8 flex items-center gap-4 p-3 rounded-xl bg-white/[0.02] border border-white/[0.05] w-fit backdrop-blur-sm hover:bg-white/[0.04] transition-colors">
+                <div className="mt-8 flex items-center gap-4 p-3 rounded-md bg-white/[0.02] border border-white/[0.05] w-fit backdrop-blur-sm hover:bg-white/[0.04] transition-colors">
                   <div className="flex -space-x-2.5">
                     {[
                       { l: "D", c: "from-blue-500 to-cyan-500" },
@@ -389,10 +387,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           HOW IT WORKS — 4-step process
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-28  relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-orange-500/8 to-transparent" />
-        {/* Decorative blobs */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-orange-500/5 rounded-full blur-3xl pointer-events-none" />
+      <section className="py-28 relative overflow-hidden">
 
         <div className="max-w-8xl mx-auto relative">
           <FadeInSection>
@@ -454,7 +449,7 @@ export default async function HomePage() {
                         <span className="text-5xl font-black text-white/[0.06] leading-none select-none">
                           {item.step}
                         </span>
-                        <div className="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 group-hover:border-orange-500/40 transition-all duration-300">
+                        <div className="w-12 h-12 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 group-hover:border-orange-500/40 transition-all duration-300">
                           <Icon className="w-5 h-5 text-orange-400" />
                         </div>
                       </div>
@@ -534,7 +529,7 @@ export default async function HomePage() {
                 <StaggerItem key={cat.slug}>
                   <Link
                     href={`/courses?category=${cat.slug}`}
-                    className="group relative flex flex-col rounded-xl border border-border bg-card hover:border-orange-500/35 hover:shadow-md transition-all duration-200 p-5 overflow-hidden"
+                    className="group relative flex flex-col rounded-md border border-border bg-card hover:border-orange-500/35 hover:shadow-md transition-all duration-200 p-5 overflow-hidden"
                   >
                     {/* Left accent bar — slides in on hover */}
                     <div className="absolute left-0 top-0 bottom-0 w-[3px] bg-orange-500 origin-bottom scale-y-0 group-hover:scale-y-100 transition-transform duration-250 rounded-r-sm" />
@@ -571,7 +566,7 @@ export default async function HomePage() {
 
           {/* Bottom CTA strip */}
           <FadeInSection>
-            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-xl border border-border bg-secondary/20 px-6 py-5">
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-between gap-4 rounded-md border border-border bg-secondary/20 px-6 py-5">
               <div>
                 <p className="text-foreground font-semibold text-sm">Can&apos;t find your topic?</p>
                 <p className="text-muted-foreground text-xs mt-0.5">
@@ -613,7 +608,7 @@ export default async function HomePage() {
                 </div>
                 <Link
                   href="/courses"
-                  className="group inline-flex items-center gap-1.5 bg-secondary border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/70 hover:border-border/80 text-sm font-medium px-4 py-2 rounded-xl transition-all shrink-0"
+                  className="group inline-flex items-center gap-1.5 bg-secondary border border-border text-muted-foreground hover:text-foreground hover:bg-secondary/70 hover:border-border/80 text-sm font-medium px-4 py-2 rounded-md transition-all shrink-0"
                 >
                   View all courses <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
@@ -743,7 +738,7 @@ export default async function HomePage() {
             {courses.length >= 6 && (
               <FadeInSection>
                 <div className="text-center mt-10">
-                  <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/25 text-orange-300 hover:text-white hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15 font-medium text-sm px-7 py-2.5 rounded-xl transition-all hover:-translate-y-0.5">
+                  <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/25 text-orange-300 hover:text-white hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15 font-medium text-sm px-7 py-2.5 rounded-md transition-all hover:-translate-y-0.5">
                     Browse All Courses <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -758,12 +753,8 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24  relative">
         <div className="max-w-8xl mx-auto">
-          <div className="backdrop-blur-lg bg-gradient-to-br from-orange-600/10 to-orange-500/10 border border-border rounded-xl p-10 sm:p-16 relative overflow-hidden">
-            {/* Background decorations */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px]" />
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-orange-500/10 rounded-full blur-[80px]" />
-
-            <div className="relative grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+          <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {[
                 { end: Math.max(stats.courseCount, 50), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-orange-400" },
                 { end: Math.max(stats.studentCount, 10000), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
@@ -868,7 +859,7 @@ export default async function HomePage() {
                 </div>
 
                 {/* Floating progress card */}
-                <div className="absolute -bottom-6 -right-6 bg-card border border-border rounded-xl p-4 shadow-xl w-48">
+                <div className="absolute -bottom-6 -right-6 bg-card border border-border rounded-md p-4 shadow-xl w-48">
                   <div className="flex items-center gap-2 mb-2">
                     <TrendingUp className="w-4 h-4 text-emerald-400" />
                     <span className="text-white text-xs font-medium">Your Progress</span>
@@ -880,7 +871,7 @@ export default async function HomePage() {
                 </div>
 
                 {/* Floating certificate badge */}
-                <div className="absolute -top-4 -left-4 bg-card border border-border rounded-xl p-3 shadow-xl">
+                <div className="absolute -top-4 -left-4 bg-card border border-border rounded-md p-3 shadow-xl">
                   <div className="flex items-center gap-2">
                     <Award className="w-5 h-5 text-yellow-400" />
                     <div>
@@ -978,8 +969,7 @@ export default async function HomePage() {
         <div className="max-w-8xl mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <FadeInSection direction="right">
-              <div className="backdrop-blur-lg bg-gradient-to-br from-orange-600/10 to-orange-500/10 border border-orange-400/20 rounded-xl p-10 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-40 h-40 bg-orange-500/15 rounded-full blur-[60px]" />
+              <div className="bg-secondary/50 border border-border rounded-md p-10 relative overflow-hidden">
                 <div className="relative grid grid-cols-2 gap-6">
                   {[
                     { value: "70%", label: "Revenue share" },
@@ -1109,44 +1099,57 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           FINAL CTA
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 ">
-        <div className="max-w-5xl mx-auto">
-          <FadeInSection>
-            <div className="relative backdrop-blur-lg bg-gradient-to-br from-orange-600/15 to-orange-500/15 border border-orange-400/20 rounded-xl p-10 sm:p-16 text-center overflow-hidden">
-              {/* Glow effects */}
-              <div className="absolute top-0 left-1/4 w-64 h-64 bg-orange-500/15 rounded-full blur-[100px]" />
-              <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-orange-500/15 rounded-full blur-[100px]" />
+      <section className="py-24 px-4 sm:px-6 lg:px-8">
 
-              <div className="relative">
-                <div className="inline-flex items-center gap-2 bg-card border border-border rounded-full px-4 py-1.5 text-sm text-muted-foreground mb-6 backdrop-blur-sm">
-                  <Sparkles className="w-4 h-4 text-yellow-400" />
+        <div className="max-w-4xl mx-auto relative">
+          <FadeInSection>
+            <div className="relative rounded-2xl border border-border bg-secondary/10 overflow-hidden shadow-card">
+              {/* Top accent bar */}
+              <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-primary to-transparent" />
+
+              <div className="px-6 py-14 sm:px-14 sm:py-20 text-center">
+                {/* Badge */}
+                <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-8">
+                  <Sparkles className="w-3.5 h-3.5" />
                   Join 10,000+ learners today
                 </div>
 
-                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                  Ready to transform{" "}
+                {/* Heading */}
+                <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground mb-5 leading-tight tracking-tight">
+                  Ready to transform
                   <br className="hidden sm:block" />
-                  <span className="bg-gradient-to-r from-orange-400 to-orange-300 bg-clip-text text-transparent">
-                    your career?
-                  </span>
+                  <span className="text-primary"> your career?</span>
                 </h2>
-                <p className="text-muted-foreground text-lg max-w-2xl mx-auto mb-10 leading-relaxed">
+
+                {/* Subtext */}
+                <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto mb-10 leading-relaxed">
                   Start with our free courses, earn certificates, and join a community
                   of passionate learners. Your future self will thank you.
                 </p>
 
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                  <Link href="/signup" className="btn-primary text-base px-10 py-4 inline-flex items-center gap-2">
-                    Get Started Free <ArrowRight className="w-5 h-5" />
+                {/* CTA buttons */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-center mb-10">
+                  <Link href="/signup" className="btn-primary text-base px-10 py-3.5 inline-flex items-center gap-2">
+                    Get Started Free <ArrowRight className="w-4 h-4" />
                   </Link>
-                  <Link href="/courses" className="btn-ghost inline-flex items-center gap-2 border border-border text-base px-8 py-4">
-                    Browse Courses <ChevronRight className="w-5 h-5" />
+                  <Link href="/courses" className="btn-ghost inline-flex items-center gap-2 border border-border text-base px-8 py-3.5">
+                    Browse Courses <ChevronRight className="w-4 h-4" />
                   </Link>
                 </div>
 
-                <p className="text-white/25 text-xs mt-6">
-                  Free forever plan available. No credit card needed.
-                </p>
+                {/* Micro trust signals */}
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                  {[
+                    "Free forever plan",
+                    "No credit card needed",
+                    "Cancel anytime",
+                  ].map((text) => (
+                    <span key={text} className="inline-flex items-center gap-1.5 text-xs text-muted-foreground/70">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                      {text}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           </FadeInSection>

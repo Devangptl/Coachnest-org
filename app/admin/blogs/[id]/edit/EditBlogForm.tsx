@@ -135,7 +135,7 @@ export default function EditBlogForm({ blog }: Props) {
           </div>
 
           {/* Publish toggle */}
-          <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between bg-secondary border border-border rounded-md px-4 py-3">
             <div>
               <p className="text-foreground text-sm font-medium">Published</p>
               <p className="text-muted-foreground/70 text-xs mt-0.5">Published posts are visible to everyone.</p>

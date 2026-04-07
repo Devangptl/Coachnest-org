@@ -101,7 +101,7 @@ export default function PlanSuggestionBanner({ context, dismissKey, className = 
   }
 
   return (
-    <div className={`flex items-start sm:items-center justify-between gap-3 p-4 rounded-xl border ${cfg.color} ${className}`}>
+    <div className={`flex items-start sm:items-center justify-between gap-3 p-4 rounded-md border ${cfg.color} ${className}`}>
       <div className="flex items-start gap-3 min-w-0">
         <div className="w-8 h-8 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center flex-shrink-0 mt-0.5 sm:mt-0">
           {cfg.icon === "crown" ? (

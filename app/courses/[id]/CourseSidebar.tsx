@@ -27,7 +27,7 @@ export default function CourseSidebar({
       initial={{ opacity: 0, y: 15 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.3 }}
-      className="backdrop-blur-xl bg-white/[0.04] border border-border rounded-xl p-4 sm:p-5 shadow-sm"
+      className="backdrop-blur-xl bg-white/[0.04] border border-border rounded-md p-4 sm:p-5 shadow-sm"
     >
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <h3 className="text-foreground font-semibold text-sm">This course includes</h3>

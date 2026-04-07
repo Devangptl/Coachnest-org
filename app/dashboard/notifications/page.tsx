@@ -5,7 +5,6 @@ import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
-import { formatDate } from "@/lib/utils";
 import { Bell } from "lucide-react";
 import NotificationList from "./NotificationList";
 

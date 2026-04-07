@@ -6,7 +6,7 @@ import { Skeleton } from "@/components/ui/Skeleton";
 function CertificateRowSkeleton() {
   return (
     <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
-      <Skeleton className="w-14 h-14 rounded-xl flex-shrink-0" />
+      <Skeleton className="w-14 h-14 rounded-md flex-shrink-0" />
       <div className="flex-1 space-y-2">
         <Skeleton h="h-5" w="w-1/3" />
         <Skeleton h="h-3" w="w-1/4" />
@@ -21,7 +21,7 @@ export default function CertificatesLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-48 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-48 rounded-md mb-2" />
         <Skeleton className="h-4 w-36 rounded-lg" />
       </div>
 

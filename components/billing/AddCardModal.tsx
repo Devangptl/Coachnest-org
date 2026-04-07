@@ -98,7 +98,7 @@ function AddCardForm({ onSuccess, onClose, title, description, submitLabel = "Sa
       </DialogHeader>
 
       {/* Card field */}
-      <div className="rounded-xl border border-border bg-secondary/30 p-4 space-y-3">
+      <div className="rounded-md border border-border bg-secondary/30 p-4 space-y-3">
         <p className="text-xs font-medium text-muted-foreground flex items-center gap-1.5">
           <CreditCard className="w-3.5 h-3.5" />
           Card information
@@ -124,14 +124,14 @@ function AddCardForm({ onSuccess, onClose, title, description, submitLabel = "Sa
         <button
           type="button"
           onClick={onClose}
-          className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
+          className="flex-1 py-2.5 rounded-md border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={!stripe || !cardComplete || loading}
-          className="flex-1 py-2.5 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 text-white text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 rounded-md bg-gradient-to-r from-orange-500 to-orange-400 text-white text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {loading ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>

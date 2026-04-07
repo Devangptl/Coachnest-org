@@ -8,7 +8,7 @@ export default function WishlistLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-40 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-40 rounded-md mb-2" />
         <Skeleton className="h-4 w-32 rounded-lg" />
       </div>
 

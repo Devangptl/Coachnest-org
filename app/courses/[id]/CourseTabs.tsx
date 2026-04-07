@@ -76,7 +76,7 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
                 key={tab.id}
                 onClick={() => onTabChange(tab.id)}
                 className={cn(
-                  "relative flex-1 flex items-center justify-center gap-2 rounded-xl font-medium transition-all duration-200 select-none",
+                  "relative flex-1 flex items-center justify-center gap-2 rounded-md font-medium transition-all duration-200 select-none",
                   // 44px+ touch targets for mobile accessibility
                   "min-h-[46px] sm:min-h-[44px] px-2.5 sm:px-4 py-2.5",
                   isActive
@@ -88,7 +88,7 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
                   <motion.div
                     layoutId="course-tab-indicator"
                     className={cn(
-                      "absolute inset-0 rounded-xl border shadow-sm dark:shadow-lg",
+                      "absolute inset-0 rounded-md border shadow-sm dark:shadow-lg",
                       tab.activeBg,
                       tab.activeBorder,
                       tab.glowColor

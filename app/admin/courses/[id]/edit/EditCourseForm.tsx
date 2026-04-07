@@ -121,7 +121,7 @@ export default function EditCourseForm({ course }: { course: Course }) {
 
         {/* Pricing */}
         <div className="space-y-3">
-          <div className="flex items-center justify-between bg-secondary border border-border rounded-xl px-4 py-3">
+          <div className="flex items-center justify-between bg-secondary border border-border rounded-md px-4 py-3">
             <div>
               <p className="text-foreground text-sm font-medium">Free course</p>
               <p className="text-muted-foreground/70 text-xs mt-0.5">No payment required to enroll</p>

@@ -160,7 +160,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-orange-600/30 to-orange-500/20 border border-border flex items-center justify-center overflow-hidden">
+            <div className="w-20 h-20 rounded-md bg-gradient-to-br from-orange-600/30 to-orange-500/20 border border-border flex items-center justify-center overflow-hidden">
               {student.avatar ? (
                 <Image src={student.avatar} alt={student.name} width={80} height={80} className="w-20 h-20 object-cover" />
               ) : (
@@ -345,7 +345,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                 {student.gamification.badges.map((badge) => (
                   <div key={badge.key} title={badge.description}
                     className={cn(
-                      "flex flex-col items-center text-center gap-1.5 p-3 rounded-xl border transition-all",
+                      "flex flex-col items-center text-center gap-1.5 p-3 rounded-md border transition-all",
                       badge.earned ? "bg-orange-500/5 border-orange-500/20" : "bg-secondary/20 border-border opacity-40"
                     )}
                   >
@@ -373,7 +373,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               ) : (
                 <div className="divide-y divide-border">
                   {student.gamification.recentXpEvents.map((e) => (
-                    <div key={e.id} className="flex items-center justify-between py-2.5 px-2 hover:bg-secondary/50 rounded-lg transition-colors">
+                    <div key={e.id} className="flex items-center justify-between py-2.5 px-2  rounded-lg transition-colors">
                       <span className="text-sm text-muted-foreground">
                         {ACTION_LABELS[e.action] ?? e.action.replace(/_/g, " ").toLowerCase()}
                       </span>

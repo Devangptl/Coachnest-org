@@ -9,7 +9,7 @@ export default function SearchPage() {
   return (
     <Suspense fallback={
       <div className="max-w-8xl mx-auto px-4 animate-pulse space-y-6 pb-16">
-        <div className="h-10 w-64 bg-secondary rounded-xl" />
+        <div className="h-10 w-64 bg-secondary rounded-md" />
         <div className="grid lg:grid-cols-4 gap-6">
           <div className="h-96 bg-secondary rounded-lg" />
           <div className="lg:col-span-3 grid sm:grid-cols-2 xl:grid-cols-3 gap-5">

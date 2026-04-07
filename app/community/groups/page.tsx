@@ -160,7 +160,7 @@ export default function StudyGroupsPage() {
           placeholder="Search groups..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
+          className="w-full pl-10 pr-4 py-2.5 rounded-lg bg-secondary/20 border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all"
         />
       </div>
 
@@ -168,11 +168,11 @@ export default function StudyGroupsPage() {
       {loading ? (
         <div className="grid sm:grid-cols-2 gap-4">
           {[1,2,3,4].map(i => (
-            <div key={i} className="h-36 rounded-xl bg-secondary/50 animate-pulse" />
+            <div key={i} className="h-36 rounded-md bg-secondary/50 animate-pulse" />
           ))}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-12 text-center">
+        <div className="rounded-md border border-border bg-card p-12 text-center">
           <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">
             {search ? "No groups match your search." : "No study groups yet. Create one!"}
@@ -184,10 +184,10 @@ export default function StudyGroupsPage() {
             <Link
               key={g.id}
               href={`/community/groups/${g.id}`}
-              className="rounded-xl border border-border bg-card hover:bg-secondary/50 p-5 transition-all group hover:-translate-y-0.5"
+              className="rounded-md border border-border bg-card  p-5 transition-all group hover:-translate-y-0.5"
             >
               <div className="flex items-start justify-between mb-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <div className="w-10 h-10 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                   <Users className="w-5 h-5 text-emerald-400" />
                 </div>
                 <span className="text-muted-foreground text-xs flex items-center gap-1">
@@ -195,7 +195,7 @@ export default function StudyGroupsPage() {
                   {g.isPublic ? "Public" : "Private"}
                 </span>
               </div>
-              <p className="text-foreground font-semibold text-sm group-hover:text-white transition-colors">{g.name}</p>
+              <p className="text-foreground font-semibold text-sm  transition-colors">{g.name}</p>
               {g.description && (
                 <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{g.description}</p>
               )}

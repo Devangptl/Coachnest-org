@@ -117,8 +117,8 @@ const config: Config = {
       backdropBlur: { xs: "2px" },
       // ── Box shadows ──────────────────────────────────────────────────────
       boxShadow: {
-        glass: "0 2px 16px 0 rgba(0,0,0,.5)",
-        glow:  "0 0 20px rgba(217,112,65,.25)",
+        // glass: "0 2px 16px 0 rgba(0,0,0,.5)",
+
         card:  "0 2px 12px rgba(0,0,0,.35)",
       },
        maxWidth: {

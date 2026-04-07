@@ -357,13 +357,13 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(true)}
-                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-md border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
                 title="Show Lessons"
               >
                 <LayoutList className="w-5 h-5" />
               </button>
             )}
-            <div className="w-24 h-24 rounded-xl bg-secondary border border-border flex items-center justify-center mb-6">
+            <div className="w-24 h-24 rounded-md bg-secondary border border-border flex items-center justify-center mb-6">
               <Lock className="w-12 h-12 text-muted-foreground/25" />
             </div>
             <h3 className="text-foreground text-2xl font-bold mb-3">
@@ -389,7 +389,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {!showSidebar && (
                     <button
                       onClick={() => setShowSidebar(true)}
-                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all flex-shrink-0 z-10"
+                      className="hidden lg:flex items-center justify-center w-10 h-10 rounded-md border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all flex-shrink-0 z-10"
                       title="Show Lessons"
                     >
                       <LayoutList className="w-5 h-5" />
@@ -401,7 +401,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     const Icon = config.icon;
                     return (
                       <div className={cn(
-                        "w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 border",
+                        "w-9 h-9 sm:w-10 sm:h-10 rounded-md flex items-center justify-center flex-shrink-0 border",
                         config.bg, config.border
                       )}>
                         <Icon className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)} />
@@ -439,7 +439,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       <button
                         onClick={() => setShowAudioPlayer((v) => !v)}
                         className={cn(
-                          "flex items-center gap-1.5 text-xs min-h-[40px] px-3 py-2 rounded-xl border transition-all font-medium",
+                          "flex items-center gap-1.5 text-xs min-h-[40px] px-3 py-2 rounded-md border transition-all font-medium",
                           showAudioPlayer
                             ? "bg-blue-500/20 border-blue-400/30 text-blue-400"
                             : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -452,7 +452,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     )}
                     <button
                       onClick={() => setIsFullscreen(true)}
-                      className="hidden sm:flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                      className="hidden sm:flex items-center justify-center w-10 h-10 rounded-md border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                       title="Full Screen (F)"
                     >
                       <Maximize2 className="w-4 h-4" />
@@ -461,7 +461,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       onClick={() => toggleComplete(activeLesson.id)}
                       disabled={marking}
                       className={cn(
-                        "flex items-center gap-2 text-xs min-h-[40px] px-3 sm:px-4 py-2 rounded-xl border transition-all font-semibold ml-auto",
+                        "flex items-center gap-2 text-xs min-h-[40px] px-3 sm:px-4 py-2 rounded-md border transition-all font-semibold ml-auto",
                         completed[activeLesson.id]
                           ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
                           : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -495,7 +495,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     }}
                   />
                 ) : activeLesson.type === "VIDEO" && activeLesson.content ? (
-                  <div className="relative aspect-video rounded-xl overflow-hidden bg-card border border-white/5 shadow-xl shadow-black/30">
+                  <div className="relative aspect-video rounded-md overflow-hidden bg-card border border-white/5 shadow-xl shadow-black/30">
                     <iframe
                       src={activeLesson.content}
                       title={activeLesson.title}
@@ -528,7 +528,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   
                   </>
                 ) : (
-                  <div className="bg-secondary/50 border border-border rounded-xl px-6 py-16 text-center">
+                  <div className="bg-secondary/50 border border-border rounded-md px-6 py-16 text-center">
                     <FileText className="w-14 h-14 text-muted-foreground/25 mx-auto mb-4" />
                     <p className="text-muted-foreground/60 text-base">No content added yet.</p>
                     <p className="text-muted-foreground/40 text-sm mt-1">Content will appear here once the instructor adds it.</p>
@@ -540,7 +540,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {prev ? (
                     <button
                       onClick={() => selectLesson(prev.id)}
-                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground active:scale-[0.98] transition-all group px-3 sm:px-4 py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border min-h-[52px]"
+                      className="flex items-center gap-3 text-muted-foreground hover:text-foreground active:scale-[0.98] transition-all group px-3 sm:px-4 py-3 rounded-md hover:bg-secondary border border-border/50 hover:border-border min-h-[52px]"
                     >
                       <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 group-hover:bg-secondary transition-colors">
                         <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -556,7 +556,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {next ? (
                     <button
                       onClick={() => selectLesson(next.id)}
-                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground active:scale-[0.98] px-3 sm:px-4 py-3 rounded-xl transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15 min-h-[52px]"
+                      className="flex items-center gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground active:scale-[0.98] px-3 sm:px-4 py-3 rounded-md transition-all hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15 min-h-[52px]"
                     >
                       <div className="text-right min-w-0 flex-1 sm:flex-initial">
                         <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Next</p>
@@ -567,7 +567,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       </div>
                     </button>
                   ) : (
-                    <div className="flex items-center justify-center gap-2.5 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-5 py-3 rounded-xl text-sm min-h-[52px]">
+                    <div className="flex items-center justify-center gap-2.5 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-5 py-3 rounded-md text-sm min-h-[52px]">
                       <Sparkles className="w-5 h-5" />
                       You&apos;ve reached the end!
                     </div>
@@ -589,7 +589,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                     />
                     <div className="relative flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/10">
+                      <div className="w-12 h-12 rounded-md bg-amber-500/20 flex items-center justify-center flex-shrink-0 shadow-lg shadow-amber-500/10">
                         <Award className="w-6 h-6 text-amber-400" />
                       </div>
                       <div className="flex-1 min-w-0">
@@ -599,7 +599,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                       <button
                         onClick={downloadCertificate}
                         disabled={downloadingCert}
-                        className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
+                        className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-5 py-2.5 rounded-md text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
                       >
                         {downloadingCert ? (
                           <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
@@ -624,7 +624,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
             {!showSidebar && (
               <button
                 onClick={() => setShowSidebar(true)}
-                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
+                className="hidden lg:flex absolute top-6 left-6 items-center justify-center w-10 h-10 rounded-md border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all z-10"
                 title="Show Lessons"
               >
                 <LayoutList className="w-5 h-5" />
@@ -655,7 +655,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     const Icon = config.icon;
                     return (
                       <div className={cn(
-                        "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 border",
+                        "w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 border",
                         config.bg, config.border
                       )}>
                         <Icon className={cn("w-5 h-5", config.color)} />
@@ -686,7 +686,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                     onClick={() => toggleComplete(activeLesson.id)}
                     disabled={marking}
                     className={cn(
-                      "flex items-center gap-2 text-sm px-4 py-2 rounded-xl border transition-all font-semibold",
+                      "flex items-center gap-2 text-sm px-4 py-2 rounded-md border transition-all font-semibold",
                       completed[activeLesson.id]
                         ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
                         : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -705,7 +705,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   {/* Exit fullscreen */}
                   <button
                     onClick={() => setIsFullscreen(false)}
-                    className="flex items-center justify-center w-10 h-10 rounded-xl border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                    className="flex items-center justify-center w-10 h-10 rounded-md border border-border bg-secondary text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                     title="Exit Full Screen (Esc)"
                   >
                     <Minimize2 className="w-4.5 h-4.5" />
@@ -736,7 +736,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                   ) : activeLesson.content ? (
                     <LessonContent content={activeLesson.content} lessonId={activeLesson.id} isEnrolled={isEnrolled} />
                   ) : (
-                    <div className="bg-white/[0.02] border border-white/[0.06] rounded-xl px-6 py-16 text-center">
+                    <div className="bg-white/[0.02] border border-white/[0.06] rounded-md px-6 py-16 text-center">
                       <FileText className="w-14 h-14 text-white/10 mx-auto mb-4" />
                       <p className="text-white/30 text-base">No content added yet.</p>
                     </div>
@@ -749,7 +749,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 {prev ? (
                   <button
                     onClick={() => selectLesson(prev.id)}
-                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-xl hover:bg-secondary text-sm"
+                    className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors px-3 py-2 rounded-md hover:bg-secondary text-sm"
                   >
                     <ChevronLeft className="w-4 h-4" />
                     <span className="hidden sm:inline truncate max-w-[200px]">{prev.title}</span>
@@ -764,7 +764,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled, onCompleti
                 {next ? (
                   <button
                     onClick={() => selectLesson(next.id)}
-                    className="flex items-center gap-2 text-primary hover:text-foreground bg-orange-500/15 border border-orange-400/20 px-3 py-2 rounded-xl hover:bg-orange-500/15 transition-all text-sm"
+                    className="flex items-center gap-2 text-primary hover:text-foreground bg-orange-500/15 border border-orange-400/20 px-3 py-2 rounded-md hover:bg-orange-500/15 transition-all text-sm"
                   >
                     <span className="hidden sm:inline truncate max-w-[200px]">{next.title}</span>
                     <span className="sm:hidden">Next</span>
@@ -958,7 +958,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   }
 
   return (
-    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-1">
+    <div className="rounded-md overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-1">
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
         <div className="flex items-center gap-2">
@@ -1027,7 +1027,7 @@ function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: ()
 
   if (error || !quiz) {
     return (
-      <div className="bg-secondary/50 border border-border rounded-xl px-6 py-16 text-center">
+      <div className="bg-secondary/50 border border-border rounded-md px-6 py-16 text-center">
         <HelpCircle className="w-14 h-14 text-muted-foreground/25 mx-auto mb-4" />
         <p className="text-muted-foreground/60 text-base">{error || "No quiz available for this lesson."}</p>
       </div>
@@ -1048,7 +1048,7 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
   const blocks = useMemo(() => parseContent(content), [content]);
 
   return (
-    <div className="rounded-xl border border-border overflow-hidden">
+    <div className="rounded-md border border-border overflow-hidden">
       {/* Article header */}
       <div className="bg-secondary/50 border-b border-border px-6 sm:px-8 py-3 flex items-center gap-2">
         <Type className="w-3.5 h-3.5 text-orange-400" />

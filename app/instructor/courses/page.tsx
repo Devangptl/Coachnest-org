@@ -57,7 +57,7 @@ export default async function InstructorCoursesPage() {
           </div>
           <div className="divide-y divide-border/50">
             {courses.map((course) => (
-              <div key={course.id} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center hover:bg-secondary/50 transition-colors">
+              <div key={course.id} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center  transition-colors">
                 <div className="col-span-5 flex items-center gap-3 min-w-0">
                   {course.thumbnail ? (
                     <img src={course.thumbnail} alt="" className="w-10 h-10 rounded-lg object-cover flex-shrink-0 border border-border" />

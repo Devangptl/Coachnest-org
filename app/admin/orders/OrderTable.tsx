@@ -42,7 +42,7 @@ export default function OrderTable({ orders }: { orders: any[] }) {
         {orders.map((order) => (
           <div
             key={order.id}
-            className="grid grid-cols-12 gap-3 items-center px-4 py-3.5 hover:bg-secondary/50 transition-colors"
+            className="grid grid-cols-12 gap-3 items-center px-4 py-3.5  transition-colors"
           >
             {/* Order ID */}
             <div className="col-span-2 min-w-0">

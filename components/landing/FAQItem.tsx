@@ -14,7 +14,7 @@ export default function FAQItem({ question, answer }: Props) {
 
   return (
     <div
-      className="backdrop-blur-lg bg-white/[0.05] border border-border rounded-xl overflow-hidden transition-colors hover:bg-white/[0.08]"
+      className="backdrop-blur-lg bg-white/[0.05] border border-border rounded-md overflow-hidden transition-colors hover:bg-white/[0.08]"
     >
       <button
         onClick={() => setOpen(!open)}

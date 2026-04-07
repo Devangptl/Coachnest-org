@@ -6,7 +6,7 @@ const Tabs       = TabsPrimitive.Root;
 const TabsList   = ({ className, ...props }: React.ComponentProps<typeof TabsPrimitive.List>) => (
   <TabsPrimitive.List
     className={cn(
-      "flex gap-1 p-1 backdrop-blur-sm bg-secondary border border-border rounded-xl",
+      "flex gap-1 p-1 backdrop-blur-sm bg-secondary border border-border rounded-md",
       className
     )}
     {...props}

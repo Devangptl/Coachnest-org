@@ -73,7 +73,7 @@ export default function PressPage() {
           {/* Quick facts */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16">
             {FACTS.map((fact) => (
-              <div key={fact.label} className="rounded-xl border border-white/8 bg-white/[.02] p-5 text-center">
+              <div key={fact.label} className="rounded-md border border-white/8 bg-white/[.02] p-5 text-center">
                 <p className="text-2xl font-bold text-white mb-1">{fact.value}</p>
                 <p className="text-white/35 text-xs">{fact.label}</p>
               </div>
@@ -106,17 +106,17 @@ export default function PressPage() {
               {ASSETS.map((asset) => (
                 <div
                   key={asset.name}
-                  className="rounded-xl border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-5 flex items-center justify-between gap-4 group transition-all cursor-pointer"
+                  className="rounded-md border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-5 flex items-center justify-between gap-4 group transition-all cursor-pointer"
                 >
                   <div>
-                    <p className="text-white/70 font-medium text-sm group-hover:text-white transition-colors">
+                    <p className="text-white/70 font-medium text-sm  transition-colors">
                       {asset.name}
                     </p>
                     <p className="text-white/30 text-xs mt-0.5">{asset.desc}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
                     <span className="text-white/20 text-xs">{asset.size}</span>
-                    <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/30 group-hover:text-white/60 transition-colors">
+                    <div className="w-7 h-7 rounded-lg bg-white/5 border border-white/10 flex items-center justify-center text-white/30 /60 transition-colors">
                       <Download className="w-3.5 h-3.5" />
                     </div>
                   </div>
@@ -136,7 +136,7 @@ export default function PressPage() {
                 <Link
                   key={item.headline}
                   href={item.href}
-                  className="flex items-start justify-between gap-4 rounded-xl border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-5 group transition-all"
+                  className="flex items-start justify-between gap-4 rounded-md border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-5 group transition-all"
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-2">
@@ -144,11 +144,11 @@ export default function PressPage() {
                       <span className="text-white/15 text-xs">•</span>
                       <span className="text-white/25 text-xs">{item.date}</span>
                     </div>
-                    <p className="text-white/55 text-sm leading-relaxed group-hover:text-white/75 transition-colors">
+                    <p className="text-white/55 text-sm leading-relaxed /75 transition-colors">
                       {item.headline}
                     </p>
                   </div>
-                  <ExternalLink className="w-4 h-4 text-white/20 group-hover:text-white/50 transition-colors shrink-0 mt-0.5" />
+                  <ExternalLink className="w-4 h-4 text-white/20 /50 transition-colors shrink-0 mt-0.5" />
                 </Link>
               ))}
             </div>

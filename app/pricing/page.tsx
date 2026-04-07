@@ -299,7 +299,7 @@ function Cell({ value, planId }: { value: CellValue; planId: string }) {
 function FaqItem({ q, a }: { q: string; a: string }) {
   const [open, setOpen] = useState(false);
   return (
-    <div className="border border-white/8 rounded-xl overflow-hidden">
+    <div className="border border-white/8 rounded-md overflow-hidden">
       <button
         className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/[0.03] transition-colors"
         onClick={() => setOpen((o) => !o)}
@@ -402,7 +402,7 @@ export default function PricingPage() {
 
       {/* ── Billing toggle ────────────────────────────────────────────────── */}
       <div className="flex justify-center mb-12">
-        <div className="flex items-center gap-1 p-1 bg-white/[0.04] border border-white/10 rounded-xl">
+        <div className="flex items-center gap-1 p-1 bg-white/[0.04] border border-white/10 rounded-md">
           {(["monthly", "yearly"] as const).map((b) => (
             <button
               key={b}
@@ -459,7 +459,7 @@ export default function PricingPage() {
 
               {/* Plan header */}
               <div className="mb-5">
-                <div className={`w-10 h-10 rounded-xl ${plan.iconBg} flex items-center justify-center mb-3`}>
+                <div className={`w-10 h-10 rounded-md ${plan.iconBg} flex items-center justify-center mb-3`}>
                   {plan.id === "free"       && <Globe className={`w-5 h-5 ${plan.color}`} />}
                   {plan.id === "basic"      && <BookOpen className={`w-5 h-5 ${plan.color}`} />}
                   {plan.id === "pro"        && <Crown className={`w-5 h-5 ${plan.color}`} />}
@@ -497,7 +497,7 @@ export default function PricingPage() {
               <button
                 onClick={() => handleSelect(plan)}
                 disabled={isLoading}
-                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all mb-5 ${
+                className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all mb-5 ${
                   plan.popular
                     ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25"
                     : plan.id === "enterprise"
@@ -653,7 +653,7 @@ export default function PricingPage() {
               className={`rounded-2xl border ${item.border} bg-gradient-to-br ${item.gradient} p-6`}
             >
               <div className="flex items-start gap-4 mb-5">
-                <div className={`w-11 h-11 rounded-xl ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
+                <div className={`w-11 h-11 rounded-md ${item.iconBg} flex items-center justify-center flex-shrink-0`}>
                   <item.icon className={`w-5 h-5 ${item.iconColor}`} />
                 </div>
                 <div>
@@ -738,7 +738,7 @@ export default function PricingPage() {
             <div className="flex flex-col gap-3 flex-shrink-0">
               <button
                 onClick={() => handleSelect(PLANS[3])}
-                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors whitespace-nowrap"
+                className="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white text-sm font-semibold px-6 py-3 rounded-md transition-colors whitespace-nowrap"
               >
                 <Phone className="w-4 h-4" /> Contact Sales
               </button>
@@ -779,13 +779,13 @@ export default function PricingPage() {
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link
               href="/signup"
-              className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors"
+              className="flex items-center gap-2 bg-white/10 hover:bg-white/15 border border-white/10 text-white text-sm font-semibold px-6 py-3 rounded-md transition-colors"
             >
               Start for free <ArrowRight className="w-4 h-4" />
             </Link>
             <button
               onClick={() => handleSelect(PLANS[2])}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-6 py-3 rounded-xl transition-colors shadow-lg shadow-emerald-600/20"
+              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-6 py-3 rounded-md transition-colors shadow-lg shadow-emerald-600/20"
             >
               <Zap className="w-4 h-4" /> Go Pro — ₹{PLANS[2].monthlyPrice.toLocaleString("en-IN")}/mo
             </button>

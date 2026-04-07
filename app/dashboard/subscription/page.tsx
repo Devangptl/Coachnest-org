@@ -116,7 +116,7 @@ function CancelDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <div className="w-12 h-12 rounded-xl bg-red-500/10 flex items-center justify-center mb-1">
+          <div className="w-12 h-12 rounded-md bg-red-500/10 flex items-center justify-center mb-1">
             <CalendarX2 className="w-6 h-6 text-red-400" />
           </div>
           <DialogTitle>Cancel subscription?</DialogTitle>
@@ -145,14 +145,14 @@ function CancelDialog({
         <div className="flex gap-3 mt-2">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-secondary/60 transition-all"
+            className="flex-1 py-2.5 rounded-md border border-border text-sm font-medium text-foreground hover:bg-secondary/60 transition-all"
           >
             Keep subscription
           </button>
           <button
             onClick={onConfirm}
             disabled={cancelling}
-            className="flex-1 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-2.5 rounded-md bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 text-sm font-semibold transition-all disabled:opacity-50 flex items-center justify-center gap-2"
           >
             {cancelling
               ? <><Loader2 className="w-4 h-4 animate-spin" /> Cancelling…</>
@@ -356,9 +356,9 @@ function SubscriptionPageContent() {
   // ── Loading ───────────────────────────��────────────────────────��───────────
   if (loading) {
     return (
-      <div className="max-w-3xl mx-auto space-y-6">
+      <div className="space-y-6">
         {isSuccessRedirect && (
-          <div className="flex items-center gap-3 bg-orange-500/10 border border-orange-400/20 rounded-xl px-5 py-4">
+          <div className="flex items-center gap-3 bg-orange-500/10 border border-orange-400/20 rounded-md px-5 py-4">
             <Loader2 className="w-5 h-5 text-orange-400 animate-spin flex-shrink-0" />
             <div>
               <p className="text-orange-300 font-semibold text-sm">Activating your subscription…</p>
@@ -368,8 +368,8 @@ function SubscriptionPageContent() {
         )}
         <div className="animate-pulse space-y-6">
           <div className="h-8 w-48 bg-secondary rounded-lg" />
-          <div className="h-48 bg-secondary rounded-xl" />
-          <div className="h-64 bg-secondary rounded-xl" />
+          <div className="h-48 bg-secondary rounded-md" />
+          <div className="h-64 bg-secondary rounded-md" />
         </div>
       </div>
     );
@@ -384,7 +384,7 @@ function SubscriptionPageContent() {
 
   return (
     <>
-      <div className="max-w-3xl mx-auto space-y-8">
+      <div className="space-y-8">
 
         {/* ── Page header ────────────────────────────────────────────────── */}
         <div>
@@ -396,7 +396,7 @@ function SubscriptionPageContent() {
 
         {/* ── No payment method notice ─────────────────��────────────────── */}
         {!hasPaymentMethod && !isPaidPlan && (
-          <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/20 px-4 py-3">
+          <div className="flex items-center gap-3 rounded-md border border-border bg-secondary/20 px-4 py-3">
             <CreditCard className="w-4 h-4 text-muted-foreground flex-shrink-0" />
             <p className="text-sm text-muted-foreground">
               No payment method saved.{" "}
@@ -413,11 +413,11 @@ function SubscriptionPageContent() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className={cn("glass rounded-xl p-6 border", meta!.border)}
+            className={cn("glass rounded-md p-6 border", meta!.border)}
           >
             <div className="flex items-start justify-between gap-4 flex-wrap">
               <div className="flex items-center gap-3">
-                <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", meta!.bg)}>
+                <div className={cn("w-12 h-12 rounded-md flex items-center justify-center", meta!.bg)}>
                   {(() => { const Icon = meta!.icon; return <Icon className={cn("w-6 h-6", meta!.color)} />; })()}
                 </div>
                 <div>
@@ -549,9 +549,9 @@ function SubscriptionPageContent() {
           <motion.div
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            className="glass rounded-xl p-6 border border-border text-center"
+            className="glass rounded-md p-6 border border-border text-center"
           >
-            <div className="w-14 h-14 bg-orange-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
+            <div className="w-14 h-14 bg-orange-500/10 rounded-md flex items-center justify-center mx-auto mb-4">
               <Crown className="w-7 h-7 text-orange-400" />
             </div>
             <h2 className="text-xl font-bold text-foreground mb-2">No Active Subscription</h2>
@@ -630,7 +630,7 @@ function SubscriptionPageContent() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   className={cn(
-                    "glass rounded-xl p-5 border flex flex-col relative",
+                    "glass rounded-md p-5 border flex flex-col relative",
                     plan.popular ? "border-orange-400/30 shadow-glow" : "border-border",
                     isCurrent && sub?.status === "ACTIVE" && "ring-1 ring-orange-400/30"
                   )}

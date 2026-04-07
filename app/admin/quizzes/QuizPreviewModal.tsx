@@ -66,7 +66,7 @@ export default function QuizPreviewModal({
                 {data.questions?.map((q: any, qIdx: number) => {
                   const opts = (q.options || []) as Array<{ id: string; text: string; isCorrect?: boolean }>;
                   return (
-                    <div key={q.id} className="bg-secondary border border-border rounded-xl p-4">
+                    <div key={q.id} className="bg-secondary border border-border rounded-md p-4">
                       <div className="flex items-start justify-between mb-3">
                         <p className="text-foreground text-sm font-medium">
                           <span className="text-muted-foreground/70 mr-1.5">Q{qIdx + 1}.</span>

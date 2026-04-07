@@ -117,10 +117,10 @@ export default async function BlogDetailPage({ params }: Props) {
         prose-a:text-orange-400 prose-a:no-underline hover:prose-a:text-orange-300
         prose-strong:text-white
         prose-code:text-orange-300 prose-code:bg-secondary prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-        prose-pre:bg-white/[0.06] prose-pre:border prose-pre:border-border prose-pre:rounded-xl
+        prose-pre:bg-white/[0.06] prose-pre:border prose-pre:border-border prose-pre:rounded-md
         prose-blockquote:border-orange-400/25 prose-blockquote:text-muted-foreground
         prose-li:text-muted-foreground
-        prose-img:rounded-xl prose-img:border prose-img:border-border
+        prose-img:rounded-md prose-img:border prose-img:border-border
       ">
         <div dangerouslySetInnerHTML={{ __html: blog.content }} />
       </article>

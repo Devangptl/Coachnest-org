@@ -43,7 +43,7 @@ export default function CourseCard({
 
   return (
     <Link href={`/courses/${id}`} className="group block h-full">
-      <div className="relative bg-card border border-border/60 rounded-xl overflow-hidden transition-all duration-300 group-hover:border-orange-500/30 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-orange-500/8 h-full flex flex-col">
+      <div className="relative bg-card border border-border/60 rounded-md overflow-hidden transition-all duration-300 group-hover:border-orange-500/30 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-orange-500/8 h-full flex flex-col">
 
         {/* Top orange accent line — appears on hover */}
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />

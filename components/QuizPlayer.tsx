@@ -156,15 +156,15 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            <div className="bg-secondary border border-border rounded-xl p-3">
+            <div className="bg-secondary border border-border rounded-md p-3">
               <p className="text-2xl font-bold text-white">{quiz.questions.length}</p>
               <p className="text-muted-foreground/70 text-xs">Questions</p>
             </div>
-            <div className="bg-secondary border border-border rounded-xl p-3">
+            <div className="bg-secondary border border-border rounded-md p-3">
               <p className="text-2xl font-bold text-white">{quiz.passMark}%</p>
               <p className="text-muted-foreground/70 text-xs">Pass Mark</p>
             </div>
-            <div className="bg-secondary border border-border rounded-xl p-3">
+            <div className="bg-secondary border border-border rounded-md p-3">
               <p className="text-2xl font-bold text-white">
                 {quiz.timeLimit ? `${quiz.timeLimit}m` : "\u221E"}
               </p>
@@ -175,7 +175,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
           {/* Previous attempts */}
           {quiz.previousAttempts && quiz.previousAttempts.length > 0 && (
             <div className={cn(
-              "border rounded-xl p-4 text-left",
+              "border rounded-md p-4 text-left",
               quiz.hasPassed
                 ? "bg-emerald-500/5 border-emerald-400/20"
                 : "bg-secondary border-border"
@@ -222,7 +222,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
             </div>
           )}
 
-          <div className="bg-secondary border border-border rounded-xl p-4 text-left space-y-2">
+          <div className="bg-secondary border border-border rounded-md p-4 text-left space-y-2">
             <p className="text-muted-foreground text-sm font-medium">Instructions:</p>
             <ul className="text-muted-foreground text-xs space-y-1">
               <li>- Select one answer per question</li>
@@ -341,7 +341,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
           </span>
           {timeLeft !== null && (
             <div className={cn(
-              "flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm font-mono font-medium",
+              "flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-mono font-medium",
               timeLeft < 60
                 ? "bg-red-500/20 text-red-300 border border-red-400/30 animate-pulse"
                 : timeLeft < 300
@@ -414,7 +414,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                     key={opt.id}
                     onClick={() => selectOption(opt.id)}
                     className={cn(
-                      "w-full text-left px-4 py-3.5 rounded-xl border text-sm transition-all flex items-center gap-3 group",
+                      "w-full text-left px-4 py-3.5 rounded-md border text-sm transition-all flex items-center gap-3 group",
                       isSelected
                         ? "bg-orange-500/15 border-orange-400/25 text-white"
                         : "bg-white/[0.03] border-border text-muted-foreground hover:bg-white/[0.06] hover:border-border"

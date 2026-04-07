@@ -71,7 +71,7 @@ export default function AboutPage() {
           {/* Stats */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-20">
             {STATS.map((stat) => (
-              <div key={stat.label} className="rounded-xl border border-white/8 bg-white/[.02] p-6 text-center">
+              <div key={stat.label} className="rounded-md border border-white/8 bg-white/[.02] p-6 text-center">
                 <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
                 <p className="text-white/35 text-sm">{stat.label}</p>
               </div>
@@ -94,8 +94,8 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold text-white mb-8 text-center">What We Stand For</h2>
             <div className="grid sm:grid-cols-2 gap-4">
               {VALUES.map(({ icon: Icon, title, desc }) => (
-                <div key={title} className="rounded-xl border border-white/8 bg-white/[.02] p-6 flex gap-4">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
+                <div key={title} className="rounded-md border border-white/8 bg-white/[.02] p-6 flex gap-4">
+                  <div className="w-10 h-10 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
                     <Icon className="w-5 h-5 text-orange-400/70" />
                   </div>
                   <div>
@@ -112,7 +112,7 @@ export default function AboutPage() {
             <h2 className="text-2xl font-bold text-white mb-8 text-center">The Team</h2>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {TEAM.map((member) => (
-                <div key={member.name} className="rounded-xl border border-white/8 bg-white/[.02] p-5 text-center">
+                <div key={member.name} className="rounded-md border border-white/8 bg-white/[.02] p-5 text-center">
                   <div className="w-14 h-14 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400/70 font-bold text-base mx-auto mb-3">
                     {member.initials}
                   </div>

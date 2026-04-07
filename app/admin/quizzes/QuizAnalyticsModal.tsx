@@ -71,7 +71,7 @@ export default function QuizAnalyticsModal({
                   const Icon = stat.icon;
                   return (
                     <GlassCard key={stat.label} className="flex items-center gap-3 !p-4">
-                      <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center">
+                      <div className="w-10 h-10 rounded-md bg-secondary flex items-center justify-center">
                         <Icon className={`w-5 h-5 ${stat.color}`} />
                       </div>
                       <div>
@@ -115,7 +115,7 @@ export default function QuizAnalyticsModal({
                     {analytics.questionAnalytics.map((q: any, idx: number) => (
                       <div
                         key={q.id}
-                        className="flex items-center justify-between p-3 bg-secondary rounded-xl"
+                        className="flex items-center justify-between p-3 bg-secondary rounded-md"
                       >
                         <div className="flex-1 min-w-0">
                           <p className="text-foreground text-sm truncate">

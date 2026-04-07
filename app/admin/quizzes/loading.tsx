@@ -50,7 +50,7 @@ export default function QuizzesLoading() {
       {/* Header */}
       <div className="mb-8 flex items-center justify-between animate-pulse">
         <div>
-          <Skeleton className="h-9 w-56 rounded-xl mb-2" />
+          <Skeleton className="h-9 w-56 rounded-md mb-2" />
           <Skeleton className="h-4 w-80 rounded-lg" />
         </div>
         <Skeleton className="h-10 w-28 rounded-lg" />
@@ -63,7 +63,7 @@ export default function QuizzesLoading() {
             key={i}
             className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
-            <Skeleton className="w-12 h-12 rounded-xl" />
+            <Skeleton className="w-12 h-12 rounded-md" />
             <div className="space-y-2">
               <Skeleton h="h-8" w="w-14" />
               <Skeleton h="h-4" w="w-24" />

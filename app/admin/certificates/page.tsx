@@ -43,7 +43,7 @@ export default async function AdminCertificatesPage({
             type="text"
             defaultValue={search ?? ""}
             placeholder="Search by student or course..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:ring-1 focus:ring-orange-400/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-md bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:ring-1 focus:ring-orange-400/30 transition-all"
           />
         </div>
       </form>
@@ -77,7 +77,7 @@ export default async function AdminCertificatesPage({
             {certs.map((cert) => (
               <div
                 key={cert.id}
-                className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4 hover:bg-secondary/50 transition-colors"
+                className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4  transition-colors"
               >
                 {/* Student */}
                 <div className="col-span-4 flex items-center gap-3 min-w-0">

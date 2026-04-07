@@ -111,7 +111,7 @@ export default async function AchievementsPage() {
             <div
               key={badge.key}
               className={cn(
-                "rounded-xl border p-4 flex flex-col items-center text-center gap-2 transition-all",
+                "rounded-md border p-4 flex flex-col items-center text-center gap-2 transition-all",
                 badge.earned
                   ? "bg-orange-500/5 border-orange-500/20"
                   : "bg-secondary/30 border-border opacity-50"
@@ -158,7 +158,7 @@ export default async function AchievementsPage() {
               <div
                 key={entry.userId}
                 className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-xl border transition-colors",
+                  "flex items-center gap-4 px-4 py-3 rounded-md border transition-colors",
                   entry.isCurrentUser
                     ? "bg-orange-500/8 border-orange-500/20"
                     : "bg-secondary/30 border-border"

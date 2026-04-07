@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
           {/* Header */}
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                 <Shield className="w-5 h-5 text-orange-400/70" />
               </div>
               <div>
@@ -56,7 +56,7 @@ export default function PrivacyPolicyPage() {
 
             {/* Sticky table of contents */}
             <aside className="hidden lg:block">
-              <div className="sticky top-28 rounded-xl border border-white/8 bg-white/[.03] p-4">
+              <div className="sticky top-28 rounded-md border border-white/8 bg-white/[.03] p-4">
                 <p className="text-white/40 text-xs font-semibold uppercase tracking-wider mb-3">Contents</p>
                 <ul className="space-y-1.5">
                   {SECTIONS.map((s) => (
@@ -167,7 +167,7 @@ export default function PrivacyPolicyPage() {
 
               <Section id="contact" title="10. Contact Us">
                 <p>If you have questions, concerns, or requests related to this Privacy Policy, please reach out:</p>
-                <div className="rounded-xl border border-white/10 bg-white/[.03] p-5 not-prose">
+                <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
                   <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Privacy Team</p>
                   <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 text-sm transition-colors">
                     Submit a request via our Contact page →
@@ -190,9 +190,9 @@ export default function PrivacyPolicyPage() {
                 <Link
                   key={doc.href}
                   href={doc.href}
-                  className="rounded-xl border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-4 group transition-all"
+                  className="rounded-md border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-4 group transition-all"
                 >
-                  <p className="text-white/70 text-sm font-medium group-hover:text-white transition-colors mb-1">{doc.label}</p>
+                  <p className="text-white/70 text-sm font-medium  transition-colors mb-1">{doc.label}</p>
                   <p className="text-white/30 text-xs">{doc.desc}</p>
                 </Link>
               ))}

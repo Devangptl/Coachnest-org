@@ -8,7 +8,7 @@ export default function EnrollmentsLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-52 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-52 rounded-md mb-2" />
         <Skeleton className="h-4 w-80 rounded-lg" />
       </div>
 
@@ -19,7 +19,7 @@ export default function EnrollmentsLoading() {
             key={i}
             className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
-            <Skeleton className="w-12 h-12 rounded-xl" />
+            <Skeleton className="w-12 h-12 rounded-md" />
             <div className="space-y-2">
               <Skeleton h="h-8" w="w-14" />
               <Skeleton h="h-4" w="w-24" />
@@ -31,9 +31,9 @@ export default function EnrollmentsLoading() {
       {/* Filters bar */}
       <div className="mb-8 animate-pulse">
         <div className="flex gap-3">
-          <Skeleton className="h-10 w-48 rounded-xl" />
-          <Skeleton className="h-10 w-32 rounded-xl" />
-          <Skeleton className="h-10 w-32 rounded-xl" />
+          <Skeleton className="h-10 w-48 rounded-md" />
+          <Skeleton className="h-10 w-32 rounded-md" />
+          <Skeleton className="h-10 w-32 rounded-md" />
         </div>
       </div>
 

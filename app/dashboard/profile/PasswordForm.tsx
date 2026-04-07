@@ -72,7 +72,7 @@ export default function PasswordForm() {
               required
               value={currentPassword}
               onChange={(e) => { setCurrentPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
               placeholder="Enter current password"
             />
             <button
@@ -96,7 +96,7 @@ export default function PasswordForm() {
               required
               value={newPassword}
               onChange={(e) => { setNewPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
               placeholder="At least 6 characters"
             />
             <button
@@ -119,7 +119,7 @@ export default function PasswordForm() {
             required
             value={confirmPassword}
             onChange={(e) => { setConfirmPassword(e.target.value); setMessage(null); }}
-            className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
             placeholder="Re-enter new password"
           />
         </div>
@@ -127,7 +127,7 @@ export default function PasswordForm() {
         {/* Message */}
         {message && (
           <div
-            className={`text-sm px-4 py-2.5 rounded-xl border ${
+            className={`text-sm px-4 py-2.5 rounded-md border ${
               message.type === "success"
                 ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-700 dark:text-emerald-300"
                 : "bg-red-500/10 border-red-400/30 text-red-700 dark:text-red-300"

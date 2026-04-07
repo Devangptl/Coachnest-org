@@ -197,7 +197,7 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
         return (
           <div
             key={lesson.id}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-secondary transition-colors"
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-secondary transition-colors"
           >
             <span className="text-muted-foreground/40 text-xs w-5 text-right flex-shrink-0">
               {i + 1}

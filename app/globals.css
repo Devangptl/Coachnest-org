@@ -38,27 +38,27 @@
     --radius: 0.5rem;
   }
 
-  /* ── Claude Code warm-cream light theme ─────────────────────────────────── */
+  /* ── Claude Code light theme ────────────────────────────────────────────── */
   .light {
-    --background: 40 30% 97%;          /* #f8f5f1 — very light warm cream */
-    --foreground: 20 14% 9%;           /* #181310 — rich warm black */
+    --background: 33 60% 97%;          /* #fdf9f5 — warm parchment */
+    --foreground: 20 30% 9%;           /* #1c1411 — rich warm near-black */
     --card: 0 0% 100%;                 /* #ffffff — pure white cards */
-    --card-foreground: 20 14% 9%;
+    --card-foreground: 20 30% 9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 20 14% 9%;
-    --primary: 20 82% 44%;             /* #cc5508 — slightly deeper orange for cream bg */
+    --popover-foreground: 20 30% 9%;
+    --primary: 20 68% 52%;             /* #d4703f — Claude signature orange */
     --primary-foreground: 0 0% 100%;
-    --secondary: 38 20% 92%;           /* #ede8e2 — warm light panel */
+    --secondary: 34 23% 90%;           /* #ece7df — warm light panel */
     --secondary-foreground: 20 10% 18%;
-    --muted: 38 20% 92%;
-    --muted-foreground: 20 7% 40%;     /* #685e55 — readable warm mid */
-    --accent: 25 45% 91%;
-    --accent-foreground: 20 75% 30%;
+    --muted: 34 23% 90%;
+    --muted-foreground: 26 12% 42%;    /* #776b5f — warm readable mid */
+    --accent: 25 50% 93%;              /* #f5ede4 — soft orange tint */
+    --accent-foreground: 20 68% 34%;   /* #8c3d1a — dark orange on tint */
     --destructive: 0 72% 48%;
     --destructive-foreground: 0 0% 100%;
-    --border: 34 18% 86%;              /* #dfd8cf — warm border */
-    --input: 38 18% 90%;
-    --ring: 20 82% 44%;
+    --border: 32 22% 83%;              /* #ddd5c9 — warm border */
+    --input: 33 25% 91%;               /* #ede8e0 — warm input bg */
+    --ring: 20 68% 52%;
   }
 }
 
@@ -89,16 +89,16 @@
 
   /* Custom scrollbar */
   ::-webkit-scrollbar { width: 6px; }
-  ::-webkit-scrollbar-track { background: rgba(0,0,0,.3); }
-  ::-webkit-scrollbar-thumb { background: rgba(217,112,65,.35); border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: rgba(217,112,65,.6); }
+  ::-webkit-scrollbar-track { background: hsl(var(--secondary)); }
+  ::-webkit-scrollbar-thumb { background: hsl(var(--primary) / 0.35); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: hsl(var(--primary) / 0.65); }
 }
 
 /* ─── Reusable component classes ─────────────────────────────────────────────── */
 @layer components {
   /* Surface panel — solid dark instead of glass */
   .glass {
-    @apply bg-card border border-border rounded-lg shadow-glass;
+    @apply bg-card border border-border rounded-lg;
   }
   .glass-hover {
     @apply transition-all duration-200 hover:bg-secondary hover:border-border/80;
@@ -137,12 +137,16 @@
            focus:ring-1 focus:ring-orange-500/20 hover:border-border/80 transition-all;
   }
 
-  /* Select — remove native arrow, inject custom chevron */
+  /* Select — remove native arrow, inject custom chevron (dark mode) */
   select.input-glass {
     @apply appearance-none cursor-pointer pr-10;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(255,255,255,0.45)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
     background-position: right 12px center;
+  }
+  /* Light mode: use dark chevron */
+  .light select.input-glass {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='rgba(28,20,17,0.45)' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   }
 
   .label {
@@ -154,9 +158,9 @@
     @apply rounded bg-secondary overflow-hidden relative;
     background: linear-gradient(
       90deg,
-      rgba(255,255,255,.04) 25%,
-      rgba(255,255,255,.08) 50%,
-      rgba(255,255,255,.04) 75%
+      hsl(var(--secondary)) 25%,
+      hsl(var(--border)) 50%,
+      hsl(var(--secondary)) 75%
     );
     background-size: 200% 100%;
     animation: shimmer 2s infinite linear;
@@ -166,12 +170,12 @@
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium;
   }
-  .badge-orange { @apply badge bg-orange-500/15 text-orange-300 border border-orange-400/25; }
-  .badge-purple { @apply badge bg-orange-500/15 text-orange-300 border border-orange-400/25; }
-  .badge-green  { @apply badge bg-green-500/15  text-green-400  border border-green-400/25;  }
-  .badge-amber  { @apply badge bg-amber-500/15  text-amber-300  border border-amber-400/25;  }
-  .badge-red    { @apply badge bg-red-500/15    text-red-400    border border-red-400/25;    }
-  .badge-blue   { @apply badge bg-blue-500/15   text-blue-400   border border-blue-400/25;   }
+  .badge-orange { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-400/25; }
+  .badge-purple { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-400/25; }
+  .badge-green  { @apply badge bg-green-500/15  text-green-700  dark:text-green-400  border border-green-400/25;  }
+  .badge-amber  { @apply badge bg-amber-500/15  text-amber-700  dark:text-amber-300  border border-amber-400/25;  }
+  .badge-red    { @apply badge bg-red-500/15    text-red-600    dark:text-red-400    border border-red-400/25;    }
+  .badge-blue   { @apply badge bg-blue-500/15   text-blue-600   dark:text-blue-400   border border-blue-400/25;   }
 
   /* Divider */
   .divider { @apply border-t border-border my-4; }
@@ -199,6 +203,11 @@
   background-size: 60px 60px;
   mask-image: linear-gradient(to bottom, transparent, white 10%, white 60%, transparent);
   -webkit-mask-image: linear-gradient(to bottom, transparent, white 10%, white 60%, transparent);
+}
+.light .hero-grid {
+  background-image:
+    linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
 }
 
 /* Animated gradient text shimmer — warm orange/amber */
@@ -236,15 +245,6 @@
   animation: hero-ring-pulse 2.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Floating avatar border glow */
-@keyframes avatar-glow {
-  0%, 100% { border-color: rgba(217,112,65,0.3); }
-  50%      { border-color: rgba(217,112,65,0.6); }
-}
-
-.avatar-glow {
-  animation: avatar-glow 3s ease-in-out infinite;
-}
 
 /* ─── Hero Showcase — Dot grid + floating cards ──────────────────────────────── */
 .hero-dot-grid {
@@ -252,6 +252,9 @@
   background-size: 24px 24px;
   mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 30%, transparent 80%);
   -webkit-mask-image: radial-gradient(ellipse 90% 80% at 50% 50%, black 30%, transparent 80%);
+}
+.light .hero-dot-grid {
+  background-image: radial-gradient(circle, rgba(0,0,0,0.07) 1px, transparent 1px);
 }
 
 .hero-showcase-card {
@@ -267,6 +270,13 @@
   overflow: hidden;
   transition: all 0.3s ease;
 }
+.light .hero-showcase-card {
+  background: rgba(255, 253, 250, 0.85);
+  border: 1px solid rgba(0,0,0,0.08);
+  box-shadow:
+    0 8px 32px rgba(0,0,0,0.1),
+    0 1px 0 rgba(255,255,255,0.8) inset;
+}
 
 .hero-showcase-card:hover {
   border-color: rgba(255,255,255,0.12);
@@ -276,13 +286,11 @@
     0 0 0 0.5px rgba(255,255,255,0.06) inset,
     0 1px 0 rgba(255,255,255,0.06) inset;
 }
-
-/* ─── Course page: floating glow CTA ────────────────────────────────────────── */
-@keyframes cta-glow {
-  0%, 100% { box-shadow: 0 0 15px rgba(217,112,65,0.25), 0 0 30px rgba(217,112,65,0.1); }
-  50%      { box-shadow: 0 0 25px rgba(217,112,65,0.45), 0 0 50px rgba(217,112,65,0.15); }
+.light .hero-showcase-card:hover {
+  border-color: rgba(0,0,0,0.12);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.15);
 }
-.cta-glow { animation: cta-glow 2.5s ease-in-out infinite; }
+
 
 /* ─── Timeline connector for curriculum ──────────────────────────────────────── */
 .curriculum-timeline {
@@ -429,9 +437,9 @@ html.light select.input-glass option {
 
 /* ── Glass / shadow overrides ────────────────────────────────────────────── */
 html.light .glass,
-html.light [class*="shadow-glass"] {
+/* html.light [class*="shadow-glass"] {
   box-shadow: 0 2px 16px 0 rgba(0,0,0,0.07);
-}
+} */
 html.light nav [class*="shadow-2xl"] {
   box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }

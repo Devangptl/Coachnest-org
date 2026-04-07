@@ -69,7 +69,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <select
               value={type}
               onChange={(e) => setType(e.target.value)}
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-orange-400/25 transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-orange-400/25 transition-all"
             >
               <option value="SYSTEM">System</option>
               <option value="COURSE_UPDATE">Course Update</option>
@@ -83,7 +83,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <input
               type="text"
               placeholder="Notification title"
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all"
               value={title}
               onChange={(e) => { setTitle(e.target.value); setResult(null); }}
             />
@@ -94,7 +94,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <textarea
               rows={3}
               placeholder="Your message to the student..."
-              className="w-full bg-secondary border border-border rounded-xl px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
               value={message}
               onChange={(e) => { setMessage(e.target.value); setResult(null); }}
             />
@@ -102,7 +102,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
 
           {result && (
             <div
-              className={`text-sm px-4 py-2.5 rounded-xl border ${
+              className={`text-sm px-4 py-2.5 rounded-md border ${
                 result.type === "success"
                   ? "bg-emerald-500/10 border-emerald-400/30 text-emerald-700 dark:text-emerald-300"
                   : "bg-red-500/10 border-red-400/30 text-red-700 dark:text-red-300"

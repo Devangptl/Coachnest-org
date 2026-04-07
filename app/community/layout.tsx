@@ -28,7 +28,7 @@ export default async function CommunityLayout({
       <div className=" pb-16">
         <div className="flex flex-col lg:flex-row lg:gap-8">
           <CommunitySidebar />
-          <div className="flex-1 min-w-0 animate-fade-in mt-4">{children}</div>
+          <div className="flex-1 min-w-0 animate-fade-in">{children}</div>
         </div>
       </div>
     </>

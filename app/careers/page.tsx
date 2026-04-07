@@ -78,7 +78,7 @@ export default function CareersPage() {
           {/* Perks */}
           <div className="grid sm:grid-cols-2 gap-4 mb-16">
             {PERKS.map(({ icon: Icon, title, desc }) => (
-              <div key={title} className="rounded-xl border border-white/8 bg-white/[.02] p-5 flex gap-4">
+              <div key={title} className="rounded-md border border-white/8 bg-white/[.02] p-5 flex gap-4">
                 <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
                   <Icon className="w-4 h-4 text-orange-400/70" />
                 </div>
@@ -97,11 +97,11 @@ export default function CareersPage() {
               {OPENINGS.map((role) => (
                 <div
                   key={role.title}
-                  className="rounded-xl border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-5 sm:p-6 transition-all group"
+                  className="rounded-md border border-white/8 bg-white/[.02] hover:bg-white/[.04] hover:border-white/15 p-5 sm:p-6 transition-all group"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-3">
                     <div>
-                      <p className="text-white/80 font-semibold text-sm group-hover:text-white transition-colors">
+                      <p className="text-white/80 font-semibold text-sm  transition-colors">
                         {role.title}
                       </p>
                       <div className="flex items-center gap-3 mt-1.5">

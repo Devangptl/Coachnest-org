@@ -35,7 +35,7 @@ export default function BlogCard({
     >
       <Link
         href={`/blog/${slug}`}
-        className="group flex flex-col h-[340px] backdrop-blur-lg bg-white/[0.06] border border-border rounded-xl overflow-hidden shadow-lg hover:bg-white/[0.1] hover:border-border transition-all duration-300"
+        className="group flex flex-col h-[340px] backdrop-blur-lg bg-white/[0.06] border border-border rounded-md overflow-hidden shadow-lg hover:bg-white/[0.1] hover:border-border transition-all duration-300"
       >
         {/* Thumbnail */}
         {thumbnail ? (
@@ -49,7 +49,7 @@ export default function BlogCard({
           </div>
         ) : (
           <div className="h-36 shrink-0 bg-gradient-to-br from-orange-600/20 to-orange-500/20 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center">
+            <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
               <span className="text-2xl font-bold text-orange-400">{title.charAt(0)}</span>
             </div>
           </div>

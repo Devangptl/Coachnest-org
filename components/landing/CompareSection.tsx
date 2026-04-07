@@ -1,27 +1,66 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle2, Minus } from "lucide-react";
+import { CheckCircle2, XCircle, Trophy, Minus } from "lucide-react";
+import { cn } from "@/lib/utils";
+import Link from "next/link";
+
+const features = [
+  { label: "Free courses available",   us: true,  them: "Limited"     },
+  { label: "Verified certificates",    us: true,  them: "Paid add-on" },
+  { label: "Interactive quizzes",      us: true,  them: "Some plans"  },
+  { label: "Progress tracking",        us: true,  them: true          },
+  { label: "70% instructor revenue",   us: true,  them: false         },
+  { label: "Lifetime course access",   us: true,  them: "Subscription"},
+  { label: "Ad-free experience",       us: true,  them: false         },
+  { label: "Community & peer review",  us: true,  them: "Basic"       },
+  { label: "Mobile optimized",         us: true,  them: true          },
+  { label: "Priority support",         us: true,  them: false         },
+];
+
+function Cell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
+  if (value === true) {
+    return (
+      <div
+        className={cn(
+          "inline-flex items-center justify-center w-8 h-8 rounded-full",
+          highlight
+            ? "bg-emerald-500/15 text-emerald-500"
+            : "bg-secondary text-muted-foreground/50"
+        )}
+      >
+        <CheckCircle2 className="w-4 h-4" />
+      </div>
+    );
+  }
+  if (value === false) {
+    return (
+      <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-destructive/10 text-destructive/40">
+        <XCircle className="w-4 h-4" />
+      </div>
+    );
+  }
+  return (
+    <span
+      className={cn(
+        "text-[11px] font-medium px-2 py-0.5 rounded-full leading-snug text-center",
+        highlight
+          ? "bg-primary/10 text-primary"
+          : "bg-secondary text-muted-foreground/60"
+      )}
+    >
+      {value}
+    </span>
+  );
+}
 
 export default function CompareSection() {
-  const features = [
-    { feature: "Glassmorphism UI", us: true, them: false },
-    { feature: "Free courses available", us: true, them: "Limited" },
-    { feature: "Verified certificates", us: true, them: "Paid extra" },
-    { feature: "Interactive quizzes", us: true, them: "Some" },
-    { feature: "Progress tracking", us: true, them: true },
-    { feature: "70% instructor revenue", us: true, them: false },
-    { feature: "Lifetime course access", us: true, them: "Subscription" },
-    { feature: "No ads or distractions", us: true, them: false },
-  ];
-
   return (
-    <section className="py-16 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Ambience */}
-      <div className="absolute inset-0  pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[300px] bg-orange-500/10 rounded-[100%] blur-[100px] pointer-events-none" />
+    <section className="py-20 px-4 sm:px-6 lg:px-8">
 
-      <div className="max-w-4xl mx-auto relative z-10">
+      <div className="max-w-3xl mx-auto relative z-10">
+
+        {/* ── Heading ── */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -29,171 +68,113 @@ export default function CompareSection() {
           transition={{ duration: 0.5 }}
           className="text-center mb-12"
         >
-          <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-2">
+          <span className="inline-block text-primary text-xs font-semibold uppercase tracking-widest px-3 py-1 bg-primary/10 rounded-full mb-4">
             Compare
           </span>
-          <h2 className="text-3xl sm:text-4xl font-bold text-white mb-3">
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
             CoachNest vs{" "}
-            <span className="text-muted-foreground/70">the rest</span>
+            <span className="text-muted-foreground">the rest</span>
           </h2>
-          <p className="text-muted-foreground/70 max-w-xl mx-auto text-base">
-            See why thousands migrate to our platform every day.
+          <p className="text-muted-foreground max-w-md mx-auto text-base leading-relaxed">
+            See why thousands of learners choose CoachNest over other platforms.
           </p>
         </motion.div>
 
-        {/* ── DESKTOP TABLE VIEW ( hidden on mobile ) ── */}
+        {/* ── Comparison table ── */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="hidden md:block relative"
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="rounded-md border border-border bg-secondary/20 overflow-hidden shadow-card"
         >
-          {/* Subtle glow specifically behind the CoachNest column */}
-          <div className="absolute top-0 bottom-0 left-[33.33%] w-[33.33%] bg-gradient-to-b from-orange-500/10 via-orange-500/5 to-transparent rounded-2xl -z-10 blur-xl" />
+          {/* Column headers */}
+          <div className="grid grid-cols-[1fr_88px_88px] sm:grid-cols-[1fr_140px_140px] border-b border-border">
+            {/* Feature column label */}
+            <div className="px-4 sm:px-6 py-4 flex items-end">
+              <span className="text-[11px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+                Features
+              </span>
+            </div>
 
-          <div className="backdrop-blur-xl bg-white/[0.02] border border-white/[0.05] rounded-3xl overflow-hidden shadow-2xl">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr>
-                  <th className="py-4 px-6 md:px-8 w-1/3 text-white/40 font-medium text-base border-b border-white/[0.05]">
-                    Features
-                  </th>
-                  <th className="py-4 px-6 md:px-8 w-1/3 text-center border-b border-white/[0.05] relative">
-                    <div className="absolute inset-0 bg-gradient-to-b from-orange-500/10 to-transparent pointer-events-none" />
-                    <span className="relative z-10 text-orange-400 font-bold text-lg md:text-xl flex flex-col items-center gap-0.5">
-                      CoachNest
-                      <span className="text-orange-400/50 text-[10px] md:text-xs font-medium uppercase tracking-widest">Our Platform</span>
-                    </span>
-                  </th>
-                  <th className="py-4 px-6 md:px-8 w-1/3 text-center border-b border-white/[0.05]">
-                    <span className="text-white/40 font-semibold text-lg md:text-xl flex flex-col items-center gap-0.5">
-                      Others
-                      <span className="text-white/20 text-[10px] md:text-xs font-medium uppercase tracking-widest">Industry Average</span>
-                    </span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {features.map((row, idx) => (
-                  <tr
-                    key={row.feature}
-                    className="group border-b border-white/[0.02] last:border-0 hover:bg-white/[0.01] transition-colors"
-                  >
-                    {/* Feature Name */}
-                    <td className="py-3.5 px-6 md:px-8 text-white/80 font-medium text-sm md:text-base group-hover:text-white transition-colors">
-                      {row.feature}
-                    </td>
+            {/* CoachNest header */}
+            <div className="relative flex flex-col items-center justify-center py-4 px-2 bg-primary/10 border-x border-primary/20">
+              {/* Top accent line */}
+              <div className="absolute top-0 inset-x-0 h-[3px] bg-primary rounded-b-sm" />
+              <Trophy className="w-4 h-4 text-primary mb-1.5" />
+              <span className="text-primary font-bold text-xs sm:text-sm leading-tight text-center">
+                CoachNest
+              </span>
+              <span className="text-primary/50 text-[9px] sm:text-[10px] uppercase tracking-wider mt-0.5 hidden sm:block">
+                Our platform
+              </span>
+            </div>
 
-                    {/* CoachNest Column */}
-                    <td className="py-3.5 px-6 md:px-8 text-center relative">
-                      <div className="absolute inset-0 bg-orange-500/[0.02] group-hover:bg-orange-500/[0.05] transition-colors pointer-events-none" />
-                      {row.us === true ? (
-                        <div className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-emerald-500/10 text-emerald-400 relative z-10">
-                          <CheckCircle2 className="w-4 h-4" />
-                        </div>
-                      ) : (
-                        <span className="text-muted-foreground/70 relative z-10 text-sm">{String(row.us)}</span>
-                      )}
-                    </td>
-
-                    {/* Others Column */}
-                    <td className="py-3.5 px-6 md:px-8 text-center text-sm">
-                      {row.them === true ? (
-                        <div className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/5 text-white/40">
-                          <CheckCircle2 className="w-3.5 h-3.5" />
-                        </div>
-                      ) : row.them === false ? (
-                        <div className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-red-500/5 text-red-400/50">
-                          <Minus className="w-3.5 h-3.5" />
-                        </div>
-                      ) : (
-                        <span className="text-white/30 text-xs font-medium bg-white/5 px-2.5 py-1 rounded-full">
-                          {row.them}
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-
-        {/* ── MOBILE LIST VIEW ( visible only on small screens ) ── */}
-        <div className="md:hidden space-y-4">
-          <div className="flex justify-between px-4 mb-2">
-            <span className="text-white/30 text-xs font-bold uppercase tracking-widest">Features</span>
-            <div className="flex gap-8">
-              <span className="text-orange-400 text-xs font-bold uppercase tracking-widest">Us</span>
-              <span className="text-white/30 text-xs font-bold uppercase tracking-widest mr-2">Them</span>
+            {/* Others header */}
+            <div className="flex flex-col items-center justify-center py-4 px-2 bg-secondary/40">
+              <Minus className="w-4 h-4 text-muted-foreground/40 mb-1.5" />
+              <span className="text-muted-foreground/60 font-semibold text-xs sm:text-sm text-center leading-tight">
+                Others
+              </span>
+              <span className="text-muted-foreground/30 text-[9px] sm:text-[10px] uppercase tracking-wider mt-0.5 hidden sm:block">
+                Industry avg.
+              </span>
             </div>
           </div>
 
-          {features.map((row, idx) => (
+          {/* Feature rows */}
+          {features.map((row, i) => (
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              whileInView={{ opacity: 1, y: 0 }}
+              key={row.label}
+              initial={{ opacity: 0, x: -8 }}
+              whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: idx * 0.05 }}
-              key={row.feature}
-              className="bg-white/[0.03] border border-white/[0.05] rounded-xl p-4 flex items-center justify-between"
+              transition={{ duration: 0.3, delay: 0.15 + i * 0.04 }}
+              className="grid grid-cols-[1fr_88px_88px] sm:grid-cols-[1fr_140px_140px] border-b border-border/50 last:border-0 hover:bg-secondary/30 transition-colors"
             >
-              <div className="text-white/80 font-medium text-sm w-1/2 pr-2">
-                {row.feature}
+              {/* Feature label */}
+              <div className="px-4 sm:px-6 py-3.5 flex items-center">
+                <span className="text-foreground/85 text-sm font-medium leading-snug">
+                  {row.label}
+                </span>
               </div>
-              
-              <div className="flex items-center justify-end gap-6 w-1/2">
-                {/* CoachNest status */}
-                <div className="w-10 flex justify-center">
-                  {row.us === true ? (
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 drop-shadow-[0_0_8px_rgba(52,211,153,0.3)]" />
-                  ) : (
-                    <span className="text-muted-foreground/70 text-sm">{String(row.us)}</span>
-                  )}
-                </div>
 
-                {/* Divider */}
-                <div className="w-px h-6 bg-white/10" />
+              {/* CoachNest value */}
+              <div className="flex items-center justify-center py-3.5 bg-primary/[0.04] border-x border-primary/10">
+                <Cell value={row.us} highlight />
+              </div>
 
-                {/* Others status */}
-                <div className="w-16 flex justify-center">
-                  {row.them === true ? (
-                    <CheckCircle2 className="w-4 h-4 text-white/30" />
-                  ) : row.them === false ? (
-                    <Minus className="w-4 h-4 text-white/20" />
-                  ) : (
-                    <span className="text-white/30 text-[10px] font-medium uppercase truncate max-w-full">
-                      {row.them}
-                    </span>
-                  )}
-                </div>
+              {/* Others value */}
+              <div className="flex items-center justify-center py-3.5">
+                <Cell value={row.them} />
               </div>
             </motion.div>
           ))}
-        </div>
-        
-        {/* Bottom Call to Action for Compare section */}
+        </motion.div>
+
+        {/* ── Bottom CTA ── */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.4 }}
-          className="mt-12 text-center"
+          transition={{ duration: 0.5, delay: 0.3 }}
+          className="mt-10 flex justify-center"
         >
-          <div className="inline-block p-1 rounded-2xl bg-gradient-to-r from-orange-500/20 via-orange-400/10 to-transparent border border-orange-500/20 backdrop-blur-md">
-            <div className="px-6 py-3 flex items-center gap-3 text-sm">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
-              </span>
-              <span className="text-white/80">Experience the difference today.</span>
-              <a href="/signup" className="text-orange-400 font-semibold hover:text-orange-300 ml-2 transition-colors">
-                Create free account &rarr;
-              </a>
-            </div>
+          <div className="inline-flex flex-wrap items-center justify-center gap-x-3 gap-y-1.5 text-sm bg-secondary/20 border border-border rounded-full px-5 py-2.5 shadow-card">
+            <span className="flex h-2 w-2 relative flex-shrink-0">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
+            </span>
+            <span className="text-muted-foreground">Experience the difference today.</span>
+            <Link
+              href="/signup"
+              className="text-primary font-semibold hover:text-primary/80 transition-colors whitespace-nowrap"
+            >
+              Create free account →
+            </Link>
           </div>
         </motion.div>
+
       </div>
     </section>
   );

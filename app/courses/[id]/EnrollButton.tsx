@@ -182,7 +182,7 @@ export default function EnrollButton({
 
   if (verifying) {
     return (
-      <div className="flex items-center gap-2 bg-orange-500/15 border border-orange-400/25 rounded-xl px-4 py-3 text-orange-300 text-sm font-medium justify-center">
+      <div className="flex items-center gap-2 bg-orange-500/15 border border-orange-400/25 rounded-md px-4 py-3 text-orange-300 text-sm font-medium justify-center">
         <Loader2 className="w-4 h-4 animate-spin" />
         Verifying payment…
       </div>
@@ -192,13 +192,13 @@ export default function EnrollButton({
   if (enrolled) {
     return (
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-xl px-3 py-2.5 text-emerald-400 text-sm font-medium">
+        <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-md px-3 py-2.5 text-emerald-400 text-sm font-medium">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           {hasActiveSub ? "Enrolled via subscription" : "Enrolled"}
         </div>
         <button
           onClick={() => window.dispatchEvent(new CustomEvent("course:open-curriculum"))}
-          className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-xl transition-all shadow-lg shadow-orange-600/20"
+          className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-md transition-all shadow-lg shadow-orange-600/20"
         >
           <PlayCircle className="w-4 h-4 flex-shrink-0" />
           Continue Learning
@@ -211,13 +211,13 @@ export default function EnrollButton({
   if (planBlocked) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-400/20 rounded-xl px-4 py-3 text-purple-300 text-sm font-medium justify-center">
+        <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-400/20 rounded-md px-4 py-3 text-purple-300 text-sm font-medium justify-center">
           <Lock className="w-4 h-4" />
           PRO Plan Required
         </div>
         <Link
           href="/pricing"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-purple-400/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-purple-400/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-sm font-medium transition-colors"
         >
           <Crown className="w-4 h-4" /> Upgrade to PRO
         </Link>
@@ -229,13 +229,13 @@ export default function EnrollButton({
   if (limitReached) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-400/20 rounded-xl px-4 py-3 text-amber-300 text-sm font-medium justify-center">
+        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-400/20 rounded-md px-4 py-3 text-amber-300 text-sm font-medium justify-center">
           <Lock className="w-4 h-4" />
           {planAccess!.enrolledCount}/{BASIC_COURSE_LIMIT} slots used
         </div>
         <Link
           href="/pricing"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
         >
           <Crown className="w-4 h-4" /> Upgrade for Unlimited Access
         </Link>
@@ -248,13 +248,13 @@ export default function EnrollButton({
   if (subscriptionExpiredForCourse && !hasActiveSub) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-xl px-4 py-3 text-yellow-300 text-sm font-medium justify-center">
+        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-md px-4 py-3 text-yellow-300 text-sm font-medium justify-center">
           <AlertCircle className="w-4 h-4 flex-shrink-0" />
           Subscription expired — access paused
         </div>
         <Link
           href="/dashboard/subscription"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
         >
           <RefreshCcw className="w-4 h-4" /> Resubscribe to regain access
         </Link>
@@ -286,7 +286,7 @@ export default function EnrollButton({
       {!isFree && price && (
         <div className="w-full sm:w-auto flex-shrink-0">
           {appliedCoupon ? (
-            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-xl px-3.5 shadow-inner h-[46px]">
+            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-md px-3.5 shadow-inner h-[46px]">
               <div className="flex items-center gap-2">
                 <Tag className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                 <span className="text-emerald-400 text-sm font-semibold tracking-wide">
@@ -304,7 +304,7 @@ export default function EnrollButton({
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-black/20 border border-white/[0.08] hover:border-white/[0.15] focus-within:border-orange-500/40 focus-within:bg-black/40 rounded-xl p-1 transition-all shadow-inner w-full sm:w-[220px] h-[46px]">
+            <div className="flex items-center gap-1.5 bg-black/20 border border-white/[0.08] hover:border-white/[0.15] focus-within:border-orange-500/40 focus-within:bg-black/40 rounded-md p-1 transition-all shadow-inner w-full sm:w-[220px] h-[46px]">
               <input
                 type="text"
                 value={couponCode}
@@ -327,7 +327,7 @@ export default function EnrollButton({
 
       {/* Price breakdown - Desktop inline */}
       {!isFree && price && appliedCoupon && (
-        <div className="hidden sm:flex flex-col justify-center px-4 h-[46px] bg-black/20 border border-white/[0.06] rounded-xl shadow-inner flex-shrink-0 min-w-max">
+        <div className="hidden sm:flex flex-col justify-center px-4 h-[46px] bg-black/20 border border-white/[0.06] rounded-md shadow-inner flex-shrink-0 min-w-max">
           <div className="flex items-center gap-2">
             <span className="text-muted-foreground text-[11px] line-through">₹{originalPrice.toLocaleString("en-IN")}</span>
             <span className="text-emerald-400 text-[11px] font-medium">-₹{discountAmount.toLocaleString("en-IN")}</span>
@@ -338,7 +338,7 @@ export default function EnrollButton({
 
       {/* Price breakdown - Mobile Only */}
       {!isFree && price && appliedCoupon && (
-        <div className="sm:hidden bg-black/20 border border-white/[0.06] rounded-xl p-3 space-y-1.5 w-full shadow-inner">
+        <div className="sm:hidden bg-black/20 border border-white/[0.06] rounded-md p-3 space-y-1.5 w-full shadow-inner">
           <div className="flex justify-between items-center text-sm">
             <span className="text-muted-foreground">Price</span>
             <span className="text-muted-foreground font-medium">₹{originalPrice.toLocaleString("en-IN")}</span>
@@ -359,7 +359,7 @@ export default function EnrollButton({
       <button
         onClick={handleEnroll}
         disabled={loading}
-        className="w-full sm:w-auto h-[46px] relative overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold px-6 rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed group active:scale-[0.98] flex-shrink-0"
+        className="w-full sm:w-auto h-[46px] relative overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold px-6 rounded-md flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed group active:scale-[0.98] flex-shrink-0"
       >
         <span className="relative flex items-center justify-center gap-2 z-10 w-full whitespace-nowrap">
           {loading ? (

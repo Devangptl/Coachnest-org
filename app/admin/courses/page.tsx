@@ -65,7 +65,7 @@ export default async function AdminCoursesPage() {
             {courses.map((course) => (
               <div
                 key={course.id}
-                className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center hover:bg-secondary/50 transition-colors group"
+                className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center  transition-colors group"
               >
                 {/* Course info */}
                 <div className="col-span-5 flex items-center gap-3 min-w-0">

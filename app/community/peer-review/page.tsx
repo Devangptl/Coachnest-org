@@ -125,7 +125,7 @@ export default function PeerReviewPage() {
           ))}
         </div>
       ) : assignments.length === 0 ? (
-        <div className="rounded-xl border border-border bg-card p-12 text-center">
+        <div className="rounded-md border border-border bg-card p-12 text-center">
           <ClipboardCheck className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">
             {tab === "submissions"
@@ -139,11 +139,11 @@ export default function PeerReviewPage() {
             <Link
               key={a.id}
               href={`/community/peer-review/${a.id}`}
-              className="block p-5 rounded-xl border border-border bg-card hover:bg-secondary/50 transition-all group"
+              className="block p-5 rounded-md border border-border bg-card  transition-all group"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="text-foreground font-semibold text-sm group-hover:text-white transition-colors flex items-center gap-2">
+                  <p className="text-foreground font-semibold text-sm  transition-colors flex items-center gap-2">
                     <FileText className="w-4 h-4 text-purple-400 flex-shrink-0" />
                     {a.title}
                   </p>

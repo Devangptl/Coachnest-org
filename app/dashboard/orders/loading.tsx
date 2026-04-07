@@ -7,7 +7,7 @@ function OrderRowSkeleton() {
   return (
     <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
       {/* Thumbnail */}
-      <Skeleton className="w-16 h-16 rounded-xl flex-shrink-0" />
+      <Skeleton className="w-16 h-16 rounded-md flex-shrink-0" />
 
       {/* Info */}
       <div className="flex-1 space-y-2">
@@ -33,7 +33,7 @@ export default function OrdersLoading() {
     <div>
       {/* Header */}
       <div className="mb-8 animate-pulse">
-        <Skeleton className="h-9 w-40 rounded-xl mb-2" />
+        <Skeleton className="h-9 w-40 rounded-md mb-2" />
         <Skeleton className="h-4 w-64 rounded-lg" />
       </div>
 
@@ -44,7 +44,7 @@ export default function OrdersLoading() {
             key={i}
             className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse"
           >
-            <Skeleton className="w-12 h-12 rounded-xl" />
+            <Skeleton className="w-12 h-12 rounded-md" />
             <div className="space-y-2">
               <Skeleton h="h-7" w="w-20" />
               <Skeleton h="h-4" w="w-24" />
