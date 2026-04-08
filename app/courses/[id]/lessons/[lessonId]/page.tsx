@@ -1,19 +1,16 @@
 /**
- * Lesson detail page — prerendered at build time for every course lesson.
- *
- * Only course/lesson data (public, same for all users) is fetched here.
- * User-specific state (enrollment, progress) is loaded client-side via
- * GET /api/me/course-access/[courseId] so the static shell can be served
- * instantly from the CDN.
+ * Lesson content page — prerendered via generateStaticParams + 5-min ISR.
+ * The sidebar is in the parent layout (persistent, never unmounts).
+ * Only the lesson content area re-renders on lesson navigation.
  */
 import { notFound } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import LessonPageClient from "./LessonPageClient";
+import LessonContentClient from "./LessonContentClient";
 
 type Props = { params: Promise<{ id: string; lessonId: string }> };
 
-// ── Cache course + lessons (shared across all users) ─────────────────────────
+// ── Cached course+lesson data (same cache as layout) ─────────────────────────
 
 const getCourseWithLessons = unstable_cache(
   async (courseId: string) => {
@@ -21,7 +18,6 @@ const getCourseWithLessons = unstable_cache(
       where: { id: courseId },
       select: {
         id: true,
-        title: true,
         status: true,
         lessons: {
           orderBy: { order: "asc" },
@@ -30,14 +26,11 @@ const getCourseWithLessons = unstable_cache(
       },
     });
   },
-  ["course-lessons"],
-  { revalidate: 300, tags: ["course-lessons"] } // 5-minute ISR
+  ["course-lessons-page"],
+  { revalidate: 300, tags: ["course-lessons"] }
 );
 
-// ── Static params — pre-render every lesson page at build time ───────────────
-// Falls back to empty array if the database is unreachable during the build
-// (e.g. network restrictions in CI). Pages are then generated on first request
-// and cached via ISR, which still gives near-static performance.
+// ── Static params — pre-render every lesson at build time ─────────────────────
 
 export async function generateStaticParams() {
   try {
@@ -45,17 +38,12 @@ export async function generateStaticParams() {
       where: { status: { not: "ARCHIVED" } },
       select: { id: true, lessons: { select: { id: true } } },
     });
-
-    return courses.flatMap((c) =>
-      c.lessons.map((l) => ({ id: c.id, lessonId: l.id }))
-    );
+    return courses.flatMap((c) => c.lessons.map((l) => ({ id: c.id, lessonId: l.id })));
   } catch {
-    // DB not reachable at build time — ISR will cache pages on first request
-    return [];
+    return []; // DB unreachable at build time — ISR handles first-request caching
   }
 }
 
-// Revalidate the static page every 5 minutes
 export const revalidate = 300;
 
 // ── Page ─────────────────────────────────────────────────────────────────────
@@ -66,15 +54,21 @@ export default async function LessonPage({ params }: Props) {
   const course = await getCourseWithLessons(courseId);
   if (!course || course.status === "ARCHIVED") notFound();
 
-  const lesson = course.lessons.find((l) => l.id === lessonId);
-  if (!lesson) notFound();
+  const lessonIndex = course.lessons.findIndex((l) => l.id === lessonId);
+  if (lessonIndex === -1) notFound();
+
+  const lesson = course.lessons[lessonIndex];
+  const prev = course.lessons[lessonIndex - 1] ?? null;
+  const next = course.lessons[lessonIndex + 1] ?? null;
 
   return (
-    <LessonPageClient
+    <LessonContentClient
       courseId={courseId}
-      courseTitle={course.title}
-      lessons={course.lessons}
-      currentLessonId={lessonId}
+      lesson={lesson}
+      lessonIndex={lessonIndex}
+      totalLessons={course.lessons.length}
+      prev={prev ? { id: prev.id, title: prev.title } : null}
+      next={next ? { id: next.id, title: next.title } : null}
     />
   );
 }
