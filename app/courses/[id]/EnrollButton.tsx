@@ -24,6 +24,8 @@ interface Props {
   price: number | null;
   courseMinPlan: string;
   planAccess: PlanAccess | null;
+  /** ID of the first lesson (or first incomplete lesson) to link "Continue Learning" */
+  firstLessonId?: string;
 }
 
 interface CouponData {
@@ -37,7 +39,7 @@ interface CouponData {
 export default function EnrollButton({
   courseId, isEnrolled: initialEnrolled, canAccessViaSub,
   subscriptionExpiredForCourse, isFree, price,
-  courseMinPlan, planAccess,
+  courseMinPlan, planAccess, firstLessonId,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -184,19 +186,22 @@ export default function EnrollButton({
   }
 
   if (enrolled) {
+    const lessonHref = firstLessonId
+      ? `/courses/${courseId}/lessons/${firstLessonId}`
+      : `/courses/${courseId}`;
     return (
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-md px-3 py-2.5 text-emerald-400 text-sm font-medium">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
           {hasActiveSub ? "Enrolled via subscription" : "Enrolled"}
         </div>
-        <button
-          onClick={() => window.dispatchEvent(new CustomEvent("course:open-curriculum"))}
+        <Link
+          href={lessonHref}
           className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-md transition-all shadow-lg shadow-orange-600/20"
         >
           <PlayCircle className="w-4 h-4 flex-shrink-0" />
           Continue Learning
-        </button>
+        </Link>
       </div>
     );
   }

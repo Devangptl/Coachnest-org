@@ -31,6 +31,8 @@ interface Props {
   totalDuration: number;
   language: string;
   level: string;
+  /** First incomplete (or first) lesson ID — used for "Continue Learning" link */
+  firstLessonId?: string;
 }
 
 export default function CourseEnrollBar({
@@ -39,6 +41,7 @@ export default function CourseEnrollBar({
   isWishlisted, isLoggedIn, userRole,
   planAccess,
   lessonCount, totalDuration, language, level,
+  firstLessonId,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const discountNum = discountPrice ? Number(discountPrice) : null;
@@ -123,6 +126,7 @@ export default function CourseEnrollBar({
                     price={hasDiscount ? discountNum : price}
                     courseMinPlan={courseMinPlan}
                     planAccess={planAccess}
+                    firstLessonId={firstLessonId}
                   />
                 )}
                 {!isLoggedIn && (

@@ -6,6 +6,7 @@ import CourseTabs from "./CourseTabs";
 import CourseProgress from "./CourseProgress";
 import CourseViewer from "./CourseViewer";
 import ReviewsSection from "./ReviewsSection";
+import Link from "next/link";
 import {
   CheckCircle2,
   Circle,
@@ -16,6 +17,7 @@ import {
   Lightbulb,
   Target,
   Zap,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -148,7 +150,7 @@ export default function CourseContent({
                 })()}{" "}
                 total
               </p>
-              <CurriculumPreview lessons={liveLessons} />
+              <CurriculumPreview lessons={liveLessons} courseId={courseId} isEnrolled={isEnrolled} />
             </div>
           </motion.div>
         )}
@@ -186,7 +188,7 @@ export default function CourseContent({
 }
 
 /* ── Curriculum preview (collapsible lesson list) ────────────────── */
-function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
+function CurriculumPreview({ lessons, courseId, isEnrolled }: { lessons: Lesson[]; courseId: string; isEnrolled: boolean }) {
   const [expanded, setExpanded] = useState(false);
   const visible = expanded ? lessons : lessons.slice(0, 5);
 
@@ -194,22 +196,23 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
     <div className="space-y-1">
       {visible.map((lesson, i) => {
         const Icon = lesson.type === "VIDEO" ? PlayCircle : FileText;
-        return (
-          <div
-            key={lesson.id}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-secondary transition-colors"
-          >
-            <span className="text-muted-foreground/40 text-xs w-5 text-right flex-shrink-0">
-              {i + 1}
-            </span>
+        const isLocked = !isEnrolled && !lesson.isFree;
+
+        const inner = (
+          <>
+            <span className="text-muted-foreground/40 text-xs w-5 text-right flex-shrink-0">{i + 1}</span>
             {lesson.completed ? (
-              <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+            ) : isLocked ? (
+              <Lock className="w-4 h-4 text-muted-foreground/25 flex-shrink-0" />
             ) : (
-              <Circle className="w-4.5 h-4.5 text-muted-foreground/30 flex-shrink-0" />
+              <Circle className="w-4 h-4 text-muted-foreground/30 flex-shrink-0" />
             )}
             <Icon className="w-4 h-4 text-muted-foreground/40 flex-shrink-0" />
-            <span className="text-muted-foreground text-sm flex-1 truncate">{lesson.title}</span>
-            {lesson.isFree && (
+            <span className={cn("text-sm flex-1 truncate", lesson.completed ? "text-emerald-600 dark:text-emerald-300/80" : "text-muted-foreground")}>
+              {lesson.title}
+            </span>
+            {lesson.isFree && !isEnrolled && (
               <span className="text-[10px] text-emerald-400 bg-emerald-500/15 px-1.5 py-0.5 rounded-full border border-emerald-400/20">
                 Free
               </span>
@@ -220,7 +223,25 @@ function CurriculumPreview({ lessons }: { lessons: Lesson[] }) {
                 {lesson.duration}m
               </span>
             )}
-          </div>
+          </>
+        );
+
+        if (isLocked) {
+          return (
+            <div key={lesson.id} className="flex items-center gap-3 px-3 py-2.5 rounded-md opacity-50">
+              {inner}
+            </div>
+          );
+        }
+
+        return (
+          <Link
+            key={lesson.id}
+            href={`/courses/${courseId}/lessons/${lesson.id}`}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-md hover:bg-secondary transition-colors group"
+          >
+            {inner}
+          </Link>
         );
       })}
 
