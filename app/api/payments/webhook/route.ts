@@ -11,7 +11,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";
-import { handlePaymentSuccess } from "@/services/payment.service";
+import { handlePaymentSuccess, handlePaymentIntentSuccess } from "@/services/payment.service";
 import {
   handleSubscriptionCheckoutCompleted,
   handleSubscriptionCreated,
@@ -66,6 +66,16 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event);
         break;
+
+      // ── In-app course purchase (PaymentIntent flow) ───────────────────────
+      case "payment_intent.succeeded": {
+        const pi = event.data.object;
+        // Only handle course purchases (identified by orderId in metadata)
+        if (pi.metadata?.orderId) {
+          await handlePaymentIntentSuccess(pi.id);
+        }
+        break;
+      }
 
       // ── Failed renewal payment ─────────────────────────────────────────────
       case "invoice.payment_failed":

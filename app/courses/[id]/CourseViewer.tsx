@@ -1048,15 +1048,15 @@ function LessonContent({ content, lessonId, isEnrolled }: { content: string; les
   const blocks = useMemo(() => parseContent(content), [content]);
 
   return (
-    <div className="rounded-md border border-border overflow-hidden">
+    <div className="rounded-md overflow-hidden">
       {/* Article header */}
-      <div className="bg-secondary/50 border-b border-border px-6 sm:px-8 py-3 flex items-center gap-2">
+      {/* <div className="bg-secondary/50 border-b border-border px-6 sm:px-8 py-3 flex items-center gap-2">
         <Type className="w-3.5 h-3.5 text-orange-400" />
         <span className="text-[11px] font-medium text-muted-foreground/60 uppercase tracking-wider">Lesson Content</span>
-      </div>
+      </div> */}
 
       {/* Content body */}
-      <div className="px-6 sm:px-8 py-6 sm:py-8 bg-card">
+      <div className="px-6 sm:px-8 py-6 sm:py-8">
         <TextHighlighter lessonId={lessonId} isEnrolled={isEnrolled}>
           <div className="space-y-5">
             {blocks.map((block, i) => {

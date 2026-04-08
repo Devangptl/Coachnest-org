@@ -229,32 +229,9 @@ function SubscriptionPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Subscribe (new subscription) ────────────────────────���────────────────
-  async function subscribe(planId: string) {
-    setActionLoading(planId);
-    try {
-      const res  = await fetch("/api/billing/subscribe", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ plan: planId, billing }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Subscription failed");
-
-      if (data.requiresAction && data.clientSecret) {
-        if (!stripe) throw new Error("Stripe not loaded");
-        const { error } = await stripe.confirmCardPayment(data.clientSecret);
-        if (error) throw new Error(error.message);
-        await new Promise((r) => setTimeout(r, 1500));
-      }
-
-      await loadStatus();
-      toast.success(`${planId.charAt(0) + planId.slice(1).toLowerCase()} plan activated!`);
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Subscription failed");
-    } finally {
-      setActionLoading(null);
-    }
+  // ── Subscribe (new subscription) — redirect to checkout page ───────────────
+  function subscribe(planId: string) {
+    router.push(`/checkout?plan=${planId.toLowerCase()}&billing=${billing}`);
   }
 
   // ── Change plan (upgrade / downgrade) ────────────────────────────────────

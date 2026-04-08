@@ -53,15 +53,22 @@ export async function POST(req: NextRequest) {
     const stripe = getStripe();
     let customerId = user.stripeCustomerId ?? undefined;
 
-    // Ensure Stripe customer exists
+    // Ensure Stripe customer exists with name + address (India export compliance)
     if (!customerId) {
       const customer = await stripe.customers.create({
         email:    user.email,
-        name:     user.name ?? undefined,
+        name:     user.name ?? user.email,
+        address:  { line1: "India", country: "IN" },
         metadata: { userId: user.id },
       });
       customerId = customer.id;
       await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
+    } else {
+      // Ensure existing customer has name + address
+      await stripe.customers.update(customerId, {
+        name:    user.name ?? user.email,
+        address: { line1: "India", country: "IN" },
+      });
     }
 
     // Create subscription — default_incomplete so we can confirm 3DS if needed
@@ -81,6 +88,13 @@ export async function POST(req: NextRequest) {
     const invoice       = (sub as any).latest_invoice;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const paymentIntent = (invoice as any)?.payment_intent;
+
+    // Add description to the PaymentIntent (required for India export transactions)
+    if (paymentIntent?.id) {
+      await stripe.paymentIntents.update(paymentIntent.id, {
+        description: `CoachNest ${planUpper} subscription (${billing})`,
+      });
+    }
 
     // ── 3DS / further client-side action required ─────────────────────────────
     if (

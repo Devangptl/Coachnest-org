@@ -140,36 +140,30 @@ export default function EnrollButton({
 
   async function handleEnroll() {
     if (enrolled || loading) return;
+
+    if (!isFree && price) {
+      // Redirect to in-app checkout — no Stripe redirect
+      const params = new URLSearchParams();
+      if (appliedCoupon?.code) params.set("coupon", appliedCoupon.code);
+      router.push(`/checkout/course/${courseId}${params.size ? `?${params}` : ""}`);
+      return;
+    }
+
+    // Free enrollment — do it inline
     setLoading(true);
     try {
-      if (!isFree && price) {
-        const orderRes = await fetch("/api/payments/create-order", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ courseId, couponCode: appliedCoupon?.code }),
-        });
-        if (!orderRes.ok) {
-          const data = await orderRes.json();
-          toast.error(data.error ?? "Failed to create order.");
-          return;
-        }
-        const { url } = await orderRes.json();
-        if (url) window.location.href = url;
-        else toast.error("Could not initiate checkout. Please try again.");
+      const res = await fetch("/api/enrollments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseId }),
+      });
+      if (res.ok) {
+        setEnrolled(true);
+        toast.success("Enrolled successfully!");
+        router.refresh();
       } else {
-        const res = await fetch("/api/enrollments", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ courseId }),
-        });
-        if (res.ok) {
-          setEnrolled(true);
-          toast.success("Enrolled successfully!");
-          router.refresh();
-        } else {
-          const data = await res.json();
-          toast.error(data.error ?? "Enrollment failed.");
-        }
+        const data = await res.json();
+        toast.error(data.error ?? "Enrollment failed.");
       }
     } catch {
       toast.error("Something went wrong.");

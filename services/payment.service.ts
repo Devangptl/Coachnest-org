@@ -86,6 +86,11 @@ export async function createCheckoutSession(
     payment_method_types: ["card"],
     customer_email: user.email,
     billing_address_collection: "required",
+    payment_intent_data: {
+      description: `Course purchase: ${course.title}`,
+      // shipping requires line1 in Checkout Sessions; billing_address_collection
+      // below collects the full address from the customer at checkout instead.
+    },
     line_items: [
       {
         price_data: {
@@ -119,6 +124,61 @@ export async function createCheckoutSession(
     sessionId: session.id,
     url: session.url,
   };
+}
+
+// ─── Handle PaymentIntent success (in-app course purchase) ───────────────────
+
+export async function handlePaymentIntentSuccess(paymentIntentId: string) {
+  const order = await prisma.order.findFirst({
+    where:   { stripePaymentId: paymentIntentId },
+    include: {
+      user:   { select: { email: true, name: true } },
+      course: { select: { id: true, title: true } },
+    },
+  });
+  if (!order) throw new Error("Order not found for payment intent");
+  if (order.status === "PAID") return { success: true, courseId: order.courseId };
+
+  const userId = order.userId;
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data:  { status: "PAID" },
+  });
+
+  await prisma.enrollment.upsert({
+    where:  { userId_courseId: { userId, courseId: order.courseId! } },
+    create: { userId, courseId: order.courseId! },
+    update: {},
+  });
+
+  if (order.couponId) {
+    await prisma.coupon.update({ where: { id: order.couponId }, data: { uses: { increment: 1 } } });
+    await prisma.couponUse.upsert({
+      where:  { userId_couponId: { userId, couponId: order.couponId } },
+      create: { userId, couponId: order.couponId },
+      update: {},
+    });
+  }
+
+  await prisma.notification.create({
+    data: {
+      userId,
+      title: `Enrolled in "${order.course!.title}"`,
+      body:  "Your payment was successful. Start learning now!",
+      type:  "PURCHASE",
+      link:  `/courses/${order.course!.id}`,
+    },
+  });
+
+  if (order.user && order.course) {
+    sendPurchaseEmail(
+      order.user.email, order.user.name,
+      order.course.title, order.amount.toString(), order.course.id
+    ).catch(console.error);
+  }
+
+  return { success: true, courseId: order.courseId };
 }
 
 // ─── Handle successful payment (called from webhook) ─────────────────────────
