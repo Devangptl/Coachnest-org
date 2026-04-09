@@ -44,11 +44,25 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const user = await prisma.user.findUnique({
-      where:  { id: session.userId },
-      select: { id: true, email: true, name: true, stripeCustomerId: true },
-    });
+    const [user, existingSub] = await Promise.all([
+      prisma.user.findUnique({
+        where:  { id: session.userId },
+        select: { id: true, email: true, name: true, stripeCustomerId: true },
+      }),
+      prisma.subscription.findUnique({
+        where:  { userId: session.userId },
+        select: { status: true, plan: true },
+      }),
+    ]);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+    // Guard: don't create a duplicate subscription if one is already active
+    if (existingSub?.status === "ACTIVE" || existingSub?.status === "TRIAL") {
+      return NextResponse.json(
+        { error: `You already have an active ${existingSub.plan} subscription. Use change-plan to upgrade or downgrade.` },
+        { status: 400 }
+      );
+    }
 
     const stripe = getStripe();
     let customerId = user.stripeCustomerId ?? undefined;
@@ -162,13 +176,24 @@ async function upsertSubscription(
   });
 
   const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
-  await prisma.notification.create({
-    data: {
-      userId,
-      title: `${planLabel} Plan Activated!`,
-      body:  `Welcome to CoachNest ${planLabel}. Start learning now!`,
-      type:  "PURCHASE",
-      link:  "/courses",
-    },
+  // Deduplicate: skip if a PURCHASE notification was sent in the last 5 minutes
+  const recent = await prisma.notification.findFirst({
+    where:   { userId, type: "PURCHASE", link: "/courses" },
+    orderBy: { createdAt: "desc" },
   });
+  const fiveMin = 5 * 60 * 1000;
+  if (!recent || Date.now() - recent.createdAt.getTime() > fiveMin) {
+    const limitNote = plan === "BASIC"
+      ? `Access up to 5 courses.`
+      : "Unlimited access to every course.";
+    await prisma.notification.create({
+      data: {
+        userId,
+        title: `${planLabel} Plan Activated!`,
+        body:  `Welcome to CoachNest ${planLabel}. ${limitNote} Start learning now!`,
+        type:  "PURCHASE",
+        link:  "/courses",
+      },
+    });
+  }
 }

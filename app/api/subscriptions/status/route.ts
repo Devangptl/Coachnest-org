@@ -10,36 +10,8 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
-import { getPlanAccess, BASIC_COURSE_LIMIT } from "@/services/subscription.service";
+import { getPlanAccess, getPeriodDates, planFromPriceId, BASIC_COURSE_LIMIT } from "@/services/subscription.service";
 import type Stripe from "stripe";
-
-type PlanKey = "BASIC" | "PRO" | "ENTERPRISE";
-
-/**
- * Stripe API "2026-03-25.dahlia" moved current_period_start/end to item level.
- */
-function getPeriodDates(sub: Stripe.Subscription) {
-  const s    = sub as any;
-  const item = s.items?.data?.[0];
-  const start = item?.current_period_start ?? s.current_period_start ?? s.billing_cycle_anchor ?? s.created;
-  const end   = item?.current_period_end   ?? s.current_period_end   ?? (start + 30 * 24 * 60 * 60);
-  return {
-    startDate: new Date(start * 1000),
-    endDate:   new Date(end   * 1000),
-  };
-}
-
-function planFromPriceId(priceId: string): PlanKey | null {
-  const map: Record<string, PlanKey> = {
-    [process.env.STRIPE_PRICE_BASIC_MONTHLY      ?? ""]: "BASIC",
-    [process.env.STRIPE_PRICE_BASIC_YEARLY       ?? ""]: "BASIC",
-    [process.env.STRIPE_PRICE_PRO_MONTHLY        ?? ""]: "PRO",
-    [process.env.STRIPE_PRICE_PRO_YEARLY         ?? ""]: "PRO",
-    [process.env.STRIPE_PRICE_ENTERPRISE_MONTHLY ?? ""]: "ENTERPRISE",
-    [process.env.STRIPE_PRICE_ENTERPRISE_YEARLY  ?? ""]: "ENTERPRISE",
-  };
-  return map[priceId] ?? null;
-}
 
 async function syncFromStripe(userId: string, stripeCustomerId: string): Promise<boolean> {
   try {

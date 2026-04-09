@@ -24,7 +24,7 @@ export const BASIC_COURSE_LIMIT = 5;
  * from the Subscription root to sub.items.data[0]. This helper reads from
  * the item level first, then falls back to root-level (older API versions).
  */
-function getPeriodDates(sub: Stripe.Subscription) {
+export function getPeriodDates(sub: Stripe.Subscription) {
   const s = sub as any;
   const item  = s.items?.data?.[0];
   const start = item?.current_period_start ?? s.current_period_start ?? s.billing_cycle_anchor ?? s.created;
@@ -33,6 +33,23 @@ function getPeriodDates(sub: Stripe.Subscription) {
     startDate: new Date(start * 1000),
     endDate:   new Date(end   * 1000),
   };
+}
+
+/** Maps a Stripe price ID to a plan key. Returns null if unrecognised. */
+export function planFromPriceId(priceId: string): "BASIC" | "PRO" | "ENTERPRISE" | null {
+  const env = process.env;
+  const map: Array<[string | undefined, "BASIC" | "PRO" | "ENTERPRISE"]> = [
+    [env.STRIPE_PRICE_BASIC_MONTHLY,      "BASIC"],
+    [env.STRIPE_PRICE_BASIC_YEARLY,       "BASIC"],
+    [env.STRIPE_PRICE_PRO_MONTHLY,        "PRO"],
+    [env.STRIPE_PRICE_PRO_YEARLY,         "PRO"],
+    [env.STRIPE_PRICE_ENTERPRISE_MONTHLY, "ENTERPRISE"],
+    [env.STRIPE_PRICE_ENTERPRISE_YEARLY,  "ENTERPRISE"],
+  ];
+  for (const [id, plan] of map) {
+    if (id && id === priceId) return plan;
+  }
+  return null;
 }
 
 /** Numeric rank for plan comparison (higher = more access) */
@@ -461,9 +478,19 @@ export async function handleSubscriptionUpdated(event: Stripe.Event) {
     ? new Date(cancelAt * 1000)
     : getPeriodDates(sub).endDate;
 
+  // Resolve plan from metadata or price ID (handles external plan changes via Stripe Dashboard)
+  const metaPlan = sub.metadata?.plan?.toUpperCase() as "BASIC" | "PRO" | "ENTERPRISE" | undefined;
+  const priceId  = (sub as any).items?.data?.[0]?.price?.id as string | undefined;
+  const resolvedPlan = metaPlan ?? (priceId ? planFromPriceId(priceId) : null);
+
   await prisma.subscription.update({
     where: { userId },
-    data:  { status, endDate },
+    data:  {
+      status,
+      endDate,
+      cancelledAt: status === "CANCELLED" ? new Date() : (status === "ACTIVE" ? null : undefined),
+      ...(resolvedPlan ? { plan: resolvedPlan } : {}),
+    },
   });
 }
 

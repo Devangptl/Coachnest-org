@@ -101,14 +101,16 @@ export default function CheckoutClient({
       .then((d) => {
         const cards: SavedCard[] = (d.paymentMethods ?? []).map((pm: any) => ({
           id:        pm.id,
-          brand:     pm.card?.brand ?? "card",
-          last4:     pm.card?.last4 ?? "••••",
-          expMonth:  pm.card?.exp_month,
-          expYear:   pm.card?.exp_year,
-          isDefault: pm.id === d.defaultPaymentMethodId,
+          brand:     pm.brand ?? "card",
+          last4:     pm.last4 ?? "••••",
+          expMonth:  pm.expMonth,
+          expYear:   pm.expYear,
+          isDefault: pm.isDefault ?? false,
         }));
         setSavedCards(cards);
-        if (cards.length > 0) setSelectedCard(cards[0].id);
+        // Prefer the default card, fall back to the first card
+        const defaultCard = cards.find((c) => c.isDefault) ?? cards[0];
+        if (defaultCard) setSelectedCard(defaultCard.id);
       })
       .catch(() => {})
       .finally(() => setLoadingCards(false));

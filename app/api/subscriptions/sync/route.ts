@@ -10,44 +10,14 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { getPeriodDates, planFromPriceId, BASIC_COURSE_LIMIT } from "@/services/subscription.service";
 import type Stripe from "stripe";
 
 type PlanKey = "BASIC" | "PRO" | "ENTERPRISE";
-const BASIC_LIMIT = 5;
-
-/**
- * Stripe API "2026-03-25.dahlia" moved current_period_start/end to item level.
- */
-function getPeriodDates(sub: Stripe.Subscription) {
-  const s    = sub as any;
-  const item = s.items?.data?.[0];
-  const start = item?.current_period_start ?? s.current_period_start ?? s.billing_cycle_anchor ?? s.created;
-  const end   = item?.current_period_end   ?? s.current_period_end   ?? (start + 30 * 24 * 60 * 60);
-  return {
-    startDate: new Date(start * 1000),
-    endDate:   new Date(end   * 1000),
-  };
-}
 
 function planFromMeta(meta: Stripe.Metadata | null): PlanKey | null {
   const p = meta?.plan?.toUpperCase();
   if (p === "BASIC" || p === "PRO" || p === "ENTERPRISE") return p;
-  return null;
-}
-
-function planFromPriceId(priceId: string): PlanKey | null {
-  const env = process.env;
-  const map: Array<[string | undefined, PlanKey]> = [
-    [env.STRIPE_PRICE_BASIC_MONTHLY,      "BASIC"],
-    [env.STRIPE_PRICE_BASIC_YEARLY,       "BASIC"],
-    [env.STRIPE_PRICE_PRO_MONTHLY,        "PRO"],
-    [env.STRIPE_PRICE_PRO_YEARLY,         "PRO"],
-    [env.STRIPE_PRICE_ENTERPRISE_MONTHLY, "ENTERPRISE"],
-    [env.STRIPE_PRICE_ENTERPRISE_YEARLY,  "ENTERPRISE"],
-  ];
-  for (const [id, plan] of map) {
-    if (id && id === priceId) return plan;
-  }
   return null;
 }
 
@@ -85,7 +55,7 @@ async function writeSubscription(userId: string, sub: Stripe.Subscription, plan:
   if (!recent || Date.now() - recent.createdAt.getTime() > fiveMin) {
     const label     = plan.charAt(0) + plan.slice(1).toLowerCase();
     const limitNote = plan === "BASIC"
-      ? `Access up to ${BASIC_LIMIT} courses.`
+      ? `Access up to ${BASIC_COURSE_LIMIT} courses.`
       : "Unlimited access to every course.";
     await prisma.notification.create({
       data: {

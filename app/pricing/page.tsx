@@ -11,9 +11,10 @@ import {
   Check, X, Minus, Zap, Shield, HelpCircle, ChevronDown,
   BookOpen, Users, Award, Download, Brain, MessageSquare,
   BarChart3, Crown, Building2, Star, ArrowRight, Sparkles,
-  Clock, Globe, Lock, Loader2, Phone,
+  Clock, Globe, Lock, Loader2, Phone, BadgeCheck,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useSubscription } from "@/hooks/useSubscription";
 
 // ─── Plan data ────────────────────────────────────────────────────────────────
 
@@ -322,6 +323,7 @@ export default function PricingPage() {
   const [billing, setBilling] = useState<"monthly" | "yearly">("monthly");
   const [loading, setLoading] = useState<string | null>(null);
   const router = useRouter();
+  const { plan: currentPlan, isActive, isLoading: subLoading } = useSubscription();
 
   function getPrice(plan: Plan) {
     return billing === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
@@ -340,27 +342,43 @@ export default function PricingPage() {
     return { saving, pct };
   }
 
+  /** true if this plan matches the user's active subscription */
+  function isCurrentPlan(plan: Plan) {
+    return isActive && currentPlan === plan.id.toUpperCase();
+  }
+
   async function handleSelect(plan: Plan) {
     if (plan.id === "free") { router.push("/signup"); return; }
     if (plan.id === "enterprise") {
       toast.success("Our sales team will reach out within 24 hours!");
       return;
     }
+
     setLoading(plan.id);
     try {
-      const res = await fetch("/api/subscriptions/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan: plan.id, billing }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        if (res.status === 401) { router.push("/login?from=/pricing"); return; }
-        throw new Error(data.error ?? "Something went wrong");
+      // Check auth
+      const meRes = await fetch("/api/auth/me");
+      if (!meRes.ok) {
+        router.push("/login?from=/pricing");
+        return;
       }
-      if (data.url) window.location.href = data.url;
-    } catch (err: unknown) {
-      toast.error(err instanceof Error ? err.message : "Failed to start checkout");
+
+      // Already on this exact plan
+      if (isCurrentPlan(plan)) {
+        router.push("/dashboard/subscription");
+        return;
+      }
+
+      // Has an active subscription → go to subscription page to change plan
+      if (isActive && currentPlan !== "FREE") {
+        router.push(`/dashboard/subscription`);
+        return;
+      }
+
+      // No active subscription → go to checkout
+      router.push(`/checkout?plan=${plan.id}&billing=${billing}`);
+    } catch {
+      toast.error("Something went wrong. Please try again.");
     } finally {
       setLoading(null);
     }
@@ -493,12 +511,21 @@ export default function PricingPage() {
                 )}
               </div>
 
+              {/* Current plan badge */}
+              {!subLoading && isCurrentPlan(plan) && (
+                <div className="flex items-center justify-center gap-1.5 mb-3 text-xs font-semibold text-emerald-400">
+                  <BadgeCheck className="w-3.5 h-3.5" /> Your current plan
+                </div>
+              )}
+
               {/* CTA */}
               <button
                 onClick={() => handleSelect(plan)}
-                disabled={isLoading}
+                disabled={isLoading || (!subLoading && isCurrentPlan(plan))}
                 className={`w-full flex items-center justify-center gap-2 py-2.5 rounded-md text-sm font-semibold transition-all mb-5 ${
-                  plan.popular
+                  !subLoading && isCurrentPlan(plan)
+                    ? "bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 cursor-default"
+                    : plan.popular
                     ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/25"
                     : plan.id === "enterprise"
                     ? "bg-purple-600 hover:bg-purple-500 text-white"
@@ -507,6 +534,16 @@ export default function PricingPage() {
               >
                 {isLoading ? (
                   <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting…</>
+                ) : !subLoading && isCurrentPlan(plan) ? (
+                  <><BadgeCheck className="w-3.5 h-3.5" /> Current Plan</>
+                ) : !subLoading && isActive && currentPlan !== "FREE" && plan.id !== "free" && plan.id !== "enterprise" ? (
+                  // User has a different active plan → show upgrade/downgrade label
+                  <>
+                    {(["FREE", "BASIC", "PRO", "ENTERPRISE"].indexOf(plan.id.toUpperCase()) >
+                      ["FREE", "BASIC", "PRO", "ENTERPRISE"].indexOf(currentPlan))
+                      ? "Upgrade" : "Downgrade"
+                    } <ArrowRight className="w-3.5 h-3.5" />
+                  </>
                 ) : (
                   <>{plan.cta} <ArrowRight className="w-3.5 h-3.5" /></>
                 )}
