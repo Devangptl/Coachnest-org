@@ -93,17 +93,6 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Top bar */}
-      <header className="border-b border-border bg-card">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
-          <a href="/" className="text-foreground font-bold text-lg tracking-tight">
-            CoachNest
-          </a>
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <LockIcon />
-            Secured by Stripe
-          </div>
-        </div>
-      </header>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:py-16">
         <StripeProvider>

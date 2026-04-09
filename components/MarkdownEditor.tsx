@@ -1,26 +1,29 @@
 "use client";
 
+/**
+ * MarkdownEditor — rich toolbar + live preview for lesson content authoring.
+ *
+ * Toolbar actions: H1-H3, Bold, Italic, Strikethrough, Inline code, Code block,
+ * Blockquote, Callout (Note/Tip/Warning), Bullet list, Numbered list, Task list,
+ * Table, Link, Image, Video embed, Divider.
+ *
+ * Preview uses the shared <MarkdownRenderer> so authors see exactly what learners see.
+ */
+
 import { useState, useRef, useCallback } from "react";
 import {
-  Bold,
-  Heading1,
-  Heading2,
-  Heading3,
-  Code2,
-  List,
-  ListOrdered,
-  Minus,
-  Eye,
-  EyeOff,
-  Quote,
-  Link2,
-  Image,
-  Type,
+  Bold, Italic, Strikethrough,
+  Heading1, Heading2, Heading3,
+  Code2, List, ListOrdered, ListChecks,
+  Minus, Eye, EyeOff, Quote,
+  Link2, Image, Table, Video,
+  Info, Lightbulb, AlertTriangle,
   Hash,
-  Copy,
-  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 
 interface Props {
   value: string;
@@ -35,114 +38,197 @@ interface ToolbarAction {
   prefix: string;
   suffix: string;
   block?: boolean;
+  placeholder?: string;
 }
 
-const TOOLBAR_ACTIONS: ToolbarAction[] = [
-  { icon: Heading1, label: "Heading 1", prefix: "# ", suffix: "", block: true },
-  { icon: Heading2, label: "Heading 2", prefix: "## ", suffix: "", block: true },
-  { icon: Heading3, label: "Heading 3", prefix: "### ", suffix: "", block: true },
-  { icon: Bold, label: "Bold", prefix: "**", suffix: "**" },
-  { icon: Code2, label: "Inline Code", prefix: "`", suffix: "`" },
-  { icon: Quote, label: "Blockquote", prefix: "> ", suffix: "", block: true },
-  { icon: List, label: "Bullet List", prefix: "- ", suffix: "", block: true },
-  { icon: ListOrdered, label: "Numbered List", prefix: "1. ", suffix: "", block: true },
-  { icon: Minus, label: "Divider", prefix: "\n---\n", suffix: "", block: true },
-  { icon: Link2, label: "Link", prefix: "[", suffix: "](url)" },
-  { icon: Image, label: "Image", prefix: "![alt](", suffix: ")" },
+// ─── Toolbar groups ─────────────────────────────────────────────────────────────
+
+const HEADING_ACTIONS: ToolbarAction[] = [
+  { icon: Heading1, label: "Heading 1", prefix: "# ",   suffix: "", block: true, placeholder: "Heading" },
+  { icon: Heading2, label: "Heading 2", prefix: "## ",  suffix: "", block: true, placeholder: "Heading" },
+  { icon: Heading3, label: "Heading 3", prefix: "### ", suffix: "", block: true, placeholder: "Heading" },
 ];
 
-export default function MarkdownEditor({ value, onChange, placeholder, rows = 12 }: Props) {
+const INLINE_ACTIONS: ToolbarAction[] = [
+  { icon: Bold,          label: "Bold",          prefix: "**",  suffix: "**",  placeholder: "bold text"   },
+  { icon: Italic,        label: "Italic",        prefix: "*",   suffix: "*",   placeholder: "italic text" },
+  { icon: Strikethrough, label: "Strikethrough", prefix: "~~",  suffix: "~~",  placeholder: "strikethrough" },
+  { icon: Code2,         label: "Inline Code",   prefix: "`",   suffix: "`",   placeholder: "code"        },
+];
+
+const BLOCK_ACTIONS: ToolbarAction[] = [
+  { icon: Quote,        label: "Blockquote",    prefix: "> ",  suffix: "", block: true, placeholder: "quote" },
+  { icon: List,         label: "Bullet List",   prefix: "- ",  suffix: "", block: true, placeholder: "item" },
+  { icon: ListOrdered,  label: "Numbered List", prefix: "1. ", suffix: "", block: true, placeholder: "item" },
+  { icon: ListChecks,   label: "Task List",     prefix: "- [ ] ", suffix: "", block: true, placeholder: "task" },
+];
+
+const CALLOUT_TEMPLATES = [
+  { icon: Info,          label: "Note callout",      snippet: "> [!NOTE]\n> Your note here.\n" },
+  { icon: Lightbulb,     label: "Tip callout",       snippet: "> [!TIP]\n> A helpful tip here.\n" },
+  { icon: AlertTriangle, label: "Warning callout",   snippet: "> [!WARNING]\n> Important warning here.\n" },
+];
+
+// ─── Insert helpers ─────────────────────────────────────────────────────────────
+
+function wrapSelection(
+  value: string,
+  start: number,
+  end: number,
+  action: ToolbarAction
+): { newValue: string; cursor: number } {
+  const selected = value.substring(start, end);
+  const before   = value.substring(0, start);
+  const after    = value.substring(end);
+
+  let insertion: string;
+
+  if (action.block) {
+    const needsNewline = before.length > 0 && !before.endsWith("\n");
+    const ph = action.placeholder ?? "text";
+    insertion = (needsNewline ? "\n" : "") + action.prefix + (selected || ph) + action.suffix;
+  } else {
+    const ph2 = action.placeholder ?? "text";
+    insertion = action.prefix + (selected || ph2) + action.suffix;
+  }
+
+  return { newValue: before + insertion + after, cursor: before.length + insertion.length };
+}
+
+// ─── Component ─────────────────────────────────────────────────────────────────
+
+export default function MarkdownEditor({ value, onChange, placeholder, rows = 16 }: Props) {
   const [showPreview, setShowPreview] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  const insertMarkdown = useCallback(
+  // Generic insert
+  const insert = useCallback(
     (action: ToolbarAction) => {
-      const textarea = textareaRef.current;
-      if (!textarea) return;
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const { newValue, cursor } = wrapSelection(value, ta.selectionStart, ta.selectionEnd, action);
+      onChange(newValue);
+      requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(cursor, cursor); });
+    },
+    [value, onChange]
+  );
 
-      const start = textarea.selectionStart;
-      const end = textarea.selectionEnd;
-      const selected = value.substring(start, end);
-      const before = value.substring(0, start);
-      const after = value.substring(end);
-
-      let insertion: string;
-
-      if (action.block && !selected) {
-        // For block elements, ensure we're on a new line
-        const needsNewline = before.length > 0 && !before.endsWith("\n");
-        insertion = (needsNewline ? "\n" : "") + action.prefix + (selected || "text") + action.suffix;
-      } else {
-        insertion = action.prefix + (selected || "text") + action.suffix;
-      }
-
+  // Insert raw snippet at cursor
+  const insertSnippet = useCallback(
+    (snippet: string) => {
+      const ta = textareaRef.current;
+      if (!ta) return;
+      const before = value.substring(0, ta.selectionStart);
+      const after  = value.substring(ta.selectionEnd);
+      const needsNewline = before.length > 0 && !before.endsWith("\n");
+      const insertion = (needsNewline ? "\n" : "") + snippet;
       const newValue = before + insertion + after;
       onChange(newValue);
-
-      // Restore cursor position after React re-render
-      requestAnimationFrame(() => {
-        textarea.focus();
-        const cursorPos = before.length + insertion.length;
-        textarea.setSelectionRange(cursorPos, cursorPos);
-      });
+      const cursor = before.length + insertion.length;
+      requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(cursor, cursor); });
     },
     [value, onChange]
   );
 
   const insertCodeBlock = useCallback(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = value.substring(start, end);
-    const before = value.substring(0, start);
-    const after = value.substring(end);
-
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const selected = value.substring(ta.selectionStart, ta.selectionEnd);
+    const before   = value.substring(0, ta.selectionStart);
+    const after    = value.substring(ta.selectionEnd);
     const needsNewline = before.length > 0 && !before.endsWith("\n");
-    const code = selected || "// your code here";
-    const insertion = (needsNewline ? "\n" : "") + "```js\n" + code + "\n```\n";
-
-    onChange(before + insertion + after);
-
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const cursorPos = before.length + insertion.length;
-      textarea.setSelectionRange(cursorPos, cursorPos);
-    });
+    const code    = selected || "// your code here";
+    const snippet = (needsNewline ? "\n" : "") + "```js\n" + code + "\n```\n";
+    onChange(before + snippet + after);
+    requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(before.length + snippet.length, before.length + snippet.length); });
   }, [value, onChange]);
 
-  // Simple preview renderer
-  const renderPreview = useCallback((text: string) => {
-    return parseBlocks(text);
-  }, []);
+  const insertTable = useCallback(() => {
+    insertSnippet(
+      "| Column 1 | Column 2 | Column 3 |\n" +
+      "| -------- | -------- | -------- |\n" +
+      "| Cell     | Cell     | Cell     |\n" +
+      "| Cell     | Cell     | Cell     |\n"
+    );
+  }, [insertSnippet]);
+
+  const insertVideo = useCallback(() => {
+    const url = "https://www.youtube.com/watch?v=VIDEO_ID";
+    insertSnippet(`::video[${url}]\n`);
+  }, [insertSnippet]);
+
+  const insertLink = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const raw      = value.substring(ta.selectionStart, ta.selectionEnd);
+    const selected = raw.length > 0 ? raw : "link text";
+    const before   = value.substring(0, ta.selectionStart);
+    const after    = value.substring(ta.selectionEnd);
+    const snippet  = `[${selected}](url)`;
+    onChange(before + snippet + after);
+    // Place cursor on "url"
+    const urlStart = before.length + selected.length + 3;
+    requestAnimationFrame(() => { ta.focus(); ta.setSelectionRange(urlStart, urlStart + 3); });
+  }, [value, onChange]);
+
+  const insertImage = useCallback(() => {
+    insertSnippet("![Image description](https://example.com/image.png)\n");
+  }, [insertSnippet]);
+
+  const insertDivider = useCallback(() => {
+    insertSnippet("\n---\n");
+  }, [insertSnippet]);
 
   return (
     <div className="rounded-md border border-border overflow-hidden bg-secondary/30">
-      {/* Toolbar */}
-      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border bg-secondary/50 flex-wrap">
-        {/* Formatting buttons */}
-        {TOOLBAR_ACTIONS.map((action) => (
-          <button
-            key={action.label}
-            type="button"
-            onClick={() => insertMarkdown(action)}
-            title={action.label}
-            className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-all"
-          >
-            <action.icon className="w-3.5 h-3.5" />
-          </button>
+
+      {/* ── Toolbar ─────────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-0.5 px-2 py-1.5 border-b border-border bg-secondary/60 flex-wrap">
+
+        {/* Headings */}
+        {HEADING_ACTIONS.map((a) => (
+          <ToolbarBtn key={a.label} icon={a.icon} label={a.label} onClick={() => insert(a)} />
         ))}
 
-        {/* Code block (special) */}
+        <Divider />
+
+        {/* Inline */}
+        {INLINE_ACTIONS.map((a) => (
+          <ToolbarBtn key={a.label} icon={a.icon} label={a.label} onClick={() => insert(a)} />
+        ))}
+
+        <Divider />
+
+        {/* Block */}
+        {BLOCK_ACTIONS.map((a) => (
+          <ToolbarBtn key={a.label} icon={a.icon} label={a.label} onClick={() => insert(a)} />
+        ))}
+
+        {/* Code block */}
         <button
           type="button"
           onClick={insertCodeBlock}
           title="Code Block"
           className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-all"
         >
-          <span className="text-[10px] font-mono font-bold">{"{}"}</span>
+          <span className="text-[10px] font-mono font-bold leading-none">{"{}"}</span>
         </button>
+
+        <Divider />
+
+        {/* Callouts */}
+        {CALLOUT_TEMPLATES.map((c) => (
+          <ToolbarBtn key={c.label} icon={c.icon} label={c.label} onClick={() => insertSnippet(c.snippet)} />
+        ))}
+
+        <Divider />
+
+        {/* Table / Video / Link / Image / HR */}
+        <ToolbarBtn icon={Table}  label="Insert Table"     onClick={insertTable}  />
+        <ToolbarBtn icon={Video}  label="Embed Video"      onClick={insertVideo}  />
+        <ToolbarBtn icon={Link2}  label="Insert Link"      onClick={insertLink}   />
+        <ToolbarBtn icon={Image}  label="Insert Image"     onClick={insertImage}  />
+        <ToolbarBtn icon={Minus}  label="Horizontal Rule"  onClick={insertDivider} />
 
         <div className="flex-1" />
 
@@ -153,7 +239,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           className={cn(
             "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all",
             showPreview
-              ? "bg-orange-500/15 text-orange-500 dark:text-orange-300 border border-orange-400/20"
+              ? "bg-orange-500/15 text-orange-400 border border-orange-400/20"
               : "text-muted-foreground/60 hover:text-foreground hover:bg-secondary/80"
           )}
         >
@@ -162,11 +248,11 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
         </button>
       </div>
 
-      {/* Editor / Preview */}
+      {/* ── Editor / Preview ─────────────────────────────────────────────────── */}
       {showPreview ? (
-        <div className="px-5 py-4 min-h-[200px] max-h-[500px] overflow-y-auto">
-          {value ? (
-            <div className="space-y-4">{renderPreview(value)}</div>
+        <div className="px-6 py-5 min-h-[240px] max-h-[600px] overflow-y-auto">
+          {value.trim() ? (
+            <MarkdownRenderer content={value} compact />
           ) : (
             <p className="text-muted-foreground/40 text-sm italic">Nothing to preview yet…</p>
           )}
@@ -177,248 +263,80 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 12
           value={value}
           onChange={(e) => onChange(e.target.value)}
           rows={rows}
-          placeholder={placeholder || "Write your lesson content here…\n\nUse the toolbar above or write markdown directly:\n# Heading\n**bold** `code` \n- bullet list\n```js\ncode block\n```"}
+          placeholder={
+            placeholder ||
+            "Write your lesson content here…\n\n" +
+            "# Heading 1\n## Heading 2\n\n" +
+            "**bold**  *italic*  ~~strike~~  `code`\n\n" +
+            "- bullet list\n1. numbered list\n- [ ] task list\n\n" +
+            "```js\nconsole.log('code block')\n```\n\n" +
+            "| Col A | Col B |\n| ----- | ----- |\n| cell  | cell  |\n\n" +
+            "> [!NOTE]\n> A callout box\n\n" +
+            "::video[https://youtube.com/watch?v=...]\n"
+          }
           className="w-full bg-transparent px-5 py-4 text-foreground text-sm font-mono leading-relaxed resize-none focus:outline-none placeholder:text-muted-foreground/30"
           onKeyDown={(e) => {
-            // Tab inserts 2 spaces
             if (e.key === "Tab") {
               e.preventDefault();
-              const start = e.currentTarget.selectionStart;
+              const s = e.currentTarget.selectionStart;
               const end = e.currentTarget.selectionEnd;
-              const newVal = value.substring(0, start) + "  " + value.substring(end);
-              onChange(newVal);
-              requestAnimationFrame(() => {
-                e.currentTarget.setSelectionRange(start + 2, start + 2);
-              });
+              const nv = value.substring(0, s) + "  " + value.substring(end);
+              onChange(nv);
+              requestAnimationFrame(() => { e.currentTarget.setSelectionRange(s + 2, s + 2); });
+            }
+            // Ctrl/Cmd shortcuts
+            if ((e.ctrlKey || e.metaKey)) {
+              const shortcutMap: Record<string, ToolbarAction> = {
+                b: { icon: Bold, label: "Bold",   prefix: "**", suffix: "**" },
+                i: { icon: Italic, label: "Italic", prefix: "*",  suffix: "*"  },
+                "`": { icon: Code2, label: "Code",   prefix: "`",  suffix: "`"  },
+              };
+              const action = shortcutMap[e.key];
+              if (action) {
+                e.preventDefault();
+                insert(action);
+              }
             }
           }}
         />
       )}
 
-      {/* Status bar */}
+      {/* ── Status bar ──────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-3 py-1.5 border-t border-border/50 bg-secondary/30">
         <span className="text-[10px] text-muted-foreground/50 font-mono">
           {value.split("\n").length} lines · {value.length} chars
         </span>
-        <span className="text-[10px] text-muted-foreground/50">Markdown supported</span>
-      </div>
-    </div>
-  );
-}
-
-// ── Simple preview parser ────────────────────────────────────────────────────
-
-function parseBlocks(raw: string) {
-  const lines = raw.split("\n");
-  const elements: React.ReactNode[] = [];
-  let i = 0;
-  let key = 0;
-
-  while (i < lines.length) {
-    const line = lines[i];
-
-    // Fenced code block
-    if (line.trimStart().startsWith("```")) {
-      const lang = line.trim().replace(/^```/, "").trim() || "code";
-      const codeLines: string[] = [];
-      i++;
-      while (i < lines.length && !lines[i].trimStart().startsWith("```")) {
-        codeLines.push(lines[i]);
-        i++;
-      }
-      i++;
-      elements.push(
-        <PreviewCodeBlock key={key++} lang={lang} code={codeLines.join("\n")} />
-      );
-      continue;
-    }
-
-    // Divider
-    if (/^---+$/.test(line.trim())) {
-      elements.push(<hr key={key++} className="border-border my-2" />);
-      i++;
-      continue;
-    }
-
-    // Headings
-    if (line.startsWith("### ")) {
-      elements.push(
-        <h3 key={key++} className="text-sm font-semibold text-foreground pt-1">
-          {renderInlinePreview(line.slice(4))}
-        </h3>
-      );
-      i++;
-      continue;
-    }
-    if (line.startsWith("## ")) {
-      elements.push(
-        <h2 key={key++} className="text-base font-semibold text-foreground border-l-2 border-orange-400/40 pl-3 pt-2">
-          {renderInlinePreview(line.slice(3))}
-        </h2>
-      );
-      i++;
-      continue;
-    }
-    if (line.startsWith("# ")) {
-      elements.push(
-        <h1 key={key++} className="text-xl font-bold text-foreground flex items-center gap-2">
-          <Hash className="w-4 h-4 text-orange-400" />
-          {renderInlinePreview(line.slice(2))}
-        </h1>
-      );
-      i++;
-      continue;
-    }
-
-    // Blockquote
-    if (line.startsWith("> ")) {
-      elements.push(
-        <blockquote
-          key={key++}
-          className="border-l-2 border-amber-400/40 pl-3 text-muted-foreground text-sm italic"
-        >
-          {renderInlinePreview(line.slice(2))}
-        </blockquote>
-      );
-      i++;
-      continue;
-    }
-
-    // Bullet list
-    if (/^[\s]*[-*•]\s/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^[\s]*[-*•]\s/.test(lines[i])) {
-        items.push(lines[i].replace(/^[\s]*[-*•]\s+/, ""));
-        i++;
-      }
-      elements.push(
-        <ul key={key++} className="space-y-1.5 pl-1">
-          {items.map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-muted-foreground text-sm">
-              <span className="mt-1.5 w-1.5 h-1.5 rounded-full bg-orange-500/40 flex-shrink-0" />
-              <span>{renderInlinePreview(item)}</span>
-            </li>
-          ))}
-        </ul>
-      );
-      continue;
-    }
-
-    // Numbered list
-    if (/^\d+[\.)]\s/.test(line.trim())) {
-      const items: string[] = [];
-      while (i < lines.length && /^\d+[\.)]\s/.test(lines[i].trim())) {
-        items.push(lines[i].replace(/^\s*\d+[\.)]\s+/, ""));
-        i++;
-      }
-      elements.push(
-        <ol key={key++} className="space-y-1.5 pl-1">
-          {items.map((item, j) => (
-            <li key={j} className="flex items-start gap-2 text-muted-foreground text-sm">
-              <span className="flex-shrink-0 w-4 h-4 rounded bg-orange-500/20 text-orange-600 dark:text-orange-300 text-[10px] font-bold flex items-center justify-center mt-0.5">
-                {j + 1}
-              </span>
-              <span>{renderInlinePreview(item)}</span>
-            </li>
-          ))}
-        </ol>
-      );
-      continue;
-    }
-
-    // Empty line
-    if (line.trim() === "") {
-      i++;
-      continue;
-    }
-
-    // Paragraph
-    const paraLines: string[] = [];
-    while (
-      i < lines.length &&
-      lines[i].trim() !== "" &&
-      !lines[i].startsWith("#") &&
-      !lines[i].trimStart().startsWith("```") &&
-      !/^[\s]*[-*•]\s/.test(lines[i]) &&
-      !/^\d+[\.)]\s/.test(lines[i].trim()) &&
-      !lines[i].startsWith("> ") &&
-      !/^---+$/.test(lines[i].trim())
-    ) {
-      paraLines.push(lines[i]);
-      i++;
-    }
-    if (paraLines.length > 0) {
-      elements.push(
-        <p key={key++} className="text-muted-foreground text-sm leading-relaxed">
-          {renderInlinePreview(paraLines.join(" "))}
-        </p>
-      );
-    }
-  }
-
-  return elements;
-}
-
-function renderInlinePreview(text: string): React.ReactNode {
-  // Process inline code, bold, links
-  const parts = text.split(/(`[^`]+`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code
-          key={i}
-          className="px-1 py-0.5 rounded bg-orange-500/15 text-orange-600 dark:text-orange-300 text-[0.85em] font-mono border border-orange-400/30"
-        >
-          {part.slice(1, -1)}
-        </code>
-      );
-    }
-    // Bold
-    const boldParts = part.split(/(\*\*[^*]+\*\*)/g);
-    return boldParts.map((bp, j) => {
-      if (bp.startsWith("**") && bp.endsWith("**")) {
-        return (
-          <strong key={`${i}-${j}`} className="font-semibold text-foreground">
-            {bp.slice(2, -2)}
-          </strong>
-        );
-      }
-      // Links [text](url)
-      const linkParts = bp.split(/(\[[^\]]+\]\([^)]+\))/g);
-      return linkParts.map((lp, k) => {
-        const linkMatch = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-        if (linkMatch) {
-          return (
-            <span key={`${i}-${j}-${k}`} className="text-orange-400 underline underline-offset-2">
-              {linkMatch[1]}
-            </span>
-          );
-        }
-        return <span key={`${i}-${j}-${k}`}>{lp}</span>;
-      });
-    });
-  });
-}
-
-function PreviewCodeBlock({ lang, code }: { lang: string; code: string }) {
-  return (
-    <div className="rounded-lg overflow-hidden border border-border bg-secondary dark:bg-[#0d1117]">
-      <div className="flex items-center justify-between px-3 py-1.5 bg-secondary/80 dark:bg-white/[0.03] border-b border-border/50">
-        <div className="flex items-center gap-1.5">
-          <Code2 className="w-3 h-3 text-emerald-500 dark:text-emerald-400" />
-          <span className="text-[10px] font-medium text-muted-foreground/60 uppercase tracking-wider">{lang}</span>
+        <div className="flex items-center gap-3 text-[10px] text-muted-foreground/40">
+          <span>Ctrl+B Bold</span>
+          <span>Ctrl+I Italic</span>
+          <span>Tab → 2 spaces</span>
         </div>
       </div>
-      <pre className="p-3 text-xs leading-relaxed overflow-x-auto">
-        {code.split("\n").map((line, i) => (
-          <div key={i} className="flex">
-            <span className="select-none text-muted-foreground/30 text-right w-6 mr-3 flex-shrink-0 font-mono text-[10px] leading-relaxed">
-              {i + 1}
-            </span>
-            <code className="font-mono text-emerald-700 dark:text-emerald-300/70">{line || " "}</code>
-          </div>
-        ))}
-      </pre>
     </div>
   );
+}
+
+// ─── Micro-components ──────────────────────────────────────────────────────────
+
+function ToolbarBtn({
+  icon: Icon, label, onClick,
+}: {
+  icon: React.ElementType;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      className="p-1.5 rounded-lg text-muted-foreground/60 hover:text-foreground hover:bg-secondary transition-all"
+    >
+      <Icon className="w-3.5 h-3.5" />
+    </button>
+  );
+}
+
+function Divider() {
+  return <span className="w-px h-4 bg-border/60 mx-0.5 flex-shrink-0" />;
 }

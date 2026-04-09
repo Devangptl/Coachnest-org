@@ -51,7 +51,8 @@
       "Bash(npx kill-port:*)",
       "Bash(cd:*)",
       "Bash(npx tsx -e \":*)",
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(npm ls:*)"
     ]
   }
 }

@@ -1,18 +1,19 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, Circle, Lock, PlayCircle, FileText, HelpCircle,
   ChevronLeft, ChevronRight, Clock, Sparkles, Eye,
-  Copy, Check, Code2, Hash, Award, Download, Headphones, ArrowLeft,
+  Award, Download, Headphones, ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuizPlayer from "@/components/QuizPlayer";
 import TextHighlighter from "@/components/TextHighlighter";
 import LessonAudioPlayer from "@/components/LessonAudioPlayer";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import { useLessonContext } from "../LessonProvider";
 import toast from "react-hot-toast";
 
@@ -229,7 +230,11 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             />
           </div>
         ) : lesson.content ? (
-          <LessonContent content={lesson.content} lessonId={lesson.id} isEnrolled={isEnrolled} />
+          <div className="px-6 sm:px-10 py-8">
+            <TextHighlighter lessonId={lesson.id} isEnrolled={isEnrolled}>
+              <MarkdownRenderer content={lesson.content} />
+            </TextHighlighter>
+          </div>
         ) : (
           <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
             <FileText className="w-12 h-12 text-muted-foreground/20 mb-4" />
@@ -359,107 +364,3 @@ function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: ()
   return <QuizPlayer quiz={quiz as Parameters<typeof QuizPlayer>[0]["quiz"]} onComplete={(_s, passed) => { if (passed) onComplete(); }} />;
 }
 
-// ── Content renderer ──────────────────────────────────────────────────────────
-
-type Block =
-  | { type: "h1" | "h2" | "h3"; text: string }
-  | { type: "code"; lang: string; code: string }
-  | { type: "list" | "numlist"; items: string[] }
-  | { type: "image"; src: string; alt: string }
-  | { type: "paragraph"; text: string };
-
-function parseContent(raw: string): Block[] {
-  const lines = raw.split("\n");
-  const blocks: Block[] = [];
-  let i = 0;
-  while (i < lines.length) {
-    const line = lines[i];
-    if (line.trimStart().startsWith("```")) {
-      const lang = line.trim().replace(/^```/, "").trim();
-      const code: string[] = [];
-      i++;
-      while (i < lines.length && !lines[i].trimStart().startsWith("```")) { code.push(lines[i]); i++; }
-      i++;
-      blocks.push({ type: "code", lang: lang || "code", code: code.join("\n") });
-      continue;
-    }
-    if (line.startsWith("### ")) { blocks.push({ type: "h3", text: line.slice(4).trim() }); i++; continue; }
-    if (line.startsWith("## "))  { blocks.push({ type: "h2", text: line.slice(3).trim() }); i++; continue; }
-    if (line.startsWith("# "))   { blocks.push({ type: "h1", text: line.slice(2).trim() }); i++; continue; }
-    const imgMatch = line.trim().match(/^!\[([^\]]*)\]\(([^)]+)\)$/);
-    if (imgMatch) { blocks.push({ type: "image", src: imgMatch[2], alt: imgMatch[1] }); i++; continue; }
-    if (/^[\s]*[•\-\*]\s/.test(line)) {
-      const items: string[] = [];
-      while (i < lines.length && /^[\s]*[•\-\*]\s/.test(lines[i])) { items.push(lines[i].replace(/^[\s]*[•\-\*]\s/, "").trim()); i++; }
-      blocks.push({ type: "list", items }); continue;
-    }
-    if (/^\d+[\.\)]\s/.test(line.trim())) {
-      const items: string[] = [];
-      while (i < lines.length && /^\d+[\.\)]\s/.test(lines[i].trim())) { items.push(lines[i].replace(/^\d+[\.\)]\s/, "").trim()); i++; }
-      blocks.push({ type: "numlist", items }); continue;
-    }
-    if (line.trim() === "") { i++; continue; }
-    const para: string[] = [];
-    while (i < lines.length && lines[i].trim() !== "" && !lines[i].startsWith("#") && !lines[i].trimStart().startsWith("```") && !/^[\s]*[•\-\*]\s/.test(lines[i]) && !/^\d+[\.\)]\s/.test(lines[i].trim())) { para.push(lines[i]); i++; }
-    if (para.length) blocks.push({ type: "paragraph", text: para.join(" ") });
-  }
-  return blocks;
-}
-
-function renderInline(text: string): React.ReactNode {
-  return text.split(/(`[^`]+`)/g).flatMap((p, i) => {
-    if (p.startsWith("`") && p.endsWith("`")) return <code key={i} className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-orange-400/25">{p.slice(1, -1)}</code>;
-    return p.split(/(\[[^\]]+\]\([^)]+\))/g).flatMap((lp, j) => {
-      const m = lp.match(/^\[([^\]]+)\]\(([^)]+)\)$/);
-      if (m) return <a key={`${i}-${j}`} href={m[2]} target="_blank" rel="noopener noreferrer" className="text-orange-500 hover:text-orange-400 hover:underline font-medium underline-offset-4 transition-colors">{m[1]}</a>;
-      return lp.split(/(\*\*[^*]+\*\*)/g).map((bp, k) =>
-        bp.startsWith("**") && bp.endsWith("**")
-          ? <strong key={`${i}-${j}-${k}`} className="font-semibold text-foreground">{bp.slice(2, -2)}</strong>
-          : <span key={`${i}-${j}-${k}`}>{bp}</span>
-      );
-    });
-  });
-}
-
-function CodeBlock({ lang, code }: { lang: string; code: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-1">
-      <div className="flex items-center justify-between px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
-        <div className="flex items-center gap-2"><Code2 className="w-3.5 h-3.5 text-emerald-400" /><span className="text-[11px] font-medium text-muted-foreground/70 uppercase tracking-wider">{lang}</span></div>
-        <button onClick={async () => { await navigator.clipboard.writeText(code); setCopied(true); setTimeout(() => setCopied(false), 2000); }} className="flex items-center gap-1.5 text-[11px] text-muted-foreground/50 hover:text-muted-foreground px-2 py-1 rounded-md hover:bg-secondary transition-colors">
-          {copied ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></> : <><Copy className="w-3 h-3" />Copy</>}
-        </button>
-      </div>
-      <div className="overflow-x-auto">
-        <pre className="p-4 text-sm leading-relaxed">
-          {code.split("\n").map((line, i) => <div key={i} className="flex"><span className="select-none text-white/15 text-right w-8 mr-4 flex-shrink-0 font-mono text-xs">{i + 1}</span><code className="font-mono text-emerald-300/80">{line || " "}</code></div>)}
-        </pre>
-      </div>
-    </div>
-  );
-}
-
-function LessonContent({ content, lessonId, isEnrolled }: { content: string; lessonId: string; isEnrolled: boolean }) {
-  const blocks = useMemo(() => parseContent(content), [content]);
-  return (
-    <div className="px-6 sm:px-10 py-8">
-      <TextHighlighter lessonId={lessonId} isEnrolled={isEnrolled}>
-        <div className="space-y-5">
-          {blocks.map((block, i) => {
-            switch (block.type) {
-              case "h1": return <h1 key={i} className="text-2xl font-bold text-foreground flex items-center gap-3 pt-2"><Hash className="w-5 h-5 text-orange-400 flex-shrink-0" />{block.text}</h1>;
-              case "h2": return <h2 key={i} className="text-lg font-semibold text-foreground border-l-2 border-orange-400/40 pl-3 pt-3">{block.text}</h2>;
-              case "h3": return <h3 key={i} className="text-base font-semibold text-foreground/80 pt-2">{block.text}</h3>;
-              case "code": return <CodeBlock key={i} lang={block.lang} code={block.code} />;
-              case "list": return <ul key={i} className="space-y-2 pl-1">{block.items.map((it, j) => <li key={j} className="flex items-start gap-3 text-muted-foreground text-sm leading-relaxed"><span className="mt-2 w-1.5 h-1.5 rounded-full bg-orange-500/40 flex-shrink-0" /><span>{renderInline(it)}</span></li>)}</ul>;
-              case "numlist": return <ol key={i} className="space-y-2 pl-1">{block.items.map((it, j) => <li key={j} className="flex items-start gap-3 text-muted-foreground text-sm leading-relaxed"><span className="flex-shrink-0 w-5 h-5 rounded-md bg-orange-500/15 text-primary text-[11px] font-bold flex items-center justify-center mt-0.5">{j + 1}</span><span>{renderInline(it)}</span></li>)}</ol>;
-              case "paragraph": return <p key={i} className="text-muted-foreground text-sm leading-[1.85] tracking-wide">{renderInline(block.text)}</p>;
-              case "image": return <div key={i} className="my-8 flex flex-col items-center"><div className="max-w-full rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-card/40">{/* eslint-disable-next-line @next/next/no-img-element */}<img src={block.src} alt={block.alt} className="max-h-[600px] w-auto h-auto object-contain" /></div>{block.alt && <p className="mt-4 text-center text-xs text-muted-foreground/50 italic">{block.alt}</p>}</div>;
-            }
-          })}
-        </div>
-      </TextHighlighter>
-    </div>
-  );
-}
