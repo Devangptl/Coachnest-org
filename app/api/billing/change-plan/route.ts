@@ -52,12 +52,17 @@ export async function POST(req: NextRequest) {
     if (dbSub.status === "EXPIRED") {
       return NextResponse.json({ error: "Subscription is expired. Please subscribe again." }, { status: 400 });
     }
-    if (dbSub.plan === planUpper) {
-      return NextResponse.json({ error: `You are already on the ${planUpper} plan.` }, { status: 400 });
-    }
 
     const stripe    = getStripe();
-    const stripeSub = await stripe.subscriptions.retrieve(dbSub.stripeSubId);
+    const stripeSub = await stripe.subscriptions.retrieve(dbSub.stripeSubId, {
+      expand: ["items.data.price"],
+    });
+
+    // Block only when the exact same price (plan + billing cycle) is already active
+    const currentPriceId = (stripeSub as any).items?.data?.[0]?.price?.id as string | undefined;
+    if (dbSub.plan === planUpper && currentPriceId === priceId) {
+      return NextResponse.json({ error: `You are already on the ${planUpper} plan with this billing cycle.` }, { status: 400 });
+    }
 
     // ── Incomplete subscription: cancel the stale one and create a new sub ──────
     // Stripe does not allow item/price changes on `incomplete` subscriptions.

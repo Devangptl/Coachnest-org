@@ -26,6 +26,7 @@ import {
 
 type PlanType  = "FREE" | "BASIC" | "PRO" | "ENTERPRISE";
 type SubStatus = "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIAL";
+type Billing   = "monthly" | "yearly";
 
 interface Subscription {
   id:          string;
@@ -95,6 +96,15 @@ function fmtDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-IN", {
     day: "numeric", month: "long", year: "numeric",
   });
+}
+
+/** Detect billing cycle from subscription date range */
+function detectBilling(sub: Subscription | null): Billing {
+  if (!sub?.startDate || !sub?.endDate) return "monthly";
+  const diffDays =
+    (new Date(sub.endDate).getTime() - new Date(sub.startDate).getTime()) /
+    (1000 * 60 * 60 * 24);
+  return diffDays > 300 ? "yearly" : "monthly";
 }
 
 // ─── Cancel confirmation dialog ───────────────────────────────────────────────
@@ -189,15 +199,17 @@ function SubscriptionPageContent() {
   const isSuccessRedirect = searchParams.get("success") === "true";
   const sessionId         = searchParams.get("session_id");
 
-  const loadStatus = useCallback(async () => {
+  const loadStatus = useCallback(async (): Promise<Subscription | null> => {
     const [statusRes, pmRes] = await Promise.all([
       fetch("/api/subscriptions/status"),
       fetch("/api/billing/payment-methods"),
     ]);
     const [statusData, pmData] = await Promise.all([statusRes.json(), pmRes.json()]);
-    setSub(statusData.subscription ?? null);
+    const subscription: Subscription | null = statusData.subscription ?? null;
+    setSub(subscription);
     setPlanAccess(statusData.planAccess ?? null);
     setHasPaymentMethod((pmData.paymentMethods ?? []).length > 0);
+    return subscription;
   }, []);
 
   useEffect(() => {
@@ -212,7 +224,12 @@ function SubscriptionPageContent() {
           });
         }
 
-        await loadStatus();
+        const loadedSub = await loadStatus();
+
+        // Pre-select billing cycle from current subscription on first load
+        if (!cancelled && loadedSub && loadedSub.plan !== "FREE" && !isSuccessRedirect) {
+          setBilling(detectBilling(loadedSub));
+        }
 
         if (!cancelled && isSuccessRedirect) {
           toast.success("Subscription activated! Welcome to all-access.");
@@ -229,12 +246,36 @@ function SubscriptionPageContent() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // ── Subscribe (new subscription) — redirect to checkout page ───────────────
-  function subscribe(planId: string) {
-    router.push(`/checkout?plan=${planId.toLowerCase()}&billing=${billing}`);
+  // ── Subscribe in-UI with saved card (no redirect) ─────────────────────────
+  async function subscribeDirect(planId: string) {
+    setActionLoading(planId);
+    try {
+      const res  = await fetch("/api/billing/subscribe", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ plan: planId, billing }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Subscription failed");
+
+      if (data.requiresAction && data.clientSecret && stripe) {
+        const { error } = await stripe.confirmCardPayment(data.clientSecret);
+        if (error) throw new Error(error.message ?? "Payment confirmation failed");
+        await fetch("/api/subscriptions/sync", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}),
+        });
+      }
+
+      await loadStatus();
+      toast.success(`${planId.charAt(0) + planId.slice(1).toLowerCase()} plan activated!`);
+    } catch (err: unknown) {
+      toast.error(err instanceof Error ? err.message : "Subscription failed");
+    } finally {
+      setActionLoading(null);
+    }
   }
 
-  // ── Change plan (upgrade / downgrade) ────────────────────────────────────
+  // ── Change plan (upgrade / downgrade / billing cycle switch) ──────────────
   async function changePlan(planId: string) {
     setActionLoading(planId);
     try {
@@ -246,8 +287,18 @@ function SubscriptionPageContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Plan change failed");
 
+      // Handle 3DS / further action required (e.g., when incomplete sub was replaced)
+      if (data.requiresAction && data.clientSecret && stripe) {
+        const { error } = await stripe.confirmCardPayment(data.clientSecret);
+        if (error) throw new Error(error.message ?? "Payment confirmation failed");
+        await fetch("/api/subscriptions/sync", {
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}),
+        });
+      }
+
       await loadStatus();
-      toast.success(`Switched to ${planId.charAt(0) + planId.slice(1).toLowerCase()} plan!`);
+      const label = planId.charAt(0) + planId.slice(1).toLowerCase();
+      toast.success(`Switched to ${label} plan!`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Plan change failed");
     } finally {
@@ -261,23 +312,23 @@ function SubscriptionPageContent() {
     const hasLiveSub = sub && sub.plan !== "FREE" && sub.status !== "EXPIRED";
 
     if (hasLiveSub) {
-      await changePlan(planId);                    // upgrade / downgrade (also clears cancel flag)
+      await changePlan(planId);          // upgrade / downgrade / billing cycle change
     } else if (!hasPaymentMethod) {
       setPendingPlan(planId);
-      setShowAddCard(true);                        // save card first, then subscribe
+      setShowAddCard(true);              // save card first, then subscribe in-UI
     } else {
-      await subscribe(planId);                     // has card, no live sub
+      await subscribeDirect(planId);    // has saved card, no live sub → subscribe in-UI
     }
   }
 
-  // After card is saved, continue with pending subscription
+  // After card is saved, subscribe in-UI with the newly saved card
   async function handleCardAdded(_pmId: string) {
     setShowAddCard(false);
     setHasPaymentMethod(true);
     if (pendingPlan) {
       const plan = pendingPlan;
       setPendingPlan(null);
-      await subscribe(plan);
+      await subscribeDirect(plan);
     }
   }
 
@@ -403,12 +454,17 @@ function SubscriptionPageContent() {
                 </div>
               </div>
 
-              <div className={cn(
-                "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border",
-                statusMeta!.color, "border-current/20 bg-current/5"
-              )}>
-                {(() => { const Icon = statusMeta!.icon; return <Icon className="w-3.5 h-3.5" />; })()}
-                {statusMeta!.label}
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-secondary text-muted-foreground border border-border capitalize">
+                  {detectBilling(sub)} billing
+                </span>
+                <div className={cn(
+                  "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border",
+                  statusMeta!.color, "border-current/20 bg-current/5"
+                )}>
+                  {(() => { const Icon = statusMeta!.icon; return <Icon className="w-3.5 h-3.5" />; })()}
+                  {statusMeta!.label}
+                </div>
               </div>
             </div>
 
@@ -569,6 +625,17 @@ function SubscriptionPageContent() {
             </div>
           </div>
 
+          {/* Proration notice for active paid subscribers changing plans */}
+          {isPaidPlan && sub?.status !== "EXPIRED" && sub?.status !== "CANCELLED" && (
+            <div className="mb-4 flex items-start gap-2 rounded-md border border-orange-400/15 bg-orange-500/5 px-4 py-3 text-xs text-orange-300/80">
+              <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-orange-400/60" />
+              <span>
+                Upgrades are charged immediately on a prorated basis — you only pay for the remaining time in your billing cycle.
+                Downgrades take effect at your next renewal date.
+              </span>
+            </div>
+          )}
+
           <div className="grid sm:grid-cols-3 gap-4">
             {UPGRADE_PLANS.map((plan) => {
               const pm          = PLAN_META[plan.id as PlanType];
@@ -582,11 +649,18 @@ function SubscriptionPageContent() {
               // "live sub" = user has a subscription that isn't expired yet
               const hasLiveSub  = isPaidPlan && sub?.status !== "EXPIRED";
 
+              // Detect if user wants to switch billing cycle on same plan
+              const currentBillingCycle = detectBilling(sub);
+              const isSamePlanDiffBilling = isCurrent && sub?.status === "ACTIVE" && billing !== currentBillingCycle;
+
               let buttonLabel = `Get ${plan.label}`;
               let ButtonIcon: React.ElementType | null = null;
 
-              if (isCurrent && sub?.status === "ACTIVE") {
+              if (isCurrent && sub?.status === "ACTIVE" && !isSamePlanDiffBilling) {
                 buttonLabel = "Current Plan";
+              } else if (isSamePlanDiffBilling) {
+                buttonLabel = `Switch to ${billing === "yearly" ? "Yearly" : "Monthly"}`;
+                ButtonIcon  = RefreshCw;
               } else if (isCurrent && sub?.status === "CANCELLED") {
                 buttonLabel = "Resume subscription";
                 ButtonIcon  = RefreshCcw;
@@ -598,8 +672,8 @@ function SubscriptionPageContent() {
                 ButtonIcon  = ArrowDownRight;
               }
 
-              // Disable the button only when the plan is current AND subscription is active
-              const isDisabled = isCurrent && sub?.status === "ACTIVE";
+              // Disable only when the plan + billing cycle is already active
+              const isDisabled = isCurrent && sub?.status === "ACTIVE" && !isSamePlanDiffBilling;
 
               return (
                 <motion.div
