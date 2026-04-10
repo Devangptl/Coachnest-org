@@ -56,8 +56,12 @@ export async function POST(req: NextRequest) {
     ]);
     if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
 
-    // Guard: don't create a duplicate subscription if one is already active
-    if (existingSub?.status === "ACTIVE" || existingSub?.status === "TRIAL") {
+    // Guard: don't create a duplicate subscription if already on a paid plan
+    const paidPlans = ["BASIC", "PRO", "ENTERPRISE"];
+    if (
+      (existingSub?.status === "ACTIVE" || existingSub?.status === "TRIAL") &&
+      existingSub.plan && paidPlans.includes(existingSub.plan)
+    ) {
       return NextResponse.json(
         { error: `You already have an active ${existingSub.plan} subscription. Use change-plan to upgrade or downgrade.` },
         { status: 400 }
