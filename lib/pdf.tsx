@@ -1,210 +1,309 @@
 /**
- * Certificate PDF generation using pdf-lib (pure JS, no WASM dependencies).
- * Called server-side in the /api/certificates/[courseId] route.
+ * Certificate PDF generation using pdf-lib.
+ * Design: premium dark theme matching the CoachNest brand (dark bg, orange accents).
+ * Landscape A4: 841.89 × 595.28 pt
  */
-import { PDFDocument, rgb, StandardFonts } from "pdf-lib";
+import { PDFDocument, PDFFont, rgb, StandardFonts } from "pdf-lib";
 
 interface CertificateData {
-  recipientName: string;
-  courseTitle: string;
+  recipientName:  string;
+  courseTitle:    string;
   instructorName: string;
-  issuedAt: Date;
-  certificateId: string;
+  issuedAt:       Date;
+  certificateId:  string;
 }
 
+// ─── Color palette ─────────────────────────────────────────────────────────────
+const C = {
+  bg:        rgb(0.031, 0.031, 0.031),   // #080808
+  card:      rgb(0.067, 0.067, 0.067),   // #111111
+  orange:    rgb(0.976, 0.451, 0.086),   // #f97316
+  orangeDim: rgb(0.918, 0.345, 0.047),   // #ea580c
+  amber:     rgb(0.984, 0.749, 0.141),   // #fbbf24
+  white:     rgb(1,     1,     1    ),
+  light:     rgb(0.898, 0.898, 0.898),   // #e5e5e5
+  muted:     rgb(0.639, 0.639, 0.639),   // #a3a3a3
+  subtle:    rgb(0.361, 0.361, 0.361),   // #5c5c5c
+};
+
+// ─── Helper: centered text ─────────────────────────────────────────────────────
+
+function drawCentered(
+  page: ReturnType<PDFDocument["addPage"]>,
+  text: string,
+  y: number,
+  size: number,
+  font: PDFFont,
+  color: ReturnType<typeof rgb>,
+  width: number,
+  opacity = 1
+) {
+  const tw = font.widthOfTextAtSize(text, size);
+  page.drawText(text, {
+    x: (width - tw) / 2,
+    y,
+    size,
+    font,
+    color,
+    opacity,
+  });
+}
+
+// ─── Helper: split long text into lines ───────────────────────────────────────
+
+function wrapText(text: string, maxWidth: number, size: number, font: PDFFont): string[] {
+  const words = text.split(" ");
+  const lines: string[] = [];
+  let line = "";
+
+  for (const word of words) {
+    const test = line ? `${line} ${word}` : word;
+    if (font.widthOfTextAtSize(test, size) > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = test;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+// ─── Helper: fit font size to max width ───────────────────────────────────────
+
+function fitSize(text: string, maxWidth: number, maxSize: number, minSize: number, font: PDFFont): number {
+  let size = maxSize;
+  while (font.widthOfTextAtSize(text, size) > maxWidth && size > minSize) {
+    size -= 1;
+  }
+  return size;
+}
+
+// ─── Main generator ────────────────────────────────────────────────────────────
+
 export async function generateCertificatePDF(data: CertificateData): Promise<Buffer> {
-  const doc = await PDFDocument.create();
+  const doc  = await PDFDocument.create();
+  const page = doc.addPage([841.89, 595.28]);   // landscape A4
+  const W    = page.getWidth();
+  const H    = page.getHeight();
+  const cx   = W / 2;
 
-  // Landscape A4: 841.89 x 595.28
-  const page = doc.addPage([841.89, 595.28]);
-  const { width, height } = page.getSize();
+  const regular = await doc.embedFont(StandardFonts.Helvetica);
+  const bold    = await doc.embedFont(StandardFonts.HelveticaBold);
 
-  const helvetica = await doc.embedFont(StandardFonts.Helvetica);
-  const helveticaBold = await doc.embedFont(StandardFonts.HelveticaBold);
+  // ── 1. Background ─────────────────────────────────────────────────────────
+  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: C.bg });
 
-  // ── Colors ──
-  const bgColor = rgb(15 / 255, 12 / 255, 41 / 255);      // #0f0c29
-  const accent = rgb(124 / 255, 58 / 255, 237 / 255);       // #7c3aed
-  const lightPurple = rgb(167 / 255, 139 / 255, 250 / 255);  // #a78bfa
-  const softPurple = rgb(196 / 255, 181 / 255, 253 / 255);   // #c4b5fd
-  const white = rgb(1, 1, 1);
-
-  // ── Background ──
+  // ── 2. Outer border ───────────────────────────────────────────────────────
+  const bm = 24; // border margin
   page.drawRectangle({
-    x: 0, y: 0, width, height,
-    color: bgColor,
+    x: bm, y: bm,
+    width:  W - bm * 2,
+    height: H - bm * 2,
+    borderColor: C.orange,
+    borderWidth: 1.5,
+    color: C.bg,
+    opacity: 0,
+    borderOpacity: 0.8,
   });
 
-  // ── Decorative border ──
-  const bm = 20; // border margin
+  // Inner subtle border
+  const im = 34;
   page.drawRectangle({
-    x: bm, y: bm, width: width - bm * 2, height: height - bm * 2,
-    borderColor: accent,
-    borderWidth: 2,
-    color: rgb(0, 0, 0), opacity: 0,
-    borderOpacity: 1,
+    x: im, y: im,
+    width:  W - im * 2,
+    height: H - im * 2,
+    borderColor: C.orange,
+    borderWidth: 0.5,
+    color: C.bg,
+    opacity: 0,
+    borderOpacity: 0.2,
   });
 
-  // ── Corner accents (small squares) ──
-  const cs = 8;
-  for (const [cx, cy] of [[bm, bm], [bm, height - bm - cs], [width - bm - cs, bm], [width - bm - cs, height - bm - cs]]) {
-    page.drawRectangle({ x: cx, y: cy, width: cs, height: cs, color: accent });
+  // ── 3. Orange top accent bar (inside outer border) ────────────────────────
+  page.drawRectangle({
+    x: bm, y: H - bm - 4,
+    width: W - bm * 2,
+    height: 4,
+    color: C.orange,
+    opacity: 1,
+  });
+
+  // ── 4. Corner L-ornaments ─────────────────────────────────────────────────
+  const cLen   = 22;  // arm length
+  const cThick = 2.5; // arm thickness
+
+  // Top-left
+  page.drawRectangle({ x: bm,                    y: H - bm - cThick, width: cLen,   height: cThick, color: C.amber });
+  page.drawRectangle({ x: bm,                    y: H - bm - cLen,   width: cThick, height: cLen,   color: C.amber });
+  // Top-right
+  page.drawRectangle({ x: W - bm - cLen,         y: H - bm - cThick, width: cLen,   height: cThick, color: C.amber });
+  page.drawRectangle({ x: W - bm - cThick,       y: H - bm - cLen,   width: cThick, height: cLen,   color: C.amber });
+  // Bottom-left
+  page.drawRectangle({ x: bm,                    y: bm,              width: cLen,   height: cThick, color: C.amber });
+  page.drawRectangle({ x: bm,                    y: bm,              width: cThick, height: cLen,   color: C.amber });
+  // Bottom-right
+  page.drawRectangle({ x: W - bm - cLen,         y: bm,              width: cLen,   height: cThick, color: C.amber });
+  page.drawRectangle({ x: W - bm - cThick,       y: bm,              width: cThick, height: cLen,   color: C.amber });
+
+  // ── 5. Brand wordmark ─────────────────────────────────────────────────────
+  const brandSize = 26;
+  const coach     = "COACH";
+  const nest      = "NEST";
+  const coachW    = bold.widthOfTextAtSize(coach, brandSize);
+  const nestW     = bold.widthOfTextAtSize(nest,  brandSize);
+  const brandX    = cx - (coachW + nestW) / 2;
+  const brandY    = H - 80;
+
+  page.drawText(coach, { x: brandX,          y: brandY, size: brandSize, font: bold, color: C.white });
+  page.drawText(nest,  { x: brandX + coachW, y: brandY, size: brandSize, font: bold, color: C.orange });
+
+  // Flanking decorative lines beside brand
+  const brandLineY = brandY + brandSize / 2 - 1;
+  const gapToBrand = 14;
+  const brandLineLen = 90;
+  page.drawLine({ start: { x: brandX - gapToBrand - brandLineLen, y: brandLineY }, end: { x: brandX - gapToBrand, y: brandLineY }, thickness: 1, color: C.orange, opacity: 0.4 });
+  page.drawLine({ start: { x: brandX + coachW + nestW + gapToBrand, y: brandLineY }, end: { x: brandX + coachW + nestW + gapToBrand + brandLineLen, y: brandLineY }, thickness: 1, color: C.orange, opacity: 0.4 });
+
+  // ── 6. "CERTIFICATE OF COMPLETION" with flanking lines ────────────────────
+  const certTitleText = "CERTIFICATE  OF  COMPLETION";
+  const certTitleSize = 11.5;
+  const certTitleW    = regular.widthOfTextAtSize(certTitleText, certTitleSize);
+  const certTitleY    = H - 106;
+  const sideGap       = 16;
+  const sideLineLen   = cx - certTitleW / 2 - sideGap - im - 10;
+
+  page.drawText(certTitleText, {
+    x: cx - certTitleW / 2, y: certTitleY,
+    size: certTitleSize, font: regular, color: C.amber,
+  });
+  page.drawLine({ start: { x: im + 10, y: certTitleY + certTitleSize / 2 }, end: { x: cx - certTitleW / 2 - sideGap, y: certTitleY + certTitleSize / 2 }, thickness: 0.6, color: C.amber, opacity: 0.5 });
+  page.drawLine({ start: { x: cx + certTitleW / 2 + sideGap, y: certTitleY + certTitleSize / 2 }, end: { x: W - im - 10, y: certTitleY + certTitleSize / 2 }, thickness: 0.6, color: C.amber, opacity: 0.5 });
+
+  // ── 7. Main horizontal rule ───────────────────────────────────────────────
+  const rule1Y = H - 124;
+  page.drawLine({
+    start: { x: im + 60, y: rule1Y }, end: { x: W - im - 60, y: rule1Y },
+    thickness: 0.5, color: C.orange, opacity: 0.25,
+  });
+
+  // ── 8. "This certifies that" ─────────────────────────────────────────────
+  const presentsY = H - 160;
+  drawCentered(page, "This certifies that", presentsY, 12, regular, C.muted, W);
+
+  // ── 9. Recipient name ─────────────────────────────────────────────────────
+  const maxNameSize = 44;
+  const nameSize    = fitSize(data.recipientName, W - 160, maxNameSize, 22, bold);
+  const nameY       = H - 210;
+  drawCentered(page, data.recipientName, nameY, nameSize, bold, C.white, W);
+
+  // Underline below name
+  const nameW      = bold.widthOfTextAtSize(data.recipientName, nameSize);
+  const nameUnderY = nameY - 6;
+  page.drawLine({
+    start: { x: cx - nameW / 2, y: nameUnderY },
+    end:   { x: cx + nameW / 2, y: nameUnderY },
+    thickness: 1.5,
+    color: C.orange,
+    opacity: 0.7,
+  });
+
+  // ── 10. "has successfully completed" ─────────────────────────────────────
+  const completedY = H - 252;
+  drawCentered(page, "has successfully completed", completedY, 12, regular, C.muted, W);
+
+  // ── 11. Course title (auto-wrap if long) ──────────────────────────────────
+  const maxTitleSize = 22;
+  const titleFontSize = fitSize(data.courseTitle, W - 160, maxTitleSize, 14, bold);
+  const titleLines    = wrapText(data.courseTitle, W - 160, titleFontSize, bold);
+  const lineSpacing   = titleFontSize + 6;
+  const blockHeight   = titleLines.length * lineSpacing;
+  let titleStartY     = H - 284;
+
+  // Adjust start Y if multi-line to keep it centred
+  if (titleLines.length > 1) titleStartY += (blockHeight - lineSpacing) / 2;
+
+  for (const [i, line] of titleLines.entries()) {
+    drawCentered(page, line, titleStartY - i * lineSpacing, titleFontSize, bold, C.amber, W);
   }
 
-  // ── Header: COACHNEST ──
-  const logoText = "COACHNEST";
-  const logoSize = 28;
-  const logoWidth = helveticaBold.widthOfTextAtSize(logoText, logoSize);
-  page.drawText(logoText, {
-    x: (width - logoWidth) / 2,
-    y: height - 80,
-    size: logoSize,
-    font: helveticaBold,
-    color: lightPurple,
-  });
-
-  // ── Subtitle: Certificate of Completion ──
-  const subtitle = "CERTIFICATE OF COMPLETION";
-  const subSize = 11;
-  const subWidth = helvetica.widthOfTextAtSize(subtitle, subSize);
-  page.drawText(subtitle, {
-    x: (width - subWidth) / 2,
-    y: height - 100,
-    size: subSize,
-    font: helvetica,
-    color: softPurple,
-  });
-
-  // ── Divider ──
-  const divY = height - 120;
+  // ── 12. Second horizontal rule ────────────────────────────────────────────
+  const rule2Y = Math.min(titleStartY - blockHeight - 16, H - 330);
   page.drawLine({
-    start: { x: 100, y: divY },
-    end: { x: width - 100, y: divY },
-    thickness: 1,
-    color: accent,
-    opacity: 0.4,
+    start: { x: im + 60, y: rule2Y }, end: { x: W - im - 60, y: rule2Y },
+    thickness: 0.5, color: C.orange, opacity: 0.2,
   });
 
-  // ── "This is to certify that" ──
-  const presentsText = "This is to certify that";
-  const presentsSize = 13;
-  const presentsWidth = helvetica.widthOfTextAtSize(presentsText, presentsSize);
-  page.drawText(presentsText, {
-    x: (width - presentsWidth) / 2,
-    y: height - 160,
-    size: presentsSize,
-    font: helvetica,
-    color: lightPurple,
-  });
+  // ── 13. Signature area ────────────────────────────────────────────────────
+  const sigY       = 88;
+  const sigLineLen = 150;
+  const sigSpacing = 260;
+  const leftSigX   = cx - sigSpacing / 2 - sigLineLen / 2;
+  const rightSigX  = cx + sigSpacing / 2 - sigLineLen / 2;
 
-  // ── Recipient name ──
-  const nameSize = 36;
-  const nameWidth = helveticaBold.widthOfTextAtSize(data.recipientName, nameSize);
-  page.drawText(data.recipientName, {
-    x: (width - nameWidth) / 2,
-    y: height - 210,
-    size: nameSize,
-    font: helveticaBold,
-    color: white,
-  });
+  // Instructor
+  page.drawLine({ start: { x: leftSigX, y: sigY }, end: { x: leftSigX + sigLineLen, y: sigY }, thickness: 1, color: C.orange, opacity: 0.5 });
 
-  // ── "has successfully completed the course" ──
-  const compText = "has successfully completed the course";
-  const compSize = 13;
-  const compWidth = helvetica.widthOfTextAtSize(compText, compSize);
-  page.drawText(compText, {
-    x: (width - compWidth) / 2,
-    y: height - 240,
-    size: compSize,
-    font: helvetica,
-    color: softPurple,
-  });
-
-  // ── Course title ──
-  const titleSize = 22;
-  const titleWidth = helveticaBold.widthOfTextAtSize(data.courseTitle, titleSize);
-  page.drawText(data.courseTitle, {
-    x: (width - titleWidth) / 2,
-    y: height - 280,
-    size: titleSize,
-    font: helveticaBold,
-    color: lightPurple,
-  });
-
-  // ── Date ──
-  const formatted = new Intl.DateTimeFormat("en-IN", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-  }).format(data.issuedAt);
-  const dateText = `Issued on ${formatted}`;
-  const dateSize = 11;
-  const dateWidth = helvetica.widthOfTextAtSize(dateText, dateSize);
-  page.drawText(dateText, {
-    x: (width - dateWidth) / 2,
-    y: height - 320,
-    size: dateSize,
-    font: helvetica,
-    color: softPurple,
-  });
-
-  // ── Signature lines ──
-  const sigY = 100;
-  const sigLineWidth = 160;
-
-  // Left signature (instructor)
-  const leftX = width / 2 - 200;
-  page.drawLine({
-    start: { x: leftX, y: sigY },
-    end: { x: leftX + sigLineWidth, y: sigY },
-    thickness: 1, color: accent, opacity: 0.6,
-  });
-  const instrWidth = helvetica.widthOfTextAtSize(data.instructorName, 10);
+  const instrNameSize = fitSize(data.instructorName, sigLineLen + 20, 11, 8, regular);
+  const instrNameW    = regular.widthOfTextAtSize(data.instructorName, instrNameSize);
   page.drawText(data.instructorName, {
-    x: leftX + (sigLineWidth - instrWidth) / 2,
+    x: leftSigX + (sigLineLen - instrNameW) / 2,
     y: sigY - 16,
-    size: 10, font: helvetica, color: lightPurple,
+    size: instrNameSize, font: regular, color: C.light,
   });
   const instrLabel = "INSTRUCTOR";
-  const instrLabelW = helvetica.widthOfTextAtSize(instrLabel, 9);
+  const instrLabelW = regular.widthOfTextAtSize(instrLabel, 8);
   page.drawText(instrLabel, {
-    x: leftX + (sigLineWidth - instrLabelW) / 2,
-    y: sigY - 30,
-    size: 9, font: helvetica, color: lightPurple,
+    x: leftSigX + (sigLineLen - instrLabelW) / 2,
+    y: sigY - 28,
+    size: 8, font: regular, color: C.subtle,
   });
 
-  // Right signature (platform)
-  const rightX = width / 2 + 40;
-  page.drawLine({
-    start: { x: rightX, y: sigY },
-    end: { x: rightX + sigLineWidth, y: sigY },
-    thickness: 1, color: accent, opacity: 0.6,
-  });
+  // Platform
+  page.drawLine({ start: { x: rightSigX, y: sigY }, end: { x: rightSigX + sigLineLen, y: sigY }, thickness: 1, color: C.orange, opacity: 0.5 });
   const platText = "CoachNest";
-  const platW = helvetica.widthOfTextAtSize(platText, 10);
+  const platW    = bold.widthOfTextAtSize(platText, 11);
   page.drawText(platText, {
-    x: rightX + (sigLineWidth - platW) / 2,
+    x: rightSigX + (sigLineLen - platW) / 2,
     y: sigY - 16,
-    size: 10, font: helvetica, color: lightPurple,
+    size: 11, font: bold, color: C.orange,
   });
-  const platLabel = "PLATFORM";
-  const platLabelW = helvetica.widthOfTextAtSize(platLabel, 9);
+  const platLabel  = "PLATFORM";
+  const platLabelW = regular.widthOfTextAtSize(platLabel, 8);
   page.drawText(platLabel, {
-    x: rightX + (sigLineWidth - platLabelW) / 2,
-    y: sigY - 30,
-    size: 9, font: helvetica, color: lightPurple,
+    x: rightSigX + (sigLineLen - platLabelW) / 2,
+    y: sigY - 28,
+    size: 8, font: regular, color: C.subtle,
   });
 
-  // ── Certificate ID ──
+  // ── 14. Date + Certificate ID ─────────────────────────────────────────────
+  const formatted = new Intl.DateTimeFormat("en-IN", {
+    day: "numeric", month: "long", year: "numeric",
+  }).format(data.issuedAt);
+
+  const dateText = `Issued on ${formatted}`;
+  drawCentered(page, dateText, 56, 9, regular, C.subtle, W);
+
   const certIdText = `Certificate ID: ${data.certificateId}`;
-  const certIdSize = 9;
-  const certIdWidth = helvetica.widthOfTextAtSize(certIdText, certIdSize);
-  page.drawText(certIdText, {
-    x: (width - certIdWidth) / 2,
-    y: 50,
-    size: certIdSize,
-    font: helvetica,
-    color: accent,
+  drawCentered(page, certIdText, 44, 8, regular, C.subtle, W);
+
+  // ── 15. Bottom orange accent bar ──────────────────────────────────────────
+  page.drawRectangle({
+    x: bm, y: bm,
+    width: W - bm * 2,
+    height: 4,
+    color: C.orange,
+    opacity: 0.6,
+  });
+
+  // ── 16. Subtle background watermark text ─────────────────────────────────
+  const wmText = "COACHNEST";
+  const wmSize = 110;
+  const wmW    = bold.widthOfTextAtSize(wmText, wmSize);
+  page.drawText(wmText, {
+    x: (W - wmW) / 2, y: H / 2 - wmSize / 2,
+    size: wmSize, font: bold,
+    color: C.orange, opacity: 0.025,
   });
 
   const pdfBytes = await doc.save();
