@@ -116,20 +116,20 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   if (lines[lines.length - 1] === "") lines.pop();
 
   return (
-    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-5">
+    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-4 sm:my-5">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-2 bg-white/[0.03] border-b border-white/[0.06]">
-        <div className="flex items-center gap-2">
-          <span className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-          <span className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
-          <span className="ml-2 text-[11px] font-mono font-medium text-white/30 uppercase tracking-wider">
+      <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-white/[0.03] border-b border-white/[0.06]">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-red-500/70" />
+          <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-yellow-500/70" />
+          <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-green-500/70" />
+          <span className="ml-1.5 sm:ml-2 text-[10px] sm:text-[11px] font-mono font-medium text-white/30 uppercase tracking-wider">
             {lang || "code"}
           </span>
         </div>
         <button
           onClick={copy}
-          className="flex items-center gap-1.5 text-[11px] text-white/30 hover:text-white/70 px-2.5 py-1 rounded-md hover:bg-white/[0.06] transition-colors"
+          className="flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-[11px] text-white/30 hover:text-white/70 px-2 sm:px-2.5 py-1 rounded-md hover:bg-white/[0.06] transition-colors"
         >
           {copied
             ? <><Check className="w-3 h-3 text-emerald-400" /><span className="text-emerald-400">Copied</span></>
@@ -138,7 +138,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
       </div>
       {/* Lines */}
       <div className="overflow-x-auto">
-        <pre className="p-4 text-[13px] leading-relaxed font-mono">
+        <pre className="p-3 sm:p-4 text-[12px] sm:text-[13px] leading-relaxed font-mono">
           {lines.map((line, i) => (
             <div key={i} className="flex">
               <span className="select-none text-white/[0.15] text-right w-8 mr-4 flex-shrink-0 text-xs leading-relaxed">
@@ -345,18 +345,18 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
 
     // ── Headings ────────────────────────────────────────────────────────────────
     h1: ({ children }) => (
-      <h1 className={cn("text-2xl font-bold text-foreground mt-8 mb-4 flex items-center gap-3 first:mt-0", compact && "text-xl mt-5 mb-2")}>
-        <span className="text-orange-400 font-black text-lg select-none">#</span>
+      <h1 className={cn("text-xl sm:text-2xl font-bold text-foreground mt-6 sm:mt-8 mb-3 sm:mb-4 flex items-center gap-2.5 sm:gap-3 first:mt-0", compact && "text-lg sm:text-xl mt-4 sm:mt-5 mb-2")}>
+        <span className="text-orange-400 font-black text-base sm:text-lg select-none">#</span>
         {children}
       </h1>
     ),
     h2: ({ children }) => (
-      <h2 className={cn("text-[1.15rem] font-bold text-foreground mt-7 mb-3 border-l-[3px] border-orange-400/50 pl-3 first:mt-0", compact && "text-base mt-4 mb-2")}>
+      <h2 className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-orange-400/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className={cn("text-base font-semibold text-foreground/90 mt-5 mb-2 first:mt-0", compact && "mt-3 mb-1.5")}>
+      <h3 className={cn("text-sm sm:text-base font-semibold text-foreground/90 mt-4 sm:mt-5 mb-1.5 sm:mb-2 first:mt-0", compact && "mt-2.5 sm:mt-3 mb-1 sm:mb-1.5")}>
         {children}
       </h3>
     ),
@@ -479,8 +479,8 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     thead:  ({ children })  => <thead className="bg-secondary/60 border-b border-border">{children}</thead>,
     tbody:  ({ children })  => <tbody className="divide-y divide-border/40">{children}</tbody>,
     tr:     ({ children })  => <tr className="hover:bg-secondary/30 transition-colors">{children}</tr>,
-    th:     ({ children })  => <th className="px-4 py-3 text-left text-xs font-bold text-foreground uppercase tracking-wider whitespace-nowrap">{children}</th>,
-    td:     ({ children })  => <td className="px-4 py-3 text-sm text-muted-foreground align-top">{children}</td>,
+    th:     ({ children })  => <th className="px-3 sm:px-4 py-2 sm:py-3 text-left text-[11px] sm:text-xs font-bold text-foreground uppercase tracking-wider whitespace-nowrap">{children}</th>,
+    td:     ({ children })  => <td className="px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-muted-foreground align-top">{children}</td>,
 
     // ── Inline ──────────────────────────────────────────────────────────────────
     strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,

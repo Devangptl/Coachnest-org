@@ -129,16 +129,16 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-6 sm:py-10">
+    <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-10">
       {/* ── Lesson header ── */}
-      <div className="mb-6">
-        <div className="flex items-center gap-3 mb-3">
-          <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center border flex-shrink-0", config.bg, config.border)}>
-            <TypeIcon className={cn("w-5 h-5", config.color)} />
+      <div className="mb-4 sm:mb-6">
+        <div className="flex items-start gap-2.5 sm:gap-3 mb-3">
+          <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center border flex-shrink-0 mt-0.5", config.bg, config.border)}>
+            <TypeIcon className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 flex-wrap mb-1">
-              <span className="text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1">
+              <span className="text-[10px] sm:text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">
                 Lesson {lessonIndex + 1} of {totalLessons}
               </span>
               <span className={cn("text-[10px] font-medium px-1.5 py-0.5 rounded-full border", config.color, config.bg, config.border)}>
@@ -156,38 +156,39 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                 </span>
               )}
             </div>
-            <h1 className="text-xl sm:text-2xl font-bold text-foreground leading-tight">{lesson.title}</h1>
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground leading-snug">{lesson.title}</h1>
           </div>
         </div>
 
         {/* Action bar — enrolled only */}
         {isEnrolled && (
-          <div className="flex items-center gap-2 mt-4 pt-4 border-t border-border">
+          <div className="flex items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
             {lesson.type === "TEXT" && lesson.content && (
               <button
                 onClick={() => setShowAudioPlayer((v) => !v)}
                 className={cn(
-                  "flex items-center gap-1.5 text-xs px-3 py-2 rounded-md border transition-all font-medium",
+                  "flex items-center gap-1.5 text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all font-medium",
                   showAudioPlayer
                     ? "bg-blue-500/20 border-blue-400/30 text-blue-400"
                     : "bg-secondary border-border text-muted-foreground hover:text-foreground"
                 )}
               >
-                <Headphones className="w-4 h-4" />
-                {showAudioPlayer ? "Hide Audio" : "Listen"}
+                <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden xs:inline">{showAudioPlayer ? "Hide Audio" : "Listen"}</span>
+                <span className="xs:hidden">{showAudioPlayer ? "Hide" : "Listen"}</span>
               </button>
             )}
             <button
               onClick={handleToggle}
               disabled={marking}
               className={cn(
-                "flex items-center gap-2 text-xs px-4 py-2 rounded-md border transition-all font-semibold ml-auto",
+                "flex items-center gap-1.5 sm:gap-2 text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-md border transition-all font-semibold ml-auto",
                 done
                   ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
                   : "bg-secondary border-border text-muted-foreground hover:text-foreground"
               )}
             >
-              {done ? <CheckCircle2 className="w-4 h-4" /> : <Circle className="w-4 h-4" />}
+              {done ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
               {done ? "Completed" : "Mark Complete"}
             </button>
           </div>
@@ -203,7 +204,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 10 }}
             transition={{ duration: 0.18 }}
-            className="mb-6"
+            className="mb-4 sm:mb-6"
           >
             <LessonAudioPlayer text={lesson.content} lessonTitle={lesson.title} onClose={() => setShowAudioPlayer(false)} />
           </motion.div>
@@ -213,7 +214,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
       {/* ── Content body ── */}
       <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
         {lesson.type === "QUIZ" ? (
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             <QuizLoader
               lessonId={lesson.id}
               onComplete={() => { if (!done) markComplete(lesson.id, true); }}
@@ -230,13 +231,13 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             />
           </div>
         ) : lesson.content ? (
-          <div className="px-6 sm:px-10 py-8">
+          <div className="px-4 sm:px-8 lg:px-10 py-5 sm:py-8">
             <TextHighlighter lessonId={lesson.id} isEnrolled={isEnrolled}>
               <MarkdownRenderer content={lesson.content} />
             </TextHighlighter>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-20 px-6 text-center">
+          <div className="flex flex-col items-center justify-center py-16 sm:py-20 px-6 text-center">
             <FileText className="w-12 h-12 text-muted-foreground/20 mb-4" />
             <p className="text-muted-foreground/60">No content added yet.</p>
           </div>
@@ -244,26 +245,26 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
       </div>
 
       {/* ── Prev / Next ── */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 mt-8 pt-6 border-t border-border">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 mt-5 sm:mt-8 pt-4 sm:pt-6 border-t border-border">
         {prev ? (
           <Link
             href={`/courses/${courseId}/lessons/${prev.id}`}
-            className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-all group px-4 py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border"
+            className="flex items-center gap-2.5 sm:gap-3 text-muted-foreground hover:text-foreground transition-all group px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border"
           >
-            <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             </div>
-            <div className="text-left min-w-0">
+            <div className="text-left min-w-0 flex-1">
               <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Previous</p>
-              <p className="text-sm font-semibold truncate max-w-[180px]">{prev.title}</p>
+              <p className="text-sm font-semibold truncate">{prev.title}</p>
             </div>
           </Link>
         ) : (
           <Link
             href={`/courses/${courseId}`}
-            className="flex items-center gap-3 text-muted-foreground hover:text-foreground transition-all group px-4 py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border"
+            className="flex items-center gap-2.5 sm:gap-3 text-muted-foreground hover:text-foreground transition-all group px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border"
           >
-            <div className="w-9 h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
             </div>
             <div className="text-left">
@@ -276,19 +277,19 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         {next ? (
           <Link
             href={`/courses/${courseId}/lessons/${next.id}`}
-            className="flex items-center justify-end gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-4 py-3 rounded-xl transition-all hover:from-orange-600/25 hover:to-orange-500/20"
+            className="flex items-center justify-end gap-2.5 sm:gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all hover:from-orange-600/25 hover:to-orange-500/20"
           >
             <div className="text-right min-w-0 flex-1">
               <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Next</p>
-              <p className="text-sm font-semibold truncate max-w-[180px]">{next.title}</p>
+              <p className="text-sm font-semibold truncate">{next.title}</p>
             </div>
-            <div className="w-9 h-9 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-orange-500/15 flex items-center justify-center flex-shrink-0">
               <ChevronRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
             </div>
           </Link>
         ) : (
-          <div className="flex items-center justify-center gap-2.5 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-5 py-3 rounded-xl text-sm">
-            <Sparkles className="w-5 h-5" />
+          <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-4 py-2.5 sm:py-3 rounded-xl text-sm">
+            <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             You&apos;ve reached the end!
           </div>
         )}
@@ -300,28 +301,32 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.35, delay: 0.15 }}
-          className="mt-6 p-5 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
+          className="mt-4 sm:mt-6 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
         >
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent"
             animate={{ x: ["-100%", "200%"] }}
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
-          <div className="relative flex items-center gap-4">
-            <div className="w-12 h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
-              <Award className="w-6 h-6 text-amber-400" />
+          <div className="relative flex items-center gap-3 sm:gap-4">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+              <Award className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
             </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-foreground font-bold text-sm">Course Completed!</h3>
-              <p className="text-muted-foreground/70 text-xs mt-0.5">All lessons done. Claim your certificate!</p>
+              <p className="text-muted-foreground/70 text-xs mt-0.5 hidden sm:block">All lessons done. Claim your certificate!</p>
+              <p className="text-muted-foreground/70 text-xs mt-0.5 sm:hidden">Claim your certificate!</p>
             </div>
             <button
               onClick={downloadCertificate}
               disabled={downloadingCert}
-              className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-5 py-2.5 rounded-xl text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
+              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
             >
-              {downloadingCert ? <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" /> : <Download className="w-4 h-4" />}
-              {downloadingCert ? "Generating…" : "Get Certificate"}
+              {downloadingCert
+                ? <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+                : <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+              <span className="hidden sm:inline">{downloadingCert ? "Generating…" : "Get Certificate"}</span>
+              <span className="sm:hidden">{downloadingCert ? "…" : "Certificate"}</span>
             </button>
           </div>
         </motion.div>
