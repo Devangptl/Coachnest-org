@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { sendSubscriptionEmail } from "@/lib/email";
 
 // ─── Price ID map (mirrors subscription.service.ts) ──────────────────────────
 const PRICE_IDS: Record<string, Record<string, string | undefined>> = {
@@ -180,6 +181,7 @@ async function upsertSubscription(
   });
 
   const planLabel = plan.charAt(0) + plan.slice(1).toLowerCase();
+
   // Deduplicate: skip if a PURCHASE notification was sent in the last 5 minutes
   const recent = await prisma.notification.findFirst({
     where:   { userId, type: "PURCHASE", link: "/courses" },
@@ -199,5 +201,14 @@ async function upsertSubscription(
         link:  "/courses",
       },
     });
+
+    // Send subscription confirmation email (fire-and-forget)
+    const user = await prisma.user.findUnique({
+      where:  { id: userId },
+      select: { email: true, name: true },
+    });
+    if (user) {
+      sendSubscriptionEmail(user.email, user.name, plan, billing).catch(console.error);
+    }
   }
 }

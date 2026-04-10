@@ -14,6 +14,11 @@
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import type Stripe from "stripe";
+import {
+  sendSubscriptionCancelledEmail,
+  sendSubscriptionResumedEmail,
+  sendPaymentFailedEmail,
+} from "@/lib/email";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -306,6 +311,16 @@ export async function cancelSubscription(userId: string) {
     },
   });
 
+  // Fire-and-forget cancellation email
+  prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } })
+    .then((u) => {
+      if (u && dbSub.plan) {
+        sendSubscriptionCancelledEmail(u.email, u.name, dbSub.plan, cancelEndDate)
+          .catch(console.error);
+      }
+    })
+    .catch(console.error);
+
   return { success: true, subscription: dbSub };
 }
 
@@ -335,6 +350,15 @@ export async function resumeSubscription(userId: string) {
       endDate,
     },
   });
+
+  // Fire-and-forget resume email
+  prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } })
+    .then((u) => {
+      if (u && dbSub.plan) {
+        sendSubscriptionResumedEmail(u.email, u.name, dbSub.plan).catch(console.error);
+      }
+    })
+    .catch(console.error);
 
   return { success: true, subscription: dbSub };
 }
@@ -537,4 +561,13 @@ export async function handleInvoicePaymentFailed(event: Stripe.Event) {
       link:   "/dashboard/subscription",
     },
   });
+
+  // Fire-and-forget payment failed email
+  const userRecord = await prisma.user.findUnique({
+    where:  { id: user.id },
+    select: { email: true, name: true },
+  }).catch(() => null);
+  if (userRecord) {
+    sendPaymentFailedEmail(userRecord.email, userRecord.name).catch(console.error);
+  }
 }

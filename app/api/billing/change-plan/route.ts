@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
+import { sendPlanChangeEmail } from "@/lib/email";
 
 const PRICE_IDS: Record<string, Record<string, string | undefined>> = {
   BASIC:      { monthly: process.env.STRIPE_PRICE_BASIC_MONTHLY,      yearly: process.env.STRIPE_PRICE_BASIC_YEARLY      },
@@ -152,6 +153,16 @@ export async function POST(req: NextRequest) {
         cancelledAt: null,
       },
     });
+
+    // Fire-and-forget plan change email
+    const user = await prisma.user.findUnique({
+      where:  { id: session.userId },
+      select: { email: true, name: true },
+    });
+    if (user) {
+      sendPlanChangeEmail(user.email, user.name, dbSub.plan ?? "FREE", planUpper, billing)
+        .catch(console.error);
+    }
 
     return NextResponse.json({ success: true, plan: planUpper });
   } catch (err: unknown) {

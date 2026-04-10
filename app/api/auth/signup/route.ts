@@ -7,6 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -85,6 +86,9 @@ export async function POST(req: NextRequest) {
         },
       });
     }
+
+    // Fire-and-forget welcome email
+    sendWelcomeEmail(email, name).catch(console.error);
 
     return NextResponse.json(
       { message: "Account created.", userId: user.id },
