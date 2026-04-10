@@ -4,7 +4,7 @@
  */
 export default function LessonLoading() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-8 py-6 sm:py-10 animate-pulse">
+    <div className="max-w-4xl mx-auto px-3 sm:px-8 py-6 sm:py-10 animate-pulse">
       {/* Lesson header */}
       <div className="mb-6">
         <div className="flex items-center gap-3 mb-3">

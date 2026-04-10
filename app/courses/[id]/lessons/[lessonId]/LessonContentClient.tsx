@@ -129,7 +129,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 lg:py-10">
+    <div className="max-w-4xl mx-auto px-0 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
       {/* ── Lesson header ── */}
       <div className="mb-4 sm:mb-6">
         <div className="flex items-start gap-2.5 sm:gap-3 mb-3">
@@ -231,7 +231,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             />
           </div>
         ) : lesson.content ? (
-          <div className="px-4 sm:px-8 lg:px-10 py-5 sm:py-8">
+          <div className="px-3 sm:px-6 lg:px-8 py-5 sm:py-8">
             <TextHighlighter lessonId={lesson.id} isEnrolled={isEnrolled}>
               <MarkdownRenderer content={lesson.content} />
             </TextHighlighter>
