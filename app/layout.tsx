@@ -8,6 +8,8 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import NavbarWrapper from "@/components/NavbarWrapper";
 import MainWrapper from "@/components/MainWrapper";
+import Footer from "@/components/Footer";
+import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
@@ -61,6 +63,8 @@ export default function RootLayout({
           <NavbarWrapper><Navbar /></NavbarWrapper>
 
           <MainWrapper>{children}</MainWrapper>
+
+          <FooterWrapper><Footer /></FooterWrapper>
 
           {/* Global toast notifications */}
           <ToasterProvider />
