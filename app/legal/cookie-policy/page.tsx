@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Cookie } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Cookie Policy — CoachNest",
@@ -238,7 +237,6 @@ export default function CookiePolicyPage() {
 
         </div>
       </div>
-      <Footer />
     </>
   );
 }

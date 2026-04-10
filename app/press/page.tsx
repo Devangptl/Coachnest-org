@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Download, ExternalLink, Mail, ArrowRight } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Press & Media — CoachNest",
@@ -170,7 +169,6 @@ export default function PressPage() {
 
         </div>
       </div>
-      <Footer />
     </>
   );
 }

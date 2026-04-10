@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase, MapPin, Clock, ArrowRight, Zap, Heart, Coffee } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Careers — CoachNest",
@@ -145,7 +144,6 @@ export default function CareersPage() {
 
         </div>
       </div>
-      <Footer />
     </>
   );
 }

@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Users, Target, Lightbulb, Globe, ArrowRight } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "About Us — CoachNest",
@@ -145,7 +144,6 @@ export default function AboutPage() {
 
         </div>
       </div>
-      <Footer />
     </>
   );
 }

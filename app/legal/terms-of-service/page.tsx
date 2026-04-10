@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, FileText } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Terms of Service — CoachNest",
@@ -210,7 +209,6 @@ export default function TermsOfServicePage() {
 
         </div>
       </div>
-      <Footer />
     </>
   );
 }

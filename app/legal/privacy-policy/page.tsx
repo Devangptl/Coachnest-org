@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight, Shield } from "lucide-react";
-import Footer from "@/components/Footer";
 
 export const metadata: Metadata = {
   title: "Privacy Policy — CoachNest",
@@ -201,7 +200,6 @@ export default function PrivacyPolicyPage() {
 
         </div>
       </div>
-      <Footer />
     </>
   );
 }
