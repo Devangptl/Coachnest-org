@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized." }, { status: 401 });
     }
 
-    const { lessonId, completed } = await req.json();
+    const { lessonId, completed, watchedSecs } = await req.json();
     if (!lessonId) {
       return NextResponse.json({ error: "lessonId is required." }, { status: 400 });
     }
@@ -25,19 +25,26 @@ export async function POST(req: NextRequest) {
     });
     const wasAlreadyCompleted = existing?.completed ?? false;
 
+    // Only update watchedSecs if it's a positive number and greater than current
+    const watchedSecsUpdate = typeof watchedSecs === "number" && watchedSecs > 0
+      ? { watchedSecs: Math.round(watchedSecs) }
+      : {};
+
     const progress = await prisma.lessonProgress.upsert({
       where: {
         userId_lessonId: { userId: session.userId, lessonId },
       },
       update: {
-        completed: Boolean(completed),
+        completed:   Boolean(completed),
         completedAt: completed ? new Date() : null,
+        ...watchedSecsUpdate,
       },
       create: {
-        userId: session.userId,
+        userId:      session.userId,
         lessonId,
-        completed: Boolean(completed),
+        completed:   Boolean(completed),
         completedAt: completed ? new Date() : null,
+        ...watchedSecsUpdate,
       },
     });
 
