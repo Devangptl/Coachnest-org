@@ -105,7 +105,7 @@ export async function POST(req: NextRequest) {
         const startTs = (item as any)?.current_period_start ?? newSub.created;
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const endTs   = (item as any)?.current_period_end   ?? (startTs + 30 * 24 * 60 * 60);
-        await prisma.subscription.update({
+        const dbSub2  = await prisma.subscription.update({
           where: { userId: session.userId },
           data:  {
             plan:        planUpper as "BASIC" | "PRO" | "ENTERPRISE",
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
             cancelledAt: null,
           },
         });
-        return NextResponse.json({ success: true, plan: planUpper });
+        return NextResponse.json({ success: true, plan: planUpper, subscription: dbSub2 });
       }
 
       // 3DS / further action required
@@ -148,7 +148,7 @@ export async function POST(req: NextRequest) {
     const startTs = item?.current_period_start ?? (updated as any).current_period_start ?? updated.created;
     const endTs   = item?.current_period_end   ?? (updated as any).current_period_end   ?? (startTs + 30 * 24 * 60 * 60);
 
-    await prisma.subscription.update({
+    const updatedSub = await prisma.subscription.update({
       where: { userId: session.userId },
       data:  {
         plan:        planUpper as "BASIC" | "PRO" | "ENTERPRISE",
@@ -169,7 +169,7 @@ export async function POST(req: NextRequest) {
         .catch(console.error);
     }
 
-    return NextResponse.json({ success: true, plan: planUpper });
+    return NextResponse.json({ success: true, plan: planUpper, subscription: updatedSub });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 400 });

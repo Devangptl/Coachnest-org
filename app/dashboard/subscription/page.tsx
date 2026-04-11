@@ -201,8 +201,8 @@ function SubscriptionPageContent() {
 
   const loadStatus = useCallback(async (): Promise<Subscription | null> => {
     const [statusRes, pmRes] = await Promise.all([
-      fetch("/api/subscriptions/status"),
-      fetch("/api/billing/payment-methods"),
+      fetch("/api/subscriptions/status", { cache: "no-store" }),
+      fetch("/api/billing/payment-methods", { cache: "no-store" }),
     ]);
     const [statusData, pmData] = await Promise.all([statusRes.json(), pmRes.json()]);
     const subscription: Subscription | null = statusData.subscription ?? null;
@@ -264,9 +264,12 @@ function SubscriptionPageContent() {
         await fetch("/api/subscriptions/sync", {
           method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}),
         });
+        await loadStatus();
+      } else {
+        if (data.subscription) setSub(data.subscription);
+        loadStatus().catch(console.error);
       }
 
-      await loadStatus();
       toast.success(`${planId.charAt(0) + planId.slice(1).toLowerCase()} plan activated!`);
     } catch (err: unknown) {
       toast.error(err instanceof Error ? err.message : "Subscription failed");
@@ -294,9 +297,15 @@ function SubscriptionPageContent() {
         await fetch("/api/subscriptions/sync", {
           method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}),
         });
+        await loadStatus();
+      } else {
+        // Apply the returned subscription immediately so the UI reflects the new plan
+        // without waiting for a separate status re-fetch (avoids stale read race condition)
+        if (data.subscription) setSub(data.subscription);
+        // Re-fetch plan access limits (enrollment count, BASIC cap etc.) in background
+        loadStatus().catch(console.error);
       }
 
-      await loadStatus();
       const label = planId.charAt(0) + planId.slice(1).toLowerCase();
       toast.success(`Switched to ${label} plan!`);
     } catch (err: unknown) {

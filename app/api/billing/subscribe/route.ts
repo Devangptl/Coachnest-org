@@ -130,7 +130,8 @@ export async function POST(req: NextRequest) {
     // ── Payment succeeded / trialing ──────────────────────────────────────────
     if (sub.status === "active" || sub.status === "trialing") {
       await upsertSubscription(user.id, planUpper, billing, sub);
-      return NextResponse.json({ success: true, plan: planUpper });
+      const savedSub = await prisma.subscription.findUnique({ where: { userId: user.id } });
+      return NextResponse.json({ success: true, plan: planUpper, subscription: savedSub });
     }
 
     // ── Incomplete — payment intent needs confirmation ────────────────────────
