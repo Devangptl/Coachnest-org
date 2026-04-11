@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CheckCircle2, Circle, Lock, PlayCircle, FileText, HelpCircle,
+  CheckCircle2, Lock, PlayCircle, FileText, HelpCircle,
   ChevronLeft, ChevronRight, Clock, Sparkles, Eye,
   Award, Download, Headphones, ArrowLeft,
 } from "lucide-react";
@@ -48,7 +48,6 @@ const typeConfig = {
 export default function LessonContentClient({ courseId, lesson, lessonIndex, totalLessons, prev, next }: Props) {
   const router = useRouter();
   const { isEnrolled, loading, isCompleted, markComplete } = useLessonContext();
-  const [marking,          setMarking]          = useState(false);
   const [showAudioPlayer,  setShowAudioPlayer]  = useState(false);
   const [downloadingCert,  setDownloadingCert]  = useState(false);
 
@@ -74,17 +73,6 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
     if (!isEnrolled || done) return;
     markComplete(lesson.id, true);
   }, [isEnrolled, done, lesson.id, markComplete]);
-
-  // ── Manual toggle ────────────────────────────────────────────────────────
-  async function handleToggle() {
-    if (!isEnrolled || marking) return;
-    setMarking(true);
-    try {
-      await markComplete(lesson.id, !done);
-    } finally {
-      setMarking(false);
-    }
-  }
 
   // ── Certificate download ─────────────────────────────────────────────────
   async function downloadCertificate() {
@@ -170,7 +158,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
           </div>
         </div>
 
-        {/* Action bar — enrolled only, hidden for QUIZ (quiz auto-marks on pass) */}
+        {/* Action bar — enrolled only, hidden for QUIZ */}
         {isEnrolled && lesson.type !== "QUIZ" && (
           <div className="flex items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
             {lesson.type === "TEXT" && lesson.content && (
@@ -189,39 +177,27 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
               </button>
             )}
 
-            {/* Reading progress mini-display (TEXT only, before completion) */}
-            {lesson.type === "TEXT" && !done && (
-              <div className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
-                <span className={cn("flex items-center gap-1", scrollDone && "text-green-400/70")}>
-                  <Eye className="w-3 h-3" />
-                  {scrollPct}% read
+            {/* Status / progress hint — right-aligned */}
+            <div className="ml-auto flex items-center gap-2">
+              {done ? (
+                <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 bg-emerald-500/15 px-3 py-1.5 rounded-md border border-emerald-400/20">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> Completed
                 </span>
-                <span className={cn("flex items-center gap-1", timeDone && "text-green-400/70")}>
-                  <Clock className="w-3 h-3" />
-                  {activeSecs}s / {TIME_THRESHOLD}s
+              ) : lesson.type === "TEXT" ? (
+                <span className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
+                  <span className={cn("flex items-center gap-1", scrollDone && "text-green-400/70")}>
+                    <Eye className="w-3 h-3" /> {scrollPct}% read
+                  </span>
+                  <span className={cn("flex items-center gap-1", timeDone && "text-green-400/70")}>
+                    <Clock className="w-3 h-3" /> {activeSecs}s / {TIME_THRESHOLD}s
+                  </span>
                 </span>
-              </div>
-            )}
-
-            {lesson.type === "VIDEO" && !done && (
-              <span className="hidden sm:flex items-center gap-1 text-[11px] text-muted-foreground/50">
-                <Eye className="w-3 h-3" /> Auto-completes at 80% watched
-              </span>
-            )}
-
-            <button
-              onClick={handleToggle}
-              disabled={marking}
-              className={cn(
-                "flex items-center gap-1.5 sm:gap-2 text-xs px-3 sm:px-4 py-1.5 sm:py-2 rounded-md border transition-all font-semibold ml-auto",
-                done
-                  ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                  : "bg-secondary border-border text-muted-foreground hover:text-foreground"
+              ) : (
+                <span className="hidden sm:flex items-center gap-1 text-[11px] text-muted-foreground/50">
+                  <Eye className="w-3 h-3" /> Auto-completes at 80% watched
+                </span>
               )}
-            >
-              {done ? <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" /> : <Circle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
-              {done ? "Completed" : "Mark Complete"}
-            </button>
+            </div>
           </div>
         )}
       </div>
