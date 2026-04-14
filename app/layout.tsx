@@ -3,7 +3,6 @@
  * Provides the global background, font, Navbar, and toast notifications.
  */
 import type { Metadata } from "next";
-import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import NavbarWrapper from "@/components/NavbarWrapper";
@@ -12,18 +11,6 @@ import Footer from "@/components/Footer";
 import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: "CoachNest — Modern Learning Platform",
@@ -51,15 +38,8 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
+      <body className="antialiased">
         <ThemeProvider>
-          {/* Subtle background glow */}
-          {/* <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
-            <div className="absolute -top-40 -left-40 w-96 h-96 bg-orange-600/[.07] rounded-full blur-3xl" />
-            <div className="absolute top-1/3 -right-40 w-80 h-80 bg-orange-500/[.04] rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 left-1/3 w-96 h-96 bg-amber-600/[.04] rounded-full blur-3xl" />
-          </div> */}
-
           <NavbarWrapper><Navbar /></NavbarWrapper>
 
           <MainWrapper>{children}</MainWrapper>

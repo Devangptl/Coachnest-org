@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       }),
       prisma.course.findUnique({
         where:  { id: courseId },
-        select: { id: true, title: true, price: true, discountPrice: true, isFree: true, instructorRevenuePercent: true },
+        select: { id: true, title: true, price: true, discountPrice: true, isFree: true, instructorRevenuePercent: true, createdById: true },
       }),
     ]);
 
