@@ -148,8 +148,14 @@ model User {
   hasSeenTour          Boolean  @default(false)
   hasSeenCommunityTour Boolean  @default(false)
 
+  // Onboarding
+  hasCompletedOnboarding Boolean @default(false)
+
   // Feature add-on purchases
   featurePurchases      FeaturePurchase[]
+
+  // Professions
+  professions           UserProfession[]
 
   // Community
   forumThreads          ForumThread[]
@@ -827,4 +833,39 @@ model WaitlistEntry {
 
   @@index([createdAt])
   @@map("waitlist_entries")
+}
+
+// ─── Profession System ────────────────────────────────────────────────────────
+
+model Profession {
+  id             String   @id @default(cuid())
+  slug           String   @unique
+  name           String
+  description    String
+  icon           String   // emoji or lucide icon name
+  color          String   @default("orange")
+  courseKeywords String[] // category slugs / tag names used for recommendations
+  isDefault      Boolean  @default(true)   // predefined by platform
+  isActive       Boolean  @default(true)   // admin can hide without deleting
+  order          Int      @default(0)      // display sort order
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  users UserProfession[]
+
+  @@map("professions")
+}
+
+model UserProfession {
+  id           String   @id @default(cuid())
+  userId       String
+  professionId String?  // null for custom profession entries
+  customName   String?  // non-null when professionId is null (custom)
+  createdAt    DateTime @default(now())
+
+  user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  profession Profession? @relation(fields: [professionId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, professionId]) // prevent duplicate standard professions per user
+  @@map("user_professions")
 }

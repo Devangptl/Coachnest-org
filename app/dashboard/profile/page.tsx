@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import ProfileForm from "./ProfileForm";
 import PasswordForm from "./PasswordForm";
 import AccountInfo from "./AccountInfo";
+import ProfessionForm from "./ProfessionForm";
 
 async function getProfile(userId: string) {
   return prisma.user.findUnique({
@@ -63,6 +64,8 @@ export default async function ProfilePage() {
             avatar: user.avatar ?? "",
           }}
         />
+
+        <ProfessionForm />
 
         <PasswordForm />
       </div>

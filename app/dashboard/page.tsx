@@ -13,6 +13,8 @@ import { calcProgress } from "@/lib/utils";
 import { getLevelForXp, xpToNextLevel } from "@/lib/badges";
 import XpProgressBar from "@/components/XpProgressBar";
 import StreakCounter from "@/components/StreakCounter";
+import RecommendedCourses from "@/components/RecommendedCourses";
+import OnboardingBanner from "@/components/OnboardingBanner";
 
 async function getDashboardData(userId: string) {
   // Fetch all enrollments with lesson data
@@ -89,11 +91,16 @@ export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const [{ enrollments, totalCompleted }, gameData, featureAccess] = await Promise.all([
-    getDashboardData(session.userId),
-    getGameData(session.userId),
-    getFeatureAccess(session.userId),
-  ]);
+  const [{ enrollments, totalCompleted }, gameData, featureAccess, onboardingState] =
+    await Promise.all([
+      getDashboardData(session.userId),
+      getGameData(session.userId),
+      getFeatureAccess(session.userId),
+      prisma.user.findUnique({
+        where:  { id: session.userId },
+        select: { hasCompletedOnboarding: true },
+      }),
+    ]);
 
   const inProgress = enrollments.filter(
     (e) => e.progress > 0 && e.progress < 100
@@ -103,6 +110,9 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      {/* Onboarding banner — shown until professions are set */}
+      {!onboardingState?.hasCompletedOnboarding && <OnboardingBanner />}
+
       {/* Header */}
       <div className="mb-10 animate-fade-in">
         <h1 className="text-2xl sm:text-4xl font-bold text-foreground">
@@ -227,6 +237,9 @@ export default async function DashboardPage() {
         </div>
         <StreakCounter streak={gameData.streak} longestStreak={gameData.longestStreak} />
       </div>
+
+      {/* ─── Recommended Courses ─────────────────────────────────────────── */}
+      <RecommendedCourses />
 
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (

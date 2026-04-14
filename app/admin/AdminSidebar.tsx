@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
-  Menu, X,
+  Menu, X, Briefcase,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,6 +27,7 @@ const adminNav = [
   { label: "Blog Posts",    href: "/admin/blogs",           icon: FileText },
   { label: "Certificates",  href: "/admin/certificates",    icon: Award },
   { label: "Messages",      href: "/admin/messages",        icon: MessageSquare },
+  { label: "Professions",   href: "/admin/professions",     icon: Briefcase     },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

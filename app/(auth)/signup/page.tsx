@@ -87,7 +87,8 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Signup failed."); return; }
-      router.push(role === "INSTRUCTOR" ? "/instructor" : "/dashboard");
+      // Students go through onboarding to select professions; instructors skip it.
+      router.push(role === "INSTRUCTOR" ? "/instructor" : "/onboarding");
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
