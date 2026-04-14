@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
-  Menu, X, Briefcase,
+  Menu, X, Briefcase, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +23,7 @@ const adminNav = [
   { label: "Enrollments",   href: "/admin/enrollments",     icon: GraduationCap },
   { label: "Coupons",       href: "/admin/coupons",         icon: Ticket },
   { label: "Orders",        href: "/admin/orders",          icon: ShoppingCart },
+  { label: "Payouts",       href: "/admin/payouts",         icon: Wallet },
   { label: "Quizzes",       href: "/admin/quizzes",         icon: HelpCircle },
   { label: "Blog Posts",    href: "/admin/blogs",           icon: FileText },
   { label: "Certificates",  href: "/admin/certificates",    icon: Award },

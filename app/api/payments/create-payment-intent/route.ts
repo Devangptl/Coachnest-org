@@ -14,9 +14,10 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { courseId, couponCode } = await req.json() as {
-      courseId:    string;
-      couponCode?: string;
+    const { courseId, couponCode, referralCode } = await req.json() as {
+      courseId:      string;
+      couponCode?:   string;
+      referralCode?: string;
     };
     if (!courseId) return NextResponse.json({ error: "courseId is required" }, { status: 400 });
 
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
       }),
       prisma.course.findUnique({
         where:  { id: courseId },
-        select: { id: true, title: true, price: true, discountPrice: true, isFree: true },
+        select: { id: true, title: true, price: true, discountPrice: true, isFree: true, instructorRevenuePercent: true },
       }),
     ]);
 
@@ -90,16 +91,51 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Resolve dynamic revenue split
+    const basePercent = course.instructorRevenuePercent ?? 70;
+    let saleSource:        "ORGANIC" | "REFERRAL" | "COUPON" | "ADS" = "ORGANIC";
+    let instructorPercent  = basePercent;
+    let referralLinkId: string | null = null;
+
+    if (referralCode) {
+      const link = await prisma.referralLink.findUnique({
+        where:  { code: referralCode },
+        select: { id: true, instructorId: true, courseId: true, isActive: true },
+      });
+      if (link?.isActive && link.instructorId === course.createdById &&
+          (!link.courseId || link.courseId === courseId)) {
+        saleSource        = "REFERRAL";
+        instructorPercent = 90;
+        referralLinkId    = link.id;
+        await prisma.referralLink.update({ where: { id: link.id }, data: { totalClicks: { increment: 1 } } }).catch(() => null);
+      }
+    } else if (couponId) {
+      const couponRecord = await prisma.coupon.findUnique({ where: { id: couponId }, select: { createdById: true, courseId: true } });
+      const isInstructorCoupon =
+        couponRecord?.createdById === course.createdById ||
+        couponRecord?.courseId   === courseId;
+      saleSource        = "COUPON";
+      instructorPercent = isInstructorCoupon ? 85 : basePercent;
+    }
+
+    const instructorRevenue = parseFloat(((finalAmount * instructorPercent) / 100).toFixed(2));
+    const platformRevenue   = parseFloat((finalAmount - instructorRevenue).toFixed(2));
+
     // Create pending order
     const order = await prisma.order.create({
       data: {
-        userId:         session.userId,
+        userId:            session.userId,
         courseId,
-        amount:         finalAmount,
-        currency:       "INR",
-        status:         "PENDING",
+        amount:            finalAmount,
+        currency:          "INR",
+        status:            "PENDING",
         couponId,
-        discountAmount: discountAmt > 0 ? discountAmt : undefined,
+        discountAmount:    discountAmt > 0 ? discountAmt : undefined,
+        instructorRevenue,
+        platformRevenue,
+        saleSource,
+        instructorPercent,
+        referralLinkId,
       },
     });
 

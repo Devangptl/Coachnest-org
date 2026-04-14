@@ -69,6 +69,20 @@ enum NotifType {
   ACTIVITY
 }
 
+enum SaleSource {
+  ORGANIC   // discovered via platform
+  REFERRAL  // student came via instructor's referral link
+  COUPON    // instructor's own coupon used
+  ADS       // platform-paid acquisition
+}
+
+enum PayoutStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  PROCESSED
+}
+
 enum GroupRole {
   MEMBER
   ADMIN
@@ -157,6 +171,11 @@ model User {
   // Professions
   professions           UserProfession[]
 
+  // Revenue sharing
+  instructorWallet  InstructorWallet?
+  payoutRequests    PayoutRequest[]
+  referralLinks     ReferralLink[]
+
   // Community
   forumThreads          ForumThread[]
   forumReplies          ForumReply[]
@@ -238,13 +257,14 @@ model Course {
   organization Organization? @relation(fields: [organizationId], references: [id])
 
   sections     Section[]
-  lessons      Lesson[]
-  enrollments  Enrollment[]
-  reviews      Review[]
-  tags         CourseTag[]
-  orders       Order[]
-  wishlist     Wishlist[]
-  certificates Certificate[]
+  lessons       Lesson[]
+  enrollments   Enrollment[]
+  reviews       Review[]
+  tags          CourseTag[]
+  orders        Order[]
+  wishlist      Wishlist[]
+  certificates  Certificate[]
+  referralLinks ReferralLink[]
 
   @@map("courses")
 }
@@ -417,14 +437,20 @@ model Order {
   // Revenue attribution (populated on PAID status)
   instructorRevenue Decimal?    @db.Decimal(10, 2)
   platformRevenue   Decimal?    @db.Decimal(10, 2)
+  // Dynamic revenue split tracking
+  saleSource        SaleSource  @default(ORGANIC)
+  instructorPercent Decimal?    @db.Decimal(5, 2) // actual % applied (70 | 85 | 90)
+  referralLinkId    String?
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  user            User             @relation(fields: [userId], references: [id])
-  course          Course?          @relation(fields: [courseId], references: [id])
-  coupon          Coupon?          @relation(fields: [couponId], references: [id])
-  feature         PlatformFeature? @relation(fields: [featureId], references: [id])
-  featurePurchase FeaturePurchase?
+  user               User              @relation(fields: [userId], references: [id])
+  course             Course?           @relation(fields: [courseId], references: [id])
+  coupon             Coupon?           @relation(fields: [couponId], references: [id])
+  feature            PlatformFeature?  @relation(fields: [featureId], references: [id])
+  featurePurchase    FeaturePurchase?
+  referralLink       ReferralLink?     @relation(fields: [referralLinkId], references: [id])
+  walletTransactions WalletTransaction[]
 
   @@map("orders")
 }
@@ -472,6 +498,7 @@ model Coupon {
   expiresAt      DateTime?
   courseId       String?
   organizationId String?
+  createdById    String?      // instructor who created this coupon
   createdAt      DateTime     @default(now())
 
   organization Organization? @relation(fields: [organizationId], references: [id])
@@ -868,4 +895,74 @@ model UserProfession {
 
   @@unique([userId, professionId]) // prevent duplicate standard professions per user
   @@map("user_professions")
+}
+
+// ─── Revenue Sharing ──────────────────────────────────────────────────────────
+
+model ReferralLink {
+  id           String   @id @default(cuid())
+  instructorId String
+  code         String   @unique
+  courseId     String?  // null = applies to all instructor's courses
+  label        String?  // human-readable label
+  totalClicks  Int      @default(0)
+  conversions  Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+
+  instructor User    @relation(fields: [instructorId], references: [id], onDelete: Cascade)
+  course     Course? @relation(fields: [courseId], references: [id], onDelete: SetNull)
+  orders     Order[]
+
+  @@map("referral_links")
+}
+
+model InstructorWallet {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  balance        Decimal  @default(0) @db.Decimal(12, 2) // available for payout
+  totalEarned    Decimal  @default(0) @db.Decimal(12, 2)
+  totalWithdrawn Decimal  @default(0) @db.Decimal(12, 2)
+  updatedAt      DateTime @updatedAt
+
+  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions   WalletTransaction[]
+  payoutRequests PayoutRequest[]
+
+  @@map("instructor_wallets")
+}
+
+model WalletTransaction {
+  id          String   @id @default(cuid())
+  walletId    String
+  orderId     String?
+  amount      Decimal  @db.Decimal(12, 2)
+  type        String   // CREDIT | DEBIT | PAYOUT_REQUEST | PAYOUT_PROCESSED
+  description String
+  meta        Json?    // { courseTitle, saleSource, instructorPercent }
+  createdAt   DateTime @default(now())
+
+  wallet InstructorWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  order  Order?           @relation(fields: [orderId], references: [id])
+
+  @@map("wallet_transactions")
+}
+
+model PayoutRequest {
+  id           String       @id @default(cuid())
+  walletId     String
+  instructorId String
+  amount       Decimal      @db.Decimal(12, 2)
+  currency     String       @default("INR")
+  status       PayoutStatus @default(PENDING)
+  bankDetails  Json?        // { accountNumber, ifsc, bankName, accountHolder }
+  notes        String?      @db.Text // instructor notes
+  adminNotes   String?      @db.Text // admin notes on approve/reject
+  requestedAt  DateTime     @default(now())
+  processedAt  DateTime?
+
+  wallet     InstructorWallet @relation(fields: [walletId], references: [id])
+  instructor User             @relation(fields: [instructorId], references: [id])
+
+  @@map("payout_requests")
 }

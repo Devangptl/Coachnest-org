@@ -5,16 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3,
-  PlusCircle, Menu, X,
+  PlusCircle, Menu, X, TrendingUp, Wallet,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { label: "Overview",      href: "/instructor",            icon: LayoutDashboard, exact: true },
-  { label: "My Courses",    href: "/instructor/courses",    icon: BookOpen },
-  { label: "New Course",    href: "/instructor/courses/new",icon: PlusCircle },
-  { label: "My Students",   href: "/instructor/students",   icon: Users },
-  { label: "Analytics",     href: "/instructor/analytics",  icon: BarChart3 },
+  { label: "Overview",      href: "/instructor",              icon: LayoutDashboard, exact: true },
+  { label: "My Courses",    href: "/instructor/courses",      icon: BookOpen },
+  { label: "New Course",    href: "/instructor/courses/new",  icon: PlusCircle },
+  { label: "My Students",   href: "/instructor/students",     icon: Users },
+  { label: "Analytics",     href: "/instructor/analytics",    icon: BarChart3 },
+  { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
+  { label: "Payouts",       href: "/instructor/payouts",      icon: Wallet },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
