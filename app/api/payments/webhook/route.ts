@@ -3,11 +3,16 @@
  * Stripe webhook handler.
  *
  * Handled events:
- *   checkout.session.completed       → one-time course purchase
+ *   checkout.session.completed       → one-time course purchase OR feature add-on purchase
  *   customer.subscription.created    → new subscription activated
  *   customer.subscription.updated    → plan change / cancellation scheduled
  *   customer.subscription.deleted    → subscription expired / fully cancelled
  *   invoice.payment_failed           → notify user of failed renewal
+ *
+ * Routing:
+ *   The session metadata `type` field distinguishes purchase kinds:
+ *     "feature"  → feature add-on purchase (handleFeaturePaymentSuccess via payment.service)
+ *     (default)  → course purchase (handlePaymentSuccess)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";

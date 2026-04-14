@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ClipboardCheck, Plus, FileText, Star, Lock } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Assignment {
@@ -17,7 +17,7 @@ interface Assignment {
 }
 
 export default function PeerReviewPage() {
-  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
+  const { hasCommunityAccess: hasInstructorQA, isLoading: subLoading } = usePurchasedFeatures();
   const [tab, setTab] = useState<"submissions" | "review-queue">("submissions");
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ export default function PeerReviewPage() {
   useEffect(() => { load(); }, [tab]);
 
   function handleLockedClick() {
-    toast("Peer review requires a Pro subscription.", { icon: "🔒" });
+    toast("Community Access required for peer review.", { icon: "🔒" });
   }
 
   async function handleCreate() {
@@ -87,7 +87,7 @@ export default function PeerReviewPage() {
             onClick={handleLockedClick}
             disabled={subLoading}
             className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed flex-shrink-0 opacity-60"
-            title="Requires Pro subscription"
+            title="Requires Community Access add-on"
           >
             <Lock className="w-3.5 h-3.5" /> Submit Work
           </button>

@@ -1,9 +1,13 @@
 /**
  * GET /api/billing
- * Returns the current user's billing details from Stripe:
- *   - invoices (last 24)
- *   - default payment method (card details)
- *   - upcoming invoice amount (if active subscription)
+ *
+ * For STUDENT role:
+ *   Returns purchase history from the platform DB (orders for courses + features).
+ *   Students do not have Stripe subscription invoices.
+ *
+ * For INSTRUCTOR / ADMIN role:
+ *   Returns Stripe billing details: invoices (last 24), default payment method,
+ *   and upcoming invoice amount (if active subscription).
  */
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
@@ -18,6 +22,52 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    // ── STUDENT: return order purchase history from the DB ────────────────────
+    if (session.role === "STUDENT") {
+      const orders = await prisma.order.findMany({
+        where:   { userId: session.userId, status: "PAID" },
+        select: {
+          id:              true,
+          amount:          true,
+          currency:        true,
+          status:          true,
+          createdAt:       true,
+          discountAmount:  true,
+          course:          { select: { id: true, title: true, thumbnail: true } },
+          feature:         { select: { id: true, name: true, slug: true } },
+        },
+        orderBy: { createdAt: "desc" },
+        take:    50,
+      });
+
+      const totalSpent = orders.reduce((sum, o) => sum + Number(o.amount), 0);
+
+      return NextResponse.json({
+        accessModel: "purchase",
+        orders: orders.map((o) => ({
+          id:            o.id,
+          amount:        Number(o.amount),
+          currency:      o.currency,
+          status:        o.status,
+          createdAt:     o.createdAt,
+          discountAmount: o.discountAmount ? Number(o.discountAmount) : null,
+          type:          o.feature ? "feature" : "course",
+          course:        o.course  ?? null,
+          feature:       o.feature ?? null,
+        })),
+        summary: {
+          totalOrders: orders.length,
+          totalSpent,
+          currency: "INR",
+        },
+        // No subscription invoices for students
+        invoices:       [],
+        paymentMethod:  null,
+        upcomingAmount: null,
+      });
+    }
+
+    // ── INSTRUCTOR / ADMIN: return Stripe invoice + payment method info ───────
     const user = await prisma.user.findUnique({
       where:  { id: session.userId },
       select: { stripeCustomerId: true },
@@ -25,6 +75,7 @@ export async function GET() {
 
     if (!user?.stripeCustomerId) {
       return NextResponse.json({
+        accessModel:    "subscription",
         invoices:       [],
         paymentMethod:  null,
         upcomingAmount: null,
@@ -34,7 +85,6 @@ export async function GET() {
     const stripe     = getStripe();
     const customerId = user.stripeCustomerId;
 
-    // Fetch invoices, customer (for default PM), and upcoming invoice in parallel
     const [invoicesRes, customer] = await Promise.all([
       stripe.invoices.list({ customer: customerId, limit: 24, expand: ["data.payment_intent"] }),
       stripe.customers.retrieve(customerId, {
@@ -59,8 +109,7 @@ export async function GET() {
         expYear:  pm.card.exp_year,
       };
     } else {
-      // Fall back to listing saved cards
-      const pms = await stripe.paymentMethods.list({ customer: customerId, type: "card", limit: 1 });
+      const pms  = await stripe.paymentMethods.list({ customer: customerId, type: "card", limit: 1 });
       const card = pms.data[0];
       if (card?.card) {
         paymentMethod = {
@@ -79,13 +128,12 @@ export async function GET() {
     try {
       const upcoming = await stripe.invoices.createPreview({ customer: customerId });
       upcomingAmount = upcoming.amount_due;
-      const nextAttempt = (upcoming as any).next_payment_attempt;
+      const nextAttempt = (upcoming as unknown as { next_payment_attempt?: number }).next_payment_attempt;
       upcomingDate = nextAttempt ? new Date(nextAttempt * 1000).toISOString() : null;
     } catch {
       // No upcoming invoice (cancelled / no active sub)
     }
 
-    // ── Shape invoices ──────────────────────────────────────────────────────
     const invoices = invoicesRes.data.map((inv) => ({
       id:          inv.id,
       number:      inv.number,
@@ -100,7 +148,13 @@ export async function GET() {
       hostedUrl:   inv.hosted_invoice_url,
     }));
 
-    return NextResponse.json({ invoices, paymentMethod, upcomingAmount, upcomingDate });
+    return NextResponse.json({
+      accessModel: "subscription",
+      invoices,
+      paymentMethod,
+      upcomingAmount,
+      upcomingDate,
+    });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 500 });

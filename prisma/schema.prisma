@@ -148,6 +148,9 @@ model User {
   hasSeenTour          Boolean  @default(false)
   hasSeenCommunityTour Boolean  @default(false)
 
+  // Feature add-on purchases
+  featurePurchases      FeaturePurchase[]
+
   // Community
   forumThreads          ForumThread[]
   forumReplies          ForumReply[]
@@ -198,24 +201,27 @@ model CourseTag {
 // ─── Course ───────────────────────────────────────────────────────────────────
 
 model Course {
-  id            String        @id @default(cuid())
-  title         String
-  slug          String        @unique
-  description   String        @db.Text
-  shortDesc     String?
-  thumbnail     String?
-  previewVideo  String?
-  status        ContentStatus @default(DRAFT)
-  price         Decimal?      @db.Decimal(10, 2)
-  discountPrice Decimal?      @db.Decimal(10, 2)
-  isFree        Boolean       @default(false)
-  minPlan       PlanType      @default(BASIC)
-  level         String        @default("beginner")
-  language      String        @default("English")
-  totalDuration Int           @default(0)
-  totalLessons  Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  id                       String        @id @default(cuid())
+  title                    String
+  slug                     String        @unique
+  description              String        @db.Text
+  shortDesc                String?
+  thumbnail                String?
+  previewVideo             String?
+  status                   ContentStatus @default(DRAFT)
+  price                    Decimal?      @db.Decimal(10, 2)
+  discountPrice            Decimal?      @db.Decimal(10, 2)
+  isFree                   Boolean       @default(false)
+  minPlan                  PlanType      @default(BASIC)
+  level                    String        @default("beginner")
+  language                 String        @default("English")
+  totalDuration            Int           @default(0)
+  totalLessons             Int           @default(0)
+  // Revenue split: instructor gets this %, platform gets (100 - instructorRevenuePercent)%
+  // Configurable per-course (default 70). Valid range: 70–80.
+  instructorRevenuePercent Int           @default(70)
+  createdAt                DateTime      @default(now())
+  updatedAt                DateTime      @updatedAt
 
   categoryId     String?
   createdById    String
@@ -393,6 +399,8 @@ model Order {
   id                String      @id @default(cuid())
   userId            String
   courseId          String?
+  // Feature add-on purchase (mutually exclusive with courseId)
+  featureId         String?
   amount            Decimal     @db.Decimal(10, 2)
   currency          String      @default("INR")
   status            OrderStatus @default(PENDING)
@@ -400,12 +408,17 @@ model Order {
   stripePaymentId   String?     @unique
   couponId          String?
   discountAmount    Decimal?    @db.Decimal(10, 2)
+  // Revenue attribution (populated on PAID status)
+  instructorRevenue Decimal?    @db.Decimal(10, 2)
+  platformRevenue   Decimal?    @db.Decimal(10, 2)
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 
-  user   User    @relation(fields: [userId], references: [id])
-  course Course? @relation(fields: [courseId], references: [id])
-  coupon Coupon? @relation(fields: [couponId], references: [id])
+  user            User             @relation(fields: [userId], references: [id])
+  course          Course?          @relation(fields: [courseId], references: [id])
+  coupon          Coupon?          @relation(fields: [couponId], references: [id])
+  feature         PlatformFeature? @relation(fields: [featureId], references: [id])
+  featurePurchase FeaturePurchase?
 
   @@map("orders")
 }
@@ -769,6 +782,40 @@ model ActivityFeedEvent {
   @@index([userId])
   @@index([createdAt])
   @@map("activity_feed_events")
+}
+
+// ─── Platform Features (purchasable add-ons) ──────────────────────────────────
+
+model PlatformFeature {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?  @db.Text
+  price       Decimal  @db.Decimal(10, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  purchases FeaturePurchase[]
+  orders    Order[]
+
+  @@map("platform_features")
+}
+
+model FeaturePurchase {
+  id          String   @id @default(cuid())
+  userId      String
+  featureId   String
+  // Nullable: allows admin-granted access without an order
+  orderId     String?  @unique
+  purchasedAt DateTime @default(now())
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  feature PlatformFeature @relation(fields: [featureId], references: [id])
+  order   Order?          @relation(fields: [orderId], references: [id])
+
+  @@unique([userId, featureId])
+  @@map("feature_purchases")
 }
 
 // ─── Launch: Waitlist ─────────────────────────────────────────────────────────

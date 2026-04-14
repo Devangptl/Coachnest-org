@@ -3,26 +3,26 @@
 /**
  * CommunitySidebar — sub-navigation for the community hub.
  * Desktop: persistent sidebar. Mobile: floating toggle + drawer.
- * Shows PRO badges on write-gated sections for FREE/BASIC users.
+ * Shows lock badges on write-gated sections for users without Community access.
  */
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  MessageSquare, Users, ClipboardCheck, Activity, Menu, X, Compass, Lock,
+  MessageSquare, Users, ClipboardCheck, Activity, Menu, X, Compass, Lock, ShoppingCart,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 
 const navItems = [
-  { label: "Hub",           href: "/community",             icon: Compass,       proRequired: false },
-  { label: "Forums",        href: "/community/forums",      icon: MessageSquare, proRequired: true  },
-  { label: "Study Groups",  href: "/community/groups",      icon: Users,         proRequired: true  },
-  { label: "Peer Review",   href: "/community/peer-review", icon: ClipboardCheck, proRequired: true },
-  { label: "Activity Feed", href: "/community/feed",        icon: Activity,      proRequired: false },
+  { label: "Hub",           href: "/community",             icon: Compass,        requiresAccess: false },
+  { label: "Forums",        href: "/community/forums",      icon: MessageSquare,  requiresAccess: true  },
+  { label: "Study Groups",  href: "/community/groups",      icon: Users,          requiresAccess: true  },
+  { label: "Peer Review",   href: "/community/peer-review", icon: ClipboardCheck, requiresAccess: true  },
+  { label: "Activity Feed", href: "/community/feed",        icon: Activity,       requiresAccess: false },
 ];
 
-function NavLinks({ onNavigate, isPro }: { onNavigate?: () => void; isPro: boolean }) {
+function NavLinks({ onNavigate, hasAccess }: { onNavigate?: () => void; hasAccess: boolean }) {
   const pathname = usePathname();
 
   return (
@@ -33,7 +33,7 @@ function NavLinks({ onNavigate, isPro }: { onNavigate?: () => void; isPro: boole
             ? pathname === "/community"
             : pathname.startsWith(item.href);
         const Icon = item.icon;
-        const locked = item.proRequired && !isPro;
+        const locked = item.requiresAccess && !hasAccess;
 
         return (
           <Link
@@ -55,28 +55,27 @@ function NavLinks({ onNavigate, isPro }: { onNavigate?: () => void; isPro: boole
             />
             <span className="flex-1">{item.label}</span>
 
-            {/* PRO badge — only for locked items on non-PRO plans */}
             {locked && (
-              <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500/70 border border-emerald-500/20 flex-shrink-0">
+              <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-400/70 border border-orange-500/20 flex-shrink-0">
                 <Lock className="w-2.5 h-2.5" />
-                Pro
+                Add-on
               </span>
             )}
           </Link>
         );
       })}
 
-      {/* Plan upgrade nudge in sidebar for FREE/BASIC users */}
-      {!isPro && (
+      {/* Buy Community Access nudge for users without access */}
+      {!hasAccess && (
         <div className="mt-4 pt-4 border-t border-border">
           <Link
-            href="/pricing"
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium bg-emerald-500/8 border border-emerald-500/20 text-emerald-400 hover:bg-emerald-500/15 transition-all"
+            href="/features/community"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium bg-orange-500/8 border border-orange-500/20 text-orange-400 hover:bg-orange-500/15 transition-all"
           >
-            <span className="w-5 h-5 rounded bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
-              ⚡
+            <span className="w-5 h-5 rounded bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+              <ShoppingCart className="w-3 h-3" />
             </span>
-            Upgrade to Pro
+            Buy Community Access
           </Link>
         </div>
       )}
@@ -86,11 +85,11 @@ function NavLinks({ onNavigate, isPro }: { onNavigate?: () => void; isPro: boole
 
 export default function CommunitySidebar() {
   const pathname = usePathname();
-  const { hasInstructorQA, isLoading } = useSubscription();
+  const { hasCommunityAccess, isLoading } = usePurchasedFeatures();
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // isPro: show unlocked state; default to true while loading to avoid flicker
-  const isPro = isLoading ? true : hasInstructorQA;
+  // Default to true while loading to avoid flicker
+  const hasAccess = isLoading ? true : hasCommunityAccess;
 
   useEffect(() => { setMobileOpen(false); }, [pathname]);
   useEffect(() => {
@@ -105,7 +104,7 @@ export default function CommunitySidebar() {
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
             Community
           </p>
-          <NavLinks isPro={isPro} />
+          <NavLinks hasAccess={hasAccess} />
         </div>
       </aside>
 
@@ -136,7 +135,7 @@ export default function CommunitySidebar() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <NavLinks onNavigate={() => setMobileOpen(false)} isPro={isPro} />
+            <NavLinks onNavigate={() => setMobileOpen(false)} hasAccess={hasAccess} />
           </div>
         </div>
       )}

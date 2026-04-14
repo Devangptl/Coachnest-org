@@ -8,10 +8,8 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
 import CourseCard from "@/components/CourseCard";
-import ProgressBar from "@/components/ProgressBar";
-import { BookOpen, Trophy, Clock, ArrowRight, Crown, Zap, TrendingUp } from "lucide-react";
+import { BookOpen, Trophy, Clock, ArrowRight, ShoppingBag, Users, CheckCircle2 } from "lucide-react";
 import { calcProgress } from "@/lib/utils";
-import { getPlanAccess, BASIC_COURSE_LIMIT } from "@/services/subscription.service";
 import { getLevelForXp, xpToNextLevel } from "@/lib/badges";
 import XpProgressBar from "@/components/XpProgressBar";
 import StreakCounter from "@/components/StreakCounter";
@@ -74,14 +72,27 @@ async function getGameData(userId: string) {
   };
 }
 
+async function getFeatureAccess(userId: string) {
+  const featurePurchases = await prisma.featurePurchase.findMany({
+    where:   { userId },
+    include: { feature: { select: { slug: true, name: true } } },
+  });
+  const slugs = featurePurchases.map((fp) => fp.feature.slug);
+  return {
+    hasCommunityAccess: slugs.includes("community"),
+    ownedSlugs: slugs,
+    featurePurchases,
+  };
+}
+
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const [{ enrollments, totalCompleted }, gameData, planAccess] = await Promise.all([
+  const [{ enrollments, totalCompleted }, gameData, featureAccess] = await Promise.all([
     getDashboardData(session.userId),
     getGameData(session.userId),
-    getPlanAccess(session.userId),
+    getFeatureAccess(session.userId),
   ]);
 
   const inProgress = enrollments.filter(
@@ -146,81 +157,62 @@ export default async function DashboardPage() {
         })}
       </div>
 
-      {/* ─── Subscription Widget ─────────────────────────────────────────── */}
-      {planAccess.isActive ? (
-        <GlassCard className="mb-8 border-orange-400/20">
-          <div className="flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-11 h-11 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
-                <Crown className="w-5 h-5 text-orange-400" />
-              </div>
-              <div>
-                <p className="text-foreground font-semibold text-sm">
-                  {planAccess.plan} Plan
-                  <span className={`ml-2 text-xs px-2 py-0.5 rounded-full font-medium ${planAccess.status === "TRIAL" ? "bg-blue-500/20 text-blue-400" :
-                    planAccess.status === "CANCELLED" ? "bg-amber-500/20 text-amber-400" :
-                      "bg-emerald-500/20 text-emerald-400"
-                    }`}>
-                    {planAccess.status === "TRIAL" ? "Trial" : planAccess.status === "CANCELLED" ? "Cancels" : "Active"}
-                  </span>
-                </p>
-                <p className="text-muted-foreground text-xs">
-                  {planAccess.enrollmentLimit !== null
-                    ? `${planAccess.enrolledCount} of ${BASIC_COURSE_LIMIT} course slots used`
-                    : "Unlimited course access"}
-                  {planAccess.endDate && (
-                    <> · {planAccess.status === "CANCELLED" ? "Access until" : "Renews"}{" "}
-                      {new Date(planAccess.endDate).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}</>
-                  )}
-                </p>
-              </div>
-            </div>
-            <Link href="/dashboard/subscription" className="text-orange-400 hover:text-orange-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
-              Manage <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
-          {/* BASIC usage bar */}
-          {planAccess.enrollmentLimit !== null && (
-            <div className="mt-3 pt-3 border-t border-border">
-              <div className="flex items-center justify-between mb-1.5">
-                <span className="text-xs text-muted-foreground">Course slots</span>
-                <span className={`text-xs font-medium ${planAccess.limitReached ? "text-amber-400" : "text-muted-foreground"}`}>
-                  {planAccess.enrolledCount}/{BASIC_COURSE_LIMIT}
-                </span>
-              </div>
-              <div className="w-full bg-secondary rounded-full h-1.5">
-                <div
-                  className={`h-1.5 rounded-full transition-all ${planAccess.limitReached ? "bg-amber-400" : "bg-orange-400"}`}
-                  style={{ width: `${Math.min(100, (planAccess.enrolledCount / BASIC_COURSE_LIMIT) * 100)}%` }}
-                />
-              </div>
-              {planAccess.limitReached && (
-                <p className="text-xs text-amber-400 mt-1.5 flex items-center gap-1">
-                  <TrendingUp className="w-3 h-3" />
-                  Slot limit reached.{" "}
-                  <Link href="/pricing" className="underline hover:text-amber-300">Upgrade to PRO</Link>
-                  {" "}for unlimited access.
-                </p>
-              )}
-            </div>
-          )}
-        </GlassCard>
-      ) : (
-        <GlassCard className="flex items-center justify-between gap-4 mb-8">
+      {/* ─── Access Panel: Purchases & Feature Add-ons ───────────────────── */}
+      <div className="grid sm:grid-cols-2 gap-4 mb-8">
+        {/* Courses owned */}
+        <GlassCard className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="w-11 h-11 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
-              <Zap className="w-5 h-5 text-yellow-400" />
+            <div className="w-11 h-11 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag className="w-5 h-5 text-orange-400" />
             </div>
             <div>
-              <p className="text-foreground font-semibold text-sm">Unlock All Courses</p>
-              <p className="text-muted-foreground text-xs">Subscribe to get access to every course on CoachNest.</p>
+              <p className="text-foreground font-semibold text-sm">
+                {enrollments.length} Course{enrollments.length !== 1 ? "s" : ""} Purchased
+              </p>
+              <p className="text-muted-foreground text-xs">Lifetime access, no expiry</p>
             </div>
           </div>
-          <Link href="/pricing" className="btn-primary text-xs py-2 px-4 flex-shrink-0">
-            View Plans
+          <Link href="/courses" className="text-orange-400 hover:text-orange-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
+            Browse <ArrowRight className="w-3 h-3" />
           </Link>
         </GlassCard>
-      )}
+
+        {/* Community add-on */}
+        {featureAccess.hasCommunityAccess ? (
+          <GlassCard className="flex items-center justify-between gap-4 border-emerald-500/20">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-md bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-foreground font-semibold text-sm flex items-center gap-1.5">
+                  Community Access
+                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                </p>
+                <p className="text-muted-foreground text-xs">Forums · Study Groups · Peer Review</p>
+              </div>
+            </div>
+            <Link href="/community" className="text-emerald-400 hover:text-emerald-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
+              Open <ArrowRight className="w-3 h-3" />
+            </Link>
+          </GlassCard>
+        ) : (
+          <GlassCard className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
+                <Users className="w-5 h-5 text-muted-foreground" />
+              </div>
+              <div>
+                <p className="text-foreground font-semibold text-sm">Community Access</p>
+                <p className="text-muted-foreground text-xs">One-time add-on · ₹499</p>
+              </div>
+            </div>
+            <Link href="/features/community" className="btn-primary text-xs py-2 px-3 flex-shrink-0 whitespace-nowrap">
+              Buy Access
+            </Link>
+          </GlassCard>
+        )}
+      </div>
 
       {/* ─── Gamification Panel ──────────────────────────────────────────── */}
       <div id="tour-gamification" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">

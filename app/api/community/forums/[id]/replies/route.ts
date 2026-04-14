@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getPlanAccess } from "@/services/subscription.service";
+import { hasFeatureAccess } from "@/lib/feature-access";
 
 export async function POST(
   req: NextRequest,
@@ -14,10 +14,13 @@ export async function POST(
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const planAccess = await getPlanAccess(session.userId);
-    if (!planAccess.hasInstructorQA) {
+    const canAccess = await hasFeatureAccess(session.userId, session.role, "community");
+    if (!canAccess) {
       return NextResponse.json(
-        { error: "Posting replies requires a Pro or Enterprise subscription.", requiredPlan: "PRO" },
+        {
+          error: "Posting replies requires purchasing the Community add-on.",
+          featureSlug: "community",
+        },
         { status: 403 }
       );
     }

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle,
-  UserCircle, Trophy, Menu, X, Users2, Crown, CreditCard,
+  UserCircle, Trophy, Menu, X, Users2, Package, CreditCard,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,7 +20,7 @@ const navItems = [
   { label: "Certificates",  href: "/dashboard/certificates",       icon: Award },
   { label: "Achievements",  href: "/dashboard/achievements",       icon: Trophy },
   { label: "Quiz History",  href: "/dashboard/quizzes",            icon: HelpCircle },
-  { label: "Subscription",  href: "/dashboard/subscription",       icon: Crown },
+  { label: "My Purchases",  href: "/dashboard/subscription",       icon: Package },
   { label: "Billing",       href: "/dashboard/billing",            icon: CreditCard },
   { label: "Order History", href: "/dashboard/orders",             icon: ShoppingCart },
   { label: "Notifications", href: "/dashboard/notifications",      icon: Bell },

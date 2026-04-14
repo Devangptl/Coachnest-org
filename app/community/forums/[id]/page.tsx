@@ -4,7 +4,7 @@ import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import { ArrowLeft, ChevronUp, ChevronDown, MessageSquare, Send, Clock, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Reply {
@@ -32,7 +32,7 @@ interface Thread {
 
 export default function ThreadDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
-  const { hasInstructorQA } = useSubscription();
+  const { hasCommunityAccess: hasInstructorQA } = usePurchasedFeatures();
   const [thread, setThread] = useState<Thread | null>(null);
   const [loading, setLoading] = useState(true);
   const [replyBody, setReplyBody] = useState("");

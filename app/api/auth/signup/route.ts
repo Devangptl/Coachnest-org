@@ -75,17 +75,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Only students need a subscription slot system
-    if (role === "STUDENT") {
-      await prisma.subscription.create({
-        data: {
-          userId:    data.user.id,
-          plan:      "FREE",
-          status:    "ACTIVE",
-          startDate: new Date(),
-        },
-      });
-    }
+    // Students use the direct-purchase model — no subscription record needed.
+    // Instructors and Admins may be assigned subscriptions separately by the platform.
 
     // Fire-and-forget welcome email
     sendWelcomeEmail(email, name).catch(console.error);

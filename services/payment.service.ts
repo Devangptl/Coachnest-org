@@ -1,10 +1,17 @@
 /**
  * Payment Service — orchestrates Stripe Checkout Session creation,
  * webhook-driven enrollment, and notification after a successful purchase.
+ *
+ * Revenue split for course purchases:
+ *   Instructor: course.instructorRevenuePercent %  (default 70, range 70–80)
+ *   Platform:   (100 - instructorRevenuePercent) % (default 30)
+ *
+ * Feature add-on purchases route to feature.service.ts (100% platform).
  */
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import { sendPurchaseEmail } from "@/lib/email";
+import { handleFeaturePaymentSuccess } from "@/services/feature.service";
 
 // ─── Create Stripe Checkout Session ──────────────────────────────────────────
 
@@ -22,7 +29,15 @@ export async function createCheckoutSession(
 
   const course = await prisma.course.findUnique({
     where: { id: courseId },
-    select: { id: true, title: true, price: true, discountPrice: true, isFree: true, thumbnail: true },
+    select: {
+      id: true,
+      title: true,
+      price: true,
+      discountPrice: true,
+      isFree: true,
+      thumbnail: true,
+      instructorRevenuePercent: true,
+    },
   });
   if (!course) throw new Error("Course not found");
   if (course.isFree) throw new Error("Course is free, no payment required");
@@ -63,6 +78,11 @@ export async function createCheckoutSession(
     couponId = coupon.id;
   }
 
+  // Pre-calculate revenue split (stored at checkout; finalised on PAID)
+  const instructorPct = course.instructorRevenuePercent ?? 70;
+  const instructorRevenue = parseFloat(((finalAmount * instructorPct) / 100).toFixed(2));
+  const platformRevenue = parseFloat((finalAmount - instructorRevenue).toFixed(2));
+
   // Create a pending order in DB
   const order = await prisma.order.create({
     data: {
@@ -73,6 +93,8 @@ export async function createCheckoutSession(
       status: "PENDING",
       couponId,
       discountAmount: discountAmt > 0 ? discountAmt : undefined,
+      instructorRevenue,
+      platformRevenue,
     },
   });
 
@@ -133,17 +155,27 @@ export async function handlePaymentIntentSuccess(paymentIntentId: string) {
     where:   { stripePaymentId: paymentIntentId },
     include: {
       user:   { select: { email: true, name: true } },
-      course: { select: { id: true, title: true } },
+      course: { select: { id: true, title: true, instructorRevenuePercent: true } },
     },
   });
   if (!order) throw new Error("Order not found for payment intent");
   if (order.status === "PAID") return { success: true, courseId: order.courseId };
 
+  if (order.featureId) {
+    await handleFeaturePaymentSuccess(order.id, paymentIntentId);
+    return { success: true, courseId: null };
+  }
+
   const userId = order.userId;
+
+  const instructorPct     = order.course?.instructorRevenuePercent ?? 70;
+  const paidAmount        = Number(order.amount);
+  const instructorRevenue = parseFloat(((paidAmount * instructorPct) / 100).toFixed(2));
+  const platformRevenue   = parseFloat((paidAmount - instructorRevenue).toFixed(2));
 
   await prisma.order.update({
     where: { id: order.id },
-    data:  { status: "PAID" },
+    data:  { status: "PAID", instructorRevenue, platformRevenue },
   });
 
   await prisma.enrollment.upsert({
@@ -190,22 +222,40 @@ export async function handlePaymentSuccess(
   const order = await prisma.order.findFirst({
     where: { stripeSessionId: sessionId },
     include: {
-      user: { select: { email: true, name: true } },
-      course: { select: { id: true, title: true } },
+      user:   { select: { email: true, name: true } },
+      course: { select: { id: true, title: true, instructorRevenuePercent: true } },
     },
   });
   if (!order) throw new Error("Order not found for session");
   if (order.status === "PAID") return { success: true, courseId: order.courseId };
 
+  // Route feature-add-on orders to the dedicated handler
+  if (order.featureId) {
+    await handleFeaturePaymentSuccess(order.id, paymentIntentId);
+    return { success: true, courseId: null };
+  }
+
   const userId = order.userId;
 
-  // Mark order as paid + enroll + increment coupon uses
-  // Using sequential operations instead of interactive $transaction
-  // to avoid "Transaction not found" errors on serverless (Vercel).
-  // Each operation is idempotent, so partial completion is safe.
+  // ── Revenue split ────────────────────────────────────────────────────────
+  // Re-derive from the course's current setting so we always store the most
+  // accurate value (the provisional split set at checkout is overwritten here).
+  const instructorPct = order.course?.instructorRevenuePercent ?? 70;
+  const paidAmount    = Number(order.amount);
+  const instructorRevenue = parseFloat(((paidAmount * instructorPct) / 100).toFixed(2));
+  const platformRevenue   = parseFloat((paidAmount - instructorRevenue).toFixed(2));
+
+  // Mark order as paid + record revenue split
+  // Using sequential operations instead of $transaction to avoid
+  // "Transaction not found" on serverless (Vercel). Each step is idempotent.
   await prisma.order.update({
     where: { id: order.id },
-    data: { status: "PAID", stripePaymentId: paymentIntentId },
+    data: {
+      status: "PAID",
+      stripePaymentId: paymentIntentId,
+      instructorRevenue,
+      platformRevenue,
+    },
   });
 
   await prisma.enrollment.upsert({

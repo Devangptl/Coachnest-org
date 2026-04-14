@@ -8,12 +8,26 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { createSubscriptionCheckout } from "@/services/subscription.service";
 
+/** Returns 410 for students — the platform uses direct-purchase, not subscriptions. */
+function studentNotAllowed() {
+  return NextResponse.json(
+    {
+      error:
+        "Students use the direct-purchase model. " +
+        "Subscription plans are not available for student accounts.",
+      code: "SUBSCRIPTION_MODEL_REMOVED",
+    },
+    { status: 410 }
+  );
+}
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.role === "STUDENT") return studentNotAllowed();
 
     const body = await req.json();
     const { plan, billing } = body as { plan: string; billing: "monthly" | "yearly" };

@@ -7,9 +7,10 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   MessageSquare, Users, ClipboardCheck, Activity,
-  ArrowRight, TrendingUp, Clock, Flame, Lock, Zap
+  ArrowRight, TrendingUp, Clock, Flame, Lock
 } from "lucide-react";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
+import { ShoppingCart } from "lucide-react";
 
 interface Thread {
   id: string;
@@ -42,7 +43,7 @@ const QUICK_LINKS = [
 ];
 
 export default function CommunityHubPage() {
-  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
+  const { hasCommunityAccess, isLoading: subLoading } = usePurchasedFeatures();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [events, setEvents] = useState<FeedEvent[]>([]);
@@ -68,8 +69,8 @@ export default function CommunityHubPage() {
     load();
   }, []);
 
-  // Only show lock badges once subscription state is known
-  const showLocks = !subLoading && !hasInstructorQA;
+  // Only show lock badges once access state is known
+  const showLocks = !subLoading && !hasCommunityAccess;
 
   return (
     <div className="py-5 space-y-10">
@@ -81,10 +82,10 @@ export default function CommunityHubPage() {
             Connect with fellow learners — ask questions, join study groups, review peers&apos; work, and celebrate wins together.
           </p>
         </div>
-        {/* Pro badge for PRO users */}
-        {!subLoading && hasInstructorQA && (
+        {/* Community member badge */}
+        {!subLoading && hasCommunityAccess && (
           <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 mt-1">
-            ✓ Pro Member
+            ✓ Community Member
           </span>
         )}
       </div>
@@ -113,8 +114,8 @@ export default function CommunityHubPage() {
                   <p className={`font-semibold text-sm mb-1 flex items-center gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground"}`}>
                     {item.title}
                     {isLocked ? (
-                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-500/70 border border-emerald-500/20">
-                        <Lock className="w-2.5 h-2.5" /> Write: Pro
+                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500/70 border border-orange-500/20">
+                        <Lock className="w-2.5 h-2.5" /> Add-on Required
                       </span>
                     ) : (
                       <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-70 group-hover:translate-x-0 transition-all" />
@@ -122,8 +123,8 @@ export default function CommunityHubPage() {
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
                   {isLocked && (
-                    <p className="text-emerald-500/60 text-[11px] mt-1.5 flex items-center gap-1">
-                      <Zap className="w-3 h-3" /> Read-only · Upgrade to post
+                    <p className="text-orange-500/60 text-[11px] mt-1.5 flex items-center gap-1">
+                      <Lock className="w-3 h-3" /> Requires Community Access
                     </p>
                   )}
                 </div>
@@ -133,25 +134,25 @@ export default function CommunityHubPage() {
         })}
       </div>
 
-      {/* Upgrade CTA for non-PRO users */}
+      {/* Buy Community Access CTA */}
       {showLocks && (
-        <div className="rounded-2xl border border-emerald-500/20 bg-gradient-to-r from-emerald-500/8 to-emerald-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="w-9 h-9 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
-              <Zap className="w-4 h-4 text-emerald-400" />
+            <div className="w-9 h-9 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 text-orange-400" />
             </div>
             <div>
               <p className="text-foreground font-semibold text-sm">Unlock the full community experience</p>
               <p className="text-muted-foreground text-xs mt-0.5">
-                Post threads, create study groups, and submit peer reviews with a Pro subscription.
+                Post threads, create study groups, and submit peer reviews. One-time purchase, lifetime access.
               </p>
             </div>
           </div>
           <Link
-            href="/pricing"
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0"
+            href="/features/community"
+            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0"
           >
-            <Zap className="w-3.5 h-3.5" /> Upgrade to Pro
+            <ShoppingCart className="w-3.5 h-3.5" /> Buy Access — ₹499
           </Link>
         </div>
       )}

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { MessageSquare, Plus, Search, CheckCircle, Lock } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Thread {
@@ -20,7 +20,7 @@ interface Thread {
 }
 
 export default function ForumsPage() {
-  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
+  const { hasCommunityAccess: hasInstructorQA, isLoading: subLoading } = usePurchasedFeatures();
   const [threads, setThreads] = useState<Thread[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -48,7 +48,7 @@ export default function ForumsPage() {
   useEffect(() => { load(1, sort); }, [sort]);
 
   function handleLockedClick() {
-    toast("Forums require a Pro subscription.", { icon: "🔒" });
+    toast("Community Access required to post in forums.", { icon: "🔒" });
   }
 
   async function handleCreate() {
@@ -98,7 +98,7 @@ export default function ForumsPage() {
             onClick={handleLockedClick}
             disabled={subLoading}
             className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed flex-shrink-0 opacity-60"
-            title="Requires Pro subscription"
+            title="Requires Community Access add-on"
           >
             <Lock className="w-3.5 h-3.5" /> New Thread
           </button>

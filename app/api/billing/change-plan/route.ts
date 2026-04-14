@@ -26,6 +26,16 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    if (session.role === "STUDENT") {
+      return NextResponse.json(
+        {
+          error: "Students do not have subscription plans to change.",
+          code:  "SUBSCRIPTION_MODEL_REMOVED",
+        },
+        { status: 410 }
+      );
+    }
+
     const { plan, billing } = await req.json() as {
       plan:    string;
       billing: "monthly" | "yearly";

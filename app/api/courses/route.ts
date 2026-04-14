@@ -26,6 +26,9 @@ export async function GET() {
   }
 }
 
+/** Maximum number of free courses an instructor may create over their lifetime. */
+const FREE_COURSE_LIMIT = 5;
+
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
@@ -33,10 +36,61 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const { title, description, thumbnail, published, price, isFree, level, categoryId } = await req.json();
+    const {
+      title,
+      description,
+      thumbnail,
+      published,
+      price,
+      isFree,
+      level,
+      categoryId,
+      instructorRevenuePercent,
+    } = await req.json();
 
     if (!title || !description) {
       return NextResponse.json({ error: "Title and description are required." }, { status: 400 });
+    }
+
+    const wantsFree = Boolean(isFree);
+
+    // ── Free course cap (instructors only; admins are exempt) ──────────────
+    if (wantsFree && session.role === "INSTRUCTOR") {
+      const freeCourseCount = await prisma.course.count({
+        where: { createdById: session.userId, isFree: true },
+      });
+      if (freeCourseCount >= FREE_COURSE_LIMIT) {
+        return NextResponse.json(
+          {
+            error: `You have reached the limit of ${FREE_COURSE_LIMIT} free courses. All new courses must be paid.`,
+            code: "FREE_COURSE_LIMIT_REACHED",
+            limit: FREE_COURSE_LIMIT,
+            current: freeCourseCount,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
+    // Free courses from instructors must be reviewed by an admin before going live
+    let status: "DRAFT" | "PUBLISHED" | "PENDING_REVIEW" = "DRAFT";
+    if (wantsFree && session.role === "INSTRUCTOR") {
+      status = "PENDING_REVIEW";
+    } else if (published) {
+      status = "PUBLISHED";
+    }
+
+    // Validate revenue split (70–80 % to instructor)
+    let revenuePercent = 70;
+    if (instructorRevenuePercent !== undefined) {
+      const pct = Number(instructorRevenuePercent);
+      if (pct < 70 || pct > 80 || !Number.isInteger(pct)) {
+        return NextResponse.json(
+          { error: "instructorRevenuePercent must be an integer between 70 and 80." },
+          { status: 400 }
+        );
+      }
+      revenuePercent = pct;
     }
 
     // Generate a unique slug
@@ -50,12 +104,13 @@ export async function POST(req: NextRequest) {
         slug,
         description,
         thumbnail: thumbnail || null,
-        status: published ? "PUBLISHED" : "DRAFT",
-        price: price ?? null,
-        isFree: isFree ?? false,
+        status,
+        price: wantsFree ? null : price ?? null,
+        isFree: wantsFree,
         level: level ?? "beginner",
         categoryId: categoryId ?? null,
         createdById: session.userId,
+        instructorRevenuePercent: revenuePercent,
       },
     });
 

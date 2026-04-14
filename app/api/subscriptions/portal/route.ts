@@ -13,6 +13,16 @@ export async function POST() {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.role === "STUDENT") {
+      return NextResponse.json(
+        {
+          error: "Students do not have a subscription billing portal. View your purchases at /api/student/purchases.",
+          code:  "SUBSCRIPTION_MODEL_REMOVED",
+          purchasesUrl: "/api/student/purchases",
+        },
+        { status: 410 }
+      );
+    }
 
     const result = await createBillingPortalSession(session.userId);
     return NextResponse.json(result);

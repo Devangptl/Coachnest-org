@@ -27,6 +27,18 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
+    if (session.role === "STUDENT") {
+      return NextResponse.json(
+        {
+          error:
+            "Students use the direct-purchase model and do not have subscription plans. " +
+            "Purchase individual courses at /api/payments/create-order.",
+          code: "SUBSCRIPTION_MODEL_REMOVED",
+        },
+        { status: 410 }
+      );
+    }
+
     const { plan, billing } = await req.json() as {
       plan:    string;
       billing: "monthly" | "yearly";

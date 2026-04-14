@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getPlanAccess } from "@/services/subscription.service";
+import { hasFeatureAccess } from "@/lib/feature-access";
 
 export async function GET(req: NextRequest) {
   try {
@@ -51,10 +51,13 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const planAccess = await getPlanAccess(session.userId);
-    if (!planAccess.hasInstructorQA) {
+    const canAccess = await hasFeatureAccess(session.userId, session.role, "community");
+    if (!canAccess) {
       return NextResponse.json(
-        { error: "Forums require a Pro or Enterprise subscription.", requiredPlan: "PRO" },
+        {
+          error: "Access to forums requires purchasing the Community add-on.",
+          featureSlug: "community",
+        },
         { status: 403 }
       );
     }

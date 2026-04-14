@@ -75,6 +75,12 @@ export async function POST(req: Request) {
     if (!authSession) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (authSession.role === "STUDENT") {
+      return NextResponse.json(
+        { error: "Students use the direct-purchase model — no subscription to sync.", code: "SUBSCRIPTION_MODEL_REMOVED" },
+        { status: 410 }
+      );
+    }
 
     const userId = authSession.userId;
     const stripe  = getStripe();

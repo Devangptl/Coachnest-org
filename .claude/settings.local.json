@@ -52,7 +52,15 @@
       "Bash(cd:*)",
       "Bash(npx tsx -e \":*)",
       "Bash(wc:*)",
-      "Bash(npm ls:*)"
+      "Bash(npm ls:*)",
+      "Bash(npx tsx:*)",
+      "Bash(mkdir -p \"D:/Devang/Claude/learning/app/api/features/[featureId]/purchase\")",
+      "Bash(mkdir -p \"D:/Devang/Claude/learning/app/api/features/[featureId]/access\")",
+      "Bash(mkdir -p \"D:/Devang/Claude/learning/app/api/admin/courses/[id]/approve\")",
+      "Bash(mkdir -p \"D:/Devang/Claude/learning/app/api/admin/courses/[id]/reject\")",
+      "Bash(echo \"Exit: $?\")",
+      "Bash(sed -i 's|const { hasInstructorQA, isLoading: subLoading } = useSubscription\\(\\);|const { hasCommunityAccess: hasInstructorQA, isLoading: subLoading } = usePurchasedFeatures\\(\\);|g' app/community/forums/page.tsx app/community/groups/page.tsx app/community/peer-review/page.tsx)",
+      "Bash(sed -i 's|const { hasInstructorQA } = useSubscription\\(\\);|const { hasCommunityAccess: hasInstructorQA } = usePurchasedFeatures\\(\\);|g' app/community/forums/[id]/page.tsx)"
     ]
   }
 }

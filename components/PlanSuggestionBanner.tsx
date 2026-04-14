@@ -4,6 +4,7 @@ import Link from "next/link";
 import { X, Zap, ArrowRight, Crown } from "lucide-react";
 import { useState } from "react";
 import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 
 interface Props {
   /** Which scenario triggers the banner */
@@ -61,27 +62,18 @@ const COPY: Record<Props["context"], { icon: "zap" | "crown"; title: string; bod
     color: "border-emerald-500/20 bg-emerald-500/5",
   },
   "community": {
-    icon: "crown",
-    title: "Join the Pro Community",
-    body: "Forums, study groups, and peer review are exclusive to Pro and Enterprise members.",
-    cta: "Upgrade for Community",
-    plan: "PRO",
-    color: "border-emerald-500/20 bg-emerald-500/5",
+    icon: "zap",
+    title: "Unlock Community Access",
+    body: "Forums, study groups, and peer review require the Community add-on — one-time purchase, lifetime access.",
+    cta: "Buy Community Access",
+    plan: "community",
+    color: "border-orange-500/20 bg-orange-500/5",
   },
 };
 
-function shouldShow(context: Props["context"], plan: string, limitReached: boolean): boolean {
-  if (context === "free-courses") return plan === "FREE";
-  if (context === "basic-limit") return plan === "BASIC" && limitReached;
-  if (context === "pro-feature") return plan === "FREE" || plan === "BASIC";
-  if (context === "certificate") return plan === "FREE" || plan === "BASIC";
-  if (context === "ai-recommendations") return plan === "FREE" || plan === "BASIC";
-  if (context === "community") return plan === "FREE" || plan === "BASIC";
-  return false;
-}
-
 export default function PlanSuggestionBanner({ context, dismissKey, className = "" }: Props) {
-  const { plan, planAccess, isLoading } = useSubscription();
+  const { plan, planAccess, isLoading: subLoading } = useSubscription();
+  const { hasCommunityAccess, isLoading: featureLoading } = usePurchasedFeatures();
 
   const storageKey = dismissKey ? `cn_banner_dismissed_${dismissKey}` : null;
   const [dismissed, setDismissed] = useState(() => {
@@ -90,10 +82,27 @@ export default function PlanSuggestionBanner({ context, dismissKey, className = 
     return localStorage.getItem(storageKey) === "1";
   });
 
-  if (isLoading || dismissed) return null;
-  if (!shouldShow(context, plan, planAccess.limitReached)) return null;
+  // Community banner is driven by feature purchase, not subscription plan
+  if (context === "community") {
+    if (featureLoading || dismissed || hasCommunityAccess) return null;
+  } else {
+    if (subLoading || dismissed) return null;
+    // Non-community contexts: only show for relevant plan tiers
+    const show =
+      (context === "free-courses"       && plan === "FREE") ||
+      (context === "basic-limit"        && plan === "BASIC" && planAccess.limitReached) ||
+      (context === "pro-feature"        && (plan === "FREE" || plan === "BASIC")) ||
+      (context === "certificate"        && (plan === "FREE" || plan === "BASIC")) ||
+      (context === "ai-recommendations" && (plan === "FREE" || plan === "BASIC"));
+    if (!show) return null;
+  }
 
   const cfg = COPY[context];
+  const isCommunity = context === "community";
+  const ctaHref = isCommunity ? "/features/community" : "/pricing";
+  const ctaClass = isCommunity
+    ? "flex items-center gap-1.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
+    : "flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap";
 
   function dismiss() {
     setDismissed(true);
@@ -117,10 +126,7 @@ export default function PlanSuggestionBanner({ context, dismissKey, className = 
       </div>
 
       <div className="flex items-center gap-2 flex-shrink-0">
-        <Link
-          href="/pricing"
-          className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors whitespace-nowrap"
-        >
+        <Link href={ctaHref} className={ctaClass}>
           <Zap className="w-3.5 h-3.5" />
           {cfg.cta}
           <ArrowRight className="w-3 h-3" />

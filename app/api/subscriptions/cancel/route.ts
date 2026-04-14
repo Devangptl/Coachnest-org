@@ -13,6 +13,12 @@ export async function POST() {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (session.role === "STUDENT") {
+      return NextResponse.json(
+        { error: "Students do not have subscriptions to cancel.", code: "SUBSCRIPTION_MODEL_REMOVED" },
+        { status: 410 }
+      );
+    }
 
     const result = await cancelSubscription(session.userId);
     return NextResponse.json(result);

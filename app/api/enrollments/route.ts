@@ -92,6 +92,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Course not found." }, { status: 404 });
     }
 
+    // Paid courses require a completed purchase before enrollment is allowed
+    const isPaid = !course.isFree && course.price && Number(course.price) > 0;
+    if (isPaid) {
+      const paidOrder = await prisma.order.findFirst({
+        where: { userId: session.userId, courseId, status: "PAID" },
+        select: { id: true },
+      });
+      if (!paidOrder) {
+        return NextResponse.json(
+          {
+            error: "Please purchase this course before enrolling.",
+            code: "PAYMENT_REQUIRED",
+          },
+          { status: 402 }
+        );
+      }
+    }
+
     // Upsert avoids duplicate enrollment errors
     const enrollment = await prisma.enrollment.upsert({
       where: { userId_courseId: { userId: session.userId, courseId } },

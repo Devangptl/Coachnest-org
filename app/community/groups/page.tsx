@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Users, Plus, Search, Lock, Globe, Key } from "lucide-react";
 import toast from "react-hot-toast";
-import { useSubscription } from "@/hooks/useSubscription";
+import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import CommunityProNotice from "@/components/CommunityProNotice";
 
 interface Group {
@@ -23,7 +23,7 @@ interface Group {
 
 export default function StudyGroupsPage() {
   const router = useRouter();
-  const { hasInstructorQA, isLoading: subLoading } = useSubscription();
+  const { hasCommunityAccess: hasInstructorQA, isLoading: subLoading } = usePurchasedFeatures();
   const [groups, setGroups] = useState<Group[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -50,7 +50,7 @@ export default function StudyGroupsPage() {
   useEffect(() => { load(); }, []);
 
   function handleLockedClick() {
-    toast("Study groups require a Pro subscription.", { icon: "🔒" });
+    toast("Community Access required to create study groups.", { icon: "🔒" });
   }
 
   async function handleCreate() {
@@ -132,7 +132,7 @@ export default function StudyGroupsPage() {
                 onClick={handleLockedClick}
                 disabled={subLoading}
                 className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-medium px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
-                title="Requires Pro subscription"
+                title="Requires Community Access add-on"
               >
                 <Lock className="w-3.5 h-3.5" /> Join with Code
               </button>
@@ -140,7 +140,7 @@ export default function StudyGroupsPage() {
                 onClick={handleLockedClick}
                 disabled={subLoading}
                 className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
-                title="Requires Pro subscription"
+                title="Requires Community Access add-on"
               >
                 <Lock className="w-3.5 h-3.5" /> Create Group
               </button>
