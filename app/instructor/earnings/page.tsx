@@ -8,7 +8,7 @@ import { useEffect, useState } from "react";
 import {
   Wallet, TrendingUp, ArrowDownToLine, DollarSign,
   Loader2, Globe, Link2, Tag, BarChart3, ShoppingBag,
-  RefreshCw, Clock, CheckCircle2, AlertCircle,
+  RefreshCw, Clock, CheckCircle2, AlertCircle, TrendingDown,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { cn } from "@/lib/utils";
@@ -24,6 +24,16 @@ interface EarningsData {
   recentOrders: {
     id: string; amount: number; instructorRevenue: number; platformRevenue: number;
     saleSource: string; instructorPercent: number; courseTitle: string; createdAt: string;
+  }[];
+}
+
+interface RefundImpact {
+  summary:  { count: number; totalLoss: number };
+  byCourse: { courseId: string; title: string; count: number; loss: number }[];
+  refunds:  {
+    id: string; courseId: string; courseTitle: string;
+    progressPercent: number; refundPercent: number;
+    originalAmount: number; instructorLoss: number; processedAt: string | null;
   }[];
 }
 
@@ -61,17 +71,22 @@ function MonthlyChart({ data }: { data: { month: string; revenue: number }[] }) 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function InstructorEarningsPage() {
-  const [data,    setData]    = useState<EarningsData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error,   setError]   = useState("");
+  const [data,         setData]         = useState<EarningsData | null>(null);
+  const [refundImpact, setRefundImpact] = useState<RefundImpact | null>(null);
+  const [loading,      setLoading]      = useState(true);
+  const [error,        setError]        = useState("");
 
   async function load() {
     setLoading(true);
     setError("");
     try {
-      const res = await fetch("/api/instructor/earnings");
-      if (!res.ok) throw new Error("Failed to load earnings.");
-      setData(await res.json());
+      const [earningsRes, refundRes] = await Promise.all([
+        fetch("/api/instructor/earnings"),
+        fetch("/api/instructor/refunds"),
+      ]);
+      if (!earningsRes.ok) throw new Error("Failed to load earnings.");
+      setData(await earningsRes.json());
+      if (refundRes.ok) setRefundImpact(await refundRes.json());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
@@ -102,7 +117,9 @@ export default function InstructorEarningsPage() {
   }
 
   const { wallet, summary, perCourse, bySource, monthly, recentOrders } = data;
-  const totalSource = Object.values(bySource).reduce((s, v) => s + v, 0) || 1;
+  const totalSource   = Object.values(bySource).reduce((s, v) => s + v, 0) || 1;
+  const totalRefundLoss = refundImpact?.summary.totalLoss ?? 0;
+  const refundCount     = refundImpact?.summary.count ?? 0;
 
   return (
     <div className="space-y-8">
@@ -116,12 +133,13 @@ export default function InstructorEarningsPage() {
       </div>
 
       {/* ── Wallet cards ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
           { label: "Available Balance", value: wallet.balance,        icon: Wallet,        color: "text-orange-400",  bg: "bg-orange-500/10"  },
           { label: "Total Earned",      value: wallet.totalEarned,    icon: TrendingUp,    color: "text-emerald-400", bg: "bg-emerald-500/10" },
           { label: "Total Withdrawn",   value: wallet.totalWithdrawn, icon: ArrowDownToLine,color:"text-blue-400",    bg: "bg-blue-500/10"    },
           { label: "Total Sales",       value: summary.totalOrders,   icon: ShoppingBag,   color: "text-violet-400",  bg: "bg-violet-500/10", isCount: true },
+          { label: `Refund Loss (${refundCount})`, value: totalRefundLoss, icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10" },
         ].map(({ label, value, icon: Icon, color, bg, isCount }) => (
           <GlassCard key={label} className="flex items-center gap-3">
             <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0", bg)}>
@@ -192,6 +210,63 @@ export default function InstructorEarningsPage() {
           </div>
         </GlassCard>
       </div>
+
+      {/* ── Refund Impact ─────────────────────────────────────────────────── */}
+      {refundImpact && refundImpact.summary.count > 0 && (
+        <div className="grid lg:grid-cols-2 gap-6">
+          {/* Per-course refund breakdown */}
+          <GlassCard>
+            <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
+              <TrendingDown className="w-4 h-4 text-red-400" />
+              Refund Loss by Course
+            </h2>
+            <div className="space-y-3">
+              {refundImpact.byCourse.map((c) => (
+                <div key={c.courseId}>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-sm text-foreground truncate max-w-[180px]">{c.title}</span>
+                    <div className="text-right">
+                      <span className="text-sm font-semibold text-red-400">−₹{c.loss.toLocaleString()}</span>
+                      <span className="text-xs text-muted-foreground ml-1">({c.count} refund{c.count !== 1 ? "s" : ""})</span>
+                    </div>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-border overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-red-500/60 transition-all"
+                      style={{ width: `${Math.min((c.loss / (totalRefundLoss || 1)) * 100, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-4 pt-3 border-t border-border flex justify-between text-sm">
+              <span className="text-muted-foreground">Total loss ({refundCount} refunds)</span>
+              <span className="text-red-400 font-bold">−₹{totalRefundLoss.toLocaleString()}</span>
+            </div>
+          </GlassCard>
+
+          {/* Recent refunds */}
+          <GlassCard>
+            <h2 className="text-base font-semibold text-foreground mb-4">Recent Refunds</h2>
+            <div className="space-y-2">
+              {refundImpact.refunds.slice(0, 8).map((r) => (
+                <div key={r.id} className="flex items-center justify-between gap-3 py-2 border-b border-border/50 last:border-0">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{r.courseTitle}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {r.progressPercent.toFixed(0)}% progress · {r.refundPercent.toFixed(0)}% refunded
+                      {r.processedAt && ` · ${new Date(r.processedAt).toLocaleDateString()}`}
+                    </p>
+                  </div>
+                  <span className="text-sm font-bold text-red-400 flex-shrink-0">
+                    −₹{r.instructorLoss.toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </GlassCard>
+        </div>
+      )}
 
       {/* ── Revenue by course ─────────────────────────────────────────────── */}
       {perCourse.length > 0 && (

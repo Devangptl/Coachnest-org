@@ -88,6 +88,23 @@ enum GroupRole {
   ADMIN
 }
 
+enum RefundStatus {
+  PENDING    // Student submitted, awaiting admin review
+  PROCESSING // Stripe refund in flight
+  PROCESSED  // Fully complete — Stripe refunded, enrollment revoked, wallet debited
+  REJECTED   // Admin rejected the request
+  FAILED     // Stripe refund failed after approval
+}
+
+enum LedgerEntryType {
+  PURCHASE                   // Student paid for course
+  PLATFORM_FEE               // Platform share on purchase
+  INSTRUCTOR_EARNING         // Instructor share on purchase
+  REFUND                     // Refund issued to student
+  REFUND_REVERSAL_INSTRUCTOR // Instructor share clawed back on refund
+  REFUND_REVERSAL_PLATFORM   // Platform share clawed back on refund
+}
+
 // ─── Organization (Multi-tenant) ──────────────────────────────────────────────
 
 model Organization {
@@ -176,6 +193,10 @@ model User {
   payoutRequests    PayoutRequest[]
   referralLinks     ReferralLink[]
 
+  // Refunds
+  refundRequests    RefundRequest[]
+  adminRefunds      RefundRequest[] @relation("RefundAdmin")
+
   // Community
   forumThreads          ForumThread[]
   forumReplies          ForumReply[]
@@ -256,15 +277,16 @@ model Course {
   createdBy    User          @relation("CourseInstructor", fields: [createdById], references: [id])
   organization Organization? @relation(fields: [organizationId], references: [id])
 
-  sections     Section[]
-  lessons       Lesson[]
-  enrollments   Enrollment[]
-  reviews       Review[]
-  tags          CourseTag[]
-  orders        Order[]
-  wishlist      Wishlist[]
-  certificates  Certificate[]
-  referralLinks ReferralLink[]
+  sections       Section[]
+  lessons        Lesson[]
+  enrollments    Enrollment[]
+  reviews        Review[]
+  tags           CourseTag[]
+  orders         Order[]
+  wishlist       Wishlist[]
+  certificates   Certificate[]
+  referralLinks  ReferralLink[]
+  refundRequests RefundRequest[]
 
   @@map("courses")
 }
@@ -451,6 +473,8 @@ model Order {
   featurePurchase    FeaturePurchase?
   referralLink       ReferralLink?     @relation(fields: [referralLinkId], references: [id])
   walletTransactions WalletTransaction[]
+  refundRequest      RefundRequest?
+  ledgerEntries      LedgerEntry[]
 
   @@map("orders")
 }
@@ -946,6 +970,76 @@ model WalletTransaction {
   order  Order?           @relation(fields: [orderId], references: [id])
 
   @@map("wallet_transactions")
+}
+
+// ─── Refund Requests ─────────────────────────────────────────────────────────
+
+model RefundRequest {
+  id              String       @id @default(cuid())
+  orderId         String       @unique // one refund request per order (idempotency)
+  userId          String
+  courseId        String
+
+  // Snapshot at request-creation time (immutable after creation)
+  progressPercent  Decimal     @db.Decimal(5, 2)  // 0.00–100.00
+  completedLessons Int
+  totalLessons     Int
+
+  // Financial breakdown (pre-calculated, stored immutably)
+  originalAmount  Decimal      @db.Decimal(10, 2) // order amount
+  refundPercent   Decimal      @db.Decimal(5, 2)  // 100 - progressPercent
+  refundAmount    Decimal      @db.Decimal(10, 2) // amount to refund to student
+  instructorLoss  Decimal      @db.Decimal(10, 2) // deducted from instructor wallet
+  platformLoss    Decimal      @db.Decimal(10, 2) // platform revenue loss
+
+  status          RefundStatus @default(PENDING)
+  reason          String?      @db.Text  // student's reason
+  adminNotes      String?      @db.Text  // admin review notes
+  adminId         String?               // who approved/rejected
+
+  stripeRefundId  String?      @unique  // Stripe refund object ID (set on PROCESSED)
+
+  requestedAt     DateTime     @default(now())
+  reviewedAt      DateTime?    // when admin acted
+  processedAt     DateTime?    // when Stripe refund completed
+
+  order  Order  @relation(fields: [orderId],   references: [id])
+  user   User   @relation(fields: [userId],    references: [id])
+  course Course @relation(fields: [courseId],  references: [id])
+  admin  User?  @relation("RefundAdmin", fields: [adminId], references: [id])
+
+  ledgerEntries LedgerEntry[]
+
+  @@index([userId])
+  @@index([courseId])
+  @@index([status])
+  @@map("refund_requests")
+}
+
+// ─── Financial Ledger ─────────────────────────────────────────────────────────
+
+model LedgerEntry {
+  id              String          @id @default(cuid())
+  orderId         String?
+  refundRequestId String?
+  userId          String          // the student involved
+  courseId        String?
+
+  type            LedgerEntryType
+  amount          Decimal         @db.Decimal(10, 2)
+  description     String
+  meta            Json?           // extra context (progress %, splits, etc.)
+
+  createdAt       DateTime        @default(now())
+
+  order         Order?         @relation(fields: [orderId],         references: [id])
+  refundRequest RefundRequest? @relation(fields: [refundRequestId], references: [id])
+
+  @@index([orderId])
+  @@index([userId])
+  @@index([courseId])
+  @@index([type])
+  @@map("ledger_entries")
 }
 
 model PayoutRequest {

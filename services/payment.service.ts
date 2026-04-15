@@ -91,6 +91,50 @@ async function resolveSplit(
   return { saleSource: "ORGANIC", instructorPercent: basePercent, referralLinkId: null };
 }
 
+// ─── Helper: write purchase ledger entries ────────────────────────────────────
+
+async function createPurchaseLedgerEntries(
+  orderId:          string,
+  userId:           string,
+  courseId:         string,
+  amount:           number,
+  instructorRevenue: number,
+  platformRevenue:  number,
+  courseTitle:      string
+) {
+  await prisma.ledgerEntry.createMany({
+    data: [
+      {
+        orderId,
+        userId,
+        courseId,
+        type:        "PURCHASE",
+        amount,
+        description: `Course purchase — "${courseTitle}"`,
+        meta:        { courseTitle },
+      },
+      {
+        orderId,
+        userId,
+        courseId,
+        type:        "INSTRUCTOR_EARNING",
+        amount:      instructorRevenue,
+        description: `Instructor earning — "${courseTitle}"`,
+        meta:        { courseTitle },
+      },
+      {
+        orderId,
+        userId,
+        courseId,
+        type:        "PLATFORM_FEE",
+        amount:      platformRevenue,
+        description: `Platform fee — "${courseTitle}"`,
+        meta:        { courseTitle },
+      },
+    ],
+  });
+}
+
 // ─── Helper: credit instructor wallet after a confirmed sale ──────────────────
 
 async function creditInstructorWallet(
@@ -318,6 +362,15 @@ export async function handlePaymentIntentSuccess(paymentIntentId: string) {
     instructorPercent: instructorPct,
   });
 
+  // Write purchase ledger entries
+  if (order.courseId && order.course) {
+    await createPurchaseLedgerEntries(
+      order.id, userId, order.courseId,
+      paidAmount, instructorRevenue, platformRevenue,
+      order.course.title
+    ).catch(console.error);
+  }
+
   await prisma.notification.create({
     data: {
       userId,
@@ -400,6 +453,15 @@ export async function handlePaymentSuccess(sessionId: string, paymentIntentId: s
     saleSource:        order.saleSource,
     instructorPercent: instructorPct,
   });
+
+  // Write purchase ledger entries
+  if (order.courseId && order.course) {
+    await createPurchaseLedgerEntries(
+      order.id, userId, order.courseId,
+      paidAmount, instructorRevenue, platformRevenue,
+      order.course.title
+    ).catch(console.error);
+  }
 
   await prisma.notification.create({
     data: {
