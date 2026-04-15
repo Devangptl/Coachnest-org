@@ -8,7 +8,7 @@ import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { ShoppingCart, Receipt, ArrowRight, Package, BookOpen } from "lucide-react";
+import { ShoppingCart, Receipt, ArrowRight, Package, BookOpen, RotateCcw } from "lucide-react";
 
 
 async function getUserOrders(userId: string) {
@@ -162,12 +162,21 @@ export default async function OrderHistoryPage() {
                   {statusLabel[order.status] || order.status}
                 </Badge>
                 {order.courseId && order.status === "PAID" && (
-                  <Link href={`/courses/${order.courseId}`} className="text-orange-400 hover:text-orange-300 transition-colors">
+                  <Link href={`/courses/${order.courseId}`} className="text-orange-400 hover:text-orange-300 transition-colors" title="View course">
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 )}
+                {order.courseId && order.status === "REFUNDED" && (
+                  <Link
+                    href={`/courses/${order.courseId}`}
+                    className="flex items-center gap-1.5 text-xs font-medium text-orange-400 hover:text-orange-300 border border-orange-400/30 hover:border-orange-400/60 bg-orange-500/5 hover:bg-orange-500/10 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                    title="Re-enroll in this course"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" /> Re-enroll
+                  </Link>
+                )}
                 {order.featureSlug && order.status === "PAID" && (
-                  <Link href={`/${order.featureSlug}`} className="text-orange-400 hover:text-orange-300 transition-colors">
+                  <Link href={`/${order.featureSlug}`} className="text-orange-400 hover:text-orange-300 transition-colors" title="View feature">
                     <ArrowRight className="w-4 h-4" />
                   </Link>
                 )}

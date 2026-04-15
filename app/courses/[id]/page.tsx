@@ -53,13 +53,14 @@ async function getUserCourseData(
     isEnrolled:                  false,
     canAccessViaSub:             false,
     subscriptionExpiredForCourse: false,
+    isRefunded:                  false,
     completedLessonIds:          [] as string[],
     isWishlisted:                false,
     planAccess:                  null as Awaited<ReturnType<typeof getPlanAccess>> | null,
   };
   if (!userId) return empty;
 
-  const [enrollment, completedRows, wishlisted, planAccess] = await Promise.all([
+  const [enrollment, completedRows, wishlisted, planAccess, refundedOrder] = await Promise.all([
     prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
     }),
@@ -71,6 +72,10 @@ async function getUserCourseData(
       where: { userId_courseId: { userId, courseId } },
     }),
     getPlanAccess(userId),
+    prisma.order.findFirst({
+      where:  { userId, courseId, status: "REFUNDED" },
+      select: { id: true },
+    }),
   ]);
 
   // ── Determine effective enrollment ──────────────────────────────────────────
@@ -134,6 +139,7 @@ async function getUserCourseData(
     isEnrolled,
     canAccessViaSub,
     subscriptionExpiredForCourse,
+    isRefunded:         Boolean(refundedOrder),
     completedLessonIds: completedRows.map((p) => p.lessonId),
     isWishlisted:       Boolean(wishlisted),
     planAccess,
@@ -153,7 +159,7 @@ export default async function CourseDetailPage({ params }: Props) {
   const session = await getSession();
   const {
     isEnrolled, canAccessViaSub, subscriptionExpiredForCourse,
-    completedLessonIds, isWishlisted, planAccess,
+    isRefunded, completedLessonIds, isWishlisted, planAccess,
   } = await getUserCourseData(
     id,
     course.minPlan,
@@ -215,6 +221,7 @@ export default async function CourseDetailPage({ params }: Props) {
             isEnrolled={isEnrolled}
             canAccessViaSub={canAccessViaSub}
             subscriptionExpiredForCourse={subscriptionExpiredForCourse}
+            isRefunded={isRefunded}
             isWishlisted={isWishlisted}
             isLoggedIn={Boolean(session)}
             userRole={session?.role ?? null}

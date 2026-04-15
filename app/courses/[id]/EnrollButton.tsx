@@ -7,7 +7,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, Tag, X, Crown, Lock, PlayCircle, AlertCircle, RefreshCcw } from "lucide-react";
+import { Loader2, CheckCircle2, Tag, X, Crown, Lock, PlayCircle, AlertCircle, RefreshCcw, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import type { PlanAccess } from "@/services/subscription.service";
@@ -20,6 +20,8 @@ interface Props {
   canAccessViaSub: boolean;
   /** User previously enrolled via subscription but the subscription has since expired */
   subscriptionExpiredForCourse: boolean;
+  /** Order was refunded — student lost access; show Re-enroll CTA */
+  isRefunded?: boolean;
   isFree: boolean;
   price: number | null;
   courseMinPlan: string;
@@ -38,7 +40,7 @@ interface CouponData {
 
 export default function EnrollButton({
   courseId, isEnrolled: initialEnrolled, canAccessViaSub,
-  subscriptionExpiredForCourse, isFree, price,
+  subscriptionExpiredForCourse, isRefunded = false, isFree, price,
   courseMinPlan, planAccess, firstLessonId,
 }: Props) {
   const router = useRouter();
@@ -257,6 +259,28 @@ export default function EnrollButton({
         >
           <RefreshCcw className="w-4 h-4" /> Resubscribe to regain access
         </Link>
+      </div>
+    );
+  }
+
+  // Refunded — student lost access; offer re-purchase
+  if (isRefunded && !enrolled) {
+    return (
+      <div className="space-y-2">
+        <div className="flex items-center gap-2 bg-red-500/10 border border-red-400/20 rounded-md px-4 py-3 text-red-300 text-sm font-medium justify-center">
+          <RotateCcw className="w-4 h-4 flex-shrink-0" />
+          Your purchase was refunded
+        </div>
+        <button
+          onClick={handleEnroll}
+          disabled={loading}
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors disabled:opacity-50"
+        >
+          {loading
+            ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+            : <><RotateCcw className="w-4 h-4" /> Re-enroll{price ? ` — ₹${price.toLocaleString("en-IN")}` : ""}</>
+          }
+        </button>
       </div>
     );
   }
