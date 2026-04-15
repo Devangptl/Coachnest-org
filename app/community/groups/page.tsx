@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Users, Plus, Search, Lock, Globe, Key } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
-import CommunityProNotice from "@/components/CommunityProNotice";
+import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
 interface Group {
   id: string;
@@ -150,7 +150,7 @@ export default function StudyGroupsPage() {
       </div>
 
       {/* Pro upgrade notice */}
-      {!subLoading && !hasInstructorQA && <CommunityProNotice action="create-group" />}
+      {!subLoading && !hasInstructorQA && <CommunityAccessNotice action="create-group" />}
 
       {/* Search */}
       <div className="relative">

@@ -1,7 +1,7 @@
 /**
  * /dashboard/subscription
- * - Students:           Shows purchased courses + feature add-ons (no subscription model)
- * - Instructors/Admins: Full subscription management UI (SubscriptionManagement client component)
+ * - Shows purchased courses + feature add-ons for all users.
+ * - Plan-based subscription management has been removed.
  */
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -12,11 +12,10 @@ import {
   ArrowRight, ShoppingCart, Package, Clock,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
-import SubscriptionManagement from "@/components/billing/SubscriptionManagement";
 
-// ─── Student data ─────────────────────────────────────────────────────────────
+// ─── Purchase data (Courses & Add-ons) ────────────────────────────────────────
 
-async function getStudentPurchases(userId: string) {
+async function getPurchases(userId: string) {
   const [enrollments, featurePurchases] = await Promise.all([
     prisma.enrollment.findMany({
       where:   { userId },
@@ -41,11 +40,11 @@ function fmtDate(date: Date | string) {
   });
 }
 
-// ─── Student purchases view ───────────────────────────────────────────────────
+// ─── Purchases page view ──────────────────────────────────────────────────────
 
-async function StudentPurchasesPage({ userId }: { userId: string }) {
+async function PurchasesPage({ userId }: { userId: string }) {
   const { enrollments, featurePurchases, hasCommunityAccess } =
-    await getStudentPurchases(userId);
+    await getPurchases(userId);
 
   return (
     <div className="space-y-8">
@@ -221,10 +220,7 @@ export default async function SubscriptionPage() {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  if (session.role === "STUDENT") {
-    return <StudentPurchasesPage userId={session.userId} />;
-  }
-
-  // Instructors and Admins get the full subscription management UI
-  return <SubscriptionManagement />;
+  // All roles (STUDENT, INSTRUCTOR, ADMIN) see the purchases view.
+  // Plan-based subscription management has been disabled.
+  return <PurchasesPage userId={session.userId} />;
 }

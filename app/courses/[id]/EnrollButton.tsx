@@ -1,31 +1,23 @@
 /**
  * EnrollButton — Client Component for enrolling in a course.
- * Handles: free enrollment, paid Stripe checkout, subscriber direct-access,
- * BASIC plan limit enforcement, and PRO-only course gating.
+ * Handles: free enrollment and paid Stripe checkout.
+ * Plan functionality (BASIC, PRO, ENTERPRISE) has been removed.
  */
 "use client";
 
 import { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, CheckCircle2, Tag, X, Crown, Lock, PlayCircle, AlertCircle, RefreshCcw, RotateCcw } from "lucide-react";
+import { Loader2, CheckCircle2, Tag, X, PlayCircle, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import type { PlanAccess } from "@/services/subscription.service";
-import { BASIC_COURSE_LIMIT } from "@/services/subscription.service";
 
 interface Props {
   courseId: string;
   isEnrolled: boolean;
-  /** Subscriber has plan access rights — clicking "Access Now" will enroll and consume a slot */
-  canAccessViaSub: boolean;
-  /** User previously enrolled via subscription but the subscription has since expired */
-  subscriptionExpiredForCourse: boolean;
   /** Order was refunded — student lost access; show Re-enroll CTA */
   isRefunded?: boolean;
   isFree: boolean;
   price: number | null;
-  courseMinPlan: string;
-  planAccess: PlanAccess | null;
   /** ID of the first lesson (or first incomplete lesson) to link "Continue Learning" */
   firstLessonId?: string;
 }
@@ -39,9 +31,9 @@ interface CouponData {
 }
 
 export default function EnrollButton({
-  courseId, isEnrolled: initialEnrolled, canAccessViaSub,
-  subscriptionExpiredForCourse, isRefunded = false, isFree, price,
-  courseMinPlan, planAccess, firstLessonId,
+  courseId, isEnrolled: initialEnrolled,
+  isRefunded = false, isFree, price,
+  firstLessonId,
 }: Props) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -76,12 +68,6 @@ export default function EnrollButton({
     : 0;
   const finalPrice = Math.max(0, originalPrice - discountAmount);
 
-  // ── Derived access state ───────────────────────────────────────────────────
-  const hasActiveSub = Boolean(planAccess?.isActive && planAccess.canAccessPaidCourses);
-  const isProOnly = courseMinPlan === "PRO" || courseMinPlan === "ENTERPRISE";
-  const planBlocked = hasActiveSub && isProOnly && !planAccess?.canAccessProCourses;
-  const limitReached = hasActiveSub && planAccess?.limitReached && !isProOnly && !planBlocked;
-
   // ── Handlers ──────────────────────────────────────────────────────────────
   async function handleApplyCoupon() {
     if (!couponCode.trim() || couponLoading) return;
@@ -104,43 +90,6 @@ export default function EnrollButton({
   }
 
   function removeCoupon() { setAppliedCoupon(null); setCouponCode(""); }
-
-  async function handleSubscriptionEnroll() {
-    if (enrolled || loading) return;
-    setLoading(true);
-    try {
-      const res = await fetch("/api/subscriptions/enroll", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseId }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setEnrolled(true);
-        if (data.alreadyEnrolled) {
-          toast.success("Already enrolled. Start learning now!");
-        } else if (data.enrollmentLimit !== null) {
-          const remaining = data.slotsRemaining ?? 0;
-          toast.success(
-            remaining > 0
-              ? `Enrolled! ${remaining} of ${data.enrollmentLimit} slot${remaining !== 1 ? "s" : ""} remaining.`
-              : `Enrolled! All ${data.enrollmentLimit} course slots used. Upgrade for more.`
-          );
-        } else {
-          toast.success("You're in! Start learning now.");
-        }
-        // Switch to the curriculum tab so the user lands directly on lesson content
-        window.dispatchEvent(new CustomEvent("course:open-curriculum"));
-        router.refresh();
-      } else {
-        toast.error(data.error ?? "Enrollment failed.");
-      }
-    } catch {
-      toast.error("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
-  }
 
   async function handleEnroll() {
     if (enrolled || loading) return;
@@ -195,7 +144,7 @@ export default function EnrollButton({
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-2 bg-emerald-500/20 border border-emerald-400/30 rounded-md px-3 py-2.5 text-emerald-400 text-sm font-medium">
           <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-          {hasActiveSub ? "Enrolled via subscription" : "Enrolled"}
+          Enrolled
         </div>
         <Link
           href={lessonHref}
@@ -203,61 +152,6 @@ export default function EnrollButton({
         >
           <PlayCircle className="w-4 h-4 flex-shrink-0" />
           Continue Learning
-        </Link>
-      </div>
-    );
-  }
-
-  // PRO-only course — BASIC subscriber blocked
-  if (planBlocked) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-400/20 rounded-md px-4 py-3 text-purple-300 text-sm font-medium justify-center">
-          <Lock className="w-4 h-4" />
-          PRO Plan Required
-        </div>
-        <Link
-          href="/pricing"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-purple-400/30 bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 text-sm font-medium transition-colors"
-        >
-          <Crown className="w-4 h-4" /> Upgrade to PRO
-        </Link>
-      </div>
-    );
-  }
-
-  // BASIC user at limit
-  if (limitReached) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 bg-amber-500/10 border border-amber-400/20 rounded-md px-4 py-3 text-amber-300 text-sm font-medium justify-center">
-          <Lock className="w-4 h-4" />
-          {planAccess!.enrolledCount}/{BASIC_COURSE_LIMIT} slots used
-        </div>
-        <Link
-          href="/pricing"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
-        >
-          <Crown className="w-4 h-4" /> Upgrade for Unlimited Access
-        </Link>
-      </div>
-    );
-  }
-
-  // Subscription expired — user had access via a past subscription that is now expired.
-  // Show a resubscribe prompt instead of a purchase CTA, since they enrolled via sub.
-  if (subscriptionExpiredForCourse && !hasActiveSub) {
-    return (
-      <div className="space-y-2">
-        <div className="flex items-center gap-2 bg-yellow-500/10 border border-yellow-400/20 rounded-md px-4 py-3 text-yellow-300 text-sm font-medium justify-center">
-          <AlertCircle className="w-4 h-4 flex-shrink-0" />
-          Subscription expired — access paused
-        </div>
-        <Link
-          href="/dashboard/subscription"
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors"
-        >
-          <RefreshCcw className="w-4 h-4" /> Resubscribe to regain access
         </Link>
       </div>
     );
@@ -285,24 +179,7 @@ export default function EnrollButton({
     );
   }
 
-  // Subscriber has plan access — show "Access Now" to enroll and consume a slot
-  if (canAccessViaSub) {
-    return (
-      <button
-        onClick={handleSubscriptionEnroll}
-        disabled={loading}
-        className="btn-primary flex items-center justify-center gap-2 py-2 px-6 text-sm"
-      >
-        {loading ? (
-          <><Loader2 className="w-4 h-4 animate-spin" /> Enrolling…</>
-        ) : (
-          <><Crown className="w-4 h-4" /> Access Now</>
-        )}
-      </button>
-    );
-  }
-
-  // Standard enroll (free or paid without subscription)
+  // Standard enroll (free or paid)
   return (
     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
       {/* Coupon input — only for paid courses */}

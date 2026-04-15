@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ClipboardCheck, Plus, FileText, Star, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
-import CommunityProNotice from "@/components/CommunityProNotice";
+import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
 interface Assignment {
   id: string;
@@ -95,7 +95,7 @@ export default function PeerReviewPage() {
       </div>
 
       {/* Pro upgrade notice */}
-      {!subLoading && !hasInstructorQA && <CommunityProNotice action="peer-review" />}
+      {!subLoading && !hasInstructorQA && <CommunityAccessNotice action="peer-review" />}
 
       {/* Tabs */}
       <div className="flex gap-1 p-1 bg-secondary rounded-lg w-fit">

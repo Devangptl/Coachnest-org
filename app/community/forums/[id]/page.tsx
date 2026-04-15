@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, ChevronUp, ChevronDown, MessageSquare, Send, Clock, CheckCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
-import CommunityProNotice from "@/components/CommunityProNotice";
+import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
 interface Reply {
   id: string;
@@ -217,7 +217,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
           </div>
         </div>
       ) : (
-        <CommunityProNotice action="reply" />
+        <CommunityAccessNotice action="reply" />
       )}
     </div>
   );

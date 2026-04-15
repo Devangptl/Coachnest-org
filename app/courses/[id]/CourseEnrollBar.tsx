@@ -18,17 +18,12 @@ interface Props {
   price: number | null;
   discountPrice: number | null;
   isFree: boolean;
-  courseMinPlan: string;
   isEnrolled: boolean;
-  canAccessViaSub: boolean;
-  /** User had subscription-based enrollment but their subscription has since expired */
-  subscriptionExpiredForCourse: boolean;
   /** User previously purchased this course but it was refunded — show Re-enroll */
   isRefunded: boolean;
   isWishlisted: boolean;
   isLoggedIn: boolean;
   userRole: string | null;
-  planAccess: PlanAccess | null;
   lessonCount: number;
   totalDuration: number;
   language: string;
@@ -38,10 +33,9 @@ interface Props {
 }
 
 export default function CourseEnrollBar({
-  courseId, price, discountPrice, isFree, courseMinPlan,
-  isEnrolled, canAccessViaSub, subscriptionExpiredForCourse, isRefunded,
+  courseId, price, discountPrice, isFree,
+  isEnrolled, isRefunded,
   isWishlisted, isLoggedIn, userRole,
-  planAccess,
   lessonCount, totalDuration, language, level,
   firstLessonId,
 }: Props) {
@@ -49,7 +43,7 @@ export default function CourseEnrollBar({
   const discountNum = discountPrice ? Number(discountPrice) : null;
   const hasDiscount = !isFree && discountNum && price && discountNum < price;
 
-  const hasActiveSub = Boolean(planAccess?.isActive && planAccess.canAccessPaidCourses);
+
 
   async function handleCopyLink() {
     try {
@@ -62,18 +56,7 @@ export default function CourseEnrollBar({
     }
   }
 
-  // ── Subscription badge (inline) ────────────────────────────────────────────
-  function SubBadge() {
-    if (!planAccess || !planAccess.isPaid || isFree || !hasActiveSub) return null;
-    return (
-      <div className="flex items-center gap-1.5 bg-orange-500/10 border border-orange-400/20 rounded-lg px-2.5 py-1.5">
-        <Crown className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
-        <span className="text-orange-300 text-xs font-medium whitespace-nowrap">
-          {planAccess!.plan} plan
-        </span>
-      </div>
-    );
-  }
+
 
   return (
     <motion.div
@@ -94,7 +77,7 @@ export default function CourseEnrollBar({
                   No cost
                 </span>
               </div>
-            ) : price && !hasActiveSub ? (
+            ) : price ? (
               <div className="flex items-center gap-2.5 flex-wrap">
                 <span className="text-2xl sm:text-3xl font-bold text-foreground">
                   ₹{hasDiscount ? discountNum!.toLocaleString("en-IN") : price.toLocaleString("en-IN")}
@@ -111,7 +94,6 @@ export default function CourseEnrollBar({
                 )}
               </div>
             ) : null}
-            <SubBadge />
           </div>
 
           {/* Enroll button — flex grow removed so it stays compact */}
@@ -122,13 +104,9 @@ export default function CourseEnrollBar({
                   <EnrollButton
                     courseId={courseId}
                     isEnrolled={isEnrolled}
-                    canAccessViaSub={canAccessViaSub}
-                    subscriptionExpiredForCourse={subscriptionExpiredForCourse}
                     isRefunded={isRefunded}
                     isFree={isFree}
                     price={hasDiscount ? discountNum : price}
-                    courseMinPlan={courseMinPlan}
-                    planAccess={planAccess}
                     firstLessonId={firstLessonId}
                   />
                 )}
@@ -174,7 +152,7 @@ export default function CourseEnrollBar({
             </div>
 
             {/* Money-back guarantee — subtle inline */}
-            {!isEnrolled && !isFree && !hasActiveSub && (
+            {!isEnrolled && !isFree && (
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-3 pt-3 border-t border-white/[0.04]">
                 <Shield className="w-3.5 h-3.5 text-emerald-400/80 flex-shrink-0" />
                 <p className="text-muted-foreground/50 text-[11px] leading-relaxed text-center sm:text-left">
@@ -220,11 +198,7 @@ export default function CourseEnrollBar({
           <IncludeItem icon={Smartphone} text="Access on mobile and desktop" />
           <IncludeItem icon={Award}     text="Certificate of completion" />
           
-          {planAccess?.hasOfflineDownloads ? (
-            <IncludeItem icon={Download} text="Offline downloads" />
-          ) : (
-            <IncludeItem icon={Zap}  text="Offline downloads (PRO+)" muted />
-          )}
+          <IncludeItem icon={Download} text="Offline downloads" />
         </div>
       </div>
     </motion.div>

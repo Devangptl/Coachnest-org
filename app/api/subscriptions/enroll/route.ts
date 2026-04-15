@@ -16,48 +16,12 @@ import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
-export async function POST(req: Request) {
-  const session = await getSession();
-  if (!session) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  // Students must purchase courses — no subscription-based enrollment
-  if (session.role === "STUDENT") {
-    return NextResponse.json(
-      {
-        error:
-          "Subscription enrollment is no longer available. " +
-          "Purchase the course directly at /api/payments/create-order, " +
-          "or enroll in a free course at /api/enrollments.",
-        code: "SUBSCRIPTION_MODEL_REMOVED",
-        purchaseUrl: "/api/payments/create-order",
-        freeEnrollUrl: "/api/enrollments",
-      },
-      { status: 410 }
-    );
-  }
-
-  // Instructors and Admins — allow direct enrollment (no payment required)
-  const body     = await req.json().catch(() => ({}));
-  const { courseId } = body as { courseId?: string };
-  if (!courseId) {
-    return NextResponse.json({ error: "courseId is required" }, { status: 400 });
-  }
-
-  const course = await prisma.course.findUnique({
-    where:  { id: courseId },
-    select: { id: true, status: true },
-  });
-  if (!course || course.status === "ARCHIVED") {
-    return NextResponse.json({ error: "Course not found" }, { status: 404 });
-  }
-
-  const enrollment = await prisma.enrollment.upsert({
-    where:  { userId_courseId: { userId: session.userId, courseId } },
-    create: { userId: session.userId, courseId },
-    update: {},
-  });
-
-  return NextResponse.json({ success: true, enrollment });
+export async function POST() {
+  return NextResponse.json(
+    {
+      error: "Subscription enrollment is no longer available. Please use /api/enrollments directly.",
+      code: "SUBSCRIPTION_MODEL_REMOVED",
+    },
+    { status: 410 }
+  );
 }

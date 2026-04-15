@@ -5,7 +5,7 @@
  * Wraps content that requires a purchased platform add-on (e.g. Community).
  * Shows a purchase CTA when the student hasn't bought the feature yet.
  *
- * Unlike SubscriptionGate (plan-based), this is one-time purchase access.
+ * This is for one-time purchase access.
  * Admins and Instructors bypass this gate automatically via their role.
  *
  * Usage:

@@ -22,140 +22,14 @@ const PRICE_IDS: Record<string, Record<string, string | undefined>> = {
   ENTERPRISE: { monthly: process.env.STRIPE_PRICE_ENTERPRISE_MONTHLY, yearly: process.env.STRIPE_PRICE_ENTERPRISE_YEARLY },
 };
 
-export async function POST(req: NextRequest) {
-  try {
-    const session = await getSession();
-    if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    if (session.role === "STUDENT") {
-      return NextResponse.json(
-        {
-          error:
-            "Students use the direct-purchase model and do not have subscription plans. " +
-            "Purchase individual courses at /api/payments/create-order.",
-          code: "SUBSCRIPTION_MODEL_REMOVED",
-        },
-        { status: 410 }
-      );
-    }
-
-    const { plan, billing } = await req.json() as {
-      plan:    string;
-      billing: "monthly" | "yearly";
-    };
-
-    if (!plan || !billing) {
-      return NextResponse.json({ error: "plan and billing are required" }, { status: 400 });
-    }
-
-    const planUpper = plan.toUpperCase();
-    const priceId   = PRICE_IDS[planUpper]?.[billing];
-    if (!priceId) {
-      return NextResponse.json(
-        { error: `Stripe price not configured for ${planUpper} ${billing}` },
-        { status: 400 }
-      );
-    }
-
-    const [user, existingSub] = await Promise.all([
-      prisma.user.findUnique({
-        where:  { id: session.userId },
-        select: { id: true, email: true, name: true, stripeCustomerId: true },
-      }),
-      prisma.subscription.findUnique({
-        where:  { userId: session.userId },
-        select: { status: true, plan: true },
-      }),
-    ]);
-    if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
-
-    // Guard: don't create a duplicate subscription if already on a paid plan
-    const paidPlans = ["BASIC", "PRO", "ENTERPRISE"];
-    if (
-      (existingSub?.status === "ACTIVE" || existingSub?.status === "TRIAL") &&
-      existingSub.plan && paidPlans.includes(existingSub.plan)
-    ) {
-      return NextResponse.json(
-        { error: `You already have an active ${existingSub.plan} subscription. Use change-plan to upgrade or downgrade.` },
-        { status: 400 }
-      );
-    }
-
-    const stripe = getStripe();
-    let customerId = user.stripeCustomerId ?? undefined;
-
-    // Ensure Stripe customer exists with name + address (India export compliance)
-    if (!customerId) {
-      const customer = await stripe.customers.create({
-        email:    user.email,
-        name:     user.name ?? user.email,
-        address:  { line1: "India", country: "IN" },
-        metadata: { userId: user.id },
-      });
-      customerId = customer.id;
-      await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
-    } else {
-      // Ensure existing customer has name + address
-      await stripe.customers.update(customerId, {
-        name:    user.name ?? user.email,
-        address: { line1: "India", country: "IN" },
-      });
-    }
-
-    // Create subscription — default_incomplete so we can confirm 3DS if needed
-    const sub = await stripe.subscriptions.create({
-      customer:         customerId,
-      items:            [{ price: priceId }],
-      payment_behavior: "default_incomplete",
-      payment_settings: {
-        save_default_payment_method: "on_subscription",
-        payment_method_types:        ["card"],
-      },
-      expand:   ["latest_invoice.payment_intent"],
-      metadata: { userId: user.id, plan: planUpper, billing },
-    });
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const invoice       = (sub as any).latest_invoice;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const paymentIntent = (invoice as any)?.payment_intent;
-
-    // Add description to the PaymentIntent (required for India export transactions)
-    if (paymentIntent?.id) {
-      await stripe.paymentIntents.update(paymentIntent.id, {
-        description: `CoachNest ${planUpper} subscription (${billing})`,
-      });
-    }
-
-    // ── 3DS / further client-side action required ─────────────────────────────
-    if (
-      paymentIntent?.status === "requires_action" ||
-      paymentIntent?.status === "requires_payment_method"
-    ) {
-      return NextResponse.json({
-        requiresAction: true,
-        clientSecret:   paymentIntent.client_secret,
-        subId:          sub.id,
-      });
-    }
-
-    // ── Payment succeeded / trialing ──────────────────────────────────────────
-    if (sub.status === "active" || sub.status === "trialing") {
-      await upsertSubscription(user.id, planUpper, billing, sub);
-      const savedSub = await prisma.subscription.findUnique({ where: { userId: user.id } });
-      return NextResponse.json({ success: true, plan: planUpper, subscription: savedSub });
-    }
-
-    // ── Incomplete — payment intent needs confirmation ────────────────────────
-    return NextResponse.json({
-      requiresAction: true,
-      clientSecret:   paymentIntent?.client_secret ?? null,
-      subId:          sub.id,
-    });
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Internal server error";
-    return NextResponse.json({ error: message }, { status: 400 });
-  }
+export async function POST() {
+  return NextResponse.json(
+    {
+      error: "Subscription plans are no longer available. Please purchase courses or enrollments directly.",
+      code: "SUBSCRIPTION_MODEL_REMOVED",
+    },
+    { status: 410 }
+  );
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────

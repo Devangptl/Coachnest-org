@@ -28,7 +28,7 @@ const ACTION_COPY: Record<NonNullable<Props["action"]>, string> = {
   "peer-review":  "Peer review requires Community Access.",
 };
 
-export default function CommunityProNotice({ action }: Props) {
+export default function CommunityAccessNotice({ action }: Props) {
   const { hasCommunityAccess, isLoading } = usePurchasedFeatures();
 
   if (isLoading || hasCommunityAccess) return null;

@@ -5,7 +5,7 @@ import Link from "next/link";
 import { MessageSquare, Plus, Search, CheckCircle, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
-import CommunityProNotice from "@/components/CommunityProNotice";
+import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
 interface Thread {
   id: string;
@@ -106,7 +106,7 @@ export default function ForumsPage() {
       </div>
 
       {/* Pro upgrade notice */}
-      {!subLoading && !hasInstructorQA && <CommunityProNotice action="post" />}
+      {!subLoading && !hasInstructorQA && <CommunityAccessNotice action="post" />}
 
       {/* Toolbar — search + sort */}
       <div className="flex items-center gap-3">

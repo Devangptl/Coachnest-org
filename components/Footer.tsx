@@ -6,11 +6,9 @@ import ThemeToggle from "./ThemeToggle";
 
 const PLATFORM_LINKS = [
   { label: "Browse Courses",    href: "/courses"  },
-  { label: "Pricing",           href: "/pricing"  },
   { label: "Search",            href: "/search"   },
   { label: "Blog",              href: "/blog"     },
   { label: "Become Instructor", href: "/signup"   },
-  { label: "Enterprise",        href: "/pricing"  },
 ];
 
 const RESOURCES_LINKS = [
@@ -80,12 +78,6 @@ export default function Footer() {
               className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold text-sm transition-all shadow-lg shadow-orange-600/20"
             >
               Explore Courses
-            </Link>
-            <Link
-              href="/pricing"
-              className="px-5 py-2.5 rounded-xl border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] text-white/70 hover:text-white font-medium text-sm transition-all"
-            >
-              View Plans
             </Link>
           </div>
         </div>
