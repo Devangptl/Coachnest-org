@@ -1,19 +1,21 @@
 /**
  * /courses catalog loading skeleton with shimmer effect.
  */
+import { Skeleton } from "@/components/ui/Skeleton";
+
 export default function CoursesLoading() {
   return (
-    <div className=" pb-16">
+    <div className="pb-16">
       {/* Header */}
-      <div className="mb-10">
-        <div className="skeleton h-10 w-52 rounded-md mb-3" />
-        <div className="skeleton h-4 w-72 rounded-lg" />
+      <div className="mb-10 animate-pulse">
+        <Skeleton className="h-10 w-52 rounded-md mb-3" />
+        <Skeleton className="h-4 w-72 rounded-lg" />
       </div>
 
       {/* Filter bar */}
-      <div className="flex flex-wrap gap-3 mb-8">
+      <div className="flex flex-wrap gap-3 mb-8 animate-pulse">
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="skeleton h-10 w-24 rounded-md" />
+          <Skeleton key={i} className="h-10 w-24 rounded-md" />
         ))}
       </div>
 
@@ -22,23 +24,23 @@ export default function CoursesLoading() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="backdrop-blur-lg bg-white/[0.06] border border-border rounded-lg overflow-hidden"
+            className="bg-card border border-border rounded-lg overflow-hidden animate-pulse"
           >
-            <div className="skeleton h-44 w-full rounded-none" />
+            <Skeleton className="h-44 w-full rounded-none" />
             <div className="p-5 space-y-3">
               <div className="flex gap-2">
-                <div className="skeleton h-5 w-16 rounded-full" />
-                <div className="skeleton h-5 w-20 rounded-full" />
+                <Skeleton className="h-5 w-16 rounded-full" />
+                <Skeleton className="h-5 w-20 rounded-full" />
               </div>
-              <div className="skeleton h-5 w-4/5 rounded-lg" />
-              <div className="skeleton h-3 w-full rounded-lg" />
-              <div className="skeleton h-3 w-2/3 rounded-lg" />
+              <Skeleton h="h-5" w="w-4/5" />
+              <Skeleton h="h-3" w="w-full" />
+              <Skeleton h="h-3" w="w-2/3" />
               <div className="flex items-center justify-between pt-2">
                 <div className="flex items-center gap-1">
-                  <div className="skeleton h-3 w-8 rounded" />
-                  <div className="skeleton h-3 w-3 rounded" />
+                  <Skeleton h="h-3" w="w-8" />
+                  <Skeleton h="h-3" w="w-3" />
                 </div>
-                <div className="skeleton h-5 w-14 rounded-lg" />
+                <Skeleton h="h-5" w="w-14" />
               </div>
             </div>
           </div>

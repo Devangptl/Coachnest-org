@@ -1,59 +1,63 @@
 /**
  * /admin/messages/loading — Skeleton loader for messages list
  */
+import { Skeleton } from "@/components/ui/Skeleton";
+
 export default function AdminMessagesLoading() {
   return (
     <div>
-      {/* Header skeleton */}
-      <div className="mb-8">
+      {/* Header */}
+      <div className="mb-8 animate-pulse">
         <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 rounded-md skeleton" />
-          <div className="h-8 w-40 rounded-lg skeleton" />
+          <Skeleton className="w-10 h-10 rounded-md" />
+          <Skeleton className="h-8 w-40 rounded-lg" />
         </div>
-        <div className="h-4 w-32 rounded skeleton mt-1.5" />
+        <Skeleton className="h-4 w-32 rounded-lg mt-1.5" />
       </div>
 
-      {/* Tabs + Search skeleton */}
-      <div className="flex gap-4 mb-6">
+      {/* Tabs + Search */}
+      <div className="flex gap-4 mb-6 animate-pulse">
         <div className="flex gap-1 bg-card border border-border rounded-lg p-1">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="h-8 w-16 rounded-md skeleton" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-8 w-16 rounded-md" />
           ))}
         </div>
-        <div className="h-10 flex-1 max-w-md rounded-lg skeleton" />
+        <Skeleton className="h-10 flex-1 max-w-md rounded-lg" />
       </div>
 
-      {/* Table skeleton */}
-      <div className="glass overflow-hidden">
+      {/* Table */}
+      <div className="bg-card border border-border rounded-lg animate-pulse">
         <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-border">
-          <div className="col-span-3 h-3 w-16 rounded skeleton" />
-          <div className="col-span-3 h-3 w-16 rounded skeleton" />
-          <div className="col-span-2 h-3 w-12 rounded skeleton" />
-          <div className="col-span-2 h-3 w-16 rounded skeleton" />
-          <div className="col-span-2 h-3 w-12 rounded skeleton ml-auto" />
+          <Skeleton className="col-span-3 h-3 w-16 rounded" />
+          <Skeleton className="col-span-3 h-3 w-16 rounded" />
+          <Skeleton className="col-span-2 h-3 w-12 rounded" />
+          <Skeleton className="col-span-2 h-3 w-16 rounded" />
+          <Skeleton className="col-span-2 h-3 w-12 rounded ml-auto" />
         </div>
-        {[1, 2, 3, 4, 5].map((i) => (
-          <div key={i} className="grid grid-cols-12 gap-4 items-center px-5 py-4 border-b border-border/30">
-            <div className="col-span-3 space-y-1.5">
-              <div className="h-4 w-28 rounded skeleton" />
-              <div className="h-3 w-36 rounded skeleton" />
+        <div className="divide-y divide-border/40">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="grid grid-cols-12 gap-4 items-center px-5 py-4">
+              <div className="col-span-3 space-y-1.5">
+                <Skeleton h="h-4" w="w-28" />
+                <Skeleton h="h-3" w="w-36" />
+              </div>
+              <div className="col-span-3 space-y-1.5">
+                <Skeleton h="h-4" w="w-32" />
+                <Skeleton h="h-3" w="w-40" />
+              </div>
+              <div className="col-span-2">
+                <Skeleton className="h-5 w-16 rounded-full" />
+              </div>
+              <div className="col-span-2">
+                <Skeleton h="h-4" w="w-14" />
+              </div>
+              <div className="col-span-2 flex justify-end gap-2">
+                <Skeleton className="h-7 w-14 rounded-lg" />
+                <Skeleton className="h-7 w-8 rounded-lg" />
+              </div>
             </div>
-            <div className="col-span-3 space-y-1.5">
-              <div className="h-4 w-32 rounded skeleton" />
-              <div className="h-3 w-40 rounded skeleton" />
-            </div>
-            <div className="col-span-2">
-              <div className="h-5 w-16 rounded skeleton" />
-            </div>
-            <div className="col-span-2">
-              <div className="h-4 w-14 rounded skeleton" />
-            </div>
-            <div className="col-span-2 flex justify-end gap-2">
-              <div className="h-7 w-14 rounded skeleton" />
-              <div className="h-7 w-8 rounded skeleton" />
-            </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
     </div>
   );
