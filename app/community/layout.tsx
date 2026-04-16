@@ -26,7 +26,7 @@ export default async function CommunityLayout({
     <>
       <CommunityTour initialRun={!hasSeenCommunityTour} />
       <div className=" pb-16">
-        <div className="flex flex-col lg:flex-row lg:gap-8">
+        <div className="flex flex-col lg:flex-row lg:gap-8 lg:min-h-[calc(100vh-4rem)]">
           <CommunitySidebar />
           <div className="flex-1 min-w-0 animate-fade-in">{children}</div>
         </div>
