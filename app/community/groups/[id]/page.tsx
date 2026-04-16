@@ -161,8 +161,11 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     try {
       const res = await fetch(`/api/community/groups/${id}/requests`);
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to load requests");
       setJoinRequests(data.requests || []);
-    } catch { /* ignore */ } finally {
+    } catch (e: any) {
+      toast.error(e.message || "Could not load join requests");
+    } finally {
       setRequestsLoading(false);
     }
   }

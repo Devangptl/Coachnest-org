@@ -68,20 +68,24 @@ export async function POST(
         });
       }
 
-      // Notify the group admin
-      const admin = await prisma.studyGroupMember.findFirst({
-        where: { groupId, role: "ADMIN" },
-      });
-      if (admin) {
-        await prisma.notification.create({
-          data: {
-            userId: admin.userId,
-            title: "New join request",
-            body: `Someone wants to join your group "${group.name}".`,
-            type: "JOIN_REQUEST",
-            link: `/community/groups/${groupId}`,
-          },
+      // Notify the group admin (best-effort — don't fail the request if this throws)
+      try {
+        const admin = await prisma.studyGroupMember.findFirst({
+          where: { groupId, role: "ADMIN" },
         });
+        if (admin) {
+          await prisma.notification.create({
+            data: {
+              userId: admin.userId,
+              title: "New join request",
+              body: `Someone wants to join your group "${group.name}".`,
+              type: "JOIN_REQUEST",
+              link: `/community/groups/${groupId}`,
+            },
+          });
+        }
+      } catch (notifErr) {
+        console.warn("[join] Notification creation failed (non-fatal):", notifErr);
       }
 
       return NextResponse.json({ requested: true }, { status: 201 });

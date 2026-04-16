@@ -46,6 +46,7 @@ export async function PATCH(
         return NextResponse.json({ error: "Group is full" }, { status: 400 });
       }
 
+      // Core membership changes — must succeed atomically
       await prisma.$transaction([
         prisma.groupJoinRequest.update({
           where: { id: requestId },
@@ -58,7 +59,11 @@ export async function PATCH(
           where: { id: groupId },
           data: { groupXp: { increment: 10 } },
         }),
-        prisma.notification.create({
+      ]);
+
+      // Best-effort: notifications / activity feed
+      try {
+        await prisma.notification.create({
           data: {
             userId: joinRequest.userId,
             title: "Join request approved",
@@ -66,24 +71,26 @@ export async function PATCH(
             type: "JOIN_REQUEST",
             link: `/community/groups/${groupId}`,
           },
-        }),
-      ]);
-
-      await prisma.activityFeedEvent.create({
-        data: {
-          userId: joinRequest.userId,
-          type: "GROUP_JOINED",
-          title: `Joined study group "${joinRequest.group.name}"`,
-          meta: { groupId },
-        },
-      });
+        });
+        await prisma.activityFeedEvent.create({
+          data: {
+            userId: joinRequest.userId,
+            type: "GROUP_JOINED",
+            title: `Joined study group "${joinRequest.group.name}"`,
+            meta: { groupId },
+          },
+        });
+      } catch (notifErr) {
+        console.warn("[requests/approve] Notification failed (non-fatal):", notifErr);
+      }
     } else {
-      await prisma.$transaction([
-        prisma.groupJoinRequest.update({
-          where: { id: requestId },
-          data: { status: "REJECTED" },
-        }),
-        prisma.notification.create({
+      await prisma.groupJoinRequest.update({
+        where: { id: requestId },
+        data: { status: "REJECTED" },
+      });
+
+      try {
+        await prisma.notification.create({
           data: {
             userId: joinRequest.userId,
             title: "Join request declined",
@@ -91,8 +98,10 @@ export async function PATCH(
             type: "JOIN_REQUEST",
             link: `/community/groups`,
           },
-        }),
-      ]);
+        });
+      } catch (notifErr) {
+        console.warn("[requests/reject] Notification failed (non-fatal):", notifErr);
+      }
     }
 
     return NextResponse.json({ success: true });
