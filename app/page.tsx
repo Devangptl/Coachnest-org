@@ -615,116 +615,83 @@ export default async function HomePage() {
               </div>
             </FadeInSection>
 
-            {/* Course Grid */}
-            <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4" staggerDelay={0.07}>
+            {/* Course Grid — compact horizontal cards */}
+            <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3" staggerDelay={0.07}>
               {courses.map((course) => {
                 const avg = course.reviews.length
                   ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
                   : 0;
                 const hasDiscount = course.discountPrice != null && course.price != null && Number(course.discountPrice) < Number(course.price);
                 const displayPrice = hasDiscount ? Number(course.discountPrice) : Number(course.price);
-                const levelColor =
-                  course.level === "beginner" ? "text-emerald-400 bg-emerald-500/15 border-emerald-400/25" :
-                    course.level === "intermediate" ? "text-amber-400 bg-amber-500/15 border-amber-400/25" :
-                      course.level === "advanced" ? "text-rose-400 bg-rose-500/15 border-rose-400/25" :
-                        "text-muted-foreground bg-secondary border-border";
 
                 return (
                   <StaggerItem key={course.id}>
-                    <Link href={`/courses/${course.id}`} className="group block h-full">
-                      <div className="relative h-full rounded-lg overflow-hidden border border-white/[0.08] bg-white/[0.04] backdrop-blur-md transition-all duration-300 group-hover:border-orange-400/25 group-hover:bg-white/[0.08] group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-orange-600/15">
-                        {/* Gradient border glow on hover */}
-                        <div className="absolute inset-0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" style={{ background: "linear-gradient(135deg, rgba(139,92,246,0.08), transparent, rgba(168,85,247,0.06))" }} />
-
-                        {/* Thumbnail */}
-                        <div className="relative aspect-[16/9] overflow-hidden bg-gradient-to-br from-orange-700/30 to-transparent">
-                          {course.thumbnail ? (
-                            <Image
-                              src={course.thumbnail}
-                              alt={course.title}
-                              fill
-                              className="object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                          ) : (
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <BookOpen className="w-10 h-10 text-white/15" />
-                            </div>
-                          )}
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-
-                          {/* Floating badges on thumbnail */}
-                          <div className="absolute top-2.5 left-2.5 flex items-center gap-1.5">
-                            {course.isFree && (
-                              <span className="bg-emerald-500/90 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md backdrop-blur-sm">
-                                Free
-                              </span>
-                            )}
-                            {course.level && (
-                              <span className={`text-[10px] font-semibold capitalize px-2 py-0.5 rounded-md border backdrop-blur-sm ${levelColor}`}>
-                                {course.level}
-                              </span>
-                            )}
+                    <Link
+                      href={`/courses/${course.id}`}
+                      className="group flex gap-3 p-3 rounded-lg border border-white/[0.07] bg-white/[0.03] hover:border-orange-400/30 hover:bg-white/[0.06] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-orange-600/10"
+                    >
+                      {/* Compact thumbnail */}
+                      <div className="relative w-20 h-[3.75rem] flex-shrink-0 rounded-md overflow-hidden bg-gradient-to-br from-orange-700/30 to-orange-600/10">
+                        {course.thumbnail ? (
+                          <Image
+                            src={course.thumbnail}
+                            alt={course.title}
+                            fill
+                            className="object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 flex items-center justify-center">
+                            <BookOpen className="w-5 h-5 text-white/20" />
                           </div>
-
-                          {/* Lesson count pill */}
-                          <div className="absolute bottom-2.5 right-2.5">
-                            <span className="flex items-center gap-1 bg-card backdrop-blur-md text-white/80 text-[10px] font-medium px-2 py-0.5 rounded-md border border-border">
-                              <BookOpen className="w-2.5 h-2.5" />
-                              {course._count.lessons} lesson{course._count.lessons !== 1 ? "s" : ""}
-                            </span>
+                        )}
+                        {course.isFree && (
+                          <div className="absolute inset-x-0 top-0 bg-emerald-500/90 text-white text-[8px] font-bold text-center py-[2px] uppercase tracking-wide">
+                            Free
                           </div>
-                        </div>
+                        )}
+                        {course.level && (
+                          <div className="absolute inset-x-0 bottom-0 bg-black/60 text-white/80 text-[8px] font-semibold text-center py-[2px] capitalize">
+                            {course.level}
+                          </div>
+                        )}
+                      </div>
 
-                        {/* Content */}
-                        <div className="p-4 relative flex flex-col">
-                          {/* Title */}
-                          <h3 className="text-white font-semibold text-[15px] leading-snug line-clamp-1 group-hover:text-orange-300 transition-colors">
-                            {course.title}
-                          </h3>
-
-                          {/* Instructor */}
+                      {/* Info */}
+                      <div className="flex-1 min-w-0 flex flex-col justify-between gap-1">
+                        <h3 className="text-white/90 font-semibold text-[13px] line-clamp-2 leading-snug group-hover:text-orange-300 transition-colors">
+                          {course.title}
+                        </h3>
+                        <div>
                           {course.createdBy.name && (
-                            <div className="flex items-center gap-2 mt-2">
-                              <div className="w-5 h-5 rounded-full bg-gradient-to-br from-orange-600 to-orange-500 flex items-center justify-center flex-shrink-0">
-                                <span className="text-white text-[9px] font-bold">
-                                  {course.createdBy.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
-                                </span>
-                              </div>
-                              <span className="text-muted-foreground/70 text-xs truncate">{course.createdBy.name}</span>
-                            </div>
+                            <p className="text-white/30 text-[11px] truncate mb-1.5">{course.createdBy.name}</p>
                           )}
-
-                          {/* Stats & Price Row */}
-                          <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/[0.06]">
-                            <div className="flex items-center gap-3 text-xs text-white/35">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 text-[11px]">
                               {avg > 0 && (
-                                <span className="flex items-center gap-1 text-amber-400/90">
+                                <span className="flex items-center gap-0.5 text-amber-400 font-semibold">
                                   <Star className="w-3 h-3 fill-current" />
-                                  <span className="font-semibold">{avg}</span>
-                                  <span className="text-white/20 font-normal">({course.reviews.length})</span>
+                                  {avg}
                                 </span>
                               )}
-                              {course._count.enrollments > 0 && (
-                                <span className="flex items-center gap-1">
-                                  <Users className="w-3 h-3" />
-                                  {course._count.enrollments.toLocaleString()}
-                                </span>
-                              )}
+                              <span className="flex items-center gap-0.5 text-white/25">
+                                <Users className="w-3 h-3" />
+                                {course._count.enrollments > 0 ? course._count.enrollments.toLocaleString() : "0"}
+                              </span>
                             </div>
-
-                            {/* Price */}
-                            {!course.isFree && course.price != null && (
-                              <div className="flex items-center gap-1.5">
+                            {course.isFree ? (
+                              <span className="text-emerald-400 text-[11px] font-bold shrink-0">Free</span>
+                            ) : course.price != null ? (
+                              <div className="flex items-center gap-1 shrink-0">
                                 {hasDiscount && (
-                                  <span className="text-white/20 text-[10px] line-through">
+                                  <span className="text-white/20 text-[10px] line-through leading-none">
                                     ₹{Number(course.price).toLocaleString("en-IN")}
                                   </span>
                                 )}
-                                <span className="bg-gradient-to-r from-orange-600/20 to-orange-500/15 border border-orange-400/25 text-white font-bold text-xs px-2 py-0.5 rounded-md">
+                                <span className="text-orange-300 font-bold text-xs leading-none">
                                   ₹{displayPrice.toLocaleString("en-IN")}
                                 </span>
                               </div>
-                            )}
+                            ) : null}
                           </div>
                         </div>
                       </div>
