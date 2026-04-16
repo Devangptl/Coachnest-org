@@ -15,6 +15,9 @@ const nextConfig: NextConfig = {
   // ─── Compression ──────────────────────────────────────────────────
   compress: true,
 
+  // ─── PDF generation — keep out of webpack bundle ──────────────────
+  serverExternalPackages: ["@react-pdf/renderer"],
+
   // ─── Tree-shake heavy barrel-export packages ──────────────────────
   experimental: {
     optimizePackageImports: [

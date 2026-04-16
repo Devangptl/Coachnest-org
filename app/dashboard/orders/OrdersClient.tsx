@@ -1,11 +1,12 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { ArrowRight, Package, BookOpen, RotateCcw, TrendingDown } from "lucide-react";
+import { ArrowRight, Package, BookOpen, RotateCcw, TrendingDown, FileDown, Loader2 } from "lucide-react";
 import RefundRequestModal from "./RefundRequestModal";
 
 const statusVariant: Record<string, "green" | "amber" | "red" | "gray"> = {
@@ -41,8 +42,35 @@ interface Order {
 }
 
 export default function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
-  const [orders,  setOrders]  = useState(initialOrders);
-  const [refundModal, setRefundModal] = useState<{ orderId: string; courseTitle: string } | null>(null);
+  const [orders,       setOrders]       = useState(initialOrders);
+  const [refundModal,  setRefundModal]  = useState<{ orderId: string; courseTitle: string } | null>(null);
+  const [downloading,  setDownloading]  = useState<Set<string>>(new Set());
+
+  async function handleDownloadInvoice(orderId: string) {
+    setDownloading((prev) => new Set(prev).add(orderId));
+    try {
+      const res = await fetch(`/api/orders/${orderId}/invoice`);
+      if (!res.ok) throw new Error("Failed to generate invoice");
+
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `invoice-${orderId.slice(-8).toUpperCase()}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    } catch {
+      toast.error("Could not generate invoice. Please try again.");
+    } finally {
+      setDownloading((prev) => {
+        const next = new Set(prev);
+        next.delete(orderId);
+        return next;
+      });
+    }
+  }
 
   function handleRefundSuccess() {
     setRefundModal(null);
@@ -124,6 +152,22 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
               <Badge variant={statusVariant[order.status] || "gray"}>
                 {statusLabel[order.status] || order.status}
               </Badge>
+
+              {/* Download invoice — available for all PAID orders */}
+              {order.status === "PAID" && (
+                <button
+                  onClick={() => handleDownloadInvoice(order.id)}
+                  disabled={downloading.has(order.id)}
+                  className="flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground border border-border hover:border-border/80 bg-secondary/50 hover:bg-secondary px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Download PDF invoice"
+                >
+                  {downloading.has(order.id)
+                    ? <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    : <FileDown className="w-3.5 h-3.5" />
+                  }
+                  Invoice
+                </button>
+              )}
 
               {/* Course actions */}
               {order.courseId && order.status === "PAID" && (
