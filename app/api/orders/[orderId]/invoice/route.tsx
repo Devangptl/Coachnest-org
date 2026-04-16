@@ -5,8 +5,8 @@
  * Only accessible by the order owner.
  */
 import { type NextRequest, NextResponse } from "next/server";
-import { createElement } from "react";
-import { renderToBuffer } from "@react-pdf/renderer";
+import React from "react";
+import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import InvoiceDocument, { type InvoiceData } from "@/components/pdf/InvoiceDocument";
@@ -71,12 +71,12 @@ export async function GET(_req: NextRequest, { params }: Params) {
       createdAt:       order.createdAt,
     };
 
-    const element = createElement(InvoiceDocument, { invoice });
+    const element = <InvoiceDocument invoice={invoice} /> as React.ReactElement<DocumentProps>;
     const buffer  = await renderToBuffer(element);
 
     const filename = `invoice-${order.id.slice(-8).toUpperCase()}.pdf`;
 
-    return new NextResponse(buffer, {
+    return new NextResponse(new Uint8Array(buffer), {
       status: 200,
       headers: {
         "Content-Type":        "application/pdf",
