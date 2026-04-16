@@ -20,7 +20,7 @@ export default async function AdminLayout({
 
   return (
     <div className="pb-8">
-      <div className="flex flex-col lg:flex-row lg:gap-6">
+      <div className="flex flex-col lg:flex-row lg:gap-6 lg:min-h-[calc(100vh-4rem)]">
         {/* Sidebar owns its own nav items — no icon props cross the boundary */}
         <AdminSidebar />
 
