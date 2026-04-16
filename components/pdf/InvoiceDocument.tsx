@@ -3,7 +3,10 @@
  * Renders an A4 PDF with brand header, itemisation, discount, totals,
  * and payment reference. Uses built-in PDF fonts (no external fetch).
  */
-import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
+import path from "path";
+import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
+
+const LOGO_PATH = path.join(process.cwd(), "public", "logo.png");
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
@@ -20,8 +23,7 @@ const S = StyleSheet.create({
 
   // Header
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  brand: { fontSize: 22, fontFamily: "Helvetica-Bold", color: "#ea580c" },
-  brandSub: { fontSize: 9, color: "#9ca3af", marginTop: 2 },
+  logo: { width: 120, height: "auto", objectFit: "contain" },
   invoiceLabel: { fontSize: 22, fontFamily: "Helvetica-Bold", color: "#111827", textAlign: "right" },
   invoiceNo: { fontSize: 9, color: "#6b7280", textAlign: "right", marginTop: 3, fontFamily: "Courier" },
 
@@ -173,10 +175,7 @@ export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
 
         {/* ── Header ─────────────────────────────────────────────── */}
         <View style={S.header}>
-          <View>
-            <Text style={S.brand}>CoachNest</Text>
-            <Text style={S.brandSub}>Learning Platform</Text>
-          </View>
+          <Image src={LOGO_PATH} style={S.logo} />
           <View>
             <Text style={S.invoiceLabel}>INVOICE</Text>
             <Text style={S.invoiceNo}>{invoiceNo}</Text>
