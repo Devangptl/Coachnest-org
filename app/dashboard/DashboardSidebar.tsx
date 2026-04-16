@@ -88,8 +88,8 @@ export default function DashboardSidebar() {
   return (
     <>
       {/* ── Desktop sidebar (unchanged) ─────────────────────────────── */}
-      <aside id="tour-sidebar" className="hidden lg:block w-64 flex-shrink-0">
-        <div className="sticky top-20 bg-card border border-border rounded-lg p-3 shadow-glass">
+      <aside id="tour-sidebar" className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20">
+        <div className="bg-card border border-border rounded-lg p-3 shadow-glass">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Dashboard
           </p>
