@@ -10,8 +10,8 @@ interface SubscriptionState {
 }
 
 const DEFAULT_ACCESS: PlanAccess = {
-  isActive: false,
-  isPaid: false,
+  isActive: true,
+  isPaid: true,
   plan: "FREE",
   status: null,
   endDate: null,
@@ -20,13 +20,13 @@ const DEFAULT_ACCESS: PlanAccess = {
   enrollmentLimit: null,
   enrolledCount: 0,
   limitReached: false,
-  canAccessPaidCourses: false,
-  canAccessProCourses: false,
-  hasCertificates: false,
-  hasOfflineDownloads: false,
-  hasAiRecommendations: false,
-  hasInstructorQA: false,
-  hasTeamManagement: false,
+  canAccessPaidCourses: true,
+  canAccessProCourses: true,
+  hasCertificates: true,
+  hasOfflineDownloads: true,
+  hasAiRecommendations: true,
+  hasInstructorQA: true,
+  hasTeamManagement: true,
 };
 
 // Module-level cache so multiple component instances share one fetch

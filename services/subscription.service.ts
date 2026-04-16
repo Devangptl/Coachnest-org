@@ -1,15 +1,7 @@
 /**
- * Subscription Service — handles all-access subscription logic.
+ * Subscription Service — stubs retained for interface compatibility.
  *
- * Plan access rules:
- *   FREE       → no paid courses
- *   BASIC      → paid courses, up to BASIC_COURSE_LIMIT enrolled
- *   PRO        → all paid courses, unlimited
- *   ENTERPRISE → all paid courses, unlimited + team features
- *
- * minPlan on Course controls which plan tier is required:
- *   BASIC → accessible to BASIC, PRO, ENTERPRISE
- *   PRO   → accessible to PRO and ENTERPRISE only
+ * The platform uses a direct-purchase model. All access checks return true.
  */
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
@@ -87,7 +79,7 @@ export interface PlanAccess {
   /** Has any paid plan (false for FREE or no subscription) */
   isPaid: boolean;
   plan: "FREE" | "BASIC" | "PRO" | "ENTERPRISE";
-  status: "ACTIVE" | "CANCELLED" | "EXPIRED" | "TRIAL" | null;
+  status: string | null;
   endDate: string | null;
   cancelledAt: string | null;
   trialEndsAt: string | null;
@@ -102,7 +94,6 @@ export interface PlanAccess {
 
   // Feature flags (derived from plan)
   canAccessPaidCourses: boolean;
-  /** PRO or ENTERPRISE: can access courses with minPlan=PRO */
   canAccessProCourses: boolean;
   hasCertificates: boolean;
   hasOfflineDownloads: boolean;
@@ -142,12 +133,8 @@ export async function getPlanAccess(userId: string): Promise<PlanAccess> {
   };
 }
 
-/** Check whether a user's plan meets or exceeds the course's minPlan requirement */
-export function planMeetsRequirement(
-  userPlan: string,
-  courseMinPlan: string
-): boolean {
-  // Plan functionality removed: requirements always met.
+/** Retained for interface compatibility — always returns true. */
+export function planMeetsRequirement(): boolean {
   return true;
 }
 
@@ -163,8 +150,8 @@ export async function createSubscriptionCheckout(
 
 // ─── Get current subscription ─────────────────────────────────────────────────
 
-export async function getUserSubscription(userId: string) {
-  return prisma.subscription.findUnique({ where: { userId } });
+export async function getUserSubscription(_userId: string) {
+  return null;
 }
 
 // ─── Access check (backward-compat shim — use getPlanAccess for new code) ─────

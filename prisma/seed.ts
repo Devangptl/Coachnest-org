@@ -7,13 +7,13 @@
  *   • 1 Admin  • 3 Instructors  • 5 Students
  *   • 6 Categories  • 8 Tags
  *   • 3 fully-structured Courses (sections → lessons → quizzes)
- *   • Enrollments, Reviews, Subscriptions, Blogs, Notifications
+ *   • Enrollments, Reviews, Blogs, Notifications
  *
  * Password for all accounts: Password123!
  */
 
 import "dotenv/config";
-import { PrismaClient, Role, ContentStatus, PlanType } from "@prisma/client";
+import { PrismaClient, Role, ContentStatus } from "@prisma/client";
 import { createClient } from "@supabase/supabase-js";
 
 const prisma = new PrismaClient();
@@ -64,7 +64,7 @@ async function clearAll() {
   await prisma.tag.deleteMany();
   await prisma.course.deleteMany();
   await prisma.category.deleteMany();
-  await prisma.subscription.deleteMany();
+
   await prisma.organizationMember.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.blog.deleteMany();
@@ -183,24 +183,7 @@ async function main() {
 
   console.log("  ✓ Users created (9 total)\n");
 
-  // ── 2. Subscriptions ──────────────────────────────────────────────────────
-
-  console.log("Creating subscriptions…");
-
-  const now  = new Date();
-  const end1y = new Date(now); end1y.setFullYear(end1y.getFullYear() + 1);
-  const end1m = new Date(now); end1m.setMonth(end1m.getMonth() + 1);
-
-  await prisma.subscription.createMany({ data: [
-    { userId: studentArjun.id,  plan: "PRO",   status: "ACTIVE", startDate: now, endDate: end1y  },
-    { userId: studentSneha.id,  plan: "BASIC", status: "ACTIVE", startDate: now, endDate: end1m  },
-    { userId: studentRavi.id,   plan: "FREE",  status: "ACTIVE", startDate: now                  },
-    { userId: studentAnjali.id, plan: "PRO",   status: "ACTIVE", startDate: now, endDate: end1y  },
-    { userId: studentVikram.id, plan: "FREE",  status: "ACTIVE", startDate: now                  },
-  ]});
-  console.log("  ✓ Subscriptions created\n");
-
-  // ── 3. Categories & Tags ──────────────────────────────────────────────────
+  // ── 2. Categories & Tags ──────────────────────────────────────────────────
 
   console.log("Creating categories & tags…");
 
@@ -243,7 +226,6 @@ async function main() {
     price:         2999,
     discountPrice: 1999,
     isFree:        false,
-    minPlan:       PlanType.BASIC,
     level:         "intermediate",
     language:      "English",
     totalDuration: 420,
@@ -780,7 +762,6 @@ app/
     price:         3499,
     discountPrice: 2499,
     isFree:        false,
-    minPlan:       PlanType.BASIC,
     level:         "beginner",
     language:      "English",
     totalDuration: 360,
@@ -1282,7 +1263,6 @@ print(confusion_matrix(y_test, y_pred))
     price:         4499,
     discountPrice: 2999,
     isFree:        false,
-    minPlan:       PlanType.PRO,
     level:         "advanced",
     language:      "English",
     totalDuration: 300,

@@ -31,12 +31,6 @@ enum OrderStatus {
   REFUNDED
 }
 
-enum SubStatus {
-  ACTIVE
-  CANCELLED
-  EXPIRED
-  TRIAL
-}
 
 enum LessonType {
   VIDEO
@@ -158,7 +152,7 @@ model User {
   courses        Course[]             @relation("CourseInstructor")
   enrollments    Enrollment[]
   orders         Order[]
-  subscription   Subscription?
+
   reviews        Review[]
   wishlist       Wishlist[]
   notifications  Notification[]
@@ -258,7 +252,7 @@ model Course {
   price                    Decimal?      @db.Decimal(10, 2)
   discountPrice            Decimal?      @db.Decimal(10, 2)
   isFree                   Boolean       @default(false)
-  minPlan                  PlanType      @default(BASIC)
+
   level                    String        @default("beginner")
   language                 String        @default("English")
   totalDuration            Int           @default(0)
@@ -441,7 +435,7 @@ model Wishlist {
   @@map("wishlists")
 }
 
-// ─── Payment & Subscriptions ──────────────────────────────────────────────────
+// ─── Payment ──────────────────────────────────────────────────────────────────
 
 model Order {
   id                String      @id @default(cuid())
@@ -479,21 +473,6 @@ model Order {
   @@map("orders")
 }
 
-model Subscription {
-  id            String    @id @default(cuid())
-  userId        String    @unique
-  plan          PlanType
-  status        SubStatus @default(ACTIVE)
-  startDate     DateTime  @default(now())
-  endDate       DateTime?
-  cancelledAt   DateTime?
-  trialEndsAt   DateTime?
-  stripeSubId String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("subscriptions")
-}
 
 model Payout {
   id             String    @id @default(cuid())

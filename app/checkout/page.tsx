@@ -4,7 +4,6 @@
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { StripeProvider } from "@/components/billing/StripeProvider";
 import CheckoutClient from "./CheckoutClient";
 
@@ -73,19 +72,6 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
   const billing = (billingParam === "yearly" ? "yearly" : "monthly") as "monthly" | "yearly";
 
   if (!PLANS[planKey]) redirect("/pricing");
-
-  // Check if user already has an active subscription to this plan
-  const existing = await prisma.subscription.findUnique({
-    where: { userId: session.userId },
-    select: { plan: true, status: true },
-  });
-
-  if (
-    existing?.plan === planKey &&
-    (existing.status === "ACTIVE" || existing.status === "TRIAL")
-  ) {
-    redirect("/dashboard/subscription?already_subscribed=1");
-  }
 
   const plan = PLANS[planKey];
   const price = billing === "yearly" ? plan.yearlyPrice : plan.monthlyPrice;
