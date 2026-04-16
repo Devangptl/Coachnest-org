@@ -33,6 +33,11 @@ export async function POST(
       where: { userId_groupId: { userId: session.userId, groupId } },
     });
 
+    // Clean up any join request so the user can re-request later
+    await prisma.groupJoinRequest.deleteMany({
+      where: { userId: session.userId, groupId },
+    });
+
     return NextResponse.json({ success: true });
   } catch (err) {
     console.error("[POST /api/community/groups/[id]/leave]", err);

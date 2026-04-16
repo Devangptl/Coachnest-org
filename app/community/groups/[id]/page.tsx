@@ -269,12 +269,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ action }),
       });
-      if (!res.ok) throw new Error();
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to process request");
       toast.success(action === "approve" ? "Request approved!" : "Request rejected");
       setJoinRequests(prev => prev.filter(r => r.id !== requestId));
       if (action === "approve") loadGroup();
-    } catch {
-      toast.error("Failed to process request");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to process request");
     } finally {
       setProcessingId(null);
     }

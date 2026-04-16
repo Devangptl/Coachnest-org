@@ -31,7 +31,11 @@ export async function PATCH(
 
     const joinRequest = await prisma.groupJoinRequest.findUnique({
       where: { id: requestId },
-      include: { group: { select: { name: true, maxMembers: true, _count: { select: { members: true } } } } },
+      include: {
+        group: {
+          include: { _count: { select: { members: true } } },
+        },
+      },
     });
 
     if (!joinRequest || joinRequest.groupId !== groupId) {
@@ -46,20 +50,33 @@ export async function PATCH(
         return NextResponse.json({ error: "Group is full" }, { status: 400 });
       }
 
-      // Core membership changes — must succeed atomically
-      await prisma.$transaction([
-        prisma.groupJoinRequest.update({
+      // Check if the user is already a member (edge case: joined via invite code)
+      const existingMember = await prisma.studyGroupMember.findUnique({
+        where: { userId_groupId: { userId: joinRequest.userId, groupId } },
+      });
+
+      if (existingMember) {
+        // User is already a member — just mark the request as approved
+        await prisma.groupJoinRequest.update({
           where: { id: requestId },
           data: { status: "APPROVED" },
-        }),
-        prisma.studyGroupMember.create({
-          data: { userId: joinRequest.userId, groupId, role: "MEMBER" },
-        }),
-        prisma.studyGroup.update({
-          where: { id: groupId },
-          data: { groupXp: { increment: 10 } },
-        }),
-      ]);
+        });
+      } else {
+        // Core membership changes — must succeed atomically
+        await prisma.$transaction([
+          prisma.groupJoinRequest.update({
+            where: { id: requestId },
+            data: { status: "APPROVED" },
+          }),
+          prisma.studyGroupMember.create({
+            data: { userId: joinRequest.userId, groupId, role: "MEMBER" },
+          }),
+          prisma.studyGroup.update({
+            where: { id: groupId },
+            data: { groupXp: { increment: 10 } },
+          }),
+        ]);
+      }
 
       // Best-effort: notifications / activity feed
       try {
