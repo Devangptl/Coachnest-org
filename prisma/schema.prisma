@@ -59,6 +59,7 @@ enum NotifType {
   SYSTEM
   FORUM_REPLY
   GROUP_INVITE
+  JOIN_REQUEST
   PEER_REVIEW
   ACTIVITY
 }
@@ -80,6 +81,12 @@ enum PayoutStatus {
 enum GroupRole {
   MEMBER
   ADMIN
+}
+
+enum JoinRequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
 }
 
 enum RefundStatus {
@@ -201,6 +208,7 @@ model User {
   peerReviews           PeerReview[]
   activityEvents        ActivityFeedEvent[]
   groupNotes            GroupNote[]
+  groupJoinRequests     GroupJoinRequest[]
 
   @@map("users")
 }
@@ -724,15 +732,17 @@ model StudyGroup {
   courseId    String?
   inviteCode  String   @unique
   maxMembers  Int      @default(20)
-  isPublic    Boolean  @default(true)
-  groupXp     Int      @default(0)
+  isPublic         Boolean  @default(true)
+  requiresApproval Boolean  @default(false)
+  groupXp          Int      @default(0)
   createdById String
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  createdBy User               @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
-  members   StudyGroupMember[]
-  notes     GroupNote[]
+  createdBy    User               @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
+  members      StudyGroupMember[]
+  notes        GroupNote[]
+  joinRequests GroupJoinRequest[]
 
   @@index([courseId])
   @@map("study_groups")
@@ -749,6 +759,23 @@ model StudyGroupMember {
 
   @@id([userId, groupId])
   @@map("study_group_members")
+}
+
+model GroupJoinRequest {
+  id        String            @id @default(cuid())
+  groupId   String
+  userId    String
+  status    JoinRequestStatus @default(PENDING)
+  message   String?           @db.Text
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @updatedAt
+
+  group StudyGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, groupId])
+  @@index([groupId])
+  @@map("group_join_requests")
 }
 
 model GroupNote {

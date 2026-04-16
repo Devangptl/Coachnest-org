@@ -2,14 +2,14 @@
 
 /**
  * Study Group Workspace — full featured group page with tabs:
- * Overview (members, join/leave) | Shared Notes | Progress & XP
+ * Overview (members, join/leave) | Shared Notes | Progress & XP | Requests (admin)
  */
 import { useState, useEffect, use } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, Users, Copy, LogIn, LogOut, Crown, Clock, Globe, Lock,
   FileText, Plus, TrendingUp, Award, Flame, Zap, BookOpen, Target,
-  BarChart3, Send
+  BarChart3, Send, ShieldCheck, Check, X, Loader2, MessageSquare
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -29,11 +29,18 @@ interface Group {
   inviteCode: string;
   maxMembers: number;
   isPublic: boolean;
+  requiresApproval: boolean;
   groupXp: number;
   createdAt: string;
   createdBy: { id: string; name: string; avatar: string | null };
   members: Member[];
-  _count: { members: number; notes: number };
+  _count: { members: number; notes: number; joinRequests: number };
+}
+
+interface MyRequest {
+  id: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  createdAt: string;
 }
 
 interface Note {
@@ -68,13 +75,22 @@ interface ProgressData {
   members: MemberStat[];
 }
 
-type TabKey = "overview" | "notes" | "progress";
+interface JoinRequestItem {
+  id: string;
+  status: string;
+  message: string | null;
+  createdAt: string;
+  user: { id: string; name: string; avatar: string | null; email: string };
+}
+
+type TabKey = "overview" | "notes" | "progress" | "requests";
 
 /* ─── Component ─────────────────────────────────────────────── */
 
 export default function GroupDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = use(params);
   const [group, setGroup] = useState<Group | null>(null);
+  const [myRequest, setMyRequest] = useState<MyRequest | null>(null);
   const [loading, setLoading] = useState(true);
   const [joining, setJoining] = useState(false);
   const [leaving, setLeaving] = useState(false);
@@ -93,6 +109,15 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [progress, setProgress] = useState<ProgressData | null>(null);
   const [progressLoading, setProgressLoading] = useState(false);
 
+  // Join request message modal
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [requestMessage, setRequestMessage] = useState("");
+
+  // Admin join requests
+  const [joinRequests, setJoinRequests] = useState<JoinRequestItem[]>([]);
+  const [requestsLoading, setRequestsLoading] = useState(false);
+  const [processingId, setProcessingId] = useState<string | null>(null);
+
   async function loadGroup() {
     try {
       const [groupRes, meRes] = await Promise.all([
@@ -102,6 +127,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       const groupData = await groupRes.json();
       const meData = await meRes.json();
       setGroup(groupData.group);
+      setMyRequest(groupData.myRequest ?? null);
       setCurrentUserId(meData.user?.userId || meData.user?.id || null);
     } catch { /* ignore */ } finally {
       setLoading(false);
@@ -130,16 +156,29 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
+  async function loadJoinRequests() {
+    setRequestsLoading(true);
+    try {
+      const res = await fetch(`/api/community/groups/${id}/requests`);
+      const data = await res.json();
+      setJoinRequests(data.requests || []);
+    } catch { /* ignore */ } finally {
+      setRequestsLoading(false);
+    }
+  }
+
   useEffect(() => { loadGroup(); }, [id]);
   useEffect(() => {
     if (tab === "notes") loadNotes();
     if (tab === "progress") loadProgress();
+    if (tab === "requests") loadJoinRequests();
   }, [tab, id]);
 
   const isMember = group?.members.some(m => m.userId === currentUserId);
+  const isAdmin = group?.members.some(m => m.userId === currentUserId && m.role === "ADMIN");
   const isCreator = group?.createdBy.id === currentUserId;
 
-  async function handleJoin() {
+  async function handleJoinDirect() {
     setJoining(true);
     try {
       const res = await fetch(`/api/community/groups/${id}/join`, { method: "POST" });
@@ -149,6 +188,27 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       loadGroup();
     } catch (e: any) {
       toast.error(e.message || "Failed to join");
+    } finally {
+      setJoining(false);
+    }
+  }
+
+  async function handleSendRequest() {
+    setJoining(true);
+    try {
+      const res = await fetch(`/api/community/groups/${id}/join`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: requestMessage.trim() || undefined }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success("Join request sent! The admin will review it.");
+      setShowRequestModal(false);
+      setRequestMessage("");
+      loadGroup();
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send request");
     } finally {
       setJoining(false);
     }
@@ -190,11 +250,30 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       setNoteTitle("");
       setNoteContent("");
       loadNotes();
-      loadGroup(); // refresh groupXp
+      loadGroup();
     } catch {
       toast.error("Failed to create note");
     } finally {
       setCreatingNote(false);
+    }
+  }
+
+  async function handleRequest(requestId: string, action: "approve" | "reject") {
+    setProcessingId(requestId);
+    try {
+      const res = await fetch(`/api/community/groups/${id}/requests/${requestId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action }),
+      });
+      if (!res.ok) throw new Error();
+      toast.success(action === "approve" ? "Request approved!" : "Request rejected");
+      setJoinRequests(prev => prev.filter(r => r.id !== requestId));
+      if (action === "approve") loadGroup();
+    } catch {
+      toast.error("Failed to process request");
+    } finally {
+      setProcessingId(null);
     }
   }
 
@@ -227,6 +306,16 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     );
   }
 
+  if (isAdmin) {
+    TABS.push({
+      key: "requests",
+      label: `Requests${group._count.joinRequests > 0 ? ` (${group._count.joinRequests})` : ""}`,
+      icon: ShieldCheck,
+    });
+  }
+
+  const pendingRequest = myRequest?.status === "PENDING";
+
   return (
     <div className="py-8 space-y-6">
       <Link href="/community/groups" className="inline-flex items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground transition-colors">
@@ -242,7 +331,11 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 {group.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                 {group.isPublic ? "Public" : "Private"}
               </span>
-              {/* Group XP badge */}
+              {group.requiresApproval && (
+                <span className="flex items-center gap-1 text-[10px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                  <ShieldCheck className="w-3 h-3" /> Approval required
+                </span>
+              )}
               <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
                 <Zap className="w-3 h-3" /> {group.groupXp} XP
               </span>
@@ -259,11 +352,31 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 <LogOut className="w-3.5 h-3.5" /> {leaving ? "Leaving…" : "Leave"}
               </button>
             )}
-            {!isMember && (
-              <button onClick={handleJoin} disabled={joining}
-                className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors">
-                <LogIn className="w-3.5 h-3.5" /> {joining ? "Joining…" : "Join Group"}
-              </button>
+            {!isMember && !pendingRequest && (
+              group.requiresApproval ? (
+                <button
+                  onClick={() => setShowRequestModal(true)}
+                  disabled={joining}
+                  className="flex items-center gap-1.5 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors"
+                >
+                  <ShieldCheck className="w-3.5 h-3.5" /> {joining ? "Sending…" : "Request to Join"}
+                </button>
+              ) : (
+                <button onClick={handleJoinDirect} disabled={joining}
+                  className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium px-4 py-2 rounded-lg transition-colors">
+                  <LogIn className="w-3.5 h-3.5" /> {joining ? "Joining…" : "Join Group"}
+                </button>
+              )
+            )}
+            {pendingRequest && (
+              <span className="flex items-center gap-1.5 text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-3 py-2 rounded-lg">
+                <Clock className="w-3.5 h-3.5" /> Request pending
+              </span>
+            )}
+            {myRequest?.status === "REJECTED" && (
+              <span className="flex items-center gap-1.5 text-xs text-red-400 bg-red-500/10 border border-red-500/20 px-3 py-2 rounded-lg">
+                Request declined
+              </span>
             )}
           </div>
         </div>
@@ -448,7 +561,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           ) : (
             <>
-              {/* Group XP Banner */}
               <div className="rounded-md border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-emerald-600/10 p-5 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
                   <Zap className="w-7 h-7 text-emerald-400" />
@@ -459,7 +571,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
               </div>
 
-              {/* Aggregate Stats Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 {[
                   { icon: BookOpen, label: "Lessons Done", value: progress.aggregate.totalLessons, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
@@ -481,7 +592,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 })}
               </div>
 
-              {/* Member Leaderboard */}
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
                   <Flame className="w-4 h-4 text-orange-400" /> Member Leaderboard
@@ -489,7 +599,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-2">
                   {progress.members.map((m, i) => (
                     <div key={m.user?.id} className="flex items-center gap-4 p-4 rounded-md border border-border bg-card">
-                      {/* Rank */}
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         i === 0 ? "bg-amber-500/15 text-amber-400 border border-amber-500/25" :
                         i === 1 ? "bg-gray-500/15 text-gray-400 border border-gray-500/25" :
@@ -498,15 +607,11 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       }`}>
                         {i + 1}
                       </span>
-
-                      {/* Avatar */}
                       <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
                         {m.user?.avatar ? (
                           <img src={m.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
                         ) : m.user?.name.charAt(0).toUpperCase()}
                       </div>
-
-                      {/* Info */}
                       <div className="flex-1 min-w-0">
                         <p className="text-foreground text-sm font-medium truncate">{m.user?.name}</p>
                         <p className="text-muted-foreground text-xs">
@@ -514,8 +619,6 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                           {m.streak > 0 && <span className="text-orange-400"> · 🔥 {m.streak}d streak</span>}
                         </p>
                       </div>
-
-                      {/* XP */}
                       <span className="text-emerald-400 text-sm font-bold flex-shrink-0">{m.xp} XP</span>
                     </div>
                   ))}
@@ -523,6 +626,110 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* JOIN REQUESTS (admin only) */}
+      {tab === "requests" && (
+        <div className="space-y-4">
+          <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+            Pending Join Requests
+          </h2>
+
+          {requestsLoading ? (
+            <div className="space-y-3">
+              {[1,2,3].map(i => <div key={i} className="h-20 rounded-lg bg-secondary/50 animate-pulse" />)}
+            </div>
+          ) : joinRequests.length === 0 ? (
+            <div className="rounded-md border border-border bg-card p-10 text-center">
+              <ShieldCheck className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
+              <p className="text-muted-foreground text-sm">No pending requests.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {joinRequests.map((req) => (
+                <div key={req.id} className="flex items-center gap-4 p-4 rounded-md border border-border bg-card">
+                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
+                    {req.user.avatar ? (
+                      <img src={req.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                    ) : req.user.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-foreground text-sm font-medium">{req.user.name}</p>
+                    <p className="text-muted-foreground text-xs">{req.user.email}</p>
+                    {req.message && (
+                      <p className="text-muted-foreground/80 text-xs mt-1 flex items-start gap-1">
+                        <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                        <span className="line-clamp-2">{req.message}</span>
+                      </p>
+                    )}
+                  </div>
+                  <p className="text-muted-foreground text-xs hidden sm:block flex-shrink-0">
+                    {new Date(req.createdAt).toLocaleDateString()}
+                  </p>
+                  <div className="flex items-center gap-2 flex-shrink-0">
+                    <button
+                      onClick={() => handleRequest(req.id, "approve")}
+                      disabled={processingId === req.id}
+                      className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                    >
+                      {processingId === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleRequest(req.id, "reject")}
+                      disabled={processingId === req.id}
+                      className="flex items-center gap-1.5 border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                    >
+                      {processingId === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
+                      Reject
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Request to Join Modal */}
+      {showRequestModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowRequestModal(false)} />
+          <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-[420px] shadow-2xl">
+            <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-amber-400" /> Request to Join
+            </h2>
+            <p className="text-muted-foreground text-xs mb-4">
+              This group requires admin approval. Optionally add a message to introduce yourself.
+            </p>
+            <div className="space-y-4">
+              <div>
+                <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                  Message (optional)
+                </label>
+                <textarea
+                  rows={3}
+                  value={requestMessage}
+                  onChange={(e) => setRequestMessage(e.target.value)}
+                  placeholder="Hi, I'd like to join because..."
+                  className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500/50 resize-none"
+                />
+              </div>
+              <div className="flex items-center justify-end gap-3">
+                <button onClick={() => setShowRequestModal(false)} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSendRequest}
+                  disabled={joining}
+                  className="flex items-center gap-2 bg-amber-600 hover:bg-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+                >
+                  {joining ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending…</> : <><Send className="w-4 h-4" /> Send Request</>}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>

@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { name, description, courseId, maxMembers, isPublic } = await req.json();
+    const { name, description, courseId, maxMembers, isPublic, requiresApproval } = await req.json();
     if (!name?.trim()) {
       return NextResponse.json({ error: "Group name is required" }, { status: 400 });
     }
@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
         courseId: courseId || null,
         maxMembers: maxMembers || 20,
         isPublic: isPublic !== false,
+        requiresApproval: requiresApproval === true,
         inviteCode,
         createdById: session.userId,
         members: {

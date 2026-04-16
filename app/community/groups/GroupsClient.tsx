@@ -7,7 +7,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Users, Plus, Search, Lock, Globe, Key } from "lucide-react";
+import { Users, Plus, Search, Lock, Globe, Key, ShieldCheck } from "lucide-react";
 import toast from "react-hot-toast";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
@@ -18,6 +18,7 @@ interface Group {
   courseId: string | null;
   maxMembers: number;
   isPublic: boolean;
+  requiresApproval: boolean;
   inviteCode: string;
   createdAt: string;
   createdBy: { id: string; name: string; avatar: string | null };
@@ -40,6 +41,7 @@ export default function GroupsClient({
   const [showCreate, setShowCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newDesc, setNewDesc] = useState("");
+  const [newRequiresApproval, setNewRequiresApproval] = useState(false);
   const [creating, setCreating] = useState(false);
 
   const [showJoinCode, setShowJoinCode] = useState(false);
@@ -68,13 +70,14 @@ export default function GroupsClient({
       const res = await fetch("/api/community/groups", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name: newName, description: newDesc }),
+        body: JSON.stringify({ name: newName, description: newDesc, requiresApproval: newRequiresApproval }),
       });
       if (!res.ok) throw new Error();
       toast.success("Group created!");
       setShowCreate(false);
       setNewName("");
       setNewDesc("");
+      setNewRequiresApproval(false);
       load();
     } catch {
       toast.error("Failed to create group");
@@ -196,10 +199,17 @@ export default function GroupsClient({
                 <div className="w-10 h-10 rounded-md bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                   <Users className="w-5 h-5 text-emerald-400" />
                 </div>
-                <span className="text-muted-foreground text-xs flex items-center gap-1">
-                  {g.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-                  {g.isPublic ? "Public" : "Private"}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  {g.requiresApproval && (
+                    <span className="flex items-center gap-1 text-[10px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
+                      <ShieldCheck className="w-3 h-3" /> Approval
+                    </span>
+                  )}
+                  <span className="text-muted-foreground text-xs flex items-center gap-1">
+                    {g.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
+                    {g.isPublic ? "Public" : "Private"}
+                  </span>
+                </div>
               </div>
               <p className="text-foreground font-semibold text-sm  transition-colors">{g.name}</p>
               {g.description && (
@@ -282,6 +292,21 @@ export default function GroupsClient({
                   className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
                 />
               </div>
+              <label className="flex items-center gap-3 cursor-pointer select-none">
+                <div
+                  className={`relative w-10 h-5 rounded-full transition-colors ${newRequiresApproval ? "bg-emerald-600" : "bg-secondary border border-border"}`}
+                  onClick={() => setNewRequiresApproval(v => !v)}
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white shadow transition-transform ${newRequiresApproval ? "translate-x-5" : ""}`} />
+                </div>
+                <div>
+                  <p className="text-sm text-foreground font-medium flex items-center gap-1.5">
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Require approval to join
+                  </p>
+                  <p className="text-xs text-muted-foreground">New members must be approved by you.</p>
+                </div>
+              </label>
+
               <div className="flex items-center justify-end gap-3">
                 <button onClick={() => setShowCreate(false)} className="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
                   Cancel
