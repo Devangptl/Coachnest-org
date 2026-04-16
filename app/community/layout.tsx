@@ -1,11 +1,12 @@
 /**
  * Community layout — wraps all /community pages with sidebar.
  * Auth-gated for logged-in users.
+ * CommunityTour is lazy-loaded via a client wrapper to avoid bundling react-joyride eagerly.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import CommunitySidebar from "./CommunitySidebar";
-import CommunityTour from "@/components/CommunityTour";
+import CommunityTourLazy from "./CommunityTourLazy";
 import { prisma } from "@/lib/prisma";
 
 export default async function CommunityLayout({
@@ -24,7 +25,7 @@ export default async function CommunityLayout({
 
   return (
     <>
-      <CommunityTour initialRun={!hasSeenCommunityTour} />
+      {!hasSeenCommunityTour && <CommunityTourLazy initialRun={!hasSeenCommunityTour} />}
       <div className=" pb-16">
         <div className="flex flex-col lg:flex-row lg:gap-8 lg:min-h-[calc(100vh-4rem)]">
           <CommunitySidebar />

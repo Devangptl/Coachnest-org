@@ -39,7 +39,10 @@ export async function GET(req: NextRequest) {
       prisma.forumThread.count({ where }),
     ]);
 
-    return NextResponse.json({ threads, total, page, totalPages: Math.ceil(total / limit) });
+    return NextResponse.json(
+      { threads, total, page, totalPages: Math.ceil(total / limit) },
+      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } }
+    );
   } catch (err) {
     console.error("[GET /api/community/forums]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

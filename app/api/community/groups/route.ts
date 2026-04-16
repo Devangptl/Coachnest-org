@@ -32,7 +32,10 @@ export async function GET(req: NextRequest) {
       prisma.studyGroup.count({ where }),
     ]);
 
-    return NextResponse.json({ groups, total, page, totalPages: Math.ceil(total / limit) });
+    return NextResponse.json(
+      { groups, total, page, totalPages: Math.ceil(total / limit) },
+      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } }
+    );
   } catch (err) {
     console.error("[GET /api/community/groups]", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
