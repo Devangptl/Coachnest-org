@@ -9,17 +9,44 @@ import Link from "next/link";
 type State = "verifying" | "success" | "error";
 
 function CheckoutSuccessContent() {
-  const params    = useSearchParams();
-  const type      = params.get("type");
-  const courseId  = params.get("courseId");
-  const slug      = params.get("slug");
-  const sessionId = params.get("session_id");
+  const params          = useSearchParams();
+  const type            = params.get("type");
+  const courseId        = params.get("courseId");
+  const slug            = params.get("slug");
+  const sessionId       = params.get("session_id");
+  const paymentIntentId = params.get("payment_intent");
+  const redirectStatus  = params.get("redirect_status");
 
   const [state,   setState]   = useState<State>("verifying");
   const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function verify() {
+      // ── Path A: UPI / redirect-based PaymentIntent returned by Stripe ──
+      if (paymentIntentId) {
+        if (redirectStatus === "failed") {
+          setMessage("Your payment was not completed. Please try again.");
+          setState("error");
+          return;
+        }
+        // Confirm enrollment / feature access using the PaymentIntent
+        try {
+          const endpoint = type === "feature"
+            ? "/api/payments/confirm-feature-access"
+            : "/api/payments/confirm-enrollment";
+          await fetch(endpoint, {
+            method:  "POST",
+            headers: { "Content-Type": "application/json" },
+            body:    JSON.stringify({ paymentIntentId }),
+          });
+        } catch {
+          // Non-fatal — webhook may have already processed it
+        }
+        setState("success");
+        return;
+      }
+
+      // ── Path B: Stripe Checkout Session (legacy hosted flow) ──
       if (!sessionId) { setState("success"); return; }
 
       try {
@@ -40,7 +67,7 @@ function CheckoutSuccessContent() {
     }
 
     verify();
-  }, [sessionId]);
+  }, [paymentIntentId, redirectStatus, sessionId, type]);
 
   const isCourse  = type === "course";
   const isFeature = type === "feature";

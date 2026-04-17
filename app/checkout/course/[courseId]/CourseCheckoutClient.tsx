@@ -2,11 +2,55 @@
 
 import { useState, FormEvent, useEffect, useCallback } from "react";
 import {
+  Elements, PaymentElement,
+  useStripe, useElements,
+} from "@stripe/react-stripe-js";
+import { useRouter } from "next/navigation";
+import {
   Lock, ArrowLeft, Calendar, BookOpen, Tag, X,
-  Loader2, ShieldCheck, CreditCard, ChevronRight,
+  Loader2, ShieldCheck, ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { stripePromise } from "@/lib/stripe-client";
+
+// ── Stripe appearance (mirrors StripeProvider) ────────────────────────────────
+
+const APPEARANCE_DARK = {
+  theme:     "night" as const,
+  variables: {
+    colorPrimary:    "#d4703f",
+    colorBackground: "#0d0d0d",
+    colorText:       "#e2e8f0",
+    colorDanger:     "#ef4444",
+    fontFamily:      "system-ui, sans-serif",
+    borderRadius:    "8px",
+    spacingUnit:     "4px",
+  },
+  rules: {
+    ".Input": { backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" },
+    ".Input:focus": { border: "1px solid #d4703f", boxShadow: "0 0 0 2px rgba(212,112,63,0.15)" },
+  },
+};
+
+const APPEARANCE_LIGHT = {
+  theme:     "flat" as const,
+  variables: {
+    colorPrimary:    "#d4703f",
+    colorBackground: "#fdf9f5",
+    colorText:       "#1c1411",
+    colorDanger:     "#ef4444",
+    fontFamily:      "system-ui, sans-serif",
+    borderRadius:    "8px",
+    spacingUnit:     "4px",
+  },
+  rules: {
+    ".Input": { backgroundColor: "#f0ece6", border: "1px solid #ddd5c9" },
+    ".Input:focus": { border: "1px solid #d4703f", boxShadow: "0 0 0 2px rgba(212,112,63,0.15)" },
+  },
+};
+
+// ── Types ─────────────────────────────────────────────────────────────────────
 
 interface Props {
   courseId:       string;
@@ -19,26 +63,132 @@ interface Props {
   initialCoupon?: string;
 }
 
-// Payment method badges shown to the user
-const PAYMENT_METHODS = [
-  { label: "Card",      sub: "Visa · Mastercard · Amex",       icon: "💳" },
-  { label: "UPI",       sub: "Google Pay · PhonePe · Paytm",   icon: "📲" },
-];
+// ── Inner payment form — must live inside an Elements context ─────────────────
+
+function PaymentForm({
+  courseId,
+  amount,
+  onBack,
+}: {
+  courseId: string;
+  amount:   number;
+  onBack:   () => void;
+}) {
+  const stripe   = useStripe();
+  const elements = useElements();
+  const router   = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!stripe || !elements) return;
+    setError(null);
+    setLoading(true);
+
+    try {
+      const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
+      const returnUrl = `${appUrl}/checkout/success?type=course&courseId=${courseId}`;
+
+      // redirect:"if_required" — card payments resolve here; UPI redirects to Stripe then returnUrl
+      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
+        elements,
+        confirmParams: { return_url: returnUrl },
+        redirect:      "if_required",
+      });
+
+      if (confirmError) throw new Error(confirmError.message);
+
+      // Reached only for non-redirect methods (card). Trigger enrollment immediately.
+      if (paymentIntent?.status === "succeeded" || paymentIntent?.status === "processing") {
+        const res  = await fetch("/api/payments/confirm-enrollment", {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ paymentIntentId: paymentIntent.id }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error ?? "Enrollment confirmation failed");
+        router.push(`/courses/${courseId}?enrolled=true`);
+      }
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : "Payment failed. Please try again.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      <PaymentElement options={{ layout: "tabs" }} />
+
+      {error && (
+        <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+          <span className="flex-shrink-0 mt-0.5">⚠</span>
+          {error}
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-1">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-4 py-3 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all disabled:opacity-40"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || loading}
+          className="flex-1 btn-primary py-3 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+          ) : (
+            <><Lock className="w-4 h-4" /> Pay ₹{amount.toLocaleString("en-IN")}</>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
+// ── Main component ─────────────────────────────────────────────────────────────
 
 export default function CourseCheckoutClient({
   courseId, courseName, instructorName, lessonCount,
   thumbnail, price: initialPrice, originalPrice, initialCoupon,
 }: Props) {
+  // Phase: "summary" shows price + coupon; "payment" shows embedded PaymentElement
+  const [phase,        setPhase]        = useState<"summary" | "payment">("summary");
+  const [clientSecret, setClientSecret] = useState<string | null>(null);
+  const [payAmount,    setPayAmount]    = useState(initialPrice);
+
   // Coupon
   const [couponCode,    setCouponCode]    = useState(initialCoupon ?? "");
   const [couponLoading, setCouponLoading] = useState(false);
-  const [appliedCoupon, setAppliedCoupon] = useState<{ code: string; label: string; discount: number } | null>(null);
-  const [couponError,   setCouponError]   = useState<string | null>(null);
-  const finalPrice = appliedCoupon ? Math.max(0, initialPrice - appliedCoupon.discount) : initialPrice;
+  const [appliedCoupon, setAppliedCoupon] = useState<{
+    code: string; label: string; discount: number;
+  } | null>(null);
+  const [couponError, setCouponError] = useState<string | null>(null);
+
+  const displayPrice = appliedCoupon
+    ? Math.max(0, initialPrice - appliedCoupon.discount)
+    : initialPrice;
 
   // Checkout
-  const [redirecting, setRedirecting] = useState(false);
-  const [error,       setError]       = useState<string | null>(null);
+  const [initiating, setInitiating] = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
+
+  // Theme detection for Stripe appearance
+  const [isDark, setIsDark] = useState(true);
+  useEffect(() => {
+    const update = () => setIsDark(!document.documentElement.classList.contains("light"));
+    update();
+    const obs = new MutationObserver(update);
+    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => obs.disconnect();
+  }, []);
+  const appearance = isDark ? APPEARANCE_DARK : APPEARANCE_LIGHT;
 
   // Auto-apply coupon from URL
   const applyInitialCoupon = useCallback(async () => {
@@ -54,7 +204,6 @@ export default function CourseCheckoutClient({
       : Math.min(data.discount, initialPrice);
     setAppliedCoupon({ code: data.code, label: data.description ?? data.code, discount: discountAmt });
   }, [initialCoupon, courseId, initialPrice]);
-
   useEffect(() => { applyInitialCoupon(); }, [applyInitialCoupon]);
 
   async function handleApplyCoupon() {
@@ -77,34 +226,115 @@ export default function CourseCheckoutClient({
     }
   }
 
-  async function handleCheckout(e: FormEvent) {
+  // Create PaymentIntent with final amount, then show PaymentElement
+  async function handleProceedToPayment(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    setRedirecting(true);
+    setInitiating(true);
     try {
-      const res  = await fetch("/api/payments/create-order", {
+      const res  = await fetch("/api/payments/create-payment-intent", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
         body:    JSON.stringify({ courseId, couponCode: appliedCoupon?.code }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to create checkout session");
-      if (!data.url) throw new Error("No checkout URL returned");
-      window.location.href = data.url;
+      if (!res.ok) throw new Error(data.error ?? "Failed to initialize payment");
+      setClientSecret(data.clientSecret);
+      setPayAmount(data.amount);
+      setPhase("payment");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
-      setRedirecting(false);
+    } finally {
+      setInitiating(false);
     }
   }
 
   const hasDiscount = originalPrice > initialPrice || appliedCoupon;
-  const savings     = originalPrice - finalPrice;
+  const savings     = originalPrice - displayPrice;
 
-  return (
-    <form onSubmit={handleCheckout}>
+  // ── Payment phase ──────────────────────────────────────────────────────────
+  if (phase === "payment" && clientSecret) {
+    const paySavings = originalPrice - payAmount;
+    return (
       <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
 
-        {/* ── Left: Order summary (2/5) ───────────────────────────────────── */}
+        {/* Left: condensed order summary */}
+        <div className="lg:col-span-2 space-y-4">
+          <div className="rounded-xl border border-border bg-card overflow-hidden">
+            {thumbnail && (
+              <div className="relative w-full aspect-video bg-secondary">
+                <Image src={thumbnail} alt={courseName} fill className="object-cover" />
+              </div>
+            )}
+            <div className="p-5">
+              <p className="text-xs text-muted-foreground mb-1">by {instructorName}</p>
+              <h3 className="font-bold text-foreground text-base leading-snug mb-3">{courseName}</h3>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <BookOpen className="w-3.5 h-3.5" />
+                {lessonCount} lessons · Lifetime access
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
+            {originalPrice > payAmount && (
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>Original price</span>
+                <span className="line-through">₹{originalPrice.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            <div className="border-t border-border pt-2.5 flex items-center justify-between font-bold text-foreground">
+              <span>Total today</span>
+              <span>₹{payAmount.toLocaleString("en-IN")}</span>
+            </div>
+            {paySavings > 0 && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center pt-0.5">
+                You save ₹{paySavings.toLocaleString("en-IN")} on this purchase!
+              </p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {[
+              { icon: Lock,        text: "256-bit SSL encryption" },
+              { icon: ShieldCheck, text: "Secured & PCI-compliant via Stripe" },
+              { icon: Calendar,    text: "30-day money-back guarantee" },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-2.5 text-xs text-muted-foreground">
+                <Icon className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+                {text}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Right: Stripe Payment Element */}
+        <div className="lg:col-span-3">
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
+            <h2 className="text-lg font-bold text-foreground mb-1">Complete payment</h2>
+            <p className="text-sm text-muted-foreground mb-6">
+              Choose your payment method and enter your details below.
+            </p>
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+              <PaymentForm courseId={courseId} amount={payAmount} onBack={() => setPhase("summary")} />
+            </Elements>
+          </div>
+          <p className="mt-3 text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            Encrypted and processed by Stripe. We never store card details.
+          </p>
+        </div>
+
+      </div>
+    );
+  }
+
+  // ── Summary phase ──────────────────────────────────────────────────────────
+  return (
+    <form onSubmit={handleProceedToPayment}>
+      <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
+
+        {/* Left: order summary */}
         <div className="lg:col-span-2 space-y-4">
           <Link
             href={`/courses/${courseId}`}
@@ -113,7 +343,6 @@ export default function CourseCheckoutClient({
             <ArrowLeft className="w-3.5 h-3.5" /> Back to course
           </Link>
 
-          {/* Course card */}
           <div className="rounded-xl border border-border bg-card overflow-hidden">
             {thumbnail && (
               <div className="relative w-full aspect-video bg-secondary">
@@ -199,7 +428,7 @@ export default function CourseCheckoutClient({
             )}
             <div className="border-t border-border pt-2.5 flex items-center justify-between font-bold text-foreground">
               <span>Total today</span>
-              <span>₹{finalPrice.toLocaleString("en-IN")}</span>
+              <span>₹{displayPrice.toLocaleString("en-IN")}</span>
             </div>
             {savings > 0 && (
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center pt-0.5">
@@ -223,17 +452,20 @@ export default function CourseCheckoutClient({
           </div>
         </div>
 
-        {/* ── Right: Payment options (3/5) ──────────────────────────────── */}
+        {/* Right: payment method overview + proceed button */}
         <div className="lg:col-span-3">
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-lg font-bold text-foreground mb-1">Choose payment method</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              You will be securely redirected to Stripe to complete payment.
+              Card, UPI, and other eligible methods will be shown on the next step.
             </p>
 
-            {/* Payment method tiles */}
+            {/* Informational payment method tiles */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {PAYMENT_METHODS.map((pm) => (
+              {[
+                { label: "Card", sub: "Visa · Mastercard · Amex",     icon: "💳" },
+                { label: "UPI",  sub: "Google Pay · PhonePe · Paytm", icon: "📲" },
+              ].map((pm) => (
                 <div
                   key={pm.label}
                   className="flex flex-col items-center gap-2 rounded-xl border border-border bg-secondary/30 p-4 text-center"
@@ -245,15 +477,6 @@ export default function CourseCheckoutClient({
               ))}
             </div>
 
-            {/* UPI note */}
-            <div className="mb-5 rounded-lg bg-blue-500/8 border border-blue-500/20 px-4 py-3 text-xs text-blue-600 dark:text-blue-400 flex items-start gap-2">
-              <span className="mt-0.5">ℹ️</span>
-              <span>
-                UPI is available for Indian customers. You can pay via Google Pay, PhonePe, or
-                Paytm by scanning the QR code on the next screen.
-              </span>
-            </div>
-
             {error && (
               <div className="mb-4 flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
                 <span className="flex-shrink-0 mt-0.5">⚠</span>
@@ -263,16 +486,16 @@ export default function CourseCheckoutClient({
 
             <button
               type="submit"
-              disabled={redirecting}
+              disabled={initiating}
               className="w-full btn-primary py-3.5 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {redirecting ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Redirecting to Stripe…</>
+              {initiating ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Preparing payment…</>
               ) : (
                 <><Lock className="w-4 h-4" />
-                  {finalPrice === 0
+                  {displayPrice === 0
                     ? "Enroll for Free"
-                    : `Pay ₹${finalPrice.toLocaleString("en-IN")}`}
+                    : `Pay ₹${displayPrice.toLocaleString("en-IN")}`}
                   <ChevronRight className="w-4 h-4" /></>
               )}
             </button>
@@ -282,7 +505,6 @@ export default function CourseCheckoutClient({
               Encrypted and processed by Stripe. We never store card details.
             </p>
 
-            {/* Accepted payment logos */}
             <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
               {["VISA", "Mastercard", "Amex", "UPI", "RuPay"].map((brand) => (
                 <span
@@ -294,11 +516,6 @@ export default function CourseCheckoutClient({
               ))}
             </div>
           </div>
-
-          {/* Saved cards notice removed — Stripe Checkout manages saved payment methods */}
-          <p className="mt-3 text-center text-xs text-muted-foreground">
-            Previously saved cards are available on the Stripe checkout page.
-          </p>
         </div>
 
       </div>
