@@ -1,11 +1,10 @@
 /**
  * /checkout/course/[courseId]?coupon=CODE
- * In-app course purchase — no redirect to Stripe.
+ * Redirects to Stripe Checkout (hosted page) supporting UPI + cards.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { StripeProvider } from "@/components/billing/StripeProvider";
 import CourseCheckoutClient from "./CourseCheckoutClient";
 
 interface PageProps {
@@ -53,18 +52,16 @@ export default async function CourseCheckoutPage({ params, searchParams }: PageP
       {/* Top bar */}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:py-16">
-        <StripeProvider>
-          <CourseCheckoutClient
-            courseId={courseId}
-            courseName={course.title}
-            instructorName={course.createdBy?.name ?? "Instructor"}
-            lessonCount={course._count.lessons}
-            thumbnail={course.thumbnail}
-            price={price}
-            originalPrice={Number(course.price)}
-            initialCoupon={coupon}
-          />
-        </StripeProvider>
+        <CourseCheckoutClient
+          courseId={courseId}
+          courseName={course.title}
+          instructorName={course.createdBy?.name ?? "Instructor"}
+          lessonCount={course._count.lessons}
+          thumbnail={course.thumbnail}
+          price={price}
+          originalPrice={Number(course.price)}
+          initialCoupon={coupon}
+        />
       </main>
     </div>
   );

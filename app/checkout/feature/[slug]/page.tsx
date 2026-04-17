@@ -1,11 +1,10 @@
 /**
  * /checkout/feature/[slug]
- * In-app feature add-on purchase — Stripe Elements, no hosted-checkout redirect.
+ * Redirects to Stripe Checkout (hosted page) supporting UPI + cards.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { StripeProvider } from "@/components/billing/StripeProvider";
 import FeatureCheckoutClient from "./FeatureCheckoutClient";
 
 // What's included copy — mirrors FeaturePurchaseGate / features page
@@ -45,16 +44,14 @@ export default async function FeatureCheckoutPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-background">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:py-16">
-        <StripeProvider>
-          <FeatureCheckoutClient
-            featureId={feature.id}
-            featureName={feature.name}
-            featureSlug={feature.slug}
-            description={feature.description}
-            price={Number(feature.price)}
-            includes={FEATURE_INCLUDES[feature.slug] ?? []}
-          />
-        </StripeProvider>
+        <FeatureCheckoutClient
+          featureId={feature.id}
+          featureName={feature.name}
+          featureSlug={feature.slug}
+          description={feature.description}
+          price={Number(feature.price)}
+          includes={FEATURE_INCLUDES[feature.slug] ?? []}
+        />
       </main>
     </div>
   );

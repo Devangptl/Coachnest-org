@@ -265,11 +265,10 @@ export async function createCheckoutSession(
   const stripe = getStripe();
 
   const session = await stripe.checkout.sessions.create({
-    mode:                        "payment",
-    payment_method_types:        ["card"],
-    customer_email:              user.email,
-    billing_address_collection:  "required",
-    payment_intent_data:         { description: `Course purchase: ${course.title}` },
+    mode:                 "payment",
+    payment_method_types: ["card", "upi"],
+    customer_email:       user.email,
+    payment_intent_data:  { description: `Course purchase: ${course.title}` },
     line_items: [{
       price_data: {
         currency:     "inr",
@@ -281,9 +280,9 @@ export async function createCheckoutSession(
       },
       quantity: 1,
     }],
-    metadata: { orderId: order.id, courseId, userId },
-    success_url: `${appUrl}/courses/${courseId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${appUrl}/courses/${courseId}?payment=cancelled`,
+    metadata:    { orderId: order.id, courseId, userId, type: "course" },
+    success_url: `${appUrl}/checkout/success?type=course&courseId=${courseId}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url:  `${appUrl}/checkout/cancel?type=course&courseId=${courseId}`,
   });
 
   await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } });
@@ -389,6 +388,72 @@ export async function handlePaymentIntentSuccess(paymentIntentId: string) {
   }
 
   return { success: true, courseId: order.courseId };
+}
+
+// ─── Create Stripe Checkout Session for feature add-ons ──────────────────────
+
+export async function createFeatureCheckoutSession(userId: string, featureId: string) {
+  const [user, feature] = await Promise.all([
+    prisma.user.findUnique({
+      where:  { id: userId },
+      select: { id: true, email: true, name: true },
+    }),
+    prisma.platformFeature.findFirst({
+      where:  { OR: [{ id: featureId }, { slug: featureId }] },
+      select: { id: true, name: true, slug: true, price: true, isActive: true },
+    }),
+  ]);
+
+  if (!user)    throw new Error("User not found");
+  if (!feature) throw new Error("Feature not found");
+  if (!feature.isActive) throw new Error("This feature is not currently available");
+
+  const existing = await prisma.featurePurchase.findUnique({
+    where: { userId_featureId: { userId, featureId: feature.id } },
+  });
+  if (existing) throw new Error("You already have access to this feature");
+
+  const amount = Number(feature.price);
+
+  const order = await prisma.order.create({
+    data: {
+      userId,
+      featureId:        feature.id,
+      amount,
+      currency:         "INR",
+      status:           "PENDING",
+      instructorRevenue: 0,
+      platformRevenue:   amount,
+    },
+  });
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+  const stripe  = getStripe();
+
+  const session = await stripe.checkout.sessions.create({
+    mode:                 "payment",
+    payment_method_types: ["card", "upi"],
+    customer_email:       user.email,
+    payment_intent_data:  { description: `Platform add-on: ${feature.name}` },
+    line_items: [{
+      price_data: {
+        currency:     "inr",
+        unit_amount:  Math.round(amount * 100),
+        product_data: { name: feature.name },
+      },
+      quantity: 1,
+    }],
+    metadata:    { orderId: order.id, featureId: feature.id, userId, type: "feature" },
+    success_url: `${appUrl}/checkout/success?type=feature&slug=${feature.slug}&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url:  `${appUrl}/checkout/cancel?type=feature&slug=${feature.slug}`,
+  });
+
+  await prisma.order.update({
+    where: { id: order.id },
+    data:  { stripeSessionId: session.id },
+  });
+
+  return { orderId: order.id, sessionId: session.id, url: session.url };
 }
 
 // ─── Handle successful payment (called from webhook / verify endpoint) ────────
