@@ -47,8 +47,8 @@ export async function POST(
     });
     if (existing) return NextResponse.json({ error: "Already a member" }, { status: 400 });
 
-    // ── Approval required: create join request ──────────────
-    if (group.requiresApproval) {
+    // ── Private group: create join request for admin approval ─
+    if (!group.isPublic) {
       const existingRequest = await prisma.groupJoinRequest.findUnique({
         where: { userId_groupId: { userId: session.userId, groupId } },
       });

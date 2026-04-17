@@ -335,7 +335,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 {group.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                 {group.isPublic ? "Public" : "Private"}
               </span>
-              {group.requiresApproval && (
+              {!group.isPublic && (
                 <span className="flex items-center gap-1 text-[10px] font-medium text-amber-400 bg-amber-500/10 border border-amber-500/20 px-1.5 py-0.5 rounded">
                   <ShieldCheck className="w-3 h-3" /> Approval required
                 </span>
@@ -357,7 +357,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
               </button>
             )}
             {!isMember && !pendingRequest && (
-              group.requiresApproval ? (
+              !group.isPublic ? (
                 <button
                   onClick={() => setShowRequestModal(true)}
                   disabled={joining}
