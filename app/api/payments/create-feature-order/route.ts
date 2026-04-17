@@ -13,11 +13,11 @@ export async function POST(req: NextRequest) {
     if (!session)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { featureId } = await req.json();
+    const { featureId, paymentMethod } = await req.json();
     if (!featureId)
       return NextResponse.json({ error: "featureId is required" }, { status: 400 });
 
-    const result = await createFeatureCheckoutSession(session.userId, featureId);
+    const result = await createFeatureCheckoutSession(session.userId, featureId, paymentMethod);
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Internal server error";

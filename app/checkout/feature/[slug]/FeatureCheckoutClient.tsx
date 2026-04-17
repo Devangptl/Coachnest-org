@@ -28,6 +28,7 @@ const PAYMENT_METHODS = [
 export default function FeatureCheckoutClient({
   featureId, featureName, featureSlug, description, price, includes,
 }: Props) {
+  const [selectedMethod, setSelectedMethod] = useState<"card" | "upi">("card");
   const [redirecting, setRedirecting] = useState(false);
   const [error,       setError]       = useState<string | null>(null);
 
@@ -40,7 +41,7 @@ export default function FeatureCheckoutClient({
       const res  = await fetch("/api/payments/create-feature-order", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ featureId }),
+        body:    JSON.stringify({ featureId, paymentMethod: selectedMethod }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create checkout session");
@@ -131,16 +132,26 @@ export default function FeatureCheckoutClient({
 
           {/* Payment method tiles */}
           <div className="grid grid-cols-2 gap-3 mb-6">
-            {PAYMENT_METHODS.map((pm) => (
-              <div
-                key={pm.label}
-                className="flex flex-col items-center gap-2 rounded-xl border border-border bg-secondary/30 p-4 text-center"
-              >
-                <span className="text-2xl">{pm.icon}</span>
-                <span className="text-sm font-semibold text-foreground">{pm.label}</span>
-                <span className="text-[11px] text-muted-foreground leading-tight">{pm.sub}</span>
-              </div>
-            ))}
+            {PAYMENT_METHODS.map((pm) => {
+              const value = pm.label.toLowerCase() as "card" | "upi";
+              const selected = selectedMethod === value;
+              return (
+                <button
+                  key={pm.label}
+                  type="button"
+                  onClick={() => setSelectedMethod(value)}
+                  className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-all ${
+                    selected
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border bg-secondary/30 hover:border-border/60 hover:bg-secondary/50"
+                  }`}
+                >
+                  <span className="text-2xl">{pm.icon}</span>
+                  <span className="text-sm font-semibold text-foreground">{pm.label}</span>
+                  <span className="text-[11px] text-muted-foreground leading-tight">{pm.sub}</span>
+                </button>
+              );
+            })}
           </div>
 
           {/* UPI note */}

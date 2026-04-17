@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
     if (!session)
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { courseId, couponCode, referralCode } = await req.json();
+    const { courseId, couponCode, referralCode, paymentMethod } = await req.json();
     if (!courseId)
       return NextResponse.json(
         { error: "courseId is required" },
@@ -24,7 +24,8 @@ export async function POST(req: NextRequest) {
       session.userId,
       courseId,
       couponCode,
-      referralCode
+      referralCode,
+      paymentMethod
     );
     return NextResponse.json(result);
   } catch (err: unknown) {
