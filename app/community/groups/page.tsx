@@ -12,7 +12,7 @@ export default async function StudyGroupsPage() {
 
   const [groups, communityAccess] = await Promise.all([
     prisma.studyGroup.findMany({
-      where: { isPublic: true },
+      where: {},
       include: {
         createdBy: { select: { id: true, name: true, avatar: true } },
         _count: { select: { members: true } },

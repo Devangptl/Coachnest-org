@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;
 
-    const where: Record<string, unknown> = { isPublic: true };
+    const where: Record<string, unknown> = {};
     if (courseId) where.courseId = courseId;
 
     const [groups, total] = await Promise.all([
