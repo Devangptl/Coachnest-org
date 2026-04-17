@@ -187,11 +187,10 @@ async function creditInstructorWallet(
 // ─── Create Stripe Checkout Session ──────────────────────────────────────────
 
 export async function createCheckoutSession(
-  userId:          string,
-  courseId:        string,
-  couponCode?:     string,
-  referralCode?:   string,
-  paymentMethod?:  "card" | "upi"
+  userId:        string,
+  courseId:      string,
+  couponCode?:   string,
+  referralCode?: string
 ) {
   const user = await prisma.user.findUnique({
     where:  { id: userId },
@@ -267,7 +266,6 @@ export async function createCheckoutSession(
 
   const session = await stripe.checkout.sessions.create({
     mode:                 "payment",
-    payment_method_types: paymentMethod === "upi" ? ["upi"] : paymentMethod === "card" ? ["card"] : ["card", "upi"],
     customer_email:       user.email,
     payment_intent_data:  { description: `Course purchase: ${course.title}` },
     line_items: [{
@@ -393,7 +391,7 @@ export async function handlePaymentIntentSuccess(paymentIntentId: string) {
 
 // ─── Create Stripe Checkout Session for feature add-ons ──────────────────────
 
-export async function createFeatureCheckoutSession(userId: string, featureId: string, paymentMethod?: "card" | "upi") {
+export async function createFeatureCheckoutSession(userId: string, featureId: string) {
   const [user, feature] = await Promise.all([
     prisma.user.findUnique({
       where:  { id: userId },
@@ -433,7 +431,6 @@ export async function createFeatureCheckoutSession(userId: string, featureId: st
 
   const session = await stripe.checkout.sessions.create({
     mode:                 "payment",
-    payment_method_types: paymentMethod === "upi" ? ["upi"] : paymentMethod === "card" ? ["card"] : ["card", "upi"],
     customer_email:       user.email,
     payment_intent_data:  { description: `Platform add-on: ${feature.name}` },
     line_items: [{

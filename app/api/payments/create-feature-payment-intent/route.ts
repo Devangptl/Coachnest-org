@@ -74,16 +74,16 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create PaymentIntent — setup_future_usage saves the card to the customer
+    // Create PaymentIntent — setup_future_usage saves eligible payment methods to the customer
     const pi = await stripe.paymentIntents.create({
-      amount:               Math.round(amount * 100), // paise
-      currency:             "inr",
-      customer:             customerId,
-      payment_method_types: ["card"],
-      setup_future_usage:   "off_session", // saves card → appears in payment methods
-      description:          `Platform add-on: ${feature.name}`,
-      metadata:             { orderId: order.id, featureId: feature.id, userId: session.userId, type: "feature" },
-      receipt_email:        user.email,
+      amount:                    Math.round(amount * 100), // paise
+      currency:                  "inr",
+      customer:                  customerId,
+      automatic_payment_methods: { enabled: true },
+      setup_future_usage:        "off_session",
+      description:               `Platform add-on: ${feature.name}`,
+      metadata:                  { orderId: order.id, featureId: feature.id, userId: session.userId, type: "feature" },
+      receipt_email:             user.email,
     });
 
     await prisma.order.update({

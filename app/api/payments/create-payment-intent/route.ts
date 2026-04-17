@@ -141,13 +141,13 @@ export async function POST(req: NextRequest) {
 
     // Create PaymentIntent with customer attached (satisfies RBI export requirements)
     const pi = await stripe.paymentIntents.create({
-      amount:               Math.round(finalAmount * 100), // paise
-      currency:             "inr",
-      customer:             customerId,
-      payment_method_types: ["card"],
-      description:          `Course purchase: ${course.title}`,
-      metadata:             { orderId: order.id, courseId, userId: session.userId },
-      receipt_email:        user.email,
+      amount:                    Math.round(finalAmount * 100), // paise
+      currency:                  "inr",
+      customer:                  customerId,
+      automatic_payment_methods: { enabled: true },
+      description:               `Course purchase: ${course.title}`,
+      metadata:                  { orderId: order.id, courseId, userId: session.userId },
+      receipt_email:             user.email,
     });
 
     // Save PaymentIntent ID to order

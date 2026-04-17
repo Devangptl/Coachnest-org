@@ -51,7 +51,6 @@ export async function createFeatureCheckoutSession(
 
   const session = await stripe.checkout.sessions.create({
     mode: "payment",
-    payment_method_types: ["card"],
     customer_email: user.email,
     billing_address_collection: "required",
     line_items: [
