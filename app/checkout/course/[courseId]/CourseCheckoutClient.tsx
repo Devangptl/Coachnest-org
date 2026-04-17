@@ -8,7 +8,7 @@ import {
 import { useRouter } from "next/navigation";
 import {
   Lock, ArrowLeft, Calendar, BookOpen, Tag, X,
-  Loader2, ShieldCheck, ChevronRight,
+  Loader2, ShieldCheck, ChevronRight, Smartphone,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -63,9 +63,9 @@ interface Props {
   initialCoupon?: string;
 }
 
-// ── Inner payment form — must live inside an Elements context ─────────────────
+// ── Card payment form (inside Elements context) ───────────────────────────────
 
-function PaymentForm({
+function CardPaymentForm({
   courseId,
   amount,
   onBack,
@@ -90,7 +90,6 @@ function PaymentForm({
       const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
       const returnUrl = `${appUrl}/checkout/success?type=course&courseId=${courseId}`;
 
-      // redirect:"if_required" — card payments resolve here; UPI redirects to Stripe then returnUrl
       const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
         elements,
         confirmParams: { return_url: returnUrl },
@@ -99,7 +98,6 @@ function PaymentForm({
 
       if (confirmError) throw new Error(confirmError.message);
 
-      // Reached only for non-redirect methods (card). Trigger enrollment immediately.
       if (paymentIntent?.status === "succeeded" || paymentIntent?.status === "processing") {
         const res  = await fetch("/api/payments/confirm-enrollment", {
           method:  "POST",
@@ -119,14 +117,12 @@ function PaymentForm({
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       <PaymentElement options={{ layout: "tabs" }} />
-
       {error && (
         <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
           <span className="flex-shrink-0 mt-0.5">⚠</span>
           {error}
         </div>
       )}
-
       <div className="flex gap-3 pt-1">
         <button
           type="button"
@@ -152,16 +148,138 @@ function PaymentForm({
   );
 }
 
+// ── UPI payment form (inside Elements context) ────────────────────────────────
+
+function UpiPaymentForm({
+  clientSecret,
+  courseId,
+  amount,
+  onBack,
+}: {
+  clientSecret: string;
+  courseId:     string;
+  amount:       number;
+  onBack:       () => void;
+}) {
+  const stripe  = useStripe();
+  const [upiId,   setUpiId]   = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
+
+  const isValidVpa = /^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{3,}$/.test(upiId.trim());
+
+  async function handleSubmit(e: FormEvent) {
+    e.preventDefault();
+    if (!stripe || !isValidVpa) return;
+    setError(null);
+    setLoading(true);
+
+    const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
+    const returnUrl = `${appUrl}/checkout/success?type=course&courseId=${courseId}`;
+
+    // confirmUpiPayment always redirects — Stripe sends a collect request to the UPI app,
+    // then redirects back to returnUrl once the user approves on their phone.
+    const { error: stripeError } = await stripe.confirmUpiPayment(clientSecret, {
+      payment_method: { upi: { vpa: upiId.trim() } },
+      return_url:     returnUrl,
+    });
+
+    if (stripeError) {
+      setError(stripeError.message ?? "Payment request failed. Check your UPI ID and try again.");
+      setLoading(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {/* UPI ID input */}
+      <div>
+        <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
+          UPI ID
+        </label>
+        <div className="relative">
+          <Smartphone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
+          <input
+            type="text"
+            value={upiId}
+            onChange={(e) => { setUpiId(e.target.value); setError(null); }}
+            placeholder="yourname@bank"
+            autoComplete="off"
+            spellCheck={false}
+            className="w-full pl-10 pr-3.5 py-3 bg-secondary/30 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 transition-all"
+          />
+        </div>
+        <p className="mt-1.5 text-[11px] text-muted-foreground/70">
+          e.g.&nbsp; name@paytm &nbsp;·&nbsp; 9876543210@ybl &nbsp;·&nbsp; user@okaxis
+        </p>
+      </div>
+
+      {/* Supported apps */}
+      <div>
+        <p className="text-xs font-medium text-muted-foreground mb-2">Supported apps</p>
+        <div className="flex flex-wrap gap-2">
+          {["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay"].map((app) => (
+            <span
+              key={app}
+              className="px-2.5 py-1 rounded-full bg-secondary/50 border border-border text-[11px] text-muted-foreground"
+            >
+              {app}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* How it works */}
+      <div className="rounded-lg bg-blue-500/8 border border-blue-500/20 px-4 py-3 text-xs text-blue-600 dark:text-blue-400 flex items-start gap-2">
+        <span className="mt-0.5 flex-shrink-0">ℹ️</span>
+        <span>
+          After clicking Pay, a collect request will be sent to your UPI app.
+          Open your app and approve the payment to complete enrollment.
+        </span>
+      </div>
+
+      {error && (
+        <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+          <span className="flex-shrink-0 mt-0.5">⚠</span>
+          {error}
+        </div>
+      )}
+
+      <div className="flex gap-3 pt-1">
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-4 py-3 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all disabled:opacity-40"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back
+        </button>
+        <button
+          type="submit"
+          disabled={!stripe || !isValidVpa || loading}
+          className="flex-1 btn-primary py-3 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+        >
+          {loading ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Sending request…</>
+          ) : (
+            <><Smartphone className="w-4 h-4" /> Pay ₹{amount.toLocaleString("en-IN")} via UPI</>
+          )}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function CourseCheckoutClient({
   courseId, courseName, instructorName, lessonCount,
   thumbnail, price: initialPrice, originalPrice, initialCoupon,
 }: Props) {
-  // Phase: "summary" shows price + coupon; "payment" shows embedded PaymentElement
-  const [phase,        setPhase]        = useState<"summary" | "payment">("summary");
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [payAmount,    setPayAmount]    = useState(initialPrice);
+  const [phase,          setPhase]          = useState<"summary" | "payment">("summary");
+  const [selectedMethod, setSelectedMethod] = useState<"card" | "upi">("card");
+  const [clientSecret,   setClientSecret]   = useState<string | null>(null);
+  const [payAmount,      setPayAmount]      = useState(initialPrice);
 
   // Coupon
   const [couponCode,    setCouponCode]    = useState(initialCoupon ?? "");
@@ -175,7 +293,6 @@ export default function CourseCheckoutClient({
     ? Math.max(0, initialPrice - appliedCoupon.discount)
     : initialPrice;
 
-  // Checkout
   const [initiating, setInitiating] = useState(false);
   const [error,      setError]      = useState<string | null>(null);
 
@@ -226,7 +343,6 @@ export default function CourseCheckoutClient({
     }
   }
 
-  // Create PaymentIntent with final amount, then show PaymentElement
   async function handleProceedToPayment(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -308,17 +424,36 @@ export default function CourseCheckoutClient({
           </div>
         </div>
 
-        {/* Right: Stripe Payment Element */}
+        {/* Right: card or UPI form */}
         <div className="lg:col-span-3">
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
-            <h2 className="text-lg font-bold text-foreground mb-1">Complete payment</h2>
+            <h2 className="text-lg font-bold text-foreground mb-1">
+              {selectedMethod === "upi" ? "Pay via UPI" : "Complete payment"}
+            </h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Choose your payment method and enter your details below.
+              {selectedMethod === "upi"
+                ? "Enter your UPI ID to receive a payment request on your phone."
+                : "Choose your payment method and enter your details below."}
             </p>
+
             <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-              <PaymentForm courseId={courseId} amount={payAmount} onBack={() => setPhase("summary")} />
+              {selectedMethod === "upi" ? (
+                <UpiPaymentForm
+                  clientSecret={clientSecret}
+                  courseId={courseId}
+                  amount={payAmount}
+                  onBack={() => setPhase("summary")}
+                />
+              ) : (
+                <CardPaymentForm
+                  courseId={courseId}
+                  amount={payAmount}
+                  onBack={() => setPhase("summary")}
+                />
+              )}
             </Elements>
           </div>
+
           <p className="mt-3 text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
             Encrypted and processed by Stripe. We never store card details.
@@ -452,28 +587,34 @@ export default function CourseCheckoutClient({
           </div>
         </div>
 
-        {/* Right: payment method overview + proceed button */}
+        {/* Right: selectable payment method tiles + proceed button */}
         <div className="lg:col-span-3">
           <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
             <h2 className="text-lg font-bold text-foreground mb-1">Choose payment method</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Card, UPI, and other eligible methods will be shown on the next step.
+              Select how you&apos;d like to pay and continue to enter your details.
             </p>
 
-            {/* Informational payment method tiles */}
+            {/* Selectable payment method tiles */}
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {[
-                { label: "Card", sub: "Visa · Mastercard · Amex",     icon: "💳" },
-                { label: "UPI",  sub: "Google Pay · PhonePe · Paytm", icon: "📲" },
-              ].map((pm) => (
-                <div
-                  key={pm.label}
-                  className="flex flex-col items-center gap-2 rounded-xl border border-border bg-secondary/30 p-4 text-center"
+              {([
+                { value: "card", label: "Card", sub: "Visa · Mastercard · Amex",     icon: "💳" },
+                { value: "upi",  label: "UPI",  sub: "Google Pay · PhonePe · Paytm", icon: "📲" },
+              ] as const).map((pm) => (
+                <button
+                  key={pm.value}
+                  type="button"
+                  onClick={() => setSelectedMethod(pm.value)}
+                  className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-all ${
+                    selectedMethod === pm.value
+                      ? "border-primary bg-primary/5 ring-1 ring-primary/30"
+                      : "border-border bg-secondary/30 hover:border-border/60 hover:bg-secondary/50"
+                  }`}
                 >
                   <span className="text-2xl">{pm.icon}</span>
                   <span className="text-sm font-semibold text-foreground">{pm.label}</span>
                   <span className="text-[11px] text-muted-foreground leading-tight">{pm.sub}</span>
-                </div>
+                </button>
               ))}
             </div>
 
