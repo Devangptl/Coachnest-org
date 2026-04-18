@@ -178,9 +178,16 @@ function UpiPaymentForm({
     const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
     const returnUrl = `${appUrl}/checkout/success?type=feature&slug=${featureSlug}`;
 
-    const { error: stripeError } = await stripe.confirmUpiPayment(clientSecret, {
-      payment_method: { upi: { vpa: upiId.trim() } },
-      return_url:     returnUrl,
+    const { error: stripeError } = await stripe.confirmPayment({
+      clientSecret,
+      confirmParams: {
+        payment_method_data: {
+          type: "upi",
+          upi:  { vpa: upiId.trim() },
+        } as { type: string; [key: string]: unknown },
+        return_url: returnUrl,
+      },
+      redirect: "always",
     });
 
     if (stripeError) {
@@ -298,7 +305,7 @@ export default function FeatureCheckoutClient({
       const res  = await fetch("/api/payments/create-feature-payment-intent", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ featureId }),
+        body:    JSON.stringify({ featureId, paymentMethodType: selectedMethod }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to initialize payment");

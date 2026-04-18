@@ -14,7 +14,10 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { featureId: rawId } = await req.json() as { featureId: string };
+    const { featureId: rawId, paymentMethodType } = await req.json() as {
+      featureId:           string;
+      paymentMethodType?:  string;
+    };
     if (!rawId) return NextResponse.json({ error: "featureId is required" }, { status: 400 });
 
     const [user, feature] = await Promise.all([
@@ -76,14 +79,15 @@ export async function POST(req: NextRequest) {
 
     // Create PaymentIntent — setup_future_usage saves eligible payment methods to the customer
     const pi = await stripe.paymentIntents.create({
-      amount:                    Math.round(amount * 100), // paise
-      currency:                  "inr",
-      customer:                  customerId,
-      automatic_payment_methods: { enabled: true },
-      setup_future_usage:        "off_session",
-      description:               `Platform add-on: ${feature.name}`,
-      metadata:                  { orderId: order.id, featureId: feature.id, userId: session.userId, type: "feature" },
-      receipt_email:             user.email,
+      amount:        Math.round(amount * 100), // paise
+      currency:      "inr",
+      customer:      customerId,
+      ...(paymentMethodType === "upi"
+        ? { payment_method_types: ["upi"] }
+        : { automatic_payment_methods: { enabled: true }, setup_future_usage: "off_session" as const }),
+      description:   `Platform add-on: ${feature.name}`,
+      metadata:      { orderId: order.id, featureId: feature.id, userId: session.userId, type: "feature" },
+      receipt_email: user.email,
     });
 
     await prisma.order.update({

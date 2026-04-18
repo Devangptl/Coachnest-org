@@ -14,10 +14,11 @@ export async function POST(req: NextRequest) {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { courseId, couponCode, referralCode } = await req.json() as {
-      courseId:      string;
-      couponCode?:   string;
-      referralCode?: string;
+    const { courseId, couponCode, referralCode, paymentMethodType } = await req.json() as {
+      courseId:            string;
+      couponCode?:         string;
+      referralCode?:       string;
+      paymentMethodType?:  string;
     };
     if (!courseId) return NextResponse.json({ error: "courseId is required" }, { status: 400 });
 
@@ -141,13 +142,15 @@ export async function POST(req: NextRequest) {
 
     // Create PaymentIntent with customer attached (satisfies RBI export requirements)
     const pi = await stripe.paymentIntents.create({
-      amount:                    Math.round(finalAmount * 100), // paise
-      currency:                  "inr",
-      customer:                  customerId,
-      automatic_payment_methods: { enabled: true },
-      description:               `Course purchase: ${course.title}`,
-      metadata:                  { orderId: order.id, courseId, userId: session.userId },
-      receipt_email:             user.email,
+      amount:        Math.round(finalAmount * 100), // paise
+      currency:      "inr",
+      customer:      customerId,
+      ...(paymentMethodType === "upi"
+        ? { payment_method_types: ["upi"] }
+        : { automatic_payment_methods: { enabled: true } }),
+      description:   `Course purchase: ${course.title}`,
+      metadata:      { orderId: order.id, courseId, userId: session.userId },
+      receipt_email: user.email,
     });
 
     // Save PaymentIntent ID to order

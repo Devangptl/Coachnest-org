@@ -179,9 +179,16 @@ function UpiPaymentForm({
 
     // confirmUpiPayment always redirects — Stripe sends a collect request to the UPI app,
     // then redirects back to returnUrl once the user approves on their phone.
-    const { error: stripeError } = await stripe.confirmUpiPayment(clientSecret, {
-      payment_method: { upi: { vpa: upiId.trim() } },
-      return_url:     returnUrl,
+    const { error: stripeError } = await stripe.confirmPayment({
+      clientSecret,
+      confirmParams: {
+        payment_method_data: {
+          type: "upi",
+          upi:  { vpa: upiId.trim() },
+        } as { type: string; [key: string]: unknown },
+        return_url: returnUrl,
+      },
+      redirect: "always",
     });
 
     if (stripeError) {
@@ -351,7 +358,7 @@ export default function CourseCheckoutClient({
       const res  = await fetch("/api/payments/create-payment-intent", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ courseId, couponCode: appliedCoupon?.code }),
+        body:    JSON.stringify({ courseId, couponCode: appliedCoupon?.code, paymentMethodType: selectedMethod }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to initialize payment");
