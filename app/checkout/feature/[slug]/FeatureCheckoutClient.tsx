@@ -178,16 +178,12 @@ function UpiPaymentForm({
     const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
     const returnUrl = `${appUrl}/checkout/success?type=feature&slug=${featureSlug}`;
 
-    const { error: stripeError } = await stripe.confirmPayment({
-      clientSecret,
-      confirmParams: {
-        payment_method_data: {
-          type: "upi",
-          upi:  { vpa: upiId.trim() },
-        } as { type: string; [key: string]: unknown },
-        return_url: returnUrl,
-      },
-      redirect: "always",
+    // confirmUpiPayment is the documented Stripe API for UPI collect flow.
+    // @stripe/stripe-js v9 types omit it, but the Stripe.js runtime still supports it.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: stripeError } = await (stripe as any).confirmUpiPayment(clientSecret, {
+      payment_method: { upi: { vpa: upiId.trim() } },
+      return_url:     returnUrl,
     });
 
     if (stripeError) {
