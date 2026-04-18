@@ -23,7 +23,7 @@ export default function LessonLoading() {
       </div>
 
       {/* Content card */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden">
+      <div className="rounded-xl border border-border overflow-hidden">
         <div className="px-6 sm:px-10 py-8 space-y-4">
           <Skeleton h="h-4" w="w-full" />
           <Skeleton h="h-4" w="w-5/6" />
