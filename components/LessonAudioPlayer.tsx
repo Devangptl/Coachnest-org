@@ -311,10 +311,11 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.97 }}
       transition={{ type: "spring", stiffness: 340, damping: 26 }}
-      className="rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/80 via-card/95 to-card/95 backdrop-blur-xl shadow-2xl shadow-emerald-900/30 overflow-hidden"
+      className=" overflow-hidden"
     >
+      {/* rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/80 via-card/95 to-card/95 backdrop-blur-xl shadow-2xl shadow-emerald-900/30 */}
       {/* Top glow line */}
-      <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+      {/* <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" /> */}
 
       <div className="p-5">
         {/* Header row */}
