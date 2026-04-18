@@ -4,6 +4,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 
 export async function PATCH(
   _req: NextRequest,
@@ -18,6 +20,12 @@ export async function PATCH(
       where: { id, userId: session.userId },
       data:  { read: true },
     });
+
+    await emit(
+      channels.userNotifications(session.userId),
+      events.notificationRead,
+      { id },
+    );
 
     return NextResponse.json({ success: true });
   } catch (err) {

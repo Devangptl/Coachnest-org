@@ -4,6 +4,7 @@
  * Revenue from feature purchases goes 100% to the platform.
  */
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 import { getStripe } from "@/lib/stripe";
 
 // ─── Create Stripe Checkout Session for a feature purchase ───────────────────
@@ -119,7 +120,7 @@ export async function handleFeaturePaymentSuccess(
 
   // Notify the user
   if (order.feature) {
-    await prisma.notification.create({
+    await createNotification({
       data: {
         userId: order.userId,
         title: `${order.feature.name} unlocked!`,

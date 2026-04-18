@@ -166,7 +166,7 @@ export default function NavbarClient({ session }: Props) {
           {session ? (
             <>
               <div className="hidden lg:block">
-                <NotificationBell />
+                <NotificationBell userId={session.userId} />
               </div>
 
               {/* User menu */}

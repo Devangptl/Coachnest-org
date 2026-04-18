@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
+import { createNotification } from "@/lib/notifications";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 
 export async function POST(
   req: NextRequest,
@@ -50,7 +53,7 @@ export async function POST(
 
     // Notify thread author if different from replier
     if (thread.authorId !== session.userId) {
-      await prisma.notification.create({
+      await createNotification({
         data: {
           userId: thread.authorId,
           title: "New reply to your thread",
@@ -60,6 +63,8 @@ export async function POST(
         },
       });
     }
+
+    await emit(channels.forumThread(threadId), events.forumReplyCreated, { reply });
 
     return NextResponse.json({ reply }, { status: 201 });
   } catch (err) {

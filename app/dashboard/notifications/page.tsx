@@ -54,6 +54,7 @@ export default async function NotificationsPage() {
         <NotificationList
           initialNotifications={notifications}
           unreadCount={unreadCount}
+          userId={session.userId}
         />
       ) : (
         <GlassCard padding="lg">

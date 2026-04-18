@@ -6,6 +6,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
+import { createNotification } from "@/lib/notifications";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 
 export async function POST(
   req: NextRequest,
@@ -74,7 +77,7 @@ export async function POST(
           where: { groupId, role: "ADMIN" },
         });
         if (admin) {
-          await prisma.notification.create({
+          await createNotification({
             data: {
               userId: admin.userId,
               title: "New join request",
@@ -101,7 +104,7 @@ export async function POST(
       data: { groupXp: { increment: 10 } },
     });
 
-    await prisma.activityFeedEvent.create({
+    const activity = await prisma.activityFeedEvent.create({
       data: {
         userId: session.userId,
         type: "GROUP_JOINED",
@@ -109,6 +112,7 @@ export async function POST(
         meta: { groupId },
       },
     });
+    await emit(channels.activityFeed(), events.activityCreated, activity);
 
     return NextResponse.json({ success: true }, { status: 201 });
   } catch (err) {

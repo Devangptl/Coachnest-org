@@ -11,6 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(
   _req: NextRequest,
@@ -46,7 +47,7 @@ export async function POST(
     });
 
     // Notify the instructor
-    await prisma.notification.create({
+    await createNotification({
       data: {
         userId: course.createdById,
         title:  `Your course "${course.title}" has been approved!`,

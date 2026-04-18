@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { getStripe } from "@/lib/stripe";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function POST(req: NextRequest) {
 
     // Notify user
     if (order.feature) {
-      await prisma.notification.create({
+      await createNotification({
         data: {
           userId: order.userId,
           title:  `${order.feature.name} unlocked!`,

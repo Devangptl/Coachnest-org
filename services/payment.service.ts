@@ -12,6 +12,7 @@
  * via creditInstructorWallet() and a WalletTransaction record is created.
  */
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 import { getStripe } from "@/lib/stripe";
 import { sendPurchaseEmail } from "@/lib/email";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
@@ -369,7 +370,7 @@ export async function handlePaymentIntentSuccess(paymentIntentId: string) {
     ).catch(console.error);
   }
 
-  await prisma.notification.create({
+  await createNotification({
     data: {
       userId,
       title: `Enrolled in "${order.course!.title}"`,
@@ -526,7 +527,7 @@ export async function handlePaymentSuccess(sessionId: string, paymentIntentId: s
     ).catch(console.error);
   }
 
-  await prisma.notification.create({
+  await createNotification({
     data: {
       userId,
       title: `Enrolled in "${order.course!.title}"`,

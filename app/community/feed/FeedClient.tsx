@@ -1,11 +1,9 @@
 "use client";
 
-/**
- * Activity Feed client component — receives server-fetched initial data.
- * Re-fetches only on pagination.
- */
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { Activity, Clock, MessageSquare, Users, Award, BookOpen, Star } from "lucide-react";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { channels, events } from "@/lib/realtime/channels";
 
 interface FeedEvent {
   id: string;
@@ -34,23 +32,33 @@ export default function FeedClient({
   initialEvents,
   initialTotalPages,
 }: FeedClientProps) {
-  const [events, setEvents] = useState<FeedEvent[]>(initialEvents);
+  const [feedEvents, setFeedEvents] = useState<FeedEvent[]>(initialEvents);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
+  const [hasNewActivity, setHasNewActivity] = useState(false);
 
-  async function load(p = 1) {
+  const load = useCallback(async (p = 1) => {
     setLoading(true);
+    setHasNewActivity(false);
     try {
       const res = await fetch(`/api/community/feed?page=${p}`);
       const data = await res.json();
-      setEvents(data.events || []);
+      setFeedEvents(data.events || []);
       setTotalPages(data.totalPages || 1);
       setPage(p);
     } catch { /* ignore */ } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useRealtimeChannel(channels.activityFeed(), events.activityCreated, () => {
+    if (page === 1) {
+      load(1);
+    } else {
+      setHasNewActivity(true);
+    }
+  });
 
   function getRelativeTime(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();
@@ -71,13 +79,22 @@ export default function FeedClient({
         <p className="text-muted-foreground text-sm mt-1">See what&apos;s happening across the community.</p>
       </div>
 
+      {hasNewActivity && (
+        <button
+          onClick={() => load(1)}
+          className="w-full text-center text-sm text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 rounded-md py-2 hover:bg-emerald-500/20 transition-colors"
+        >
+          New activity — click to refresh
+        </button>
+      )}
+
       {loading ? (
         <div className="space-y-3">
           {[1,2,3,4,5,6].map(i => (
             <div key={i} className="h-16 rounded-lg bg-secondary/50 animate-pulse" />
           ))}
         </div>
-      ) : events.length === 0 ? (
+      ) : feedEvents.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">No activity yet. Start learning and contributing to see updates here!</p>
@@ -85,7 +102,7 @@ export default function FeedClient({
       ) : (
         <>
           <div className="space-y-2">
-            {events.map((e) => {
+            {feedEvents.map((e) => {
               const config = TYPE_CONFIG[e.type] || { icon: Activity, color: "text-muted-foreground", bg: "bg-secondary" };
               const Icon = config.icon;
 

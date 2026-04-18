@@ -6,6 +6,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 
 export async function PATCH(
   req: NextRequest,
@@ -80,7 +83,7 @@ export async function PATCH(
 
       // Best-effort: notifications / activity feed
       try {
-        await prisma.notification.create({
+        await createNotification({
           data: {
             userId: joinRequest.userId,
             title: "Join request approved",
@@ -89,7 +92,7 @@ export async function PATCH(
             link: `/community/groups/${groupId}`,
           },
         });
-        await prisma.activityFeedEvent.create({
+        const activity = await prisma.activityFeedEvent.create({
           data: {
             userId: joinRequest.userId,
             type: "GROUP_JOINED",
@@ -97,6 +100,7 @@ export async function PATCH(
             meta: { groupId },
           },
         });
+        await emit(channels.activityFeed(), events.activityCreated, activity);
       } catch (notifErr) {
         console.warn("[requests/approve] Notification failed (non-fatal):", notifErr);
       }
@@ -107,7 +111,7 @@ export async function PATCH(
       });
 
       try {
-        await prisma.notification.create({
+        await createNotification({
           data: {
             userId: joinRequest.userId,
             title: "Join request declined",

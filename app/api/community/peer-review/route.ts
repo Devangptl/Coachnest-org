@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 
 export async function GET(req: NextRequest) {
   try {
@@ -95,8 +97,7 @@ export async function POST(req: NextRequest) {
       include: { _count: { select: { reviews: true } } },
     });
 
-    // Activity feed
-    await prisma.activityFeedEvent.create({
+    const activity = await prisma.activityFeedEvent.create({
       data: {
         userId: session.userId,
         type: "REVIEW_SUBMITTED",
@@ -104,6 +105,7 @@ export async function POST(req: NextRequest) {
         meta: { assignmentId: assignment.id },
       },
     });
+    await emit(channels.activityFeed(), events.activityCreated, activity);
 
     return NextResponse.json({ assignment }, { status: 201 });
   } catch (err) {

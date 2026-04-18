@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 import crypto from "crypto";
 
 export async function GET(req: NextRequest) {
@@ -85,8 +87,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    // Create activity feed event
-    await prisma.activityFeedEvent.create({
+    const activity = await prisma.activityFeedEvent.create({
       data: {
         userId: session.userId,
         type: "GROUP_CREATED",
@@ -94,6 +95,7 @@ export async function POST(req: NextRequest) {
         meta: { groupId: group.id },
       },
     });
+    await emit(channels.activityFeed(), events.activityCreated, activity);
 
     return NextResponse.json({ group }, { status: 201 });
   } catch (err) {

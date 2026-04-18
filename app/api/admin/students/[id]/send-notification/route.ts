@@ -3,6 +3,7 @@
  */
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 import { NextRequest, NextResponse } from "next/server";
 
 type Params = { params: Promise<{ id: string }> };
@@ -34,7 +35,7 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Student not found." }, { status: 404 });
     }
 
-    const notification = await prisma.notification.create({
+    const notification = await createNotification({
       data: {
         userId: id,
         title,

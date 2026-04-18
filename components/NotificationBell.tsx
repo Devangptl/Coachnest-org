@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import Link from "next/link";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { channels, events } from "@/lib/realtime/channels";
 
 interface Notification {
   id:        string;
@@ -33,7 +35,7 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
   ACTIVITY:      { icon: Zap,            color: "text-yellow-500",  bg: "bg-yellow-500/10"  },
 };
 
-export default function NotificationBell() {
+export default function NotificationBell({ userId }: { userId: string }) {
   const [open,          setOpen]          = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unread,        setUnread]        = useState(0);
@@ -50,9 +52,12 @@ export default function NotificationBell() {
 
   useEffect(() => {
     fetchNotifications();
-    const id = setInterval(fetchNotifications, 30_000);
-    return () => clearInterval(id);
   }, [fetchNotifications]);
+
+  useRealtimeChannel(channels.userNotifications(userId), {
+    [events.notificationCreated]: fetchNotifications,
+    [events.notificationRead]:    fetchNotifications,
+  });
 
   // Close on outside click
   useEffect(() => {

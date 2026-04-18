@@ -6,6 +6,8 @@ import { ArrowLeft, ChevronUp, ChevronDown, MessageSquare, Send, Clock, CheckCir
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { channels, events } from "@/lib/realtime/channels";
 
 interface Reply {
   id: string;
@@ -51,6 +53,11 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
   }
 
   useEffect(() => { loadThread(); }, [id]);
+
+  useRealtimeChannel(channels.forumThread(id), {
+    [events.forumReplyCreated]: () => loadThread(),
+    [events.forumVoteChanged]:  () => loadThread(),
+  });
 
   async function handleReply() {
     if (!replyBody.trim()) return;

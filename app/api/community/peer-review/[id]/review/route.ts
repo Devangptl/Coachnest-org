@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 
 export async function POST(
   req: NextRequest,
@@ -52,7 +53,7 @@ export async function POST(
     });
 
     // Notify the author
-    await prisma.notification.create({
+    await createNotification({
       data: {
         userId: assignment.submittedById,
         title: "New peer review received",

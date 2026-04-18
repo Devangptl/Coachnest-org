@@ -18,6 +18,7 @@
  *   - Enrollment deleted, instructor wallet debited, ledger entries written atomically
  */
 import { prisma } from "@/lib/prisma";
+import { createNotification } from "@/lib/notifications";
 import { getStripe } from "@/lib/stripe";
 
 const MAX_REFUND_PROGRESS_PCT = 80; // ≥ 80 % → ineligible
@@ -317,7 +318,7 @@ export async function approveAndProcessRefund(
   });
 
   // Notify student (fire-and-forget — non-critical)
-  prisma.notification.create({
+  createNotification({
     data: {
       userId: rr.userId,
       title:  "Refund Processed",
@@ -351,7 +352,7 @@ export async function rejectRefundRequest(
   });
 
   // Notify student
-  prisma.notification.create({
+  createNotification({
     data: {
       userId: rr.userId,
       title:  "Refund Request Rejected",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
@@ -12,6 +12,8 @@ import {
 import { formatDistanceToNow } from "date-fns";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { channels, events } from "@/lib/realtime/channels";
 
 interface Notification {
   id:        string;
@@ -38,13 +40,28 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
 
 export default function NotificationList({
   initialNotifications,
+  userId,
 }: {
   initialNotifications: Notification[];
   unreadCount: number;
+  userId: string;
 }) {
   const router = useRouter();
   const [notifications, setNotifications] = useState(initialNotifications);
   const [markingAll, setMarkingAll] = useState(false);
+
+  const refresh = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notifications?limit=50");
+      const data = await res.json();
+      setNotifications(data.notifications ?? []);
+    } catch { /* silent */ }
+  }, []);
+
+  useRealtimeChannel(channels.userNotifications(userId), {
+    [events.notificationCreated]: refresh,
+    [events.notificationRead]:    refresh,
+  });
 
   const handleMarkAllRead = async () => {
     setMarkingAll(true);

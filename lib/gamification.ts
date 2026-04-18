@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { getLevelForXp, BADGE_MAP } from "@/lib/badges";
+import { emit } from "@/lib/realtime/emit";
+import { channels, events } from "@/lib/realtime/channels";
 
 // ── XP values per action ──────────────────────────────────────────────────────
 
@@ -48,6 +50,10 @@ export async function awardXp(
     if (newLevel >= 2) await grantBadge(userId, "level_2");
     if (newLevel >= 5) await grantBadge(userId, "level_5");
   }
+
+  await emit(channels.leaderboard(), events.leaderboardChanged, {
+    userId, xp: newXp, level: newLevel, leveledUp,
+  });
 
   return { xp: newXp, level: newLevel, leveledUp };
 }
