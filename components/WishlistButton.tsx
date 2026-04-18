@@ -45,7 +45,7 @@ export default function WishlistButton({ courseId, initialState, className }: Pr
       aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
       className={cn(
         "p-2 rounded-full transition-all",
-        "border border-border hover:bg-secondary",
+        "",
         loading && "opacity-50 cursor-wait",
         className
       )}

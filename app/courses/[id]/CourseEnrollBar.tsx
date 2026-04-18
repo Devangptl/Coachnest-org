@@ -132,14 +132,14 @@ export default function CourseEnrollBar({
                   <WishlistButton 
                     courseId={courseId} 
                     initialState={isWishlisted} 
-                    className="flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center shadow-inner !rounded-md" 
+                    className="flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center" 
                   />
                 )}
 
                 {/* Share */}
                 <button
                   onClick={handleCopyLink}
-                  className=" p-2 rounded-full transition-all border border-border hover:bg-secondary flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center shadow-inner !rounded-mdtext-muted-foreground/70 hover:text-foreground"
+                  className=" p-2 rounded-full transition-all flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center text-muted-foreground/70 hover:text-foreground"
                   title="Share this course"
                 >
                   {copied ? (
