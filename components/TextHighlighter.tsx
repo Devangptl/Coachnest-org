@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Highlighter, Trash2, X, MessageSquare, Palette } from "lucide-react";
+import { Highlighter, Trash2, X, Palette } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -25,7 +25,7 @@ interface TextHighlighterProps {
 }
 
 const COLORS = [
-  { value: "#a855f7", label: "Purple", bg: "bg-orange-500", ring: "ring-orange-400" },
+  { value: "#a855f7", label: "Purple", bg: "bg-purple-500", ring: "ring-purple-400" },
   { value: "#f59e0b", label: "Amber", bg: "bg-amber-500", ring: "ring-amber-400" },
   { value: "#10b981", label: "Emerald", bg: "bg-emerald-500", ring: "ring-emerald-400" },
   { value: "#3b82f6", label: "Blue", bg: "bg-blue-500", ring: "ring-blue-400" },

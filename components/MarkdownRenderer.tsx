@@ -340,28 +340,29 @@ function MarkdownListItem({
 
 const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = false, className }: Props) {
   const processed = preprocessCallouts(content);
+  let blockIdx = 0;
 
   const components: Components = {
 
     // ── Headings ────────────────────────────────────────────────────────────────
     h1: ({ children }) => (
-      <h1 className={cn("text-xl sm:text-2xl font-bold text-foreground mt-6 sm:mt-8 mb-3 sm:mb-4 flex items-center gap-2.5 sm:gap-3 first:mt-0", compact && "text-lg sm:text-xl mt-4 sm:mt-5 mb-2")}>
+      <h1 data-block-index={blockIdx++} className={cn("text-xl sm:text-2xl font-bold text-foreground mt-6 sm:mt-8 mb-3 sm:mb-4 flex items-center gap-2.5 sm:gap-3 first:mt-0", compact && "text-lg sm:text-xl mt-4 sm:mt-5 mb-2")}>
         <span className="text-orange-400 font-black text-base sm:text-lg select-none">#</span>
         {children}
       </h1>
     ),
     h2: ({ children }) => (
-      <h2 className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-orange-400/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
+      <h2 data-block-index={blockIdx++} className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-orange-400/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className={cn("text-sm sm:text-base font-semibold text-foreground/90 mt-4 sm:mt-5 mb-1.5 sm:mb-2 first:mt-0", compact && "mt-2.5 sm:mt-3 mb-1 sm:mb-1.5")}>
+      <h3 data-block-index={blockIdx++} className={cn("text-sm sm:text-base font-semibold text-foreground/90 mt-4 sm:mt-5 mb-1.5 sm:mb-2 first:mt-0", compact && "mt-2.5 sm:mt-3 mb-1 sm:mb-1.5")}>
         {children}
       </h3>
     ),
     h4: ({ children }) => (
-      <h4 className="text-sm font-semibold text-foreground/75 mt-4 mb-1.5 uppercase tracking-wider">
+      <h4 data-block-index={blockIdx++} className="text-sm font-semibold text-foreground/75 mt-4 mb-1.5 uppercase tracking-wider">
         {children}
       </h4>
     ),
@@ -374,8 +375,9 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
         const videoUrl = parseVideoDirective((child as { value: string }).value);
         if (videoUrl) return <VideoEmbed url={videoUrl} />;
       }
+      const idx = blockIdx++;
       return (
-        <p className={cn(
+        <p data-block-index={idx} className={cn(
           "text-muted-foreground leading-[1.85] tracking-wide mb-4 last:mb-0",
           compact ? "text-sm mb-2" : "text-[15px]",
         )}>
