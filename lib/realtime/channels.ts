@@ -3,6 +3,7 @@ export const channels = {
   forumThread:       (threadId: string) => `forum:thread:${threadId}`,
   leaderboard:       () => `gamification:leaderboard`,
   activityFeed:      () => `community:activity-feed`,
+  groupNotes:        (groupId: string) => `group:${groupId}:notes`,
 } as const;
 
 export const events = {
@@ -12,6 +13,7 @@ export const events = {
   forumVoteChanged:    "forum.vote.changed",
   leaderboardChanged:  "gamification.xp.changed",
   activityCreated:     "activity.created",
+  groupNoteCreated:    "group.note.created",
 } as const;
 
 export type RealtimeEvent = (typeof events)[keyof typeof events];

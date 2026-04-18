@@ -4,7 +4,7 @@
  * Study Group Workspace — full featured group page with tabs:
  * Overview (members, join/leave) | Shared Notes | Progress & XP | Requests (admin)
  */
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import Link from "next/link";
 import {
   ArrowLeft, Users, Copy, LogIn, LogOut, Crown, Clock, Globe, Lock,
@@ -12,6 +12,8 @@ import {
   BarChart3, Send, ShieldCheck, Check, X, Loader2, MessageSquare
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { channels, events } from "@/lib/realtime/channels";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -134,7 +136,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     }
   }
 
-  async function loadNotes() {
+  const loadNotes = useCallback(async () => {
     setNotesLoading(true);
     try {
       const res = await fetch(`/api/community/groups/${id}/notes`);
@@ -143,7 +145,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     } catch { /* ignore */ } finally {
       setNotesLoading(false);
     }
-  }
+  }, [id]);
 
   async function loadProgress() {
     setProgressLoading(true);
@@ -175,7 +177,11 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
     if (tab === "notes") loadNotes();
     if (tab === "progress") loadProgress();
     if (tab === "requests") loadJoinRequests();
-  }, [tab, id]);
+  }, [tab, id, loadNotes]);
+
+  useRealtimeChannel(tab === "notes" ? channels.groupNotes(id) : null, {
+    [events.groupNoteCreated]: loadNotes,
+  });
 
   const isMember = group?.members.some(m => m.userId === currentUserId);
   const isAdmin = group?.members.some(m => m.userId === currentUserId && m.role === "ADMIN");
