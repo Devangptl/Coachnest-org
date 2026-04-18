@@ -227,7 +227,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
       </AnimatePresence>
 
       {/* ── Content body ─────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-sm">
+      <div className="rounded-xl border border-border overflow-hidden">
 
         {lesson.type === "QUIZ" ? (
           <div className="p-4 sm:p-6">
