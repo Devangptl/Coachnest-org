@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { Activity, Clock, MessageSquare, Users, Award, BookOpen, Star } from "lucide-react";
-import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { useRealtimeChannel, usePostgresChanges } from "@/hooks/useRealtimeChannel";
 import { channels, events } from "@/lib/realtime/channels";
 
 interface FeedEvent {
@@ -52,13 +52,15 @@ export default function FeedClient({
     }
   }, []);
 
-  useRealtimeChannel(channels.activityFeed(), events.activityCreated, () => {
-    if (page === 1) {
-      load(1);
-    } else {
-      setHasNewActivity(true);
-    }
-  });
+  const onNewActivity = useCallback(() => {
+    if (page === 1) load(1);
+    else setHasNewActivity(true);
+  }, [page, load]);
+
+  // Broadcast (server-emitted)
+  useRealtimeChannel(channels.activityFeed(), events.activityCreated, onNewActivity);
+  // Postgres Changes (direct DB — catches any write path)
+  usePostgresChanges("activity_feed_events", onNewActivity, { event: "INSERT" });
 
   function getRelativeTime(dateStr: string) {
     const diff = Date.now() - new Date(dateStr).getTime();

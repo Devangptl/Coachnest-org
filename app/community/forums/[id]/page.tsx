@@ -6,7 +6,7 @@ import { ArrowLeft, ChevronUp, ChevronDown, MessageSquare, Send, Clock, CheckCir
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
-import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { useRealtimeChannel, usePostgresChanges } from "@/hooks/useRealtimeChannel";
 import { channels, events } from "@/lib/realtime/channels";
 
 interface Reply {
@@ -54,10 +54,14 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
 
   useEffect(() => { loadThread(); }, [id]);
 
+  // Broadcast (server-emitted after API writes)
   useRealtimeChannel(channels.forumThread(id), {
     [events.forumReplyCreated]: () => loadThread(),
     [events.forumVoteChanged]:  () => loadThread(),
   });
+  // Postgres Changes (fires directly from DB — catches any write path)
+  usePostgresChanges("forum_replies", () => loadThread(), { filter: `thread_id=eq.${id}` });
+  usePostgresChanges("forum_votes",   () => loadThread());
 
   async function handleReply() {
     if (!replyBody.trim()) return;
