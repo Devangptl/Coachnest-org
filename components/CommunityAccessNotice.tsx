@@ -34,7 +34,7 @@ export default function CommunityAccessNotice({ action }: Props) {
   if (isLoading || hasCommunityAccess) return null;
 
   return (
-    <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/8 to-amber-600/5 p-5">
+    <div className="rounded-md border border-orange-500/20 bg-gradient-to-br from-orange-500/8 to-amber-600/5 p-5">
       <div className="flex items-start gap-4">
         <div className="w-10 h-10 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
           <Lock style={{ width: "18px", height: "18px" }} className="text-orange-400" />

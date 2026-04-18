@@ -23,14 +23,14 @@ export default function LessonLoading() {
       </div>
 
       {/* Content card */}
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-md border border-border overflow-hidden">
         <div className="px-6 sm:px-10 py-8 space-y-4">
           <Skeleton h="h-4" w="w-full" />
           <Skeleton h="h-4" w="w-5/6" />
           <Skeleton h="h-4" w="w-4/5" />
           <Skeleton h="h-4" w="w-full" />
           <Skeleton h="h-4" w="w-3/4" />
-          <Skeleton className="h-24 w-full rounded-xl mt-6" />
+          <Skeleton className="h-24 w-full rounded-md mt-6" />
           <Skeleton h="h-4" w="w-full" />
           <Skeleton h="h-4" w="w-5/6" />
           <Skeleton h="h-4" w="w-2/3" />
@@ -39,8 +39,8 @@ export default function LessonLoading() {
 
       {/* Prev / Next */}
       <div className="flex justify-between mt-8 pt-6 border-t border-border gap-3">
-        <Skeleton className="h-16 w-48 rounded-xl" />
-        <Skeleton className="h-16 w-48 rounded-xl" />
+        <Skeleton className="h-16 w-48 rounded-md" />
+        <Skeleton className="h-16 w-48 rounded-md" />
       </div>
     </div>
   );

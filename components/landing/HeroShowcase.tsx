@@ -83,7 +83,7 @@ export default function HeroShowcase() {
       </div>
 
       {/* ── Dot grid ───────────────────────────────────────────────────── */}
-      <div className="absolute inset-0 hero-dot-grid rounded-2xl opacity-50" />
+      <div className="absolute inset-0 hero-dot-grid rounded-md opacity-50" />
 
       {/* ═══════════════════════════════════════════════════════════════════
           COURSE BROWSER CARD (Top Left)

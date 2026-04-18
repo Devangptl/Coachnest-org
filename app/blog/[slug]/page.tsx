@@ -114,7 +114,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
       {/* Cover image */}
       {blog.thumbnail && (
-        <div className="relative h-56 sm:h-80 lg:h-[420px] rounded-2xl overflow-hidden mb-8 border border-border shadow-2xl">
+        <div className="relative h-56 sm:h-80 lg:h-[420px] rounded-md overflow-hidden mb-8 border border-border shadow-2xl">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={blog.thumbnail}

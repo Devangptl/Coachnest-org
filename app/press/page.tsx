@@ -80,7 +80,7 @@ export default function PressPage() {
           </div>
 
           {/* Press contact */}
-          <div className="rounded-2xl border border-orange-500/15 bg-orange-500/5 p-6 sm:p-8 mb-16">
+          <div className="rounded-md border border-orange-500/15 bg-orange-500/5 p-6 sm:p-8 mb-16">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <p className="text-white/80 font-semibold text-base mb-1">Press Enquiries</p>
@@ -154,7 +154,7 @@ export default function PressPage() {
           </div>
 
           {/* CTA */}
-          <div className="rounded-2xl border border-white/8 bg-white/[.02] p-8 text-center">
+          <div className="rounded-md border border-white/8 bg-white/[.02] p-8 text-center">
             <p className="text-white/60 font-semibold text-base mb-2">Want to learn more?</p>
             <p className="text-white/30 text-sm mb-5">Explore our platform or read what our learners are saying.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

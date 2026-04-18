@@ -51,7 +51,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-border bg-card overflow-hidden">
+    <div className="rounded-md border border-border bg-card overflow-hidden">
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border bg-secondary/30">
         <div className="flex items-center gap-2">

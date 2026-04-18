@@ -221,7 +221,7 @@ export default function CheckoutClient({
           </Link>
 
           {/* Plan card */}
-          <div className={cn("rounded-xl border bg-card p-6", border)}>
+          <div className={cn("rounded-md border bg-card p-6", border)}>
             {/* Plan header */}
             <div className="flex items-start justify-between mb-5">
               <div className="flex items-center gap-3">
@@ -272,7 +272,7 @@ export default function CheckoutClient({
           </div>
 
           {/* Billing summary */}
-          <div className="rounded-xl border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
+          <div className="rounded-md border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
             <div className="flex items-center justify-between text-muted-foreground">
               <span>{planLabel} Plan ({billing})</span>
               <span>₹{price.toLocaleString("en-IN")}</span>
@@ -304,7 +304,7 @@ export default function CheckoutClient({
 
         {/* ── Right: Payment form (3/5) ──────────────────────────────────────── */}
         <div className="lg:col-span-3">
-          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
+          <div className="rounded-md border border-border bg-card p-6 sm:p-8">
             <h2 className="text-lg font-bold text-foreground mb-6">Payment details</h2>
 
             {/* Saved cards */}

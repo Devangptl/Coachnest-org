@@ -79,7 +79,7 @@ export default function CourseDetailLoading() {
       {/* ── Enroll bar + tabs ──────────────────────────────────────────────── */}
       <div className="mt-5">
         {/* Enroll bar */}
-        <div className="mb-6 bg-card border border-border rounded-2xl overflow-hidden animate-pulse">
+        <div className="mb-6 bg-card border border-border rounded-md overflow-hidden animate-pulse">
           <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <Skeleton className="h-8 w-32 rounded-lg" />
             <div className="flex flex-col sm:flex-row gap-2">

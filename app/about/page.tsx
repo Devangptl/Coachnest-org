@@ -78,7 +78,7 @@ export default function AboutPage() {
           </div>
 
           {/* Mission */}
-          <div className="rounded-2xl border border-white/8 bg-white/[.02] p-8 sm:p-12 mb-20">
+          <div className="rounded-md border border-white/8 bg-white/[.02] p-8 sm:p-12 mb-20">
             <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>
             <p className="text-white/45 text-base leading-relaxed mb-4">
               The traditional education system was not built for the pace of modern technology. By the time a curriculum is written, approved, and taught, the industry has already moved on. We built CoachNest to close that gap.
@@ -123,7 +123,7 @@ export default function AboutPage() {
           </div>
 
           {/* CTA */}
-          <div className="rounded-2xl border border-white/8 bg-gradient-to-br from-orange-500/5 to-transparent p-8 sm:p-12 text-center">
+          <div className="rounded-md border border-white/8 bg-gradient-to-br from-orange-500/5 to-transparent p-8 sm:p-12 text-center">
             <h2 className="text-2xl font-bold text-white mb-3">Join our community</h2>
             <p className="text-white/40 text-sm mb-6">Start learning today or share your expertise as an instructor.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">

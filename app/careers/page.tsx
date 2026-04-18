@@ -129,7 +129,7 @@ export default function CareersPage() {
           </div>
 
           {/* No match CTA */}
-          <div className="rounded-2xl border border-white/8 bg-white/[.02] p-8 text-center">
+          <div className="rounded-md border border-white/8 bg-white/[.02] p-8 text-center">
             <p className="text-white/60 font-semibold text-base mb-2">Don&apos;t see a perfect fit?</p>
             <p className="text-white/30 text-sm mb-5">
               We are always looking for exceptional people. Send us your details and we&apos;ll keep you in mind for future roles.

@@ -116,7 +116,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   if (lines[lines.length - 1] === "") lines.pop();
 
   return (
-    <div className="rounded-xl overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-4 sm:my-5">
+    <div className="rounded-md overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-4 sm:my-5">
       {/* Header */}
       <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-white/[0.03] border-b border-white/[0.06]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -157,7 +157,7 @@ function CalloutBox({ type, content }: { type: CalloutType; content: string }) {
   const cfg = CALLOUT_CONFIG[type];
   const Icon = cfg.icon;
   return (
-    <div className={cn("my-5 rounded-xl border p-4", cfg.border, cfg.bg)}>
+    <div className={cn("my-5 rounded-md border p-4", cfg.border, cfg.bg)}>
       <div className={cn("flex items-center gap-2 font-semibold text-sm mb-2", cfg.title)}>
         <Icon className="w-4 h-4 flex-shrink-0" />
         {cfg.label}
@@ -178,7 +178,7 @@ function VideoEmbed({ url }: { url: string }) {
   if (yt) {
     return (
       <div className="my-6">
-        <div className="relative aspect-video rounded-xl overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
+        <div className="relative aspect-video rounded-md overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
           <iframe
             src={`https://www.youtube.com/embed/${yt}?rel=0&modestbranding=1`}
             title="YouTube video"
@@ -193,7 +193,7 @@ function VideoEmbed({ url }: { url: string }) {
   if (vi) {
     return (
       <div className="my-6">
-        <div className="relative aspect-video rounded-xl overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
+        <div className="relative aspect-video rounded-md overflow-hidden border border-white/[0.08] shadow-2xl bg-black">
           <iframe
             src={`https://player.vimeo.com/video/${vi}?dnt=1`}
             title="Vimeo video"
@@ -207,7 +207,7 @@ function VideoEmbed({ url }: { url: string }) {
   }
   return (
     <div className="my-6">
-      <div className="rounded-xl overflow-hidden border border-white/[0.08] shadow-xl bg-black">
+      <div className="rounded-md overflow-hidden border border-white/[0.08] shadow-xl bg-black">
         {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
         <video src={url} controls className="w-full max-h-[480px]" preload="metadata" />
       </div>
@@ -222,7 +222,7 @@ function ContentImage({ src, alt }: { src: string; alt: string }) {
       <span className="my-6 flex flex-col items-center">
         <button
           onClick={() => setOpen(true)}
-          className="group relative max-w-full rounded-xl overflow-hidden border border-white/[0.08] shadow-xl bg-card/40 cursor-zoom-in"
+          className="group relative max-w-full rounded-md overflow-hidden border border-white/[0.08] shadow-xl bg-card/40 cursor-zoom-in"
           aria-label="Zoom image"
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -258,7 +258,7 @@ function ContentImage({ src, alt }: { src: string; alt: string }) {
           <img
             src={src}
             alt={alt || ""}
-            className="max-w-full max-h-[90vh] object-contain rounded-xl shadow-2xl"
+            className="max-w-full max-h-[90vh] object-contain rounded-md shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           />
           {alt && (
@@ -276,7 +276,7 @@ function ContentImage({ src, alt }: { src: string; alt: string }) {
 
 function TableWrapper({ children }: { children: ReactNode }) {
   return (
-    <div className="my-5 overflow-x-auto rounded-xl border border-border">
+    <div className="my-5 overflow-x-auto rounded-md border border-border">
       <table className="w-full text-sm border-collapse">{children}</table>
     </div>
   );

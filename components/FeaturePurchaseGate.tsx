@@ -86,9 +86,9 @@ export default function FeaturePurchaseGate({
 
 function CardGate({ config }: { config: FeatureConfig }) {
   return (
-    <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-br from-orange-500/8 to-amber-600/5 p-8 text-center space-y-5">
+    <div className="rounded-md border border-orange-500/20 bg-gradient-to-br from-orange-500/8 to-amber-600/5 p-8 text-center space-y-5">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center">
+        <div className="w-14 h-14 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
           <Lock className="w-6 h-6 text-orange-400/60" />
         </div>
         <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">

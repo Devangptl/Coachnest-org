@@ -443,7 +443,7 @@ export default async function HomePage() {
                       </div>
                     )}
 
-                    <div className="h-full bg-card border border-border rounded-2xl p-6 flex flex-col gap-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/5">
+                    <div className="h-full bg-card border border-border rounded-md p-6 flex flex-col gap-5 hover:border-orange-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/5">
                       {/* Top row: step number + icon */}
                       <div className="flex items-start justify-between">
                         <span className="text-5xl font-black text-white/[0.06] leading-none select-none">
@@ -1070,7 +1070,7 @@ export default async function HomePage() {
 
         <div className="max-w-4xl mx-auto relative">
           <FadeInSection>
-            <div className="relative rounded-2xl border border-border bg-secondary/10 overflow-hidden shadow-card">
+            <div className="relative rounded-md border border-border bg-secondary/10 overflow-hidden shadow-card">
               {/* Top accent bar */}
               <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-primary to-transparent" />
 

@@ -287,7 +287,7 @@ export default function PayoutsPage() {
                   const meta = STATUS_META[p.status] ?? STATUS_META["PENDING"];
                   const Icon = meta.icon;
                   return (
-                    <div key={p.id} className="border border-border rounded-xl p-4">
+                    <div key={p.id} className="border border-border rounded-md p-4">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-lg font-bold text-foreground">₹{p.amount.toLocaleString()}</span>
                         <span className={cn("flex items-center gap-1 text-xs font-medium", meta.color)}>

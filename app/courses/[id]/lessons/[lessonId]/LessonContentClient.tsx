@@ -109,7 +109,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   if (isLocked) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] px-6 py-20 text-center">
-        <div className="w-20 h-20 rounded-2xl bg-secondary border border-border flex items-center justify-center mb-6">
+        <div className="w-20 h-20 rounded-md bg-secondary border border-border flex items-center justify-center mb-6">
           <Lock className="w-10 h-10 text-muted-foreground/25" />
         </div>
         <h2 className="text-2xl font-bold text-foreground mb-3">Enroll to Access</h2>
@@ -118,7 +118,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         </p>
         <Link
           href={`/courses/${courseId}`}
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-lg shadow-orange-600/20"
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-md transition-all shadow-lg shadow-orange-600/20"
         >
           View Course &amp; Enroll
         </Link>
@@ -227,7 +227,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
       </AnimatePresence>
 
       {/* ── Content body ─────────────────────────────────────────────────── */}
-      <div className="rounded-xl border border-border overflow-hidden">
+      <div className="rounded-md border border-border overflow-hidden">
 
         {lesson.type === "QUIZ" ? (
           <div className="p-4 sm:p-6">
@@ -296,7 +296,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         {prev ? (
           <Link
             href={`/courses/${courseId}/lessons/${prev.id}`}
-            className="flex items-center gap-2.5 sm:gap-3 text-muted-foreground hover:text-foreground transition-all group px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border"
+            className="flex items-center gap-2.5 sm:gap-3 text-muted-foreground hover:text-foreground transition-all group px-3 sm:px-4 py-2.5 sm:py-3 rounded-md hover:bg-secondary border border-border/50 hover:border-border"
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
               <ChevronLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -309,7 +309,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         ) : (
           <Link
             href={`/courses/${courseId}`}
-            className="flex items-center gap-2.5 sm:gap-3 text-muted-foreground hover:text-foreground transition-all group px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl hover:bg-secondary border border-border/50 hover:border-border"
+            className="flex items-center gap-2.5 sm:gap-3 text-muted-foreground hover:text-foreground transition-all group px-3 sm:px-4 py-2.5 sm:py-3 rounded-md hover:bg-secondary border border-border/50 hover:border-border"
           >
             <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0">
               <ArrowLeft className="w-4 h-4 group-hover:-translate-x-0.5 transition-transform" />
@@ -324,7 +324,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         {next ? (
           <Link
             href={`/courses/${courseId}/lessons/${next.id}`}
-            className="flex items-center justify-end gap-2.5 sm:gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-xl transition-all hover:from-orange-600/25 hover:to-orange-500/20"
+            className="flex items-center justify-end gap-2.5 sm:gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md transition-all hover:from-orange-600/25 hover:to-orange-500/20"
           >
             <div className="text-right min-w-0 flex-1">
               <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Next</p>
@@ -335,7 +335,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             </div>
           </Link>
         ) : (
-          <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-4 py-2.5 sm:py-3 rounded-xl text-sm">
+          <div className="flex items-center justify-center gap-2 text-emerald-400 font-semibold bg-emerald-500/10 border border-emerald-400/20 px-4 py-2.5 sm:py-3 rounded-md text-sm">
             <Sparkles className="w-4 h-4 sm:w-5 sm:h-5" />
             You&apos;ve reached the end!
           </div>
@@ -348,7 +348,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.35, delay: 0.15 }}
-          className="mt-4 sm:mt-6 p-4 sm:p-5 rounded-xl bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
+          className="mt-4 sm:mt-6 p-4 sm:p-5 rounded-md bg-gradient-to-r from-amber-500/10 via-yellow-500/10 to-amber-500/10 border border-amber-400/20 relative overflow-hidden"
         >
           <motion.div
             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/[0.04] to-transparent"
@@ -356,7 +356,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
           />
           <div className="relative flex items-center gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-amber-500/20 flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-amber-500/20 flex items-center justify-center flex-shrink-0">
               <Award className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
             </div>
             <div className="flex-1 min-w-0">
@@ -367,7 +367,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             <button
               onClick={downloadCertificate}
               disabled={downloadingCert}
-              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
+              className="flex items-center gap-1.5 sm:gap-2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black font-bold px-3 sm:px-5 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm hover:from-amber-400 hover:to-yellow-400 transition-all shadow-lg shadow-amber-500/20 disabled:opacity-50 flex-shrink-0"
             >
               {downloadingCert
                 ? <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />

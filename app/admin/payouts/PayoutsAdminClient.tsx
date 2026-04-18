@@ -99,7 +99,7 @@ function ActionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-xl shadow-2xl w-full max-w-md p-6 space-y-4">
+      <div className="relative bg-card border border-border rounded-md shadow-2xl w-full max-w-md p-6 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">{cfg.confirm}</h2>
 
         <div className="text-sm text-muted-foreground space-y-1">

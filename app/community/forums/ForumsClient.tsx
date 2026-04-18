@@ -226,7 +226,7 @@ export default function ForumsClient({
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-          <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-lg shadow-2xl">
             <h2 className="text-lg font-bold text-foreground mb-4">Start a New Discussion</h2>
             <div className="space-y-4">
               <div>

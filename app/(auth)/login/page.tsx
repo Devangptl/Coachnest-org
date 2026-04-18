@@ -114,7 +114,7 @@ export default function LoginPage() {
               </div>
 
               {/* Course card */}
-              <div className="rounded-2xl border border-border bg-card shadow-card p-5">
+              <div className="rounded-md border border-border bg-card shadow-card p-5">
                 {/* Header */}
                 <div className="flex items-center gap-3 mb-5">
                   <div className="w-10 h-10 rounded-md bg-gradient-to-br from-orange-500 to-amber-400
@@ -173,7 +173,7 @@ export default function LoginPage() {
             </div>
 
             {/* ── Stats ── */}
-            <div className="grid grid-cols-3 divide-x divide-border rounded-2xl border border-border
+            <div className="grid grid-cols-3 divide-x divide-border rounded-md border border-border
                             overflow-hidden bg-card mb-7">
               {STATS.map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex flex-col items-center py-4 px-2">
@@ -185,7 +185,7 @@ export default function LoginPage() {
             </div>
 
             {/* ── Testimonial ── */}
-            <div className="rounded-2xl border border-border bg-card shadow-card p-5 relative overflow-hidden">
+            <div className="rounded-md border border-border bg-card shadow-card p-5 relative overflow-hidden">
               {/* Decorative quote mark */}
               <div className="absolute -top-3 -left-1 text-[90px] font-serif leading-none
                               select-none pointer-events-none text-orange-500/10">

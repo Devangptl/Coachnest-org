@@ -313,7 +313,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
       transition={{ type: "spring", stiffness: 340, damping: 26 }}
       className=" overflow-hidden"
     >
-      {/* rounded-2xl border border-emerald-500/25 bg-gradient-to-br from-emerald-950/80 via-card/95 to-card/95 backdrop-blur-xl shadow-2xl shadow-emerald-900/30 */}
+      {/* rounded-md border border-emerald-500/25 bg-gradient-to-br from-emerald-950/80 via-card/95 to-card/95 backdrop-blur-xl shadow-2xl shadow-emerald-900/30 */}
       {/* Top glow line */}
       {/* <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" /> */}
 
@@ -387,7 +387,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
               disabled={isLoading}
               whileTap={{ scale: 0.92 }}
               className={cn(
-                "relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all overflow-hidden",
+                "relative w-12 h-12 rounded-md flex items-center justify-center transition-all overflow-hidden",
                 "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-600/30",
                 "hover:from-emerald-400 hover:to-emerald-500",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
@@ -396,7 +396,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             >
               {isPlaying && (
                 <motion.div
-                  className="absolute inset-0 rounded-2xl border-2 border-emerald-400"
+                  className="absolute inset-0 rounded-md border-2 border-emerald-400"
                   animate={{ scale: [1, 1.18], opacity: [0.6, 0] }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
                 />

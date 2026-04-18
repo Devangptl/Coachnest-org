@@ -514,7 +514,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           {showCreateNote && (
             <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreateNote(false)} />
-              <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+              <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-lg shadow-2xl">
                 <h2 className="text-lg font-bold text-foreground mb-1">Share a Note</h2>
                 <p className="text-muted-foreground text-xs mb-4">Notes are shared with all group members. +25 Group XP per note!</p>
                 <div className="space-y-4">
@@ -572,7 +572,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           ) : (
             <>
               <div className="rounded-md border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-emerald-600/10 p-5 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+                <div className="w-14 h-14 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
                   <Zap className="w-7 h-7 text-emerald-400" />
                 </div>
                 <div>
@@ -706,7 +706,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       {showRequestModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowRequestModal(false)} />
-          <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-[420px] shadow-2xl">
+          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-[420px] shadow-2xl">
             <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-amber-400" /> Request to Join
             </h2>

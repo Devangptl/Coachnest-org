@@ -137,7 +137,7 @@ export default function SignupPage() {
             </div>
 
             {/* ── Perks ── */}
-            <div className="rounded-2xl border border-border divide-y divide-border bg-card mb-6">
+            <div className="rounded-md border border-border divide-y divide-border bg-card mb-6">
               {perks.map(({ icon: Icon, text, sub }) => (
                 <div key={text} className="flex items-center gap-3.5 px-4 py-3.5">
                   <span className="w-8 h-8 rounded-lg border border-orange-500/20 bg-orange-500/10
@@ -153,7 +153,7 @@ export default function SignupPage() {
             </div>
 
             {/* ── Social proof ── */}
-            <div className="rounded-2xl border border-border bg-card shadow-card p-4">
+            <div className="rounded-md border border-border bg-card shadow-card p-4">
               <div className="flex items-center justify-between">
                 {/* Avatar stack + rating */}
                 <div className="flex items-center gap-3">

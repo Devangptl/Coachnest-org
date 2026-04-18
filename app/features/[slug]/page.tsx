@@ -99,7 +99,7 @@ export default function FeaturePurchasePage() {
       <div className="max-w-xl mx-auto py-16 px-4">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 bg-secondary rounded-lg" />
-          <div className="h-64 bg-secondary rounded-xl" />
+          <div className="h-64 bg-secondary rounded-md" />
           <div className="h-12 bg-secondary rounded-lg" />
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function FeaturePurchasePage() {
 
       {/* Success state */}
       {isSuccess && (
-        <div className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5 flex items-start gap-3">
+        <div className="mb-6 rounded-md border border-emerald-500/20 bg-emerald-500/10 p-5 flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-emerald-300 font-semibold">Purchase successful!</p>
@@ -145,7 +145,7 @@ export default function FeaturePurchasePage() {
 
       {/* Already owned */}
       {feature.hasAccess && !isSuccess && (
-        <div className="mb-6 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-5 flex items-start gap-3">
+        <div className="mb-6 rounded-md border border-emerald-500/20 bg-emerald-500/10 p-5 flex items-start gap-3">
           <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-emerald-300 font-semibold">You already have access!</p>
@@ -160,7 +160,7 @@ export default function FeaturePurchasePage() {
       <GlassCard className={`space-y-6 ${feature.hasAccess ? "border-emerald-500/20" : "border-orange-500/20"}`}>
         {/* Icon + title */}
         <div className="flex items-center gap-4">
-          <div className={`w-16 h-16 rounded-2xl flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
+          <div className={`w-16 h-16 rounded-md flex items-center justify-center flex-shrink-0 ${meta.bg}`}>
             <Icon className={`w-8 h-8 ${meta.color}`} />
           </div>
           <div>

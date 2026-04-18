@@ -66,7 +66,7 @@ export default function ProfessionCard({
       type="button"
       onClick={() => onToggle(profession.id)}
       className={cn(
-        "relative w-full text-left rounded-xl border p-4 transition-all duration-200",
+        "relative w-full text-left rounded-md border p-4 transition-all duration-200",
         "hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500",
         selected
           ? cn("bg-card", palette.selectedBg, palette.selectedBorder, "shadow-md")

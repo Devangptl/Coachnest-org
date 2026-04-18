@@ -379,7 +379,7 @@ export default function CourseCheckoutClient({
 
         {/* Left: condensed order summary */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-md border border-border bg-card overflow-hidden">
             {thumbnail && (
               <div className="relative w-full aspect-video bg-secondary">
                 <Image src={thumbnail} alt={courseName} fill className="object-cover" />
@@ -395,7 +395,7 @@ export default function CourseCheckoutClient({
             </div>
           </div>
 
-          <div className="rounded-xl border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
+          <div className="rounded-md border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
             {originalPrice > payAmount && (
               <div className="flex items-center justify-between text-muted-foreground">
                 <span>Original price</span>
@@ -429,7 +429,7 @@ export default function CourseCheckoutClient({
 
         {/* Right: card or UPI form */}
         <div className="lg:col-span-3">
-          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
+          <div className="rounded-md border border-border bg-card p-6 sm:p-8">
             <h2 className="text-lg font-bold text-foreground mb-1">
               {selectedMethod === "upi" ? "Pay via UPI" : "Complete payment"}
             </h2>
@@ -481,7 +481,7 @@ export default function CourseCheckoutClient({
             <ArrowLeft className="w-3.5 h-3.5" /> Back to course
           </Link>
 
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
+          <div className="rounded-md border border-border bg-card overflow-hidden">
             {thumbnail && (
               <div className="relative w-full aspect-video bg-secondary">
                 <Image src={thumbnail} alt={courseName} fill className="object-cover" />
@@ -498,7 +498,7 @@ export default function CourseCheckoutClient({
           </div>
 
           {/* Coupon input */}
-          <div className="rounded-xl border border-border bg-card p-4 space-y-3">
+          <div className="rounded-md border border-border bg-card p-4 space-y-3">
             <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               Coupon code
             </p>
@@ -545,7 +545,7 @@ export default function CourseCheckoutClient({
           </div>
 
           {/* Price summary */}
-          <div className="rounded-xl border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
+          <div className="rounded-md border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
             <div className="flex items-center justify-between text-muted-foreground">
               <span>Course price</span>
               <span className={hasDiscount ? "line-through" : ""}>
@@ -592,7 +592,7 @@ export default function CourseCheckoutClient({
 
         {/* Right: selectable payment method tiles + proceed button */}
         <div className="lg:col-span-3">
-          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
+          <div className="rounded-md border border-border bg-card p-6 sm:p-8">
             <h2 className="text-lg font-bold text-foreground mb-1">Choose payment method</h2>
             <p className="text-sm text-muted-foreground mb-6">
               Select how you&apos;d like to pay and continue to enter your details.
@@ -608,7 +608,7 @@ export default function CourseCheckoutClient({
                   key={pm.value}
                   type="button"
                   onClick={() => setSelectedMethod(pm.value)}
-                  className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-all ${
+                  className={`flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-all ${
                     selectedMethod === pm.value
                       ? "border-primary bg-primary/5 ring-1 ring-primary/30"
                       : "border-border bg-secondary/30 hover:border-border/60 hover:bg-secondary/50"

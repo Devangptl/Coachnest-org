@@ -352,7 +352,7 @@ export default function GroupsClient({
       {showJoinCode && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowJoinCode(false)} />
-          <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-[400px] shadow-2xl">
+          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-[400px] shadow-2xl">
             <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
               <Key className="w-5 h-5 text-emerald-500" /> Join with Code
             </h2>
@@ -389,7 +389,7 @@ export default function GroupsClient({
       {showCreate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-          <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-lg shadow-2xl">
             <h2 className="text-lg font-bold text-foreground mb-4">Create Study Group</h2>
             <div className="space-y-4">
               <div>
@@ -467,7 +467,7 @@ export default function GroupsClient({
       {showRequestModal && requestGroupId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowRequestModal(false); setRequestGroupId(null); }} />
-          <div className="relative bg-card border border-border rounded-2xl p-6 w-full max-w-[420px] shadow-2xl">
+          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-[420px] shadow-2xl">
             <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-amber-400" /> Request to Join
             </h2>

@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
 
         {sent ? (
           /* ── Success state ── */
-          <div className="rounded-2xl border border-border bg-card shadow-card p-8 text-center">
+          <div className="rounded-md border border-border bg-card shadow-card p-8 text-center">
             <div className="w-14 h-14 rounded-full bg-emerald-500/10 border border-emerald-500/20
                             flex items-center justify-center mx-auto mb-5">
               <CheckCircle2 className="w-7 h-7 text-emerald-400" />
@@ -79,7 +79,7 @@ export default function ForgotPasswordPage() {
           </div>
         ) : (
           /* ── Form state ── */
-          <div className="rounded-2xl border border-border bg-card shadow-card p-8">
+          <div className="rounded-md border border-border bg-card shadow-card p-8">
             {/* Back link */}
             <Link
               href="/login"

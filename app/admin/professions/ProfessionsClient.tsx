@@ -144,7 +144,7 @@ function ProfessionModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-card border border-border rounded-2xl shadow-2xl w-full max-w-lg p-6 animate-fade-in">
+      <div className="relative bg-card border border-border rounded-md shadow-2xl w-full max-w-lg p-6 animate-fade-in">
         <h2 className="text-xl font-bold text-foreground mb-5">
           {editing ? "Edit Profession" : "Add Profession"}
         </h2>
@@ -332,7 +332,7 @@ export default function ProfessionsClient({ initialProfessions }: ProfessionsCli
               return (
                 <div key={p.id}
                   className={cn(
-                    "flex items-center gap-4 rounded-xl border p-4 transition-all",
+                    "flex items-center gap-4 rounded-md border p-4 transition-all",
                     p.isActive ? "border-border bg-secondary/30" : "border-border/50 bg-secondary/10 opacity-60"
                   )}>
 

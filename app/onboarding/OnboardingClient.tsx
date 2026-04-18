@@ -101,7 +101,7 @@ export default function OnboardingClient({
         ════════════════════════════════════════════════════ */}
         {step === "welcome" && (
           <div className="text-center animate-fade-in">
-            <div className="inline-flex w-16 h-16 rounded-2xl bg-orange-500/10 border border-orange-500/20
+            <div className="inline-flex w-16 h-16 rounded-md bg-orange-500/10 border border-orange-500/20
                             items-center justify-center mb-6">
               <Sparkles className="w-8 h-8 text-orange-400" />
             </div>

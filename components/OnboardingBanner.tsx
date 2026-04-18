@@ -16,7 +16,7 @@ export default function OnboardingBanner() {
   if (dismissed) return null;
 
   return (
-    <div className="mb-8 rounded-xl border border-orange-500/25 bg-orange-500/10 px-5 py-4
+    <div className="mb-8 rounded-md border border-orange-500/25 bg-orange-500/10 px-5 py-4
                     flex items-center justify-between gap-4 animate-fade-in">
       <div className="flex items-center gap-3.5">
         <div className="w-9 h-9 rounded-lg bg-orange-500/20 border border-orange-500/20

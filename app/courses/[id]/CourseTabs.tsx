@@ -62,7 +62,7 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
       <div className="lg:hidden absolute inset-0 bg-background/70 backdrop-blur-xl border-b border-border/40" />
 
       <div className="relative px-4 sm:px-6 lg:px-0 py-2.5 lg:py-0">
-        <div className="flex items-center bg-secondary/50 dark:bg-white/[0.04] border border-border/50 dark:border-white/[0.08] rounded-2xl p-1.5 gap-1 shadow-sm">
+        <div className="flex items-center bg-secondary/50 dark:bg-white/[0.04] border border-border/50 dark:border-white/[0.08] rounded-md p-1.5 gap-1 shadow-sm">
           {TABS.map((tab) => {
             const isActive = activeTab === tab.id;
             const Icon = tab.icon;

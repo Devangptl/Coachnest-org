@@ -8,7 +8,7 @@ export default function PayoutsAdminLoading() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-3 animate-pulse">
-        <Skeleton className="w-10 h-10 rounded-xl flex-shrink-0" />
+        <Skeleton className="w-10 h-10 rounded-md flex-shrink-0" />
         <div className="space-y-1.5">
           <Skeleton className="h-9 w-48 rounded-md" />
           <Skeleton className="h-4 w-64 rounded-lg" />

@@ -283,7 +283,7 @@ export default function ResetPasswordPage() {
           </Link>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card shadow-card p-8">
+        <div className="rounded-md border border-border bg-card shadow-card p-8">
           <div className="mb-7">
             <h1 className="text-2xl font-bold text-foreground mb-1.5 tracking-tight">
               Set new password

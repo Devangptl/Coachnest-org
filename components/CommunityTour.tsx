@@ -19,7 +19,7 @@ function CustomTooltip({
   return (
     <div {...tooltipProps} className="max-w-[360px] w-full isolate animate-in fade-in zoom-in-95 duration-200">
       <GlassCard
-        className="relative p-6 flex flex-col gap-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border-emerald-500/20 bg-background/95 backdrop-blur-2xl rounded-2xl"
+        className="relative p-6 flex flex-col gap-4 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.5)] border-emerald-500/20 bg-background/95 backdrop-blur-2xl rounded-md"
         glow
       >
         {/* Glow Element */}

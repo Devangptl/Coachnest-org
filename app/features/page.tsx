@@ -75,7 +75,7 @@ export default async function FeaturesPage() {
                   feature.owned ? "border-emerald-500/20" : ""
                 }`}
               >
-                <div className={`w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0 ${
+                <div className={`w-14 h-14 rounded-md flex items-center justify-center flex-shrink-0 ${
                   feature.owned ? "bg-emerald-500/15" : "bg-orange-500/10"
                 }`}>
                   <Icon className={`w-7 h-7 ${feature.owned ? "text-emerald-400" : "text-orange-400"}`} />

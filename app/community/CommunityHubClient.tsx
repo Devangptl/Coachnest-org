@@ -119,7 +119,7 @@ export default function CommunityHubClient({
 
       {/* Buy Community Access CTA */}
       {showLocks && (
-        <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="rounded-md border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
               <Users className="w-4 h-4 text-orange-400" />

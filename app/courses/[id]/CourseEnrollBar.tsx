@@ -63,7 +63,7 @@ export default function CourseEnrollBar({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
-      className="backdrop-blur-xl bg-white/[0.04] border border-border rounded-2xl overflow-hidden shadow-sm"
+      className="backdrop-blur-xl border border-border rounded-md overflow-hidden shadow-sm"
     >
       {/* ── Top section: Price, Enroll, Actions ── */}
       <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-white/[0.06]">
@@ -139,7 +139,7 @@ export default function CourseEnrollBar({
                 {/* Share */}
                 <button
                   onClick={handleCopyLink}
-                  className="flex-shrink-0 w-[46px] h-[46px] flex items-center justify-center rounded-md border border-white/[0.08] hover:border-white/[0.15] bg-black/20 hover:bg-black/30 text-muted-foreground/70 hover:text-foreground transition-all shadow-inner"
+                  className=" p-2 rounded-full transition-all border border-border hover:bg-secondary flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center shadow-inner !rounded-mdtext-muted-foreground/70 hover:text-foreground"
                   title="Share this course"
                 >
                   {copied ? (
@@ -165,7 +165,7 @@ export default function CourseEnrollBar({
       </div>
 
       {/* ── Bottom section: Course Includes ── */}
-      <div className="bg-black/10 px-4 py-3 sm:px-5 sm:py-3.5">
+      <div className="px-4 py-3 sm:px-5 sm:py-3.5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
           <h3 className="text-foreground font-semibold text-sm">This course includes</h3>
           

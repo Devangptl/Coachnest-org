@@ -243,7 +243,7 @@ export default function SearchModal({ open, onClose }: Props) {
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className="relative rounded-2xl overflow-hidden border border-border shadow-[0 5px 12px rgba(0,0,0,1)] flex flex-col"
+                className="relative rounded-md overflow-hidden border border-border shadow-[0 5px 12px rgba(0,0,0,1)] flex flex-col"
                 style={{ background: "hsl(var(--card))" }}
               >
                 {/* Orange top glow line */}
