@@ -49,7 +49,7 @@
     --popover-foreground: 20 30% 9%;
     --primary: 20 68% 52%;             /* #d4703f — Claude signature orange */
     --primary-foreground: 0 0% 100%;
-    --secondary: 34 23% 90%;           /* #ece7df — warm light panel */
+    /* --secondary: 34 23% 90%;           */ /* #ece7df — warm light panel */
     --secondary-foreground: 20 10% 18%;
     --muted: 34 23% 90%;
     --muted-foreground: 26 12% 42%;    /* #776b5f — warm readable mid */
