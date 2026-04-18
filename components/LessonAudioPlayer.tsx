@@ -12,6 +12,7 @@ interface Props {
   text: string;
   lessonTitle?: string;
   onClose: () => void;
+  onPlayingChange?: (playing: boolean) => void;
 }
 
 const SPEEDS = [0.75, 1, 1.25, 1.5, 2] as const;
@@ -80,9 +81,10 @@ function Waveform({ playing, loading }: { playing: boolean; loading: boolean }) 
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props) {
+export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayingChange }: Props) {
   const paragraphs = useRef<string[]>(toParagraphs(markdownToPlain(text)));
   const total = paragraphs.current.length;
+  const useSegmented = total <= 20;
 
   // Render state
   const [status, setStatus] = useState<Status>("loading");
@@ -101,7 +103,8 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
   const updStatus = useCallback((s: Status) => {
     statusRef.current = s;
     setStatus(s);
-  }, []);
+    onPlayingChange?.(s === "playing");
+  }, [onPlayingChange]);
 
   const updPara = useCallback((p: number) => {
     paraRef.current = p;
@@ -452,33 +455,67 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
           <Volume2 className="w-4 h-4 text-emerald-400/50 flex-shrink-0 ml-auto" />
         </div>
 
-        {/* Progress bar — one segment per paragraph */}
+        {/* Progress bar */}
         <div className="space-y-2">
-          <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden">
-            {paragraphs.current.map((_, i) => (
-              <motion.button
-                key={i}
-                onClick={() => {
-                  if (statusRef.current === "playing" || statusRef.current === "paused") {
-                    updStatus("playing");
-                    speakPara(i, speedRef.current);
-                  } else {
-                    updPara(i);
-                  }
-                }}
-                className={cn(
-                  "flex-1 h-full rounded-full transition-colors cursor-pointer",
-                  i < para
-                    ? "bg-emerald-500"
-                    : i === para
-                    ? "bg-emerald-400"
-                    : "bg-white/10 hover:bg-white/20"
-                )}
-                animate={i === para && isPlaying ? { opacity: [0.7, 1, 0.7] } : {}}
-                transition={{ duration: 1.4, repeat: Infinity }}
+          {useSegmented ? (
+            /* Segmented pips — one per paragraph (≤20 paragraphs) */
+            <div className="flex gap-0.5 h-1.5 rounded-full overflow-hidden">
+              {paragraphs.current.map((_, i) => (
+                <motion.button
+                  key={i}
+                  onClick={() => {
+                    if (statusRef.current === "playing" || statusRef.current === "paused") {
+                      updStatus("playing");
+                      speakPara(i, speedRef.current);
+                    } else {
+                      updPara(i);
+                    }
+                  }}
+                  className={cn(
+                    "flex-1 h-full rounded-full transition-colors cursor-pointer",
+                    i < para
+                      ? "bg-emerald-500"
+                      : i === para
+                      ? "bg-emerald-400"
+                      : "bg-white/10 hover:bg-white/20"
+                  )}
+                  animate={i === para && isPlaying ? { opacity: [0.7, 1, 0.7] } : {}}
+                  transition={{ duration: 1.4, repeat: Infinity }}
+                />
+              ))}
+            </div>
+          ) : (
+            /* Smooth continuous bar with click-to-seek (>20 paragraphs) */
+            <div
+              className="relative h-1.5 rounded-full bg-white/10 overflow-hidden group cursor-pointer"
+              onClick={(e) => {
+                const rect = e.currentTarget.getBoundingClientRect();
+                const target = Math.min(total - 1, Math.floor(((e.clientX - rect.left) / rect.width) * total));
+                if (statusRef.current === "playing" || statusRef.current === "paused") {
+                  updStatus("playing");
+                  speakPara(target, speedRef.current);
+                } else {
+                  updPara(target);
+                }
+              }}
+            >
+              <div
+                className="absolute inset-y-0 left-0 bg-gradient-to-r from-emerald-600 to-emerald-400 transition-all duration-500"
+                style={{ width: `${progress}%` }}
               />
-            ))}
-          </div>
+              {Array.from({ length: Math.min(total - 1, 40) }, (_, i) => {
+                const tickCount = Math.min(total - 1, 40);
+                const pct = ((i + 1) / (tickCount + 1)) * 100;
+                return (
+                  <div
+                    key={i}
+                    className="absolute top-0 bottom-0 w-px bg-black/20 group-hover:bg-black/40 transition-colors"
+                    style={{ left: `${pct}%` }}
+                  />
+                );
+              })}
+            </div>
+          )}
 
           <div className="flex items-center justify-between">
             <span className="text-white/30 text-[10px]">{statusLabel}</span>
@@ -488,7 +525,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
 
         {/* Current paragraph preview */}
         <AnimatePresence mode="wait">
-          {paragraphs.current[para] && (isPlaying || status === "paused") && (
+          {paragraphs.current[para] && (
             <motion.div
               key={para}
               initial={{ opacity: 0, y: 6 }}
@@ -497,9 +534,14 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose }: Props)
               transition={{ duration: 0.2 }}
               className="mt-3 pt-3 border-t border-white/[0.06]"
             >
-              <p className="text-white/40 text-[11px] leading-relaxed line-clamp-2 italic">
-                &ldquo;{paragraphs.current[para].slice(0, 120)}
-                {paragraphs.current[para].length > 120 ? "…" : ""}&rdquo;
+              {status === "idle" && (
+                <p className="text-white/30 text-[10px] uppercase tracking-wider mb-1 font-medium">
+                  First section preview
+                </p>
+              )}
+              <p className="text-white/60 text-[12px] leading-relaxed line-clamp-2 italic">
+                &ldquo;{paragraphs.current[para].slice(0, 150)}
+                {paragraphs.current[para].length > 150 ? "…" : ""}&rdquo;
               </p>
             </motion.div>
           )}

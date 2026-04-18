@@ -49,6 +49,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   const router = useRouter();
   const { isEnrolled, loading, isCompleted, markComplete } = useLessonContext();
   const [showAudioPlayer,  setShowAudioPlayer]  = useState(false);
+  const [isAudioPlaying,   setIsAudioPlaying]   = useState(false);
   const [downloadingCert,  setDownloadingCert]  = useState(false);
 
   const config   = typeConfig[lesson.type] ?? typeConfig.TEXT;
@@ -167,13 +168,15 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                 className={cn(
                   "flex items-center gap-1.5 text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all font-medium",
                   showAudioPlayer
-                    ? "bg-blue-500/20 border-blue-400/30 text-blue-400"
+                    ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
                     : "bg-secondary border-border text-muted-foreground hover:text-foreground"
                 )}
               >
+                {isAudioPlaying && (
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
+                )}
                 <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline">{showAudioPlayer ? "Hide Audio" : "Listen"}</span>
-                <span className="xs:hidden">{showAudioPlayer ? "Hide" : "Listen"}</span>
+                <span>{showAudioPlayer ? "Audio Mode" : "Listen"}</span>
               </button>
             )}
 
@@ -213,7 +216,12 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             transition={{ duration: 0.18 }}
             className="mb-4 sm:mb-6"
           >
-            <LessonAudioPlayer text={lesson.content} lessonTitle={lesson.title} onClose={() => setShowAudioPlayer(false)} />
+            <LessonAudioPlayer
+              text={lesson.content}
+              lessonTitle={lesson.title}
+              onClose={() => { setShowAudioPlayer(false); setIsAudioPlaying(false); }}
+              onPlayingChange={setIsAudioPlaying}
+            />
           </motion.div>
         )}
       </AnimatePresence>

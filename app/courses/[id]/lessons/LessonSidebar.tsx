@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, Lock, PlayCircle, FileText, HelpCircle,
-  Clock, LayoutList, ArrowLeft, ChevronDown, X,
+  Clock, LayoutList, ArrowLeft, ChevronDown, X, Headphones,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLessonContext } from "./LessonProvider";
@@ -108,6 +108,11 @@ export default function LessonSidebar({ courseId, courseTitle, lessons }: Props)
                   <div className="flex items-center gap-1.5 mt-0.5">
                     <LIcon className={cn("w-3 h-3", cfg.color)} />
                     <span className={cn("text-[10px] font-medium", cfg.color)}>{cfg.label}</span>
+                    {lesson.type === "TEXT" && (
+                      <span className="ml-auto flex items-center gap-0.5 text-emerald-400/60 flex-shrink-0" title="Audio Mode available">
+                        <Headphones className="w-2.5 h-2.5" />
+                      </span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -161,6 +166,11 @@ export default function LessonSidebar({ courseId, courseTitle, lessons }: Props)
                     <span className="text-[10px] text-muted-foreground/50 flex items-center gap-0.5">
                       <Clock className="w-2.5 h-2.5" />
                       {lesson.duration}m
+                    </span>
+                  )}
+                  {lesson.type === "TEXT" && (
+                    <span className="ml-auto flex items-center gap-0.5 text-emerald-400/60 flex-shrink-0" title="Audio Mode available">
+                      <Headphones className="w-2.5 h-2.5" />
                     </span>
                   )}
                 </div>
