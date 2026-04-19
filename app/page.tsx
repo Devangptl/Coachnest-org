@@ -725,10 +725,10 @@ export default async function HomePage() {
           <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {[
-                { end: Math.max(stats.courseCount, 50), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-orange-400" },
-                { end: Math.max(stats.studentCount, 10000), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
-                { end: Math.max(stats.enrollmentCount, 25000), suffix: "+", label: "Total Enrollments", icon: TrendingUp, color: "text-emerald-400" },
-                { end: Math.max(stats.reviewCount, 5000), suffix: "+", label: "5-Star Reviews", icon: Star, color: "text-yellow-400" },
+                { end: Math.max(stats.courseCount, 20), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-orange-400" },
+                { end: Math.max(stats.studentCount, 99), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
+                { end: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Total Enrollments", icon: TrendingUp, color: "text-emerald-400" },
+                { end: Math.max(stats.reviewCount, 399), suffix: "+", label: "5-Star Reviews", icon: Star, color: "text-yellow-400" },
               ].map((stat, idx) => {
                 const Icon = stat.icon;
                 return (
@@ -943,7 +943,7 @@ export default async function HomePage() {
                 <div className="relative grid grid-cols-2 gap-6">
                   {[
                     { value: "70%", label: "Revenue share" },
-                    { value: "99K+", label: "Active students" },
+                    { value: "99+", label: "Active students" },
                     { value: "24/7", label: "Platform support" },
                     { value: "Free", label: "Course hosting" },
                   ].map((stat) => (
