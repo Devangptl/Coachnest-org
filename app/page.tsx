@@ -283,22 +283,22 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           TRUSTED BY / SOCIAL PROOF BAR
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative py-12">
-        <div className="">
-          <FadeInSection>
-            <p className="text-center text-white/30 text-sm uppercase tracking-widest mb-8">
-              Trusted by learners from top companies
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16">
-              {["Google", "Microsoft", "Amazon", "Meta", "Apple", "Netflix"].map((company) => (
-                <span key={company} className="text-white/20 font-bold text-xl sm:text-2xl tracking-wider hover:text-muted-foreground/70 transition-colors">
-                  {company}
-                </span>
-              ))}
-            </div>
-          </FadeInSection>
-        </div>
-      </section>
+      // <section className="relative py-12">
+      //   <div className="">
+      //     <FadeInSection>
+      //       <p className="text-center text-white/30 text-sm uppercase tracking-widest mb-8">
+      //         Trusted by learners from top companies
+      //       </p>
+      //       <div className="flex flex-wrap justify-center items-center gap-8 sm:gap-16">
+      //         {["Google", "Microsoft", "Amazon", "Meta", "Apple", "Netflix"].map((company) => (
+      //           <span key={company} className="text-white/20 font-bold text-xl sm:text-2xl tracking-wider hover:text-muted-foreground/70 transition-colors">
+      //             {company}
+      //           </span>
+      //         ))}
+      //       </div>
+      //     </FadeInSection>
+      //   </div>
+      // </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           WHY COACHNEST — 6 feature cards
