@@ -46,7 +46,7 @@ export default function TermsOfServicePage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Terms of Service</h1>
-                <p className="text-white/30 text-sm mt-0.5">Last updated: March 28, 2026</p>
+                <p className="text-white/30 text-sm mt-0.5">Last updated: April 19, 2026</p>
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
@@ -106,6 +106,12 @@ export default function TermsOfServicePage() {
                 <p>When you enrol in a course you receive a limited, non-exclusive, non-transferable licence to access and view the course content for your personal, non-commercial educational purposes.</p>
                 <SubHeading>Lifetime Access</SubHeading>
                 <p>For paid courses, you receive lifetime access to the content as long as CoachNest continues to operate and the instructor does not remove the course. We are not responsible for instructor decisions to remove or update course material.</p>
+                <SubHeading>Gamification Features</SubHeading>
+                <p>CoachNest awards XP (experience points), badges, and streak counts as you progress through courses and engage with the community. These rewards exist for personal motivation only. XP, badges, and streaks are non-transferable, have no monetary value, cannot be exchanged or redeemed for any benefit outside the Platform, and may be reset or adjusted by CoachNest at any time without notice.</p>
+                <SubHeading>Community & Forum Conduct</SubHeading>
+                <p>When participating in forums, study groups, or peer review, you agree to engage respectfully and constructively. You must not post spam, solicitations, off-topic promotional material, or content that harasses, demeans, or targets other members. CoachNest reserves the right to remove any community content and to suspend or terminate accounts of users who repeatedly violate community standards.</p>
+                <SubHeading>Certificates</SubHeading>
+                <p>Upon completing a course, you may receive a CoachNest completion certificate. Certificates are issued for personal use only and are non-transferable. They are not accredited academic qualifications and do not imply endorsement by any third-party institution. CoachNest reserves the right to revoke a certificate if the associated account is found to have violated these Terms.</p>
                 <SubHeading>User-Generated Content</SubHeading>
                 <p>You retain ownership of content you submit (reviews, forum posts, etc.) but grant CoachNest a worldwide, royalty-free licence to use, display, and distribute that content on the Platform. You represent that your content does not infringe any third-party rights.</p>
               </Section>
