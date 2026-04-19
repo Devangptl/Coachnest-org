@@ -256,10 +256,10 @@ export default async function HomePage() {
           <FadeInSection delay={0.55}>
             <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
               {[
-                { value: Math.max(stats.courseCount, 50), suffix: "+", label: "Courses", icon: BookOpen, gradient: "from-orange-600/20 to-orange-500/15" },
-                { value: Math.max(stats.studentCount, 10000), suffix: "+", label: "Students", icon: Users, gradient: "from-blue-500/20 to-cyan-500/10" },
-                { value: Math.max(stats.enrollmentCount, 25000), suffix: "+", label: "Enrollments", icon: TrendingUp, gradient: "from-emerald-500/20 to-teal-500/10" },
-                { value: Math.max(stats.reviewCount, 5000), suffix: "+", label: "Reviews", icon: Star, gradient: "from-amber-500/20 to-yellow-500/10" },
+                { value: Math.max(stats.courseCount, 20), suffix: "+", label: "Courses", icon: BookOpen, gradient: "from-orange-600/20 to-orange-500/15" },
+                { value: Math.max(stats.studentCount, 99), suffix: "+", label: "Students", icon: Users, gradient: "from-blue-500/20 to-cyan-500/10" },
+                { value: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Enrollments", icon: TrendingUp, gradient: "from-emerald-500/20 to-teal-500/10" },
+                { value: Math.max(stats.reviewCount, 399), suffix: "+", label: "Reviews", icon: Star, gradient: "from-amber-500/20 to-yellow-500/10" },
               ].map((stat) => {
                 const Icon = stat.icon;
                 return (
@@ -942,7 +942,7 @@ export default async function HomePage() {
                 <div className="relative grid grid-cols-2 gap-6">
                   {[
                     { value: "70%", label: "Revenue share" },
-                    { value: "10K+", label: "Active students" },
+                    { value: "99K+", label: "Active students" },
                     { value: "24/7", label: "Platform support" },
                     { value: "Free", label: "Course hosting" },
                   ].map((stat) => (
@@ -1128,7 +1128,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           FOOTER
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <Footer />
+      //<Footer />
     </div>
   );
 }
