@@ -29,7 +29,7 @@ const COMPANY_LINKS = [
 const LEGAL_LINKS = [
   { label: "Privacy Policy",   href: "/legal/privacy-policy"    },
   { label: "Terms of Service", href: "/legal/terms-of-service"  },
-  { label: "Refund Policy",    href: "/legal/refund-policy"     },
+  // { label: "Refund Policy",    href: "/legal/refund-policy"     },
   { label: "Cookie Policy",    href: "/legal/cookie-policy"     },
 ];
 
@@ -219,10 +219,7 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
-            // <span className="text-white/10 text-xs hidden sm:block">
-            //   Built with Next.js &amp; Tailwind CSS
-            // </span>
-            // <div className="w-px h-3 bg-white/10 hidden sm:block" />
+          
             <Link
               href="/contact"
               className="flex items-center gap-1.5 text-white/20 hover:text-white/50 text-xs transition-colors"
