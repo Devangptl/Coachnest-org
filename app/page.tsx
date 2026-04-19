@@ -857,8 +857,7 @@ export default async function HomePage() {
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           TESTIMONIALS
-      ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24  relative">
+          <section className="py-24  relative">
         <div className="absolute inset-0 " />
         <div className="max-w-8xl mx-auto relative">
           <FadeInSection>
@@ -930,6 +929,8 @@ export default async function HomePage() {
           </div>
         </div>
       </section>
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           BECOME AN INSTRUCTOR

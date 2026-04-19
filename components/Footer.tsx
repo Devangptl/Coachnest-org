@@ -20,8 +20,8 @@ const RESOURCES_LINKS = [
 
 const COMPANY_LINKS = [
   { label: "About Us",         href: "/about"   },
-  { label: "Careers",          href: "/careers" },
-  { label: "Press & Media",    href: "/press"   },
+  // { label: "Careers",          href: "/careers" },
+  // { label: "Press & Media",    href: "/press"   },
   { label: "Partners",         href: "/contact" },
   { label: "Affiliate Program",href: "/contact" },
 ];

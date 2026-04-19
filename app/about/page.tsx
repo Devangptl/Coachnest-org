@@ -32,17 +32,17 @@ const VALUES = [
 ];
 
 const STATS = [
-  { value: "50,000+", label: "Active Learners" },
-  { value: "500+", label: "Expert Courses" },
-  { value: "120+", label: "Instructors" },
+  { value: "399+", label: "Active Learners" },
+  { value: "29+", label: "Expert Courses" },
+  { value: "15+", label: "Instructors" },
   { value: "98%", label: "Satisfaction Rate" },
 ];
 
 const TEAM = [
-  { name: "Alex Morgan", role: "Co-Founder & CEO", initials: "AM" },
-  { name: "Priya Sharma", role: "Co-Founder & CTO", initials: "PS" },
-  { name: "James Okafor", role: "Head of Content", initials: "JO" },
-  { name: "Sofia Chen", role: "Head of Design", initials: "SC" },
+  { name: "Devang Patel", role: "Co-Founder & CEO", initials: "DP" },
+  // { name: "Priya Sharma", role: "Co-Founder & CTO", initials: "PS" },
+  // { name: "James Okafor", role: "Head of Content", initials: "JO" },
+  // { name: "Sofia Chen", role: "Head of Design", initials: "SC" },
 ];
 
 export default function AboutPage() {

@@ -102,8 +102,8 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* ─── Contact Info Cards ───────────────────────────────────── */}
-      <section className="max-w-8xl mx-auto px-4 sm:px-6 -mt-4 mb-16">
+      {/* ─── Contact Info Cards ───────────────────────────────────── 
+        <section className="max-w-8xl mx-auto px-4 sm:px-6 -mt-4 mb-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {CONTACT_CARDS.map(({ icon: Icon, title, detail, sub, iconColor, bgColor }) => (
             <div
@@ -122,6 +122,8 @@ export default function ContactPage() {
           ))}
         </div>
       </section>
+        */}
+      
 
       {/* ─── Main Form + Sidebar ──────────────────────────────────── */}
       <section className="max-w-8xl mx-auto px-4 sm:px-6 pb-20">
