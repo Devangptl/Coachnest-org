@@ -61,7 +61,7 @@ export default function AboutPage() {
               <span className="text-white/40">changes everything.</span>
             </h1>
             <p className="text-white/40 text-lg leading-relaxed max-w-2xl mx-auto">
-              CoachNest was founded in 2022 with a single mission: to make expert-level
+              CoachNest was founded in 2026 with a single mission: to make expert-level
               learning accessible to every developer, designer, and creator on the planet —
               regardless of where they live or what they can afford.
             </p>

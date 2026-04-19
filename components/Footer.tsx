@@ -99,8 +99,9 @@ export default function Footer() {
               The modern learning platform for ambitious developers and designers.
             </p>
 
-            {/* Social links */}
-            <div className="flex items-center gap-2 mb-6">
+            {/* Social links
+              
+              <div className="flex items-center gap-2 mb-6">
               {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
                 <Link
                   key={label}
@@ -112,6 +113,8 @@ export default function Footer() {
                 </Link>
               ))}
             </div>
+              */}
+            
 
             {/* Trust badges */}
             <div className="flex flex-col gap-1.5">
@@ -216,10 +219,10 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="text-white/10 text-xs hidden sm:block">
-              Built with Next.js &amp; Tailwind CSS
-            </span>
-            <div className="w-px h-3 bg-white/10 hidden sm:block" />
+            // <span className="text-white/10 text-xs hidden sm:block">
+            //   Built with Next.js &amp; Tailwind CSS
+            // </span>
+            // <div className="w-px h-3 bg-white/10 hidden sm:block" />
             <Link
               href="/contact"
               className="flex items-center gap-1.5 text-white/20 hover:text-white/50 text-xs transition-colors"
