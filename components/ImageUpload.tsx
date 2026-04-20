@@ -48,7 +48,7 @@ export default function ImageUpload({
   onChange,
   folder  = "misc",
   label   = "Image",
-  hint    = "PNG, JPG, WEBP up to 10 MB. Upload multiple and pick the one to use.",
+  hint    = "PNG, JPG, WEBP · max 1 MB per file · 100 MB total quota.",
   compact = false,
 }: ImageUploadProps) {
   // Candidates uploaded in this session + the current persisted value (if any).

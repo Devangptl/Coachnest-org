@@ -266,7 +266,7 @@ export default function MediaLibraryModal({
                     Click or drag to upload images
                   </span>
                   <span className="text-xs text-muted-foreground ml-2">
-                    PNG, JPG, WEBP · max 10 MB · multiple files OK
+                    PNG, JPG, WEBP · max 1 MB per file · 100 MB total
                   </span>
                 </div>
               </>
