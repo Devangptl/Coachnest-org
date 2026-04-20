@@ -3,9 +3,9 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
-import { AvatarUpload } from "@/components/ImageUpload";
+import ImagePickerField from "@/components/ImagePickerField";
 import { Button } from "@/components/ui/Button";
-import { User, FileText, Globe, Image } from "lucide-react";
+import { User, FileText, Globe } from "lucide-react";
 
 interface ProfileFormProps {
   initialData: {
@@ -117,12 +117,12 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
           />
         </div>
 
-        {/* Avatar — upload multiple candidates, pick the active one */}
+        {/* Avatar — pick from media library */}
         <div>
-          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
-            <Image className="w-3.5 h-3.5" /> Avatar
-          </label>
-          <AvatarUpload
+          <ImagePickerField
+            label="Avatar"
+            folder="avatars"
+            buttonLabel="Choose avatar from library"
             value={form.avatar}
             onChange={(url) => handleChange("avatar", url)}
           />

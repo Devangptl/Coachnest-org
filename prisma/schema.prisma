@@ -210,6 +210,9 @@ model User {
   groupNotes            GroupNote[]
   groupJoinRequests     GroupJoinRequest[]
 
+  // Media Library
+  mediaAssets           MediaAsset[]
+
   @@map("users")
 }
 
@@ -1046,6 +1049,28 @@ model LedgerEntry {
   @@index([courseId])
   @@index([type])
   @@map("ledger_entries")
+}
+
+// ─── Media Library ────────────────────────────────────────────────────────────
+
+model MediaAsset {
+  id        String   @id @default(cuid())
+  userId    String
+  url       String
+  publicId  String   @unique
+  folder    String   @default("misc") // courses | blogs | avatars | misc
+  filename  String?
+  bytes     Int      @default(0)
+  width     Int      @default(0)
+  height    Int      @default(0)
+  format    String   @default("")
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, folder])
+  @@map("media_assets")
 }
 
 model PayoutRequest {

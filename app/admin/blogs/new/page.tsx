@@ -3,7 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
-import ImageUpload from "@/components/ImageUpload";
+import ImagePickerField from "@/components/ImagePickerField";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
@@ -99,8 +99,8 @@ export default function NewBlogPage() {
             />
           </div>
 
-          {/* Cover image — upload to Cloudinary, pick a primary */}
-          <ImageUpload
+          {/* Cover image — pick from media library */}
+          <ImagePickerField
             label="Cover Image"
             folder="blogs"
             value={thumbnail}

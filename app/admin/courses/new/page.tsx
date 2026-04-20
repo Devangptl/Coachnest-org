@@ -7,7 +7,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
-import ImageUpload from "@/components/ImageUpload";
+import ImagePickerField from "@/components/ImagePickerField";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -94,8 +94,8 @@ export default function NewCoursePage() {
             />
           </div>
 
-          {/* Thumbnail — upload to Cloudinary, pick a primary */}
-          <ImageUpload
+          {/* Thumbnail — pick from media library */}
+          <ImagePickerField
             label="Thumbnail"
             folder="courses"
             value={thumbnail}

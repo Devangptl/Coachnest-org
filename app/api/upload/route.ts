@@ -1,18 +1,17 @@
 /**
- * POST /api/upload — Upload an image to Cloudinary.
+ * POST /api/upload — Upload an image to Cloudinary and save metadata to DB.
  *
- * Body: multipart/form-data with:
- *   - `file`   (required) the image file
- *   - `folder` (optional) Cloudinary folder; one of: avatars | courses | blogs
+ * Body: multipart/form-data
+ *   file   (required) image file
+ *   folder (optional) "courses" | "blogs" | "avatars" | "misc"
  *
  * Auth: signed-in users only.
- * Returns: { url, publicId, width, height, format, bytes }
- *
- * Accepts up to 10 MB per file; only `image/*` MIME types.
+ * Returns: MediaAsset row (id, url, publicId, folder, …)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { uploadBufferToCloudinary } from "@/lib/cloudinary";
+import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
@@ -33,8 +32,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Invalid form data." }, { status: 400 });
   }
 
-  const file          = form.get("file");
-  const folderInput   = (form.get("folder") as string | null) ?? "misc";
+  const file        = form.get("file");
+  const folderInput = (form.get("folder") as string | null) ?? "misc";
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "No file provided." }, { status: 400 });
@@ -60,7 +59,23 @@ export async function POST(req: NextRequest) {
       `${FOLDER_PREFIX}/${folder}`,
       file.name,
     );
-    return NextResponse.json(asset);
+
+    // Persist metadata so users can browse their library later.
+    const record = await prisma.mediaAsset.create({
+      data: {
+        userId:   session.userId,
+        url:      asset.url,
+        publicId: asset.publicId,
+        folder,
+        filename: file.name,
+        bytes:    asset.bytes,
+        width:    asset.width,
+        height:   asset.height,
+        format:   asset.format,
+      },
+    });
+
+    return NextResponse.json(record);
   } catch (err) {
     console.error("[upload]", err);
     return NextResponse.json(
