@@ -7,6 +7,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
+import ImageUpload from "@/components/ImageUpload";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -93,17 +94,13 @@ export default function NewCoursePage() {
             />
           </div>
 
-          {/* Thumbnail URL */}
-          <div>
-            <label className="label">Thumbnail URL</label>
-            <input
-              type="url"
-              value={thumbnail}
-              onChange={(e) => setThumbnail(e.target.value)}
-              className="input-glass"
-              placeholder="https://images.unsplash.com/..."
-            />
-          </div>
+          {/* Thumbnail — upload to Cloudinary, pick a primary */}
+          <ImageUpload
+            label="Thumbnail"
+            folder="courses"
+            value={thumbnail}
+            onChange={setThumbnail}
+          />
 
           {/* Level */}
           <div>
