@@ -7,6 +7,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
+import ImagePickerField from "@/components/ImagePickerField";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
@@ -93,17 +94,13 @@ export default function NewCoursePage() {
             />
           </div>
 
-          {/* Thumbnail URL */}
-          <div>
-            <label className="label">Thumbnail URL</label>
-            <input
-              type="url"
-              value={thumbnail}
-              onChange={(e) => setThumbnail(e.target.value)}
-              className="input-glass"
-              placeholder="https://images.unsplash.com/..."
-            />
-          </div>
+          {/* Thumbnail — pick from media library */}
+          <ImagePickerField
+            label="Thumbnail"
+            folder="courses"
+            value={thumbnail}
+            onChange={setThumbnail}
+          />
 
           {/* Level */}
           <div>

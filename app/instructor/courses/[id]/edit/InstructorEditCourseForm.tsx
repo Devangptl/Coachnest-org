@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
+import ImagePickerField from "@/components/ImagePickerField";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
 
@@ -58,10 +59,12 @@ export default function InstructorEditCourseForm({ course }: { course: Course })
           <label className="label">Description</label>
           <textarea value={description} onChange={(e) => setDescription(e.target.value)} className="input-glass resize-none" rows={4} required />
         </div>
-        <div>
-          <label className="label">Thumbnail URL</label>
-          <input type="url" value={thumbnail} onChange={(e) => setThumbnail(e.target.value)} className="input-glass" placeholder="https://..." />
-        </div>
+        <ImagePickerField
+          label="Thumbnail"
+          folder="courses"
+          value={thumbnail}
+          onChange={setThumbnail}
+        />
         <div>
           <label className="label">Level</label>
           <select value={level} onChange={(e) => setLevel(e.target.value)} className="input-glass">

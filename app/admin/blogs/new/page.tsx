@@ -3,6 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
+import ImagePickerField from "@/components/ImagePickerField";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft } from "lucide-react";
@@ -98,17 +99,13 @@ export default function NewBlogPage() {
             />
           </div>
 
-          {/* Thumbnail URL */}
-          <div>
-            <label className="label">Cover Image URL</label>
-            <input
-              type="url"
-              value={thumbnail}
-              onChange={(e) => setThumbnail(e.target.value)}
-              className="input-glass"
-              placeholder="https://images.unsplash.com/..."
-            />
-          </div>
+          {/* Cover image — pick from media library */}
+          <ImagePickerField
+            label="Cover Image"
+            folder="blogs"
+            value={thumbnail}
+            onChange={setThumbnail}
+          />
 
           {/* Tags */}
           <div>
