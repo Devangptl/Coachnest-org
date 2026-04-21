@@ -3,7 +3,7 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
-import ImagePickerField from "@/components/ImagePickerField";
+import AvatarUploadField from "@/components/AvatarUploadField";
 import { Button } from "@/components/ui/Button";
 import { User, FileText, Globe } from "lucide-react";
 
@@ -117,12 +117,10 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
           />
         </div>
 
-        {/* Avatar — pick from media library */}
+        {/* Avatar — single-image upload (no media library for students) */}
         <div>
-          <ImagePickerField
+          <AvatarUploadField
             label="Avatar"
-            folder="avatars"
-            buttonLabel="Choose avatar from library"
             value={form.avatar}
             onChange={(url) => handleChange("avatar", url)}
           />

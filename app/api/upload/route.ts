@@ -29,6 +29,9 @@ export async function POST(req: NextRequest) {
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (session.role !== "ADMIN" && session.role !== "INSTRUCTOR") {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
 
   let form: FormData;
   try {
