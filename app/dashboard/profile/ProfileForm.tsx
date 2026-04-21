@@ -3,8 +3,9 @@
 import { useState, FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
+import AvatarUploadField from "@/components/AvatarUploadField";
 import { Button } from "@/components/ui/Button";
-import { User, FileText, Globe, ImageIcon } from "lucide-react";
+import { User, FileText, Globe } from "lucide-react";
 
 interface ProfileFormProps {
   initialData: {
@@ -116,17 +117,12 @@ export default function ProfileForm({ initialData }: ProfileFormProps) {
           />
         </div>
 
-        {/* Avatar — URL input (media library is restricted to admin / instructor) */}
+        {/* Avatar — single-image upload (no media library for students) */}
         <div>
-          <label className="text-muted-foreground text-sm font-medium mb-1.5 flex items-center gap-2">
-            <ImageIcon className="w-3.5 h-3.5" /> Avatar URL
-          </label>
-          <input
-            type="url"
+          <AvatarUploadField
+            label="Avatar"
             value={form.avatar}
-            onChange={(e) => handleChange("avatar", e.target.value)}
-            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
-            placeholder="https://example.com/your-avatar.png"
+            onChange={(url) => handleChange("avatar", url)}
           />
         </div>
 
