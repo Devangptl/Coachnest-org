@@ -15,6 +15,9 @@ export async function DELETE(
   if (!session) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+  if (session.role !== "ADMIN" && session.role !== "INSTRUCTOR") {
+    return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+  }
 
   const { id } = await params;
 
