@@ -1,30 +1,50 @@
 /**
  * Admin → Edit Course page.
- * Allows editing course details and managing its lessons.
+ * Renders the shared full-width CourseForm and the lessons manager.
  */
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
-import EditCourseForm from "./EditCourseForm";
-import LessonsManager from "./LessonsManager";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import CourseForm from "@/components/admin/CourseForm";
+import LessonsManager from "./LessonsManager";
+
+export const dynamic = "force-dynamic";
 
 type Props = { params: Promise<{ id: string }> };
 
-async function getCourse(id: string) {
-  return prisma.course.findUnique({
-    where: { id },
-    include: { lessons: { orderBy: { order: "asc" } } },
-  });
+async function getCourseData(id: string) {
+  const [course, categories, tagSuggestions] = await Promise.all([
+    prisma.course.findUnique({
+      where: { id },
+      include: {
+        lessons: { orderBy: { order: "asc" } },
+        tags: { include: { tag: { select: { name: true } } } },
+      },
+    }),
+    prisma.category.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.tag.findMany({
+      select: { name: true },
+      orderBy: { name: "asc" },
+      take: 30,
+    }),
+  ]);
+
+  return { course, categories, tagSuggestions };
 }
 
 export default async function EditCoursePage({ params }: Props) {
   const { id } = await params;
-  const course = await getCourse(id);
+  const { course, categories, tagSuggestions } = await getCourseData(id);
   if (!course) notFound();
 
+  const tagNames = course.tags.map((ct) => ct.tag.name);
+
   return (
-    <div className="max-w-3xl">
+    <div>
       <Link
         href="/admin/courses"
         className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
@@ -32,19 +52,38 @@ export default async function EditCoursePage({ params }: Props) {
         <ArrowLeft className="w-4 h-4" /> Back to Courses
       </Link>
 
-      <h1 className="text-3xl font-bold text-foreground mb-2">Edit Course</h1>
-      <p className="text-muted-foreground/70 text-sm mb-8">{course.title}</p>
+      <div className="mb-6">
+        <h1 className="text-3xl font-bold text-foreground">Edit Course</h1>
+        <p className="text-muted-foreground/70 text-sm mt-1">{course.title}</p>
+      </div>
 
-      {/* Course details form */}
-      <EditCourseForm course={course} />
+      <CourseForm
+        mode="edit"
+        initial={{
+          id: course.id,
+          title: course.title,
+          shortDesc: course.shortDesc,
+          description: course.description,
+          thumbnail: course.thumbnail,
+          previewVideo: course.previewVideo,
+          price: course.price ? course.price.toString() : null,
+          discountPrice: course.discountPrice ? course.discountPrice.toString() : null,
+          isFree: course.isFree,
+          level: course.level,
+          language: course.language,
+          status: course.status,
+          categoryId: course.categoryId,
+          instructorRevenuePercent: course.instructorRevenuePercent,
+          tagNames,
+        }}
+        categories={categories}
+        suggestedTags={tagSuggestions.map((t) => t.name)}
+        onCancelHref="/admin/courses"
+      />
 
-      {/* Lessons manager */}
       <div className="mt-10">
         <h2 className="text-xl font-semibold text-foreground mb-5">Lessons</h2>
-        <LessonsManager
-          courseId={course.id}
-          lessons={course.lessons}
-        />
+        <LessonsManager courseId={course.id} lessons={course.lessons} />
       </div>
     </div>
   );
