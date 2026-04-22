@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
-  Menu, X, Briefcase, Wallet, RotateCcw,
+  Menu, X, Briefcase, Wallet, RotateCcw, UserCog,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,6 +19,7 @@ const adminNav = [
   { label: "Overview",      href: "/admin",                 icon: LayoutDashboard },
   { label: "Analytics",     href: "/admin/analytics",       icon: BarChart3 },
   { label: "All Courses",   href: "/admin/courses",         icon: BookOpen },
+  { label: "Instructors",   href: "/admin/instructors",     icon: UserCog },
   { label: "Students",      href: "/admin/students",        icon: Users },
   { label: "Enrollments",   href: "/admin/enrollments",     icon: GraduationCap },
   { label: "Coupons",       href: "/admin/coupons",         icon: Ticket },
