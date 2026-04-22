@@ -39,13 +39,18 @@ export async function POST(req: NextRequest) {
     const {
       title,
       description,
+      shortDesc,
       thumbnail,
+      previewVideo,
       published,
       price,
+      discountPrice,
       isFree,
       level,
+      language,
       categoryId,
       instructorRevenuePercent,
+      tagNames,
     } = await req.json();
 
     if (!title || !description) {
@@ -98,21 +103,63 @@ export async function POST(req: NextRequest) {
     const existing = await prisma.course.findUnique({ where: { slug } });
     if (existing) slug = `${slug}-${Date.now().toString(36)}`;
 
+    // Normalise discountPrice: only kept when paid + lower than price
+    let normalisedDiscount: number | null = null;
+    if (!wantsFree && discountPrice !== undefined && discountPrice !== null && discountPrice !== "") {
+      const dp = Number(discountPrice);
+      const p  = price != null ? Number(price) : null;
+      if (Number.isFinite(dp) && dp >= 0 && (p == null || dp < p)) {
+        normalisedDiscount = dp;
+      }
+    }
+
     const course = await prisma.course.create({
       data: {
         title,
         slug,
         description,
+        shortDesc: shortDesc?.trim() || null,
         thumbnail: thumbnail || null,
+        previewVideo: previewVideo?.trim() || null,
         status,
         price: wantsFree ? null : price ?? null,
+        discountPrice: normalisedDiscount,
         isFree: wantsFree,
         level: level ?? "beginner",
-        categoryId: categoryId ?? null,
+        language: language?.trim() || undefined,
+        categoryId: categoryId || null,
         createdById: session.userId,
         instructorRevenuePercent: revenuePercent,
       },
     });
+
+    // Optional: attach tags by name (create missing)
+    if (Array.isArray(tagNames) && tagNames.length > 0) {
+      const cleaned = Array.from(
+        new Set(
+          tagNames
+            .map((t: unknown) => String(t).trim())
+            .filter((t: string) => t.length > 0 && t.length <= 40)
+        )
+      );
+
+      await Promise.all(
+        cleaned.map(async (name) => {
+          const slugified = slugify(name, { lower: true, strict: true });
+          if (!slugified) return;
+          const tag = await prisma.tag.upsert({
+            where:  { slug: slugified },
+            create: { name, slug: slugified },
+            update: {},
+          });
+          await prisma.courseTag.upsert({
+            where:  { courseId_tagId: { courseId: course.id, tagId: tag.id } },
+            create: { courseId: course.id, tagId: tag.id },
+            update: {},
+          });
+        })
+      );
+    }
 
     return NextResponse.json({ course }, { status: 201 });
   } catch (error) {
