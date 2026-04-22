@@ -48,12 +48,24 @@ export default function CourseForm({
   categories,
   suggestedTags = [],
   onCancelHref,
+  apiBasePath = "/api/courses",
+  redirectAfterCreateBase = "/admin/courses",
+  canEditRevenuePercent = true,
+  statusOptions,
 }: {
   mode: CourseFormMode;
   initial?: CourseFormInitial;
   categories: CourseCategoryOption[];
   suggestedTags?: string[];
   onCancelHref: string;
+  /** Where to POST (create) / PATCH (edit). "/[id]" is appended in edit mode. */
+  apiBasePath?: string;
+  /** After create, navigates to `${redirectAfterCreateBase}/${id}/edit`. */
+  redirectAfterCreateBase?: string;
+  /** Instructors can't change their own revenue split. */
+  canEditRevenuePercent?: boolean;
+  /** Override the status options in edit mode (default: admin set). */
+  statusOptions?: Array<{ value: string; label: string }>;
 }) {
   const router = useRouter();
 
@@ -153,9 +165,7 @@ export default function CourseForm({
       }
 
       const url =
-        mode === "create"
-          ? "/api/courses"
-          : `/api/courses/${initial.id}`;
+        mode === "create" ? apiBasePath : `${apiBasePath}/${initial.id}`;
       const res = await fetch(url, {
         method: mode === "create" ? "POST" : "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -169,7 +179,7 @@ export default function CourseForm({
 
       if (mode === "create") {
         toast.success("Course created!");
-        router.push(`/admin/courses/${data.course.id}/edit`);
+        router.push(`${redirectAfterCreateBase}/${data.course.id}/edit`);
       } else {
         toast.success("Course saved!");
         router.refresh();
@@ -336,10 +346,16 @@ export default function CourseForm({
                 onChange={(e) => setStatus(e.target.value)}
                 className="input-glass"
               >
-                <option value="DRAFT">Draft</option>
-                <option value="PUBLISHED">Published</option>
-                <option value="PENDING_REVIEW">Pending Review</option>
-                <option value="ARCHIVED">Archived</option>
+                {(statusOptions ?? [
+                  { value: "DRAFT", label: "Draft" },
+                  { value: "PUBLISHED", label: "Published" },
+                  { value: "PENDING_REVIEW", label: "Pending Review" },
+                  { value: "ARCHIVED", label: "Archived" },
+                ]).map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
               </select>
             </div>
           ) : (
@@ -464,22 +480,38 @@ export default function CourseForm({
           <div className="h-px bg-border my-5" />
 
           <h3 className="text-foreground font-semibold text-sm mb-3">Revenue split</h3>
-          <div>
-            <label className="label">Instructor revenue %</label>
-            <input
-              type="number"
-              value={revenuePercent}
-              onChange={(e) => setRevenuePercent(e.target.value)}
-              className="input-glass"
-              min={70}
-              max={80}
-              step={1}
-            />
-            <p className="text-muted-foreground/70 text-xs mt-1">
-              Instructor gets {revenuePercent || 70}%, platform gets{" "}
-              {100 - Number(revenuePercent || 70)}%. Must be 70–80.
-            </p>
-          </div>
+          {canEditRevenuePercent ? (
+            <div>
+              <label className="label">Instructor revenue %</label>
+              <input
+                type="number"
+                value={revenuePercent}
+                onChange={(e) => setRevenuePercent(e.target.value)}
+                className="input-glass"
+                min={70}
+                max={80}
+                step={1}
+              />
+              <p className="text-muted-foreground/70 text-xs mt-1">
+                Instructor gets {revenuePercent || 70}%, platform gets{" "}
+                {100 - Number(revenuePercent || 70)}%. Must be 70–80.
+              </p>
+            </div>
+          ) : (
+            <div>
+              <label className="label">Instructor revenue %</label>
+              <input
+                type="number"
+                value={revenuePercent}
+                disabled
+                readOnly
+                className="input-glass opacity-60 cursor-not-allowed"
+              />
+              <p className="text-muted-foreground/70 text-xs mt-1">
+                Set by admin. You keep {revenuePercent || 70}% of each sale.
+              </p>
+            </div>
+          )}
 
           <div className="h-px bg-border my-5" />
 
