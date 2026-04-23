@@ -22,75 +22,78 @@ const TOOLBAR = [
   ["clean"],
 ];
 
-// Markdown shortcut keyboard bindings — type the shortcut then space/enter
-// to convert the line to the corresponding Quill format.
-function makeMarkdownBindings(quill: { formatLine: Function; deleteText: Function }) {
-  return {
-    "md-h1": {
-      key: " ",
-      prefix: /^#$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "header", 1, "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+// Markdown shortcut keyboard bindings.
+// Quill binds each handler with `this` = the keyboard module, which exposes
+// `this.quill` — so handlers don't need to capture the quill instance at all,
+// avoiding the temporal-dead-zone issue of referencing `quill` inside its own
+// constructor call.
+type KbCtx = { quill: { formatLine: Function; deleteText: Function } };
+
+const MARKDOWN_BINDINGS = {
+  "md-h1": {
+    key: " ",
+    prefix: /^#$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "header", 1, "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-    "md-h2": {
-      key: " ",
-      prefix: /^##$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "header", 2, "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+  },
+  "md-h2": {
+    key: " ",
+    prefix: /^##$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "header", 2, "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-    "md-h3": {
-      key: " ",
-      prefix: /^###$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "header", 3, "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+  },
+  "md-h3": {
+    key: " ",
+    prefix: /^###$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "header", 3, "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-    "md-blockquote": {
-      key: " ",
-      prefix: /^>$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "blockquote", true, "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+  },
+  "md-blockquote": {
+    key: " ",
+    prefix: /^>$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "blockquote", true, "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-    "md-bullet": {
-      key: " ",
-      prefix: /^[-*]$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "list", "bullet", "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+  },
+  "md-bullet": {
+    key: " ",
+    prefix: /^[-*]$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "list", "bullet", "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-    "md-ordered": {
-      key: " ",
-      prefix: /^1\.$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "list", "ordered", "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+  },
+  "md-ordered": {
+    key: " ",
+    prefix: /^1\.$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "list", "ordered", "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-    "md-code-block": {
-      key: "Enter",
-      prefix: /^```$/,
-      handler(range: { index: number }, ctx: { prefix: string }) {
-        quill.formatLine(range.index, 1, "code-block", true, "user");
-        quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
-        return false;
-      },
+  },
+  "md-code-block": {
+    key: "Enter",
+    prefix: /^```$/,
+    handler(this: KbCtx, range: { index: number }, ctx: { prefix: string }) {
+      this.quill.formatLine(range.index, 1, "code-block", true, "user");
+      this.quill.deleteText(range.index - ctx.prefix.length, ctx.prefix.length, "user");
+      return false;
     },
-  };
-}
+  },
+};
 
 export default function QuillEditor({
   value,
@@ -119,7 +122,7 @@ export default function QuillEditor({
         placeholder,
         modules: {
           toolbar: TOOLBAR,
-          keyboard: { bindings: makeMarkdownBindings(quill as never) },
+          keyboard: { bindings: MARKDOWN_BINDINGS },
         },
       });
 
