@@ -60,7 +60,7 @@ export default function Footer() {
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-40 bg-orange-500/[0.04] blur-3xl rounded-full" />
       </div>
 
-      <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── CTA strip ── */}
         <div className="py-10 sm:py-12 border-b border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-6">

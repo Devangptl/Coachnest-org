@@ -144,7 +144,7 @@ export default async function HomePage() {
       <section className="relative min-h-[100vh] flex items-center -mt-24 pt-24">
         <HeroBackground />
 
-        <div className="max-w-8xl mx-auto w-full relative z-10 py-10">
+        <div className="mx-auto w-full relative z-10 py-10">
           <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
             {/* ── Left: Text Content ────────────────────────────────────── */}
             <div className="text-left relative max-w-lg">
@@ -254,7 +254,7 @@ export default async function HomePage() {
 
           {/* ── Stat cards (below) ──────────────────────────────────────── */}
           <FadeInSection delay={0.55}>
-            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto">
+            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mx-auto">
               {[
                 { value: Math.max(stats.courseCount, 20), suffix: "+", label: "Courses", icon: BookOpen, gradient: "from-orange-600/20 to-orange-500/15" },
                 { value: Math.max(stats.studentCount, 99), suffix: "+", label: "Students", icon: Users, gradient: "from-blue-500/20 to-cyan-500/10" },
@@ -306,7 +306,7 @@ export default async function HomePage() {
           WHY COACHNEST — 6 feature cards
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-12 ">
-        <div className="max-w-8xl mx-auto">
+        <div className="mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -391,7 +391,7 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-28 relative overflow-hidden">
 
-        <div className="max-w-8xl mx-auto relative">
+        <div className="mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-20">
               <span className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
@@ -479,7 +479,7 @@ export default async function HomePage() {
           BROWSE BY CATEGORY
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 ">
-        <div className="max-w-8xl mx-auto">
+        <div className="mx-auto">
           <FadeInSection>
             <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-4">
               <div>
@@ -593,7 +593,7 @@ export default async function HomePage() {
       {courses.length > 0 && (
         <section className="py-20  relative">
           <div className="absolute inset-0 " />
-          <div className="max-w-8xl mx-auto relative">
+          <div className="mx-auto relative">
             {/* Section Header */}
             <FadeInSection>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-10 gap-4">
@@ -721,7 +721,7 @@ export default async function HomePage() {
           BIG STATS SECTION
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24  relative">
-        <div className="max-w-8xl mx-auto">
+        <div className="mx-auto">
           <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {[
@@ -752,7 +752,7 @@ export default async function HomePage() {
           LEARNING EXPERIENCE — Split section
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-8xl mx-auto">
+        <div className="mx-auto">
           <div className="grid lg:grid-cols-2 gap-16 items-center">
             <FadeInSection direction="right">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -859,7 +859,7 @@ export default async function HomePage() {
           TESTIMONIALS
           <section className="py-24  relative">
         <div className="absolute inset-0 " />
-        <div className="max-w-8xl mx-auto relative">
+        <div className="mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-16">
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
@@ -936,7 +936,7 @@ export default async function HomePage() {
           BECOME AN INSTRUCTOR
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 ">
-        <div className="max-w-8xl mx-auto">
+        <div className="mx-auto">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <FadeInSection direction="right">
               <div className="bg-secondary/50 border border-border rounded-md p-10 relative overflow-hidden">
@@ -1071,7 +1071,7 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
 
-        <div className="max-w-4xl mx-auto relative">
+        <div className="mx-auto relative">
           <FadeInSection>
             <div className="relative rounded-md border border-border bg-secondary/10 overflow-hidden shadow-card">
               {/* Top accent bar */}

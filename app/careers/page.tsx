@@ -57,7 +57,7 @@ export default function CareersPage() {
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto py-16">
+        <div className="mx-auto py-16">
 
           {/* Hero */}
           <div className="text-center mb-16">

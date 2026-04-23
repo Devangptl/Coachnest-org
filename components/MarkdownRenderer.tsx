@@ -34,6 +34,11 @@ interface Props {
   className?: string;
 }
 
+/** Detect HTML produced by QuillEditor (getSemanticHTML starts with "<") */
+function isHtml(content: string) {
+  return content.trimStart().startsWith("<");
+}
+
 // ─── List-type context (lets <li> know if it's inside <ol> or <ul>) ───────────
 
 const ListTypeCtx = createContext<"ul" | "ol">("ul");
@@ -339,6 +344,16 @@ function MarkdownListItem({
 // ─── Main renderer ──────────────────────────────────────────────────────────────
 
 const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = false, className }: Props) {
+  // Quill outputs semantic HTML — render it directly with scoped styles
+  if (isHtml(content)) {
+    return (
+      <div
+        className={cn("quill-content", compact && "quill-content-compact", className)}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+
   const processed = preprocessCallouts(content);
   let blockIdx = 0;
 

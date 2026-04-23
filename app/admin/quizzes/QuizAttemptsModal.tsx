@@ -45,7 +45,7 @@ export default function QuizAttemptsModal({
   return (
     <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center" onClick={onClose}>
       <div
-        className="bg-card rounded-lg max-w-4xl w-full mx-4 max-h-[85vh] overflow-y-auto border border-border"
+        className="bg-card rounded-lg w-full mx-4 max-h-[85vh] overflow-y-auto border border-border"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
