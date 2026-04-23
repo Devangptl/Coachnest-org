@@ -14,6 +14,7 @@ import toast from "react-hot-toast";
 import { X } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import ImagePickerField from "@/components/ImagePickerField";
+import MarkdownEditor from "@/components/MarkdownEditor";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 
@@ -226,13 +227,11 @@ export default function CourseForm({
             </div>
             <div>
               <label className="label">Description *</label>
-              <textarea
+              <MarkdownEditor
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="input-glass resize-y"
-                rows={8}
+                onChange={setDescription}
                 placeholder="What will students learn? Who is this course for?"
-                required
+                rows={10}
               />
             </div>
           </div>
