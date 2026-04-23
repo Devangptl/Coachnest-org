@@ -101,7 +101,7 @@ export default async function BlogDetailPage({ params }: Props) {
   const tagList = blog.tags?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+    <div className="max-w-10xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
 
       {/* Back */}
       <Link

@@ -86,7 +86,7 @@ export default function ContactPage() {
         <div className="absolute inset-0 hero-dot-grid opacity-40 pointer-events-none" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[400px] bg-orange-600/[.06] rounded-full blur-[120px] pointer-events-none" />
 
-        <div className="relative max-w-8xl mx-auto px-4 sm:px-6 text-center">
+        <div className="relative max-w-10xl mx-auto px-4 sm:px-6 text-center">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/10 border border-orange-400/20 text-orange-500 text-xs font-semibold mb-6">
             <MessageCircle className="w-3.5 h-3.5" />
             Get In Touch
@@ -103,7 +103,7 @@ export default function ContactPage() {
       </section>
 
       {/* ─── Contact Info Cards ───────────────────────────────────── 
-        <section className="max-w-8xl mx-auto px-4 sm:px-6 -mt-4 mb-16">
+        <section className="max-w-10xl mx-auto px-4 sm:px-6 -mt-4 mb-16">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {CONTACT_CARDS.map(({ icon: Icon, title, detail, sub, iconColor, bgColor }) => (
             <div
@@ -126,7 +126,7 @@ export default function ContactPage() {
       
 
       {/* ─── Main Form + Sidebar ──────────────────────────────────── */}
-      <section className="max-w-8xl mx-auto px-4 sm:px-6 pb-20">
+      <section className="max-w-10xl mx-auto px-4 sm:px-6 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
 
           {/* Sidebar */}

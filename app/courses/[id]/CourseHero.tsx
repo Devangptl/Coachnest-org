@@ -51,7 +51,7 @@ export default function CourseHero({
       {/* <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-transparent" />
       <div className="absolute inset-0 bg-gradient-to-r from-orange-700/10 to-orange-500/10" /> */}
 
-      <div className="relative max-w-8xl mx-auto pt-5 pb-6">
+      <div className="relative max-w-10xl mx-auto pt-5 pb-6">
         {/* Breadcrumb */}
         <motion.nav
           initial={{ opacity: 0, y: -10 }}
