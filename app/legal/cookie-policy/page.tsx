@@ -56,7 +56,7 @@ export default function CookiePolicyPage() {
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-10xl mx-auto py-12">
+        <div className="mx-auto py-12">
 
           {/* Breadcrumb */}
           <nav className="flex items-center gap-1.5 text-xs text-white/30 mb-10">

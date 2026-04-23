@@ -121,9 +121,6 @@ const config: Config = {
 
         card:  "0 2px 12px rgba(0,0,0,.35)",
       },
-      maxWidth: {
-        "10xl": "90rem",
-      },
     },
   },
   plugins: [tailwindcssAnimate],

@@ -73,7 +73,7 @@ export default async function BlogPage() {
   ]);
 
   return (
-    <div className="max-w-10xl mx-auto px-4 sm:px-6 py-12">
+    <div className="mx-auto px-4 sm:px-6 py-12">
       {/* Header */}
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/20 rounded-full px-4 py-1.5 mb-4">

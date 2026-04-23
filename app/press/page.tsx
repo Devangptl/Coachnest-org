@@ -53,7 +53,7 @@ export default function PressPage() {
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-10xl mx-auto py-16">
+        <div className="mx-auto py-16">
 
           {/* Hero */}
           <div className="mb-16">

@@ -127,7 +127,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   }
 
   return (
-    <div className="max-w-10xl mx-auto px-0 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
+    <div className="mx-auto px-0 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
 
       {/* ── Lesson header ────────────────────────────────────────────────── */}
       <div className="mb-4 sm:mb-6">
