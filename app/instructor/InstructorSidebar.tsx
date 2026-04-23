@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3,
-  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown,
+  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ const navItems = [
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
   { label: "Refunds",       href: "/instructor/refunds",      icon: TrendingDown },
   { label: "Payouts",       href: "/instructor/payouts",      icon: Wallet },
+  { label: "My Profile",    href: "/instructor/profile",      icon: UserCircle },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
