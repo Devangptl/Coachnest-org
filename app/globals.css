@@ -76,15 +76,13 @@
     @apply bg-background text-foreground antialiased;
     background: hsl(var(--background));
     min-height: 100vh;
-    font-family: var(--font-inter, system-ui, sans-serif);
-    font-feature-settings: "cv11", "ss01";
+    font-family: var(--font-poppins, system-ui, sans-serif);
     -webkit-font-smoothing: antialiased;
   }
 
   /* Claude Code-style heading typography — tight tracking, strong weight */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-inter, system-ui, sans-serif);
-    font-feature-settings: "cv11", "ss01";
+    font-family: var(--font-poppins, system-ui, sans-serif);
     letter-spacing: -0.025em;
     line-height: 1.15;
   }
