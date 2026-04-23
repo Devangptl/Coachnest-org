@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
+import "quill/dist/quill.snow.css";
 
 interface QuillEditorProps {
   value: string;
@@ -115,7 +116,6 @@ export default function QuillEditor({
 
     (async () => {
       const { default: Quill } = await import("quill");
-      await import("quill/dist/quill.snow.css");
 
       const quill = new Quill(containerRef.current!, {
         theme: "snow",
