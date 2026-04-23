@@ -41,7 +41,7 @@ export default async function InstructorProfilePage() {
   if (!user) redirect("/login");
 
   const totalStudents = user.courses.reduce(
-    (sum, course) => sum + course._count.enrollments,
+    (sum: number, course) => sum + course._count.enrollments,
     0
   );
 
@@ -61,7 +61,7 @@ export default async function InstructorProfilePage() {
           stats={{
             courses: user._count.courses,
             students: totalStudents,
-            totalEarned: user.instructorWallet?.totalEarned ?? 0,
+            totalEarned: Number(user.instructorWallet?.totalEarned ?? 0),
           }}
         />
 
