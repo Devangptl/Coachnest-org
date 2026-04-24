@@ -97,35 +97,35 @@ const CATEGORY_COLORS: Record<string, string> = {
 // Soft background wash colours that match each category gradient
 const CATEGORY_BG: Record<string, string> = {
   "web-development": "from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/20",
-  react:             "from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-500/20",
-  design:            "from-pink-500/10 via-rose-500/5 to-transparent border-pink-500/20",
-  database:          "from-emerald-500/10 via-green-500/5 to-transparent border-emerald-500/20",
-  mobile:            "from-amber-500/10 via-orange-500/5 to-transparent border-amber-500/20",
-  ai:                "from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20",
-  analytics:         "from-teal-500/10 via-cyan-500/5 to-transparent border-teal-500/20",
-  default:           "from-slate-500/10 via-gray-500/5 to-transparent border-slate-500/20",
+  react: "from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-500/20",
+  design: "from-pink-500/10 via-rose-500/5 to-transparent border-pink-500/20",
+  database: "from-emerald-500/10 via-green-500/5 to-transparent border-emerald-500/20",
+  mobile: "from-amber-500/10 via-orange-500/5 to-transparent border-amber-500/20",
+  ai: "from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20",
+  analytics: "from-teal-500/10 via-cyan-500/5 to-transparent border-teal-500/20",
+  default: "from-slate-500/10 via-gray-500/5 to-transparent border-slate-500/20",
 };
 
 const CATEGORY_GLOW: Record<string, string> = {
   "web-development": "group-hover:shadow-orange-500/20",
-  react:             "group-hover:shadow-cyan-500/20",
-  design:            "group-hover:shadow-pink-500/20",
-  database:          "group-hover:shadow-emerald-500/20",
-  mobile:            "group-hover:shadow-amber-500/20",
-  ai:                "group-hover:shadow-indigo-500/20",
-  analytics:         "group-hover:shadow-teal-500/20",
-  default:           "group-hover:shadow-slate-500/20",
+  react: "group-hover:shadow-cyan-500/20",
+  design: "group-hover:shadow-pink-500/20",
+  database: "group-hover:shadow-emerald-500/20",
+  mobile: "group-hover:shadow-amber-500/20",
+  ai: "group-hover:shadow-indigo-500/20",
+  analytics: "group-hover:shadow-teal-500/20",
+  default: "group-hover:shadow-slate-500/20",
 };
 
 const CATEGORY_ICON_COLOR: Record<string, string> = {
   "web-development": "text-orange-500",
-  react:             "text-cyan-500",
-  design:            "text-pink-500",
-  database:          "text-emerald-500",
-  mobile:            "text-amber-500",
-  ai:                "text-indigo-500",
-  analytics:         "text-teal-500",
-  default:           "text-slate-400",
+  react: "text-cyan-500",
+  design: "text-pink-500",
+  database: "text-emerald-500",
+  mobile: "text-amber-500",
+  ai: "text-indigo-500",
+  analytics: "text-teal-500",
+  default: "text-slate-400",
 };
 
 export default async function HomePage() {
@@ -221,7 +221,7 @@ export default async function HomePage() {
         </div>
       </section>
       ═══════════════════════════════════════════════════════════════════════════ */}
-      
+
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           WHY COACHNEST — 6 feature cards
@@ -233,11 +233,11 @@ export default async function HomePage() {
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
                 Why CoachNest
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-4">
                 Everything you need to{" "}
                 <span className="text-orange-400">level up</span>
               </h2>
-              <p className="text-muted-foreground/70 max-w-2xl mx-auto text-lg">
+              <p className="text-muted-foreground/70 max-w-2xl mx-auto">
                 A platform built from the ground up with features that make learning effective, engaging, and enjoyable.
               </p>
             </div>
@@ -429,24 +429,24 @@ export default async function HomePage() {
           <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" staggerDelay={0.05}>
             {(categories.length > 0
               ? categories.map((cat) => ({
-                  name: cat.name,
-                  slug: cat.slug,
-                  count: cat._count.courses,
-                  icon: cat.icon,
-                }))
+                name: cat.name,
+                slug: cat.slug,
+                count: cat._count.courses,
+                icon: cat.icon,
+              }))
               : [
-                  { name: "Web Development", slug: "web-development", count: 12, icon: null },
-                  { name: "React & Next.js", slug: "react",           count: 8,  icon: null },
-                  { name: "UI/UX Design",    slug: "design",          count: 6,  icon: null },
-                  { name: "Databases",       slug: "database",        count: 5,  icon: null },
-                  { name: "Mobile Dev",      slug: "mobile",          count: 4,  icon: null },
-                  { name: "AI & ML",         slug: "ai",              count: 7,  icon: null },
-                  { name: "Data Analytics",  slug: "analytics",       count: 3,  icon: null },
-                  { name: "DevOps",          slug: "default",         count: 4,  icon: null },
-                ]
+                { name: "Web Development", slug: "web-development", count: 12, icon: null },
+                { name: "React & Next.js", slug: "react", count: 8, icon: null },
+                { name: "UI/UX Design", slug: "design", count: 6, icon: null },
+                { name: "Databases", slug: "database", count: 5, icon: null },
+                { name: "Mobile Dev", slug: "mobile", count: 4, icon: null },
+                { name: "AI & ML", slug: "ai", count: 7, icon: null },
+                { name: "Data Analytics", slug: "analytics", count: 3, icon: null },
+                { name: "DevOps", slug: "default", count: 4, icon: null },
+              ]
             ).map((cat) => {
-              const IconComponent = CATEGORY_ICONS[cat.slug]      ?? CATEGORY_ICONS.default;
-              const iconColor     = CATEGORY_ICON_COLOR[cat.slug] ?? CATEGORY_ICON_COLOR.default;
+              const IconComponent = CATEGORY_ICONS[cat.slug] ?? CATEGORY_ICONS.default;
+              const iconColor = CATEGORY_ICON_COLOR[cat.slug] ?? CATEGORY_ICON_COLOR.default;
 
               return (
                 <StaggerItem key={cat.slug}>
@@ -674,105 +674,55 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <FadeInSection direction="right">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+          <FadeInSection>
+            <div className="text-center mb-16">
+              <span className="inline-flex items-center gap-1.5 bg-orange-500/[0.07] border border-orange-500/20 text-orange-400 text-xs font-medium uppercase tracking-widest px-3 py-1 rounded-full mb-4 mx-auto">
+                <Sparkles className="w-3 h-3" />
                 Learning Experience
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                A learning experience{" "}
-                <span className="text-orange-400">designed for you</span>
+                A learning experience <span className="text-orange-400">designed for you</span>
               </h2>
-              <p className="text-white/45 text-lg leading-relaxed mb-8">
+              <p className="text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
                 Our platform adapts to your learning style. Whether you prefer video lessons,
-                reading material, or hands-on quizzes, we have you covered.
+                reading material, or hands-on quizzes, we have you covered with a seamless workflow.
               </p>
-              <div className="space-y-4">
-                {[
-                  { text: "HD video lessons with code-along exercises", icon: Play },
-                  { text: "Rich text lessons with syntax-highlighted code", icon: Code },
-                  { text: "Interactive quizzes to reinforce concepts", icon: Target },
-                  { text: "Downloadable certificates of completion", icon: Award },
-                  { text: "Progress tracking across all your courses", icon: BarChart3 },
-                  { text: "Mobile-friendly — learn anywhere, anytime", icon: Smartphone },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.text} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-4 h-4 text-orange-400" />
+            </div>
+          </FadeInSection>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { title: "Video Lessons", text: "HD video lessons with code-along exercises to master practical skills.", icon: Play, color: "text-orange-400", bg: "bg-orange-500/10" },
+              { title: "Syntax Highlighting", text: "Rich text lessons with syntax-highlighted code for better readability.", icon: Code, color: "text-blue-400", bg: "bg-blue-500/10" },
+              { title: "Adaptive Quizzes", text: "Interactive quizzes to reinforce concepts and test your knowledge.", icon: Target, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+              { title: "Certifications", text: "Downloadable certificates of completion to showcase your achievements.", icon: Award, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+              { title: "Analytics", text: "Deep progress tracking across all your courses with visual insights.", icon: BarChart3, color: "text-pink-400", bg: "bg-pink-500/10" },
+              { title: "Mobile Ready", text: "Mobile-friendly platform — learn anywhere, anytime on any device.", icon: Smartphone, color: "text-violet-400", bg: "bg-violet-500/10" },
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <FadeInSection key={item.title} delay={idx * 0.08}>
+                  <div className="group p-1 rounded-xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 hover:border-orange-500/20 transition-all h-full">
+                    <div className="p-5 flex flex-col gap-4 h-full">
+                      <div className={`w-10 h-10 rounded-lg ${item.bg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-5 h-5 ${item.color}`} />
                       </div>
-                      <span className="text-muted-foreground text-sm">{item.text}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-8">
-                <Link href="/signup" className="btn-primary inline-flex items-center gap-2">
-                  Start Learning Free <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </FadeInSection>
-
-            <FadeInSection direction="left">
-              <div className="relative">
-                {/* Mock course viewer */}
-                <div className="backdrop-blur-lg bg-white/[0.07] border border-border rounded-lg overflow-hidden shadow-2xl">
-                  {/* Title bar */}
-                  <div className="flex items-center gap-2 px-4 py-3 bg-secondary border-b border-border">
-                    <div className="w-3 h-3 rounded-full bg-red-400/60" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
-                    <div className="w-3 h-3 rounded-full bg-green-400/60" />
-                    <span className="text-white/30 text-xs ml-2">CoachNest Course Viewer</span>
-                  </div>
-                  {/* Video placeholder */}
-                  <div className="aspect-video bg-gradient-to-br from-orange-700/30 to-orange-700/30 flex items-center justify-center relative">
-                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                      <Play className="w-7 h-7 text-white ml-1" />
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
-                      <div className="h-1 flex-1 bg-secondary rounded-full overflow-hidden">
-                        <div className="h-full w-[35%] bg-gradient-to-r from-orange-600 to-orange-500 rounded-full" />
+                      <div>
+                        <h4 className="text-white font-semibold text-base mb-2">{item.title}</h4>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
                       </div>
-                      <span className="text-muted-foreground/70 text-xs">3:24 / 9:45</span>
                     </div>
                   </div>
-                  {/* Lesson info */}
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span className="text-muted-foreground text-xs">Lesson 4 of 12</span>
-                    </div>
-                    <h4 className="text-white font-semibold text-sm mb-1">Building Responsive Layouts</h4>
-                    <p className="text-white/30 text-xs">Learn CSS Grid and Flexbox to create modern, responsive designs.</p>
-                  </div>
-                </div>
-
-                {/* Floating progress card */}
-                <div className="absolute -bottom-6 -right-6 bg-card border border-border rounded-md p-4 shadow-xl w-48">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-400" />
-                    <span className="text-white text-xs font-medium">Your Progress</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden mb-1">
-                    <div className="h-full w-[68%] bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" />
-                  </div>
-                  <span className="text-muted-foreground/70 text-[10px]">68% complete</span>
-                </div>
-
-                {/* Floating certificate badge */}
-                <div className="absolute -top-4 -left-4 bg-card border border-border rounded-md p-3 shadow-xl">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-yellow-400" />
-                    <div>
-                      <p className="text-white text-[10px] font-medium">Certificate Earned!</p>
-                      <p className="text-white/30 text-[9px]">Web Dev Fundamentals</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </FadeInSection>
+                </FadeInSection>
+              );
+            })}
           </div>
+          <FadeInSection delay={0.4}>
+            <div className="mt-16 text-center">
+              <Link href="/signup" className="btn-primary px-8 py-3">
+                Start Learning For Free
+              </Link>
+            </div>
+          </FadeInSection>
         </div>
       </section>
 
@@ -851,7 +801,7 @@ export default async function HomePage() {
         </div>
       </section>
       ═══════════════════════════════════════════════════════════════════════════ */}
-      
+
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           BECOME AN INSTRUCTOR
@@ -1051,7 +1001,7 @@ export default async function HomePage() {
           FOOTER
           //<Footer />
       ═══════════════════════════════════════════════════════════════════════════ */}
-      
+
     </div>
   );
 }
