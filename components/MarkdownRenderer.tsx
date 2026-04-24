@@ -16,6 +16,8 @@
  */
 
 import { useState, useCallback, memo, ReactNode, useContext, createContext, Children, isValidElement, cloneElement } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
@@ -106,56 +108,17 @@ function vimeoId(url: string): string | null {
   return m ? m[1] : null;
 }
 
-// ─── Language → text-color mapping ─────────────────────────────────────────────
+// ─── Prism language alias normaliser ────────────────────────────────────────────
 
-const LANG_COLORS: Record<string, string> = {
-  // Web
-  javascript:  "text-yellow-300",
-  js:          "text-yellow-300",
-  jsx:         "text-yellow-300",
-  typescript:  "text-blue-400",
-  ts:          "text-blue-400",
-  tsx:         "text-blue-400",
-  html:        "text-orange-400",
-  css:         "text-purple-400",
-  scss:        "text-pink-400",
-  sass:        "text-pink-400",
-  // Backend / systems
-  python:      "text-sky-400",
-  py:          "text-sky-400",
-  java:        "text-amber-400",
-  kotlin:      "text-violet-400",
-  swift:       "text-orange-300",
-  go:          "text-cyan-400",
-  rust:        "text-orange-400",
-  cpp:         "text-blue-300",
-  c:           "text-blue-300",
-  csharp:      "text-green-400",
-  cs:          "text-green-400",
-  php:         "text-indigo-400",
-  ruby:        "text-red-400",
-  rb:          "text-red-400",
-  // Data / config
-  sql:         "text-cyan-300",
-  json:        "text-amber-300",
-  yaml:        "text-lime-400",
-  yml:         "text-lime-400",
-  toml:        "text-lime-300",
-  xml:         "text-orange-300",
-  // Shell
-  bash:        "text-emerald-400",
-  sh:          "text-emerald-400",
-  shell:       "text-emerald-400",
-  zsh:         "text-emerald-400",
-  powershell:  "text-blue-400",
-  // Markup / docs
-  markdown:    "text-slate-300",
-  md:          "text-slate-300",
-  // Default fallback handled below
+const LANG_ALIAS: Record<string, string> = {
+  js: "javascript", ts: "typescript", py: "python",
+  rb: "ruby", cs: "csharp", sh: "bash", zsh: "bash",
+  shell: "bash", yml: "yaml", md: "markdown",
 };
 
-function langColor(lang: string): string {
-  return LANG_COLORS[lang.toLowerCase()] ?? "text-slate-300";
+function normLang(lang: string): string {
+  const l = lang.toLowerCase();
+  return LANG_ALIAS[l] ?? l;
 }
 
 // ─── Sub-components ─────────────────────────────────────────────────────────────
@@ -168,11 +131,6 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [code]);
-
-  const lines = code.split("\n");
-  if (lines[lines.length - 1] === "") lines.pop();
-
-  const codeColor = langColor(lang);
 
   return (
     <div className="rounded-md overflow-hidden border border-white/[0.08] shadow-lg my-4 sm:my-5">
@@ -195,19 +153,30 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
             : <><Copy className="w-3 h-3" />Copy</>}
         </button>
       </div>
-      {/* Lines */}
-      <div className="overflow-x-auto">
-        <pre className="p-3 sm:p-4 text-[12px] sm:text-[13px] leading-relaxed font-mono">
-          {lines.map((line, i) => (
-            <div key={i} className="flex">
-              <span className="select-none text-white/[0.15] text-right w-8 mr-4 flex-shrink-0 text-xs leading-relaxed">
-                {i + 1}
-              </span>
-              <code className={cn(codeColor, "whitespace-pre")}>{line || " "}</code>
-            </div>
-          ))}
-        </pre>
-      </div>
+      {/* Syntax-highlighted code (VS Code Dark+ theme, transparent bg) */}
+      <SyntaxHighlighter
+        language={normLang(lang) || "text"}
+        style={vscDarkPlus}
+        showLineNumbers
+        wrapLongLines={false}
+        customStyle={{
+          margin: 0,
+          padding: "12px 16px",
+          background: "transparent",
+          fontSize: "13px",
+          lineHeight: "1.65",
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+        }}
+        lineNumberStyle={{
+          color: "rgba(255,255,255,0.15)",
+          minWidth: "2.25em",
+          paddingRight: "1em",
+          userSelect: "none",
+        }}
+        codeTagProps={{ style: { fontFamily: "inherit" } }}
+      >
+        {code}
+      </SyntaxHighlighter>
     </div>
   );
 }
