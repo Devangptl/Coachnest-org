@@ -10,6 +10,7 @@ import {
   Clock, CheckCircle2, XCircle, RefreshCw, Tag,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -324,13 +325,12 @@ export default function PayoutsPage() {
             <form onSubmit={handleCreateLink} className="flex flex-wrap gap-3 items-end">
               <div className="flex-1 min-w-[160px]">
                 <label className="text-xs text-muted-foreground mb-1 block">Course (optional)</label>
-                <select value={refCourse} onChange={(e) => setRefCourse(e.target.value)}
-                  className="input-glass w-full">
-                  <option value="">All my courses</option>
-                  {courses.map((c) => (
-                    <option key={c.id} value={c.id}>{c.title}</option>
-                  ))}
-                </select>
+                <Select
+                  value={refCourse}
+                  onValueChange={setRefCourse}
+                  placeholder="All my courses"
+                  options={courses.map((c) => ({ value: c.id, label: c.title }))}
+                />
               </div>
               <div className="flex-1 min-w-[160px]">
                 <label className="text-xs text-muted-foreground mb-1 block">Label (optional)</label>

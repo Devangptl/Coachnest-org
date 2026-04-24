@@ -12,6 +12,7 @@ import {
   HelpCircle, Trash2, Shield, Send, IndianRupee, Zap, Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Select";
 import XpProgressBar from "@/components/XpProgressBar";
 import StreakCounter from "@/components/StreakCounter";
 import SendNotificationModal from "../SendNotificationModal";
@@ -258,16 +259,17 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
           <div className="flex items-center gap-2 border-l border-border pl-3 ml-1">
             <Shield className="w-3.5 h-3.5 text-muted-foreground/50" />
-            <select
+            <Select
               value={currentRole}
-              onChange={(e) => handleRoleChange(e.target.value)}
+              onValueChange={handleRoleChange}
               disabled={roleLoading}
-              className="bg-secondary border border-border rounded-lg px-2.5 py-1.5 text-foreground text-xs focus:outline-none focus:border-orange-400/30 transition-all"
-            >
-              <option value="STUDENT">Student</option>
-              <option value="INSTRUCTOR">Instructor</option>
-              <option value="ADMIN">Admin</option>
-            </select>
+              options={[
+                { value: "STUDENT",    label: "Student"    },
+                { value: "INSTRUCTOR", label: "Instructor" },
+                { value: "ADMIN",      label: "Admin"      },
+              ]}
+              className="w-auto"
+            />
           </div>
 
           <div className="ml-auto">

@@ -17,6 +17,7 @@ import ImagePickerField from "@/components/ImagePickerField";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
+import { Select } from "@/components/ui/Select";
 
 export type CourseFormMode = "create" | "edit";
 
@@ -340,22 +341,16 @@ export default function CourseForm({
           {mode === "edit" ? (
             <div>
               <label className="label">Status</label>
-              <select
+              <Select
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="input-glass"
-              >
-                {(statusOptions ?? [
-                  { value: "DRAFT", label: "Draft" },
-                  { value: "PUBLISHED", label: "Published" },
+                onValueChange={setStatus}
+                options={statusOptions ?? [
+                  { value: "DRAFT",          label: "Draft"          },
+                  { value: "PUBLISHED",      label: "Published"      },
                   { value: "PENDING_REVIEW", label: "Pending Review" },
-                  { value: "ARCHIVED", label: "Archived" },
-                ]).map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
+                  { value: "ARCHIVED",       label: "Archived"       },
+                ]}
+              />
             </div>
           ) : (
             <div className="flex items-center justify-between bg-secondary border border-border rounded-md px-3 py-2.5">
@@ -439,30 +434,24 @@ export default function CourseForm({
           <div className="space-y-3">
             <div>
               <label className="label">Category</label>
-              <select
+              <Select
                 value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="input-glass"
-              >
-                <option value="">— None —</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+                onValueChange={setCategoryId}
+                placeholder="— None —"
+                options={categories.map((c) => ({ value: c.id, label: c.name }))}
+              />
             </div>
             <div>
               <label className="label">Level</label>
-              <select
+              <Select
                 value={level}
-                onChange={(e) => setLevel(e.target.value)}
-                className="input-glass"
-              >
-                <option value="beginner">Beginner</option>
-                <option value="intermediate">Intermediate</option>
-                <option value="advanced">Advanced</option>
-              </select>
+                onValueChange={setLevel}
+                options={[
+                  { value: "beginner",     label: "Beginner"     },
+                  { value: "intermediate", label: "Intermediate" },
+                  { value: "advanced",     label: "Advanced"     },
+                ]}
+              />
             </div>
             <div>
               <label className="label">Language</label>

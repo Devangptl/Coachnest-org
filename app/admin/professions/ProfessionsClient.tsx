@@ -8,6 +8,7 @@ import {
   Users, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Select";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -174,19 +175,19 @@ function ProfessionModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1 block">Icon</label>
-              <select value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground
-                           focus:outline-none focus:border-orange-400/40">
-                {ICON_OPTIONS.map((i) => <option key={i} value={i}>{i}</option>)}
-              </select>
+              <Select
+                value={form.icon}
+                onValueChange={(v) => setForm({ ...form, icon: v })}
+                options={ICON_OPTIONS.map((i) => ({ value: i, label: i }))}
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1 block">Color</label>
-              <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground
-                           focus:outline-none focus:border-orange-400/40 capitalize">
-                {COLOR_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <Select
+                value={form.color}
+                onValueChange={(v) => setForm({ ...form, color: v })}
+                options={COLOR_OPTIONS.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))}
+              />
             </div>
           </div>
 

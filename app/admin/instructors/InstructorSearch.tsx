@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Search, X } from "lucide-react";
 
 type SortKey = "newest" | "oldest" | "name" | "earnings" | "courses";
@@ -50,21 +51,18 @@ export default function InstructorSearch({
           />
         </div>
 
-        <select
+        <Select
           value={sort}
-          onChange={(e) => {
-            const next = e.target.value as SortKey;
-            setSort(next);
-            apply(search, next);
-          }}
-          className="bg-secondary border border-border rounded-md px-3 py-2.5 text-foreground text-sm focus:outline-none focus:border-orange-400/25 transition-all"
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="name">Name (A→Z)</option>
-          <option value="earnings">Highest earnings</option>
-          <option value="courses">Most courses</option>
-        </select>
+          onValueChange={(next) => { setSort(next as SortKey); apply(search, next as SortKey); }}
+          options={[
+            { value: "newest",   label: "Newest first"     },
+            { value: "oldest",   label: "Oldest first"     },
+            { value: "name",     label: "Name (A→Z)"       },
+            { value: "earnings", label: "Highest earnings" },
+            { value: "courses",  label: "Most courses"     },
+          ]}
+          className="w-auto"
+        />
 
         <Button variant="primary" size="sm" onClick={() => apply()}>
           Search
