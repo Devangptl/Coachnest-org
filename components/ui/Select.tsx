@@ -20,7 +20,7 @@ interface SelectProps {
   options?: SelectOption[];
   /** Grouped options — renders a labelled section per group */
   groups?: SelectGroup[];
-  /** Renders as the first selectable item with value="" */
+  /** Shown in the trigger when no value is selected; also adds a reset item in the dropdown */
   placeholder?: string;
   className?: string;
   disabled?: boolean;
@@ -96,8 +96,18 @@ export function Select({
           )}
         >
           <SelectPrimitive.Viewport className="p-1">
-            {/* Empty/placeholder item */}
-            {placeholder && <Item value="" label={placeholder} />}
+            {/* Reset item — Radix forbids value="", so we use a button outside SelectPrimitive.Item */}
+            {placeholder && (
+              <div
+                role="option"
+                aria-selected={value === ""}
+                onClick={() => onValueChange("")}
+                className={itemCls + (value === "" ? " text-orange-400 bg-orange-500/10" : "")}
+              >
+                <span className="flex-1">{placeholder}</span>
+                {value === "" && <Check className="ml-auto w-3.5 h-3.5 text-orange-400 flex-shrink-0" />}
+              </div>
+            )}
 
             {/* Flat options */}
             {options?.map((opt) => <Item key={opt.value} {...opt} />)}
