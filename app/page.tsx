@@ -139,102 +139,116 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION — Centered search-focused layout
+          HERO SECTION — Centered, compact, search-first
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative -mt-24 pt-24 pb-16 overflow-hidden -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-[#F4F2EE]">
-        {/* Soft radial glow behind headline */}
-        <div
-          className="absolute top-[55%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[640px] h-[380px] rounded-full pointer-events-none"
-          style={{ background: "radial-gradient(ellipse, rgba(249,115,22,0.09) 0%, transparent 70%)" }}
-        />
+      <section className="relative -mt-24 pt-24 pb-16 overflow-hidden">
+        <HeroBackground />
 
         <div className="mx-auto w-full relative z-10 py-14 lg:py-20">
-          <div className="max-w-[700px] mx-auto text-center">
+          <div className="max-w-[680px] mx-auto text-center">
 
             {/* Eyebrow badge */}
             <FadeInSection delay={0}>
-              <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/25 text-orange-600 text-xs font-semibold rounded-full px-3.5 py-1.5 mb-7">
+              <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold rounded-full px-3.5 py-1.5 mb-6">
                 <GraduationCap className="w-3.5 h-3.5" />
                 CoachNest Courses
               </div>
             </FadeInSection>
 
-            {/* Headline */}
+            {/* Headline — exactly 2 lines */}
             <FadeInSection delay={0.08}>
-              <h1 className="text-[36px] sm:text-[46px] lg:text-[52px] font-black text-gray-900 leading-[1.12] tracking-tight mb-8">
-                Access The Best Online Courses,{" "}
-                <span className="text-orange-500">Expert Instructors</span> &amp; Verified
-                Certificates On One Platform!
+              <h1 className="font-black tracking-tight leading-[1.1] mb-8">
+                <span className="block text-[36px] sm:text-[44px] lg:text-[50px] text-white">
+                  Find Expert Courses,
+                </span>
+                <span className="block text-[36px] sm:text-[44px] lg:text-[50px] text-orange-400">
+                  Build Skills That Matter.
+                </span>
               </h1>
             </FadeInSection>
 
-            {/* Category tab — floats above search card */}
+            {/* Tab pill — sits flush on top of the search bar */}
             <FadeInSection delay={0.14}>
               <div className="flex justify-center -mb-px relative z-10">
-                <div className="inline-flex items-center gap-2 bg-white border border-gray-200 border-b-white rounded-t-xl px-5 py-2 text-sm text-gray-700 font-semibold shadow-sm">
+                <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-t-xl px-5 py-2 text-sm text-gray-700 font-semibold shadow-sm"
+                  style={{ borderBottomColor: "white" }}>
                   <BookOpen className="w-3.5 h-3.5 text-orange-500" />
                   Courses
                 </div>
               </div>
             </FadeInSection>
 
-            {/* Search card */}
+            {/* ── Unified search bar ─────────────────────────────────────── */}
             <FadeInSection delay={0.2}>
               <form action="/courses" method="GET" className="mb-5">
-                <div className="bg-white rounded-2xl shadow-[0_4px_32px_rgba(0,0,0,0.10)] border border-gray-200/80 p-3">
-                  <div className="flex flex-col sm:flex-row gap-2">
+                <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col sm:flex-row border border-gray-200/60">
 
-                    {/* Category */}
-                    <div className="relative flex-1">
-                      <select
-                        name="category"
-                        className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-500 text-sm rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400/20 transition-all cursor-pointer"
-                      >
-                        <option value="">Select Category</option>
-                        {categories.length > 0
-                          ? categories.map((cat) => (
-                              <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-                            ))
-                          : [
-                              ["web-development", "Web Development"],
-                              ["ai",              "AI & ML"          ],
-                              ["design",          "UI/UX Design"     ],
-                              ["database",        "Databases"        ],
-                            ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                      <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
-                    </div>
-
-                    {/* Level */}
-                    <div className="relative flex-1">
-                      <select
-                        name="level"
-                        className="w-full appearance-none bg-gray-50 border border-gray-200 text-gray-500 text-sm rounded-lg pl-3 pr-8 py-2.5 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400/20 transition-all cursor-pointer"
-                      >
-                        <option value="">Select Level</option>
-                        <option value="BEGINNER">Beginner</option>
-                        <option value="INTERMEDIATE">Intermediate</option>
-                        <option value="ADVANCED">Advanced</option>
-                      </select>
-                      <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
-                    </div>
-
-                    {/* Keyword */}
-                    <input
-                      type="text"
-                      name="q"
-                      placeholder="Enter Keyword (Optional)"
-                      className="flex-[1.4] bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg px-3 py-2.5 placeholder-gray-400 focus:outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400/20 transition-all"
-                    />
-
-                    {/* Search button */}
-                    <button
-                      type="submit"
-                      className="bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-sm px-8 py-2.5 rounded-lg transition-all shadow-md shadow-orange-500/25 whitespace-nowrap active:scale-[0.98]"
+                  {/* Select Category */}
+                  <div className="relative flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-gray-200">
+                    <select
+                      name="category"
+                      className="w-full appearance-none bg-transparent text-gray-500 text-sm pl-4 pr-9 py-4 focus:outline-none cursor-pointer"
                     >
-                      Search
-                    </button>
+                      <option value="">Select Category</option>
+                      {categories.length > 0
+                        ? categories.map((cat) => (
+                            <option key={cat.slug} value={cat.slug}>{cat.name}</option>
+                          ))
+                        : [
+                            ["web-development", "Web Development"],
+                            ["ai",              "AI & ML"         ],
+                            ["design",          "UI/UX Design"    ],
+                            ["database",        "Databases"       ],
+                          ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
+                    </select>
+                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
                   </div>
+
+                  {/* Select Level */}
+                  <div className="relative flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-gray-200">
+                    <select
+                      name="level"
+                      className="w-full appearance-none bg-transparent text-gray-500 text-sm pl-4 pr-9 py-4 focus:outline-none cursor-pointer"
+                    >
+                      <option value="">Select Level</option>
+                      <option value="BEGINNER">Beginner</option>
+                      <option value="INTERMEDIATE">Intermediate</option>
+                      <option value="ADVANCED">Advanced</option>
+                    </select>
+                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
+                  </div>
+
+                  {/* Select Subject */}
+                  <div className="relative flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-gray-200">
+                    <select
+                      name="subject"
+                      className="w-full appearance-none bg-transparent text-gray-500 text-sm pl-4 pr-9 py-4 focus:outline-none cursor-pointer"
+                    >
+                      <option value="">Select Subject(s)</option>
+                      <option value="react">React</option>
+                      <option value="python">Python</option>
+                      <option value="javascript">JavaScript</option>
+                      <option value="machine-learning">Machine Learning</option>
+                      <option value="system-design">System Design</option>
+                    </select>
+                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
+                  </div>
+
+                  {/* Keyword input */}
+                  <input
+                    type="text"
+                    name="q"
+                    placeholder="Enter Keyword (Optional)"
+                    className="flex-[1.2] bg-transparent text-gray-700 text-sm pl-4 pr-3 py-4 placeholder-gray-400 focus:outline-none border-b sm:border-b-0 border-gray-200"
+                  />
+
+                  {/* Search button */}
+                  <button
+                    type="submit"
+                    className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold text-sm px-8 py-4 transition-colors whitespace-nowrap"
+                  >
+                    Search
+                  </button>
                 </div>
               </form>
             </FadeInSection>
@@ -242,18 +256,18 @@ export default async function HomePage() {
             {/* Popular search tags */}
             <FadeInSection delay={0.28}>
               <div className="flex flex-wrap items-center justify-center gap-2">
-                <span className="text-gray-500 text-sm font-medium mr-1">Popular Searches:</span>
+                <span className="text-white/40 text-sm font-medium mr-0.5">Popular Searches:</span>
                 {[
-                  { label: "Mathematics",              q: "mathematics"   },
-                  { label: "Engineering",              q: "engineering"   },
-                  { label: "AI & ML",                  q: "ai"            },
-                  { label: "Full-Stack Dev",            q: "full-stack"    },
-                  { label: "Artificial Intelligence",  q: "artificial-intelligence" },
+                  { label: "Mathematics",             q: "mathematics"          },
+                  { label: "Basic Math",              q: "basic-math"           },
+                  { label: "Engineering",             q: "engineering"          },
+                  { label: "AI & ML",                 q: "ai"                   },
+                  { label: "Artificial Intelligence (All)", q: "artificial-intelligence" },
                 ].map(({ label, q }) => (
                   <Link
                     key={label}
                     href={`/courses?q=${encodeURIComponent(q)}`}
-                    className="text-xs text-orange-600 hover:text-orange-700 bg-orange-50 hover:bg-orange-100 border border-orange-200/70 rounded-full px-3 py-1 font-medium transition-colors"
+                    className="text-xs text-white/60 hover:text-orange-400 bg-white/[0.06] hover:bg-orange-500/10 border border-white/[0.09] hover:border-orange-500/20 rounded-full px-3 py-1 font-medium transition-all"
                   >
                     {label}
                   </Link>
