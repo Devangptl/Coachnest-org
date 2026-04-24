@@ -148,7 +148,7 @@ export default function EnrollButton({
         </div>
         <Link
           href={lessonHref}
-          className="flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white text-sm font-semibold px-4 py-2.5 rounded-md transition-all shadow-lg shadow-orange-600/20"
+          className="btn-primary px-4 py-2.5 font-semibold"
         >
           <PlayCircle className="w-4 h-4 flex-shrink-0" />
           Continue Learning
@@ -259,7 +259,7 @@ export default function EnrollButton({
       <button
         onClick={handleEnroll}
         disabled={loading}
-        className="w-full sm:w-auto h-[46px] relative overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-500 text-white font-semibold px-6 rounded-md flex items-center justify-center gap-2 transition-all shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 disabled:opacity-70 disabled:cursor-not-allowed group active:scale-[0.98] flex-shrink-0"
+        className="w-full sm:w-auto h-[46px] relative overflow-hidden btn-primary px-6 font-semibold disabled:opacity-70 disabled:cursor-not-allowed group active:scale-[0.98] flex-shrink-0"
       >
         <span className="relative flex items-center justify-center gap-2 z-10 w-full whitespace-nowrap">
           {loading ? (

@@ -183,7 +183,7 @@ export default async function HomePage() {
               <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/signup"
-                  className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white text-sm px-5 py-2 rounded-md font-medium transition-colors"
+                  className="btn-primary"
                 >
                   Start your project
                 </Link>
