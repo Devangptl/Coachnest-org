@@ -139,209 +139,134 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION — Dark 3-column layout (reference design, project-compatible)
+          HERO SECTION — Modern 2-column, left-primary layout
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative -mt-24 pt-24 pb-10 overflow-hidden">
+      <section className="relative -mt-24 pt-24 pb-14 overflow-hidden">
         <HeroBackground />
 
-        <div className="mx-auto w-full relative z-10 py-8">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.85fr_0.8fr] gap-4 lg:gap-5 items-start">
+        <div className="mx-auto w-full relative z-10 py-10 lg:py-14">
+          <div className="grid lg:grid-cols-[1fr_0.9fr] gap-10 lg:gap-16 items-center">
 
-            {/* ── LEFT: Headline + description + course list + CTA ─────── */}
+            {/* ── LEFT: Primary content ─────────────────────────────────── */}
             <FadeInSection delay={0}>
-              <div className="flex flex-col pt-2">
+              <div className="max-w-[540px]">
 
-                {/* Headline */}
-                <h1 className="text-4xl sm:text-5xl xl:text-[56px] font-black text-white leading-[1.0] tracking-tight">
-                  Master Skills at Your Own Pace.
+                {/* Eyebrow badge */}
+                <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold rounded-full px-3.5 py-1.5 mb-6">
+                  <Sparkles className="w-3 h-3" />
+                  CoachNest 2.0 · AI-powered learning
+                </div>
+
+                {/* Headline — two-tone, tight */}
+                <h1 className="font-black tracking-tight leading-[1.0] mb-5">
+                  <span className="block text-[48px] sm:text-[54px] lg:text-[58px] text-white">
+                    Build Tech Skills
+                  </span>
+                  <span className="block text-[48px] sm:text-[54px] lg:text-[58px] bg-clip-text text-transparent bg-gradient-to-r from-orange-400 via-orange-500 to-amber-400">
+                    That Get You Hired.
+                  </span>
                 </h1>
 
-                {/* Circle arrow + description */}
-                <div className="flex items-start gap-3.5 mt-5">
-                  <div className="w-9 h-9 rounded-full bg-white/[0.07] border border-white/[0.12] flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <ArrowLeft className="w-3.5 h-3.5 text-white/60" />
-                  </div>
-                  <p className="text-sm text-white/45 leading-relaxed max-w-xs">
-                    <strong className="text-white/75 font-medium">&apos;Master Skills at Your Own Pace&apos;</strong> is a transformative experience, seamlessly integrating learning into the digital age.
-                  </p>
+                {/* Description */}
+                <p className="text-[15px] text-white/50 leading-relaxed mb-7 max-w-[440px]">
+                  Expert-led courses in engineering, full-stack dev, AI &amp; ML — with
+                  interactive coding environments, hands-on projects, and industry-verified
+                  certificates.
+                </p>
+
+                {/* CTA row */}
+                <div className="flex flex-wrap items-center gap-3 mb-5">
+                  <Link
+                    href="/signup"
+                    className="inline-flex items-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-semibold text-sm px-6 py-2.5 rounded-lg shadow-lg shadow-orange-600/25 transition-all hover:-translate-y-0.5 active:translate-y-0"
+                  >
+                    Get started free <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
+                  <Link
+                    href="/courses"
+                    className="inline-flex items-center gap-2 bg-white/[0.05] border border-white/[0.10] text-white/70 hover:text-white hover:bg-white/[0.08] font-medium text-sm px-5 py-2.5 rounded-lg transition-all"
+                  >
+                    <Play className="w-3.5 h-3.5 text-orange-400" /> Browse courses
+                  </Link>
                 </div>
 
-                {/* Date row */}
-                <div className="flex items-center gap-3 mt-4 py-2.5 border-t border-b border-white/[0.07]">
-                  <span className="text-sm font-semibold text-white/65">Thursday 09 November</span>
-                  <div className="w-5 h-5 border border-white/20 rounded-[3px] text-[10px] text-white/30 flex items-center justify-center">⊞</div>
-                  <ArrowRight className="w-3.5 h-3.5 text-white/25 ml-auto" />
-                </div>
-
-                {/* Numbered course list */}
-                <div className="mt-4 space-y-2">
+                {/* Trust signals */}
+                <div className="flex flex-wrap items-center gap-4 text-xs text-white/30 mb-8">
                   {[
-                    { n: "01", name: "Unlocking Creativity",   hasStack: true  },
-                    { n: "02", name: "Engineering Essentials", hasStack: false },
-                    { n: "03", name: "The Science of Success", hasStack: false },
-                    { n: "04", name: "Full-Stack Mastery",     hasStack: false },
-                    { n: "05", name: "AI & Machine Learning",  hasStack: false },
-                  ].map((item) => (
-                    <div key={item.n} className="flex items-center gap-2.5 group cursor-pointer">
-                      {item.hasStack && (
-                        <div className="flex -space-x-1.5 mr-0.5">
-                          <div className="w-[15px] h-[17px] rounded-[3px] bg-orange-500/60" />
-                          <div className="w-[15px] h-[17px] rounded-[3px] bg-orange-400/40" />
-                          <div className="w-[15px] h-[17px] rounded-[3px] bg-orange-300/25" />
-                        </div>
-                      )}
-                      <span className="text-[13px] text-white/55 group-hover:text-white/90 transition-colors">
-                        {item.name}
-                      </span>
-                      <span className="text-[10px] text-white/22 font-light">{item.n}.</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* CTA button */}
-                <Link
-                  href="/courses"
-                  className="mt-6 self-start inline-flex items-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold px-6 py-3 rounded-full transition-all shadow-lg shadow-orange-600/25 group"
-                >
-                  Start Exploring!
-                  <span className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                    <ArrowRight className="w-3 h-3" />
-                  </span>
-                </Link>
-
-                {/* Featured course card */}
-                <div className="mt-4 bg-white/[0.04] border border-white/[0.07] rounded-xl p-4 hover:bg-white/[0.06] transition-colors">
-                  <h3 className="text-white/85 font-semibold text-sm leading-snug">
-                    <span className="border-b-2 border-orange-500 pb-0.5">Mastering the Art</span> of Digital Marketing
-                  </h3>
-                  <p className="text-white/35 text-xs mt-1">A Comprehensive Course</p>
-                </div>
-              </div>
-            </FadeInSection>
-
-            {/* ── CENTER: Large visual + floating cards ────────────────── */}
-            <FadeInSection delay={0.15}>
-              <div className="hidden lg:flex flex-col gap-2.5">
-
-                {/* Top card */}
-                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-3.5 backdrop-blur-sm">
-                  <div className="flex gap-2.5 mb-2 text-white/25">
-                    <Star     className="w-[15px] h-[15px]" />
-                    <BookOpen className="w-[15px] h-[15px]" />
-                    <Award    className="w-[15px] h-[15px]" />
-                  </div>
-                  <p className="text-[12px] font-semibold text-white/80 leading-snug">
-                    Excel with Cutting-<br />edge Courses.
-                  </p>
-                </div>
-
-                {/* Main visual card */}
-                <div
-                  className="rounded-[20px] overflow-hidden relative bg-gradient-to-b from-zinc-800/70 to-zinc-900/80 border border-white/[0.06]"
-                  style={{ minHeight: "268px" }}
-                >
-                  {/* Glow orbs */}
-                  <div className="absolute top-8 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-orange-500/10 blur-xl" />
-                  <div className="absolute top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full bg-orange-500/15" />
-
-                  {/* Instructor avatar */}
-                  <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/40 ring-2 ring-orange-500/30">
-                      <GraduationCap className="w-9 h-9 text-white" />
-                    </div>
-                    <div className="bg-white/[0.08] backdrop-blur-sm border border-white/[0.10] rounded-full px-3 py-0.5 text-[10px] font-semibold text-white/65">
-                      Top Instructor
-                    </div>
-                  </div>
-
-                  {/* Enrollment stat card */}
-                  <div className="absolute bottom-[72px] left-3 right-3 bg-orange-950/50 backdrop-blur-md border border-orange-700/25 rounded-xl p-3 z-10">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <p className="text-xl font-black text-white">
-                          {stats.enrollmentCount > 99
-                            ? `${(stats.enrollmentCount / 1000).toFixed(1)}K`
-                            : "20.4K"}
-                        </p>
-                        <p className="text-[10px] text-white/45 mt-0.5">People completed a course today</p>
-                      </div>
-                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-orange-500/30">
-                        <Users className="w-4 h-4 text-white" />
-                      </div>
-                    </div>
-                    <Link
-                      href="/courses"
-                      className="mt-2 inline-block text-[10px] bg-white/10 hover:bg-white/15 text-white/60 px-3 py-0.5 rounded-full font-medium transition-colors"
-                    >
-                      Browse Courses
-                    </Link>
-                  </div>
-                </div>
-
-                {/* Bottom card */}
-                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-3.5 backdrop-blur-sm">
-                  <div className="flex items-center gap-1.5 mb-1.5">
-                    <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center">
-                      <GraduationCap className="w-3 h-3 text-white/45" />
-                    </div>
-                    <span className="text-[9px] text-white/40 bg-white/[0.06] rounded-full px-2 py-0.5 font-medium">
-                      Learning
+                    "No credit card required",
+                    "Lifetime access",
+                    "Free plan available",
+                  ].map((t) => (
+                    <span key={t} className="flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500/70 flex-shrink-0" />
+                      {t}
                     </span>
-                  </div>
-                  <p className="text-[12px] font-semibold text-white/80">Education for the Digital Age.</p>
+                  ))}
                 </div>
+
+                {/* Social proof + quick stats */}
+                <div className="flex flex-wrap items-center gap-5 pt-6 border-t border-white/[0.07]">
+                  {/* Avatar stack + rating */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex -space-x-2.5">
+                      {[
+                        { l: "A", c: "from-blue-500   to-cyan-500"   },
+                        { l: "B", c: "from-emerald-500 to-teal-500"  },
+                        { l: "C", c: "from-orange-500 to-red-500"    },
+                        { l: "D", c: "from-purple-500 to-pink-500"   },
+                      ].map((av, i) => (
+                        <div
+                          key={i}
+                          className={`w-7 h-7 rounded-full border-2 border-black/40 bg-gradient-to-br ${av.c} flex items-center justify-center text-white text-[10px] font-bold shadow`}
+                          style={{ zIndex: 10 - i }}
+                        >
+                          {av.l}
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-0.5 mb-0.5">
+                        {[1,2,3,4,5].map((i) => (
+                          <Star key={i} className="w-3 h-3 text-orange-400 fill-orange-400" />
+                        ))}
+                        <span className="text-white text-xs font-semibold ml-1">4.9</span>
+                      </div>
+                      <p className="text-white/35 text-[11px]">
+                        Trusted by{" "}
+                        <span className="text-white/60 font-medium">15,000+</span> developers
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="h-7 w-px bg-white/[0.08] hidden sm:block" />
+
+                  {/* Quick stat pills */}
+                  {[
+                    { val: Math.max(stats.courseCount,    20)  + "+", label: "Courses"     },
+                    { val: Math.max(stats.enrollmentCount, 299) + "+", label: "Enrollments" },
+                    { val: Math.max(stats.studentCount,    99)  + "+", label: "Students"    },
+                  ].map(({ val, label }) => (
+                    <div key={label} className="text-center hidden sm:block">
+                      <p className="text-[15px] font-bold text-white leading-none">{val}</p>
+                      <p className="text-[10px] text-white/35 mt-0.5">{label}</p>
+                    </div>
+                  ))}
+                </div>
+
               </div>
             </FadeInSection>
 
-            {/* ── RIGHT: Student grid + tagline ────────────────────────── */}
-            <FadeInSection delay={0.25} direction="left">
-              <div className="hidden lg:flex flex-col gap-4 pt-2">
-
-                {/* 2×2 learner cards grid */}
-                <div className="grid grid-cols-2 gap-1.5 rounded-2xl overflow-hidden p-1.5 bg-white/[0.03] border border-white/[0.06]">
-                  {[
-                    { name: "Freya",  bg: "bg-orange-500/15",  dot: "bg-orange-400/40" },
-                    { name: "Xavier", bg: "bg-purple-500/15",  dot: "bg-purple-400/35" },
-                    { name: "Ixyin",  bg: "bg-cyan-500/10",    dot: "bg-cyan-400/30"   },
-                  ].map((s) => (
-                    <div
-                      key={s.name}
-                      className={`${s.bg} h-[112px] rounded-xl relative flex items-end p-2.5 overflow-hidden border border-white/[0.05]`}
-                    >
-                      <div className={`absolute top-2.5 right-2.5 w-7 h-7 rounded-full ${s.dot}`} />
-                      <div className={`absolute top-5.5 right-5 w-3.5 h-3.5 rounded-full ${s.dot} opacity-50`} />
-                      <span className="relative z-10 text-[10px] font-medium bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-full text-white/75">
-                        {s.name}
-                      </span>
-                    </div>
-                  ))}
-                  {/* Community count cell */}
-                  <div className="bg-white/[0.03] h-[112px] rounded-xl overflow-hidden flex flex-col items-center justify-center border border-white/[0.05]">
-                    <p className="text-xl font-black text-white/50 leading-none">+</p>
-                    <p className="text-lg font-black text-white/50 leading-tight">
-                      {stats.studentCount > 999
-                        ? `${Math.floor(stats.studentCount / 1000)}k`
-                        : "12k"}
-                    </p>
-                    <p className="text-[9px] text-white/30 font-medium">students</p>
-                  </div>
-                </div>
-
-                {/* Secondary tagline */}
-                <div>
-                  <h2 className="text-[26px] xl:text-[30px] font-bold text-white leading-tight">
-                    The <span className="text-orange-400">Course</span> Revolution in Education.
-                  </h2>
-                  <p className="text-sm text-white/40 mt-2.5 leading-relaxed">
-                    Education becomes a personalized adventure at the touch of a screen.
-                  </p>
-                </div>
+            {/* ── RIGHT: Interactive course showcase ───────────────────── */}
+            <FadeInSection delay={0.2} direction="left">
+              <div className="hidden lg:block">
+                <HeroShowcase />
               </div>
             </FadeInSection>
 
           </div>
         </div>
       </section>
+
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           TRUSTED BY / SOCIAL PROOF BAR
