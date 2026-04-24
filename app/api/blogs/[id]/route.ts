@@ -35,7 +35,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
     const { id } = await ctx.params;
     const body = await req.json();
-    const { title, excerpt, content, thumbnail, tags, published } = body;
+    const { title, slug: rawSlug, excerpt, content, thumbnail, tags, published } = body;
 
     const existing = await prisma.blog.findUnique({ where: { id } });
     if (!existing) return NextResponse.json({ error: "Not found." }, { status: 404 });
@@ -44,10 +44,21 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
     if (title && title !== existing.title) {
       data.title = title;
-      let slug = slugify(title, { lower: true, strict: true });
-      const dup = await prisma.blog.findUnique({ where: { slug } });
-      if (dup && dup.id !== id) slug = `${slug}-${Date.now().toString(36)}`;
-      data.slug = slug;
+    }
+
+    // Recompute slug if the client provided one, or if the title changed and
+    // no explicit slug was supplied.
+    const wantsSlugUpdate =
+      (typeof rawSlug === "string" && rawSlug.trim()) ||
+      (title && title !== existing.title);
+    if (wantsSlugUpdate) {
+      const source = rawSlug && String(rawSlug).trim() ? String(rawSlug) : title;
+      let slug = slugify(source, { lower: true, strict: true });
+      if (slug && slug !== existing.slug) {
+        const dup = await prisma.blog.findUnique({ where: { slug } });
+        if (dup && dup.id !== id) slug = `${slug}-${Date.now().toString(36)}`;
+        data.slug = slug;
+      }
     }
 
     if (excerpt !== undefined) data.excerpt = excerpt || null;

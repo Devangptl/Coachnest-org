@@ -16,6 +16,7 @@ export default async function EditBlogPage({ params }: Props) {
       blog={{
         id: blog.id,
         title: blog.title,
+        slug: blog.slug,
         excerpt: blog.excerpt ?? "",
         content: blog.content,
         thumbnail: blog.thumbnail ?? "",

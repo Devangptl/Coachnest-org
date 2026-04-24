@@ -53,13 +53,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const { title, excerpt, content, thumbnail, tags, published } = await req.json();
+    const { title, slug: rawSlug, excerpt, content, thumbnail, tags, published } = await req.json();
 
     if (!title || !content) {
       return NextResponse.json({ error: "Title and content are required." }, { status: 400 });
     }
 
-    let slug = slugify(title, { lower: true, strict: true });
+    const baseSlug = rawSlug
+      ? slugify(String(rawSlug), { lower: true, strict: true })
+      : slugify(title, { lower: true, strict: true });
+    let slug = baseSlug || slugify(title, { lower: true, strict: true });
     const existing = await prisma.blog.findUnique({ where: { slug } });
     if (existing) slug = `${slug}-${Date.now().toString(36)}`;
 
