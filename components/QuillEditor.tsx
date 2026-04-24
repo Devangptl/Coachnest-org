@@ -11,6 +11,12 @@ interface QuillEditorProps {
   /** Minimum editor height in pixels (default 280) */
   minHeight?: number;
   className?: string;
+  /**
+   * Called when the toolbar image button is pressed. Return the image URL to
+   * insert (or null/undefined to cancel). When omitted, Quill falls back to
+   * its built-in OS file picker + base64 embed.
+   */
+  onPickImage?: () => Promise<string | null | undefined>;
 }
 
 const TOOLBAR = [
@@ -102,14 +108,17 @@ export default function QuillEditor({
   placeholder = "Start writing…",
   minHeight = 280,
   className,
+  onPickImage,
 }: QuillEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const quillRef = useRef<any>(null);
   const onChangeRef = useRef(onChange);
+  const onPickImageRef = useRef(onPickImage);
   const isInternalChange = useRef(false);
 
   onChangeRef.current = onChange;
+  onPickImageRef.current = onPickImage;
 
   useEffect(() => {
     if (quillRef.current || !containerRef.current) return;
@@ -117,11 +126,34 @@ export default function QuillEditor({
     (async () => {
       const { default: Quill } = await import("quill");
 
+      const imageHandler = async function (this: { quill: { getSelection: () => { index: number } | null; insertEmbed: (i: number, t: string, v: unknown, s: string) => void; setSelection: (i: number, l?: number) => void } }) {
+        const pick = onPickImageRef.current;
+        if (!pick) {
+          // No custom picker — let Quill run its default handler. Because we
+          // registered our own handler, we need to emulate the default (file
+          // picker + base64 insert). Simplest: prompt for URL.
+          const url = window.prompt("Image URL");
+          if (!url) return;
+          const range = this.quill.getSelection() || { index: this.quill.getSelection()?.index ?? 0 };
+          this.quill.insertEmbed(range.index, "image", url, "user");
+          this.quill.setSelection(range.index + 1, 0);
+          return;
+        }
+        const url = await pick();
+        if (!url) return;
+        const range = this.quill.getSelection() || { index: 0 };
+        this.quill.insertEmbed(range.index, "image", url, "user");
+        this.quill.setSelection(range.index + 1, 0);
+      };
+
       const quill = new Quill(containerRef.current!, {
         theme: "snow",
         placeholder,
         modules: {
-          toolbar: TOOLBAR,
+          toolbar: {
+            container: TOOLBAR,
+            handlers: { image: imageHandler },
+          },
           keyboard: { bindings: MARKDOWN_BINDINGS },
         },
       });
