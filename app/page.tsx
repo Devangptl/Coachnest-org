@@ -139,61 +139,61 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION — Light 3-column layout (EduFest reference design)
+          HERO SECTION — Dark 3-column layout (reference design, project-compatible)
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-screen -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-[#EFEDE8] -mt-24 pt-24 pb-10 overflow-hidden">
-        <div className="mx-auto w-full py-10">
-          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr_0.8fr] gap-5 lg:gap-6 items-start">
+      <section className="relative -mt-24 pt-24 pb-10 overflow-hidden">
+        <HeroBackground />
+
+        <div className="mx-auto w-full relative z-10 py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.85fr_0.8fr] gap-4 lg:gap-5 items-start">
 
             {/* ── LEFT: Headline + description + course list + CTA ─────── */}
             <FadeInSection delay={0}>
-              <div className="flex flex-col pt-4">
+              <div className="flex flex-col pt-2">
 
-                {/* Giant headline */}
-                <h1 className="text-5xl sm:text-[60px] xl:text-[70px] font-black text-gray-900 leading-[1.02] tracking-tight">
+                {/* Headline */}
+                <h1 className="text-4xl sm:text-5xl xl:text-[56px] font-black text-white leading-[1.0] tracking-tight">
                   Master Skills at Your Own Pace.
                 </h1>
 
                 {/* Circle arrow + description */}
-                <div className="flex items-start gap-4 mt-7">
-                  <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-md">
-                    <ArrowLeft className="w-4 h-4 text-white" />
+                <div className="flex items-start gap-3.5 mt-5">
+                  <div className="w-9 h-9 rounded-full bg-white/[0.07] border border-white/[0.12] flex items-center justify-center flex-shrink-0 mt-0.5">
+                    <ArrowLeft className="w-3.5 h-3.5 text-white/60" />
                   </div>
-                  <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
-                    <strong className="text-gray-700 font-semibold">&apos;Master Skills at Your Own Pace&apos;</strong> is a transformative experience, seamlessly integrating learning into the digital age.
+                  <p className="text-sm text-white/45 leading-relaxed max-w-xs">
+                    <strong className="text-white/75 font-medium">&apos;Master Skills at Your Own Pace&apos;</strong> is a transformative experience, seamlessly integrating learning into the digital age.
                   </p>
                 </div>
 
                 {/* Date row */}
-                <div className="flex items-center gap-3 mt-6 py-3 border-t border-b border-gray-300/80">
-                  <span className="text-sm font-semibold text-gray-800">Thursday 09 November</span>
-                  <div className="w-5 h-5 border border-gray-400 rounded-[3px] text-[11px] text-gray-400 flex items-center justify-center">
-                    ⊞
-                  </div>
-                  <ArrowRight className="w-4 h-4 text-gray-400 ml-auto" />
+                <div className="flex items-center gap-3 mt-4 py-2.5 border-t border-b border-white/[0.07]">
+                  <span className="text-sm font-semibold text-white/65">Thursday 09 November</span>
+                  <div className="w-5 h-5 border border-white/20 rounded-[3px] text-[10px] text-white/30 flex items-center justify-center">⊞</div>
+                  <ArrowRight className="w-3.5 h-3.5 text-white/25 ml-auto" />
                 </div>
 
                 {/* Numbered course list */}
-                <div className="mt-5 space-y-3">
+                <div className="mt-4 space-y-2">
                   {[
-                    { n: "01", name: "Unlocking Creativity",    hasStack: true },
-                    { n: "02", name: "Engineering Essentials",  hasStack: false },
-                    { n: "03", name: "The Science of Success",  hasStack: false },
-                    { n: "04", name: "Full-Stack Mastery",      hasStack: false },
-                    { n: "05", name: "AI & Machine Learning",   hasStack: false },
+                    { n: "01", name: "Unlocking Creativity",   hasStack: true  },
+                    { n: "02", name: "Engineering Essentials", hasStack: false },
+                    { n: "03", name: "The Science of Success", hasStack: false },
+                    { n: "04", name: "Full-Stack Mastery",     hasStack: false },
+                    { n: "05", name: "AI & Machine Learning",  hasStack: false },
                   ].map((item) => (
                     <div key={item.n} className="flex items-center gap-2.5 group cursor-pointer">
                       {item.hasStack && (
                         <div className="flex -space-x-1.5 mr-0.5">
-                          <div className="w-[18px] h-[20px] rounded-[3px] bg-amber-400/80" />
-                          <div className="w-[18px] h-[20px] rounded-[3px] bg-amber-300/60" />
-                          <div className="w-[18px] h-[20px] rounded-[3px] bg-amber-200/50" />
+                          <div className="w-[15px] h-[17px] rounded-[3px] bg-orange-500/60" />
+                          <div className="w-[15px] h-[17px] rounded-[3px] bg-orange-400/40" />
+                          <div className="w-[15px] h-[17px] rounded-[3px] bg-orange-300/25" />
                         </div>
                       )}
-                      <span className="text-[14px] text-gray-600 group-hover:text-gray-900 transition-colors">
+                      <span className="text-[13px] text-white/55 group-hover:text-white/90 transition-colors">
                         {item.name}
                       </span>
-                      <span className="text-[11px] text-gray-400 font-light">{item.n}.</span>
+                      <span className="text-[10px] text-white/22 font-light">{item.n}.</span>
                     </div>
                   ))}
                 </div>
@@ -201,7 +201,7 @@ export default async function HomePage() {
                 {/* CTA button */}
                 <Link
                   href="/courses"
-                  className="mt-8 self-start inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-7 py-3.5 rounded-full transition-all shadow-lg shadow-gray-900/20 group"
+                  className="mt-6 self-start inline-flex items-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold px-6 py-3 rounded-full transition-all shadow-lg shadow-orange-600/25 group"
                 >
                   Start Exploring!
                   <span className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
@@ -210,130 +210,129 @@ export default async function HomePage() {
                 </Link>
 
                 {/* Featured course card */}
-                <div className="mt-5 bg-white rounded-2xl p-5 shadow-sm border border-gray-100/80 hover:shadow-md transition-shadow">
-                  <h3 className="text-gray-900 font-semibold text-[15px] leading-snug">
+                <div className="mt-4 bg-white/[0.04] border border-white/[0.07] rounded-xl p-4 hover:bg-white/[0.06] transition-colors">
+                  <h3 className="text-white/85 font-semibold text-sm leading-snug">
                     <span className="border-b-2 border-orange-500 pb-0.5">Mastering the Art</span> of Digital Marketing
                   </h3>
-                  <p className="text-gray-400 text-xs mt-1.5">A Comprehensive Course</p>
+                  <p className="text-white/35 text-xs mt-1">A Comprehensive Course</p>
                 </div>
               </div>
             </FadeInSection>
 
             {/* ── CENTER: Large visual + floating cards ────────────────── */}
             <FadeInSection delay={0.15}>
-              <div className="hidden lg:flex flex-col gap-3 h-full">
+              <div className="hidden lg:flex flex-col gap-2.5">
 
-                {/* Top floating card */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <div className="flex gap-3 mb-2 text-gray-300">
-                    <Star   className="w-[17px] h-[17px]" />
-                    <BookOpen className="w-[17px] h-[17px]" />
-                    <Award  className="w-[17px] h-[17px]" />
+                {/* Top card */}
+                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-3.5 backdrop-blur-sm">
+                  <div className="flex gap-2.5 mb-2 text-white/25">
+                    <Star     className="w-[15px] h-[15px]" />
+                    <BookOpen className="w-[15px] h-[15px]" />
+                    <Award    className="w-[15px] h-[15px]" />
                   </div>
-                  <p className="text-[13px] font-semibold text-gray-800 leading-snug">
+                  <p className="text-[12px] font-semibold text-white/80 leading-snug">
                     Excel with Cutting-<br />edge Courses.
                   </p>
                 </div>
 
-                {/* Main large visual */}
-                <div className="flex-1 rounded-[24px] overflow-hidden relative bg-gradient-to-b from-stone-200 via-stone-200 to-stone-300" style={{ minHeight: "360px" }}>
-                  {/* Warm decorative orbs */}
-                  <div className="absolute top-10 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full bg-orange-200/50" />
-                  <div className="absolute top-14 left-1/2 -translate-x-1/2 w-36 h-36 rounded-full bg-orange-300/35" />
+                {/* Main visual card */}
+                <div
+                  className="rounded-[20px] overflow-hidden relative bg-gradient-to-b from-zinc-800/70 to-zinc-900/80 border border-white/[0.06]"
+                  style={{ minHeight: "268px" }}
+                >
+                  {/* Glow orbs */}
+                  <div className="absolute top-8 left-1/2 -translate-x-1/2 w-40 h-40 rounded-full bg-orange-500/10 blur-xl" />
+                  <div className="absolute top-12 left-1/2 -translate-x-1/2 w-24 h-24 rounded-full bg-orange-500/15" />
 
                   {/* Instructor avatar */}
-                  <div className="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2.5 z-10">
-                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/40 ring-4 ring-white/60">
-                      <GraduationCap className="w-11 h-11 text-white" />
+                  <div className="absolute top-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 z-10">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/40 ring-2 ring-orange-500/30">
+                      <GraduationCap className="w-9 h-9 text-white" />
                     </div>
-                    <div className="bg-white/90 backdrop-blur-sm rounded-full px-3.5 py-1 text-[11px] font-semibold text-gray-700 shadow-sm">
+                    <div className="bg-white/[0.08] backdrop-blur-sm border border-white/[0.10] rounded-full px-3 py-0.5 text-[10px] font-semibold text-white/65">
                       Top Instructor
                     </div>
                   </div>
 
-                  {/* Peach stat card */}
-                  <div className="absolute bottom-[90px] left-4 right-4 bg-[#F0C4A0]/95 backdrop-blur-sm rounded-xl p-4 shadow-md z-10">
-                    <div className="flex items-end justify-between gap-2">
+                  {/* Enrollment stat card */}
+                  <div className="absolute bottom-[72px] left-3 right-3 bg-orange-950/50 backdrop-blur-md border border-orange-700/25 rounded-xl p-3 z-10">
+                    <div className="flex items-center justify-between gap-2">
                       <div>
-                        <p className="text-2xl font-black text-gray-900">
+                        <p className="text-xl font-black text-white">
                           {stats.enrollmentCount > 99
                             ? `${(stats.enrollmentCount / 1000).toFixed(1)}K`
                             : "20.4K"}
                         </p>
-                        <p className="text-xs text-gray-700/80 mt-0.5 leading-snug">
-                          People completed a course today
-                        </p>
+                        <p className="text-[10px] text-white/45 mt-0.5">People completed a course today</p>
                       </div>
-                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-300 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-md">
-                        <Users className="w-5 h-5 text-white" />
+                      <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center flex-shrink-0 shadow-md shadow-orange-500/30">
+                        <Users className="w-4 h-4 text-white" />
                       </div>
                     </div>
                     <Link
                       href="/courses"
-                      className="mt-3 inline-block text-[11px] bg-white/80 hover:bg-white text-gray-700 px-3.5 py-1 rounded-full font-semibold transition-colors"
+                      className="mt-2 inline-block text-[10px] bg-white/10 hover:bg-white/15 text-white/60 px-3 py-0.5 rounded-full font-medium transition-colors"
                     >
                       Browse Courses
                     </Link>
                   </div>
                 </div>
 
-                {/* Bottom floating card */}
-                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
-                      <GraduationCap className="w-3.5 h-3.5 text-gray-500" />
+                {/* Bottom card */}
+                <div className="bg-white/[0.04] border border-white/[0.08] rounded-2xl p-3.5 backdrop-blur-sm">
+                  <div className="flex items-center gap-1.5 mb-1.5">
+                    <div className="w-6 h-6 rounded-full bg-white/[0.06] flex items-center justify-center">
+                      <GraduationCap className="w-3 h-3 text-white/45" />
                     </div>
-                    <span className="text-[10px] text-gray-600 bg-gray-100 rounded-full px-2.5 py-0.5 font-medium">
+                    <span className="text-[9px] text-white/40 bg-white/[0.06] rounded-full px-2 py-0.5 font-medium">
                       Learning
                     </span>
                   </div>
-                  <p className="text-[13px] font-semibold text-gray-800">
-                    Education for the Digital Age.
-                  </p>
+                  <p className="text-[12px] font-semibold text-white/80">Education for the Digital Age.</p>
                 </div>
               </div>
             </FadeInSection>
 
             {/* ── RIGHT: Student grid + tagline ────────────────────────── */}
             <FadeInSection delay={0.25} direction="left">
-              <div className="hidden lg:flex flex-col gap-5 pt-4">
+              <div className="hidden lg:flex flex-col gap-4 pt-2">
 
-                {/* 2×2 student photos grid */}
-                <div className="grid grid-cols-2 gap-1.5 rounded-3xl overflow-hidden p-1.5 bg-[#E0DBD5]">
+                {/* 2×2 learner cards grid */}
+                <div className="grid grid-cols-2 gap-1.5 rounded-2xl overflow-hidden p-1.5 bg-white/[0.03] border border-white/[0.06]">
                   {[
-                    { name: "Freya",  bg: "bg-[#DDD4C5]", dot: "bg-amber-300/70" },
-                    { name: "Xavier", bg: "bg-[#D0C9C4]", dot: "bg-rose-300/60"  },
-                    { name: "Ixyin",  bg: "bg-[#C5CDD4]", dot: "bg-blue-300/60"  },
+                    { name: "Freya",  bg: "bg-orange-500/15",  dot: "bg-orange-400/40" },
+                    { name: "Xavier", bg: "bg-purple-500/15",  dot: "bg-purple-400/35" },
+                    { name: "Ixyin",  bg: "bg-cyan-500/10",    dot: "bg-cyan-400/30"   },
                   ].map((s) => (
                     <div
                       key={s.name}
-                      className={`${s.bg} h-[145px] rounded-2xl relative flex items-end p-3 overflow-hidden`}
+                      className={`${s.bg} h-[112px] rounded-xl relative flex items-end p-2.5 overflow-hidden border border-white/[0.05]`}
                     >
-                      <div className={`absolute top-3 right-3 w-10 h-10 rounded-full ${s.dot}`} />
-                      <div className={`absolute top-7 right-6 w-5  h-5  rounded-full ${s.dot} opacity-50`} />
-                      <span className="relative z-10 text-xs font-medium bg-white/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-gray-700 shadow-sm">
+                      <div className={`absolute top-2.5 right-2.5 w-7 h-7 rounded-full ${s.dot}`} />
+                      <div className={`absolute top-5.5 right-5 w-3.5 h-3.5 rounded-full ${s.dot} opacity-50`} />
+                      <span className="relative z-10 text-[10px] font-medium bg-black/30 backdrop-blur-sm px-2 py-0.5 rounded-full text-white/75">
                         {s.name}
                       </span>
                     </div>
                   ))}
-                  {/* 4th cell — community count */}
-                  <div className="bg-[#C9C4BF] h-[145px] rounded-2xl relative overflow-hidden flex flex-col items-center justify-center gap-1">
-                    <p className="text-3xl font-black text-white/80 leading-none">+</p>
-                    <p className="text-lg font-black text-white/80 leading-none">
+                  {/* Community count cell */}
+                  <div className="bg-white/[0.03] h-[112px] rounded-xl overflow-hidden flex flex-col items-center justify-center border border-white/[0.05]">
+                    <p className="text-xl font-black text-white/50 leading-none">+</p>
+                    <p className="text-lg font-black text-white/50 leading-tight">
                       {stats.studentCount > 999
                         ? `${Math.floor(stats.studentCount / 1000)}k`
                         : "12k"}
                     </p>
-                    <p className="text-[10px] text-white/60 font-semibold tracking-wide">students</p>
+                    <p className="text-[9px] text-white/30 font-medium">students</p>
                   </div>
                 </div>
 
                 {/* Secondary tagline */}
                 <div>
-                  <h2 className="text-[28px] xl:text-[32px] font-bold text-gray-900 leading-tight">
-                    The <span className="text-orange-500">Course</span> Revolution in Education.
+                  <h2 className="text-[26px] xl:text-[30px] font-bold text-white leading-tight">
+                    The <span className="text-orange-400">Course</span> Revolution in Education.
                   </h2>
-                  <p className="text-sm text-gray-500 mt-3 leading-relaxed">
+                  <p className="text-sm text-white/40 mt-2.5 leading-relaxed">
                     Education becomes a personalized adventure at the touch of a screen.
                   </p>
                 </div>
