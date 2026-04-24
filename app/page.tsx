@@ -25,6 +25,7 @@ const StaggerItem = dynamic(() =>
 );
 const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
 const CompareSection = dynamic(() => import("@/components/landing/CompareSection"));
+const HeroSearchBar = dynamic(() => import("@/components/landing/HeroSearchBar"));
 import {
   BookOpen, Zap, Users, Award, ArrowRight, ArrowLeft, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,
@@ -169,142 +170,7 @@ export default async function HomePage() {
 
             {/* ── Search bar ───────────────────────────────────────────── */}
             <FadeInSection delay={0.14}>
-              <form action="/courses" method="GET" className="mb-5">
-
-                {/* Desktop: single-row bar */}
-                <div className="hidden sm:flex items-center backdrop-blur-lg bg-secondary border border-border rounded-md overflow-hidden transition-all focus-within:border-orange-400/25 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.07)] hover:border-orange-400/15">
-                  <Search className="w-4 h-4 text-muted-foreground/70 flex-shrink-0 mx-3.5" />
-
-                  <div className="flex flex-1 items-center divide-x divide-border min-w-0">
-
-                    {/* Category */}
-                    <div className="relative flex-1 min-w-0">
-                      <select
-                        name="category"
-                        className="w-full appearance-none bg-transparent text-sm text-muted-foreground/70 hover:text-foreground pl-3 pr-7 py-3.5 focus:outline-none cursor-pointer transition-colors"
-                      >
-                        <option value="">All Categories</option>
-                        {categories.length > 0
-                          ? categories.map((cat) => (
-                              <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-                            ))
-                          : [
-                              ["web-development", "Web Development"],
-                              ["ai",              "AI & ML"         ],
-                              ["design",          "UI/UX Design"    ],
-                              ["database",        "Databases"       ],
-                            ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                      <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/40 rotate-90 pointer-events-none" />
-                    </div>
-
-                    {/* Level */}
-                    <div className="relative flex-1 min-w-0">
-                      <select
-                        name="level"
-                        className="w-full appearance-none bg-transparent text-sm text-muted-foreground/70 hover:text-foreground pl-3 pr-7 py-3.5 focus:outline-none cursor-pointer transition-colors"
-                      >
-                        <option value="">All Levels</option>
-                        <option value="BEGINNER">Beginner</option>
-                        <option value="INTERMEDIATE">Intermediate</option>
-                        <option value="ADVANCED">Advanced</option>
-                      </select>
-                      <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/40 rotate-90 pointer-events-none" />
-                    </div>
-
-                    {/* Subject */}
-                    <div className="relative flex-1 min-w-0">
-                      <select
-                        name="subject"
-                        className="w-full appearance-none bg-transparent text-sm text-muted-foreground/70 hover:text-foreground pl-3 pr-7 py-3.5 focus:outline-none cursor-pointer transition-colors"
-                      >
-                        <option value="">Any Subject</option>
-                        <option value="react">React</option>
-                        <option value="python">Python</option>
-                        <option value="javascript">JavaScript</option>
-                        <option value="machine-learning">Machine Learning</option>
-                        <option value="system-design">System Design</option>
-                      </select>
-                      <ChevronRight className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/40 rotate-90 pointer-events-none" />
-                    </div>
-
-                    {/* Keyword */}
-                    <input
-                      type="text"
-                      name="q"
-                      placeholder="Search courses…"
-                      className="flex-[1.3] min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 px-3 py-3.5 focus:outline-none"
-                    />
-                  </div>
-
-                  {/* Search button */}
-                  <div className="p-1.5">
-                    <button
-                      type="submit"
-                      className="flex items-center gap-1.5 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold px-5 py-2.5 rounded-[4px] transition-all"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                      Search
-                    </button>
-                  </div>
-                </div>
-
-                {/* Mobile: stacked layout */}
-                <div className="sm:hidden flex flex-col gap-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="relative">
-                      <select
-                        name="category"
-                        className="w-full appearance-none bg-secondary border border-border text-sm text-muted-foreground/70 pl-3 pr-7 py-3 rounded-md focus:outline-none focus:border-orange-400/25 cursor-pointer transition-colors"
-                      >
-                        <option value="">All Categories</option>
-                        {categories.length > 0
-                          ? categories.map((cat) => (
-                              <option key={cat.slug} value={cat.slug}>{cat.name}</option>
-                            ))
-                          : [
-                              ["web-development", "Web Dev"],
-                              ["ai",              "AI & ML" ],
-                              ["design",          "Design"  ],
-                              ["database",        "Databases"],
-                            ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
-                      </select>
-                      <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/40 rotate-90 pointer-events-none" />
-                    </div>
-                    <div className="relative">
-                      <select
-                        name="level"
-                        className="w-full appearance-none bg-secondary border border-border text-sm text-muted-foreground/70 pl-3 pr-7 py-3 rounded-md focus:outline-none focus:border-orange-400/25 cursor-pointer transition-colors"
-                      >
-                        <option value="">All Levels</option>
-                        <option value="BEGINNER">Beginner</option>
-                        <option value="INTERMEDIATE">Intermediate</option>
-                        <option value="ADVANCED">Advanced</option>
-                      </select>
-                      <ChevronRight className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3 h-3 text-muted-foreground/40 rotate-90 pointer-events-none" />
-                    </div>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
-                      <input
-                        type="text"
-                        name="q"
-                        placeholder="Search courses…"
-                        className="w-full bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 pl-9 pr-3 py-3 rounded-md focus:outline-none focus:border-orange-400/25 transition-colors"
-                      />
-                    </div>
-                    <button
-                      type="submit"
-                      className="flex-shrink-0 flex items-center gap-1.5 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold px-5 py-3 rounded-md transition-all"
-                    >
-                      <Search className="w-3.5 h-3.5" />
-                      Search
-                    </button>
-                  </div>
-                </div>
-
-              </form>
+              <HeroSearchBar categories={categories} />
             </FadeInSection>
 
             {/* Popular search tags */}
