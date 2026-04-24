@@ -26,7 +26,7 @@ const StaggerItem = dynamic(() =>
 const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
 const CompareSection = dynamic(() => import("@/components/landing/CompareSection"));
 import {
-  BookOpen, Zap, Users, Award, ArrowRight, Play, Shield, Clock,
+  BookOpen, Zap, Users, Award, ArrowRight, ArrowLeft, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,
   BarChart3, Sparkles, CheckCircle2, GraduationCap, Target,
   MessageSquare, HeartHandshake, ChevronRight, Star,
@@ -139,144 +139,208 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION — Split layout: text left, interactive showcase right
+          HERO SECTION — Light 3-column layout (EduFest reference design)
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-[100vh] flex items-center -mt-24 pt-24">
-        <HeroBackground />
+      <section className="relative min-h-screen -mx-4 sm:-mx-6 lg:-mx-8 px-4 sm:px-6 lg:px-8 bg-[#EFEDE8] -mt-24 pt-24 pb-10 overflow-hidden">
+        <div className="mx-auto w-full py-10">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.85fr_0.8fr] gap-5 lg:gap-6 items-start">
 
-        <div className="mx-auto w-full relative z-10 py-10">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* ── Left: Text Content ────────────────────────────────────── */}
-            <div className="text-left relative max-w-lg">
+            {/* ── LEFT: Headline + description + course list + CTA ─────── */}
+            <FadeInSection delay={0}>
+              <div className="flex flex-col pt-4">
 
-              {/* Announcement badge */}
-              <FadeInSection delay={0}>
-                <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] rounded-full p-0.5 pr-3 text-xs backdrop-blur-md mb-5 group hover:bg-white/[0.06] hover:border-white/[0.15] transition-all cursor-pointer shadow-xl shadow-orange-500/5">
-                  <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-inner">
-                    <Sparkles className="w-2.5 h-2.5 inline-block mr-1 -mt-0.5" />
-                    CoachNest 2.0
-                  </span>
-                  <span className="text-white/80 text-xs font-medium">
-                    The ultimate platform for developers
-                  </span>
-                  <ArrowRight className="w-3 h-3 text-white/40 /80 group-hover:translate-x-0.5 transition-all" />
-                </div>
-              </FadeInSection>
-
-              {/* Heading */}
-              <FadeInSection delay={0.1}>
-                <h1 className="text-left font-extrabold text-white leading-[1.1] mb-5 tracking-tight">
-                  <span className="block text-4xl sm:text-5xl lg:text-6xl mb-2 whitespace-nowrap">
-                    <RotatingWords
-                      words={["Engineering", "System Design", "AI & ML", "Full-Stack", "Data Science"]}
-                      className="text-orange-400 "
-                    />
-                  </span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500 text-2xl sm:text-3xl lg:text-4xl block pb-1">
-                    Accelerate your tech career.
-                  </span>
+                {/* Giant headline */}
+                <h1 className="text-5xl sm:text-[60px] xl:text-[70px] font-black text-gray-900 leading-[1.02] tracking-tight">
+                  Master Skills at Your Own Pace.
                 </h1>
-              </FadeInSection>
 
-              {/* Subheading */}
-              <FadeInSection delay={0.2}>
-                <p className="text-sm lg:text-base text-white/50 max-w-md mb-6 leading-relaxed font-light">
-                  Elevate your skills with <strong className="text-white/80 font-medium tracking-wide">CoachNest</strong>. Experience interactive coding environments, expert-led tutorials, and verified certificates.
-                </p>
-              </FadeInSection>
-
-              {/* CTA buttons */}
-              <FadeInSection delay={0.3}>
-                <div className="flex flex-col sm:flex-row gap-3 mb-5">
-                  <Link
-                    href="/courses"
-                    className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 text-white font-semibold text-sm px-6 py-2.5 rounded-lg overflow-hidden shadow-lg shadow-orange-600/20 hover:shadow-orange-600/40 transition-all hover:-translate-y-0.5"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      Start Exploring <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="group inline-flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.1] text-white/80 hover:text-white font-medium text-sm px-6 py-2.5 rounded-lg hover:bg-white/[0.08] hover:border-white/[0.2] transition-all hover:-translate-y-0.5"
-                  >
-                    <Play className="w-3.5 h-3.5 text-orange-400 group-hover:scale-110 transition-transform" /> View Demo
-                  </Link>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 text-white/30 text-[10px] sm:text-xs font-medium">
-                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> No credit card required</span>
-                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> Lifetime access</span>
-                </div>
-              </FadeInSection>
-
-              {/* Social proof */}
-              <FadeInSection delay={0.45}>
-                <div className="mt-8 flex items-center gap-4 p-3 rounded-md bg-white/[0.02] border border-white/[0.05] w-fit backdrop-blur-sm hover:bg-white/[0.04] transition-colors">
-                  <div className="flex -space-x-2.5">
-                    {[
-                      { l: "D", c: "from-blue-500 to-cyan-500" },
-                      { l: "A", c: "from-emerald-500 to-teal-500" },
-                      { l: "J", c: "from-orange-500 to-red-500" },
-                      { l: "S", c: "from-purple-500 to-pink-500" },
-                    ].map((avatar, i) => (
-                      <div
-                        key={i}
-                        className={`w-7 h-7 rounded-full border border-black/50 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${avatar.c} shadow-md`}
-                        style={{ zIndex: 10 - i }}
-                      >
-                        {avatar.l}
-                      </div>
-                    ))}
+                {/* Circle arrow + description */}
+                <div className="flex items-start gap-4 mt-7">
+                  <div className="w-10 h-10 rounded-full bg-gray-900 flex items-center justify-center flex-shrink-0 mt-0.5 shadow-md">
+                    <ArrowLeft className="w-4 h-4 text-white" />
                   </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-1 mb-0.5">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Star key={i} className="w-3 h-3 text-orange-400 fill-orange-400 drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]" />
-                      ))}
-                      <span className="text-white font-semibold text-xs ml-1">4.9/5</span>
+                  <p className="text-sm text-gray-500 leading-relaxed max-w-xs">
+                    <strong className="text-gray-700 font-semibold">&apos;Master Skills at Your Own Pace&apos;</strong> is a transformative experience, seamlessly integrating learning into the digital age.
+                  </p>
+                </div>
+
+                {/* Date row */}
+                <div className="flex items-center gap-3 mt-6 py-3 border-t border-b border-gray-300/80">
+                  <span className="text-sm font-semibold text-gray-800">Thursday 09 November</span>
+                  <div className="w-5 h-5 border border-gray-400 rounded-[3px] text-[11px] text-gray-400 flex items-center justify-center">
+                    ⊞
+                  </div>
+                  <ArrowRight className="w-4 h-4 text-gray-400 ml-auto" />
+                </div>
+
+                {/* Numbered course list */}
+                <div className="mt-5 space-y-3">
+                  {[
+                    { n: "01", name: "Unlocking Creativity",    hasStack: true },
+                    { n: "02", name: "Engineering Essentials",  hasStack: false },
+                    { n: "03", name: "The Science of Success",  hasStack: false },
+                    { n: "04", name: "Full-Stack Mastery",      hasStack: false },
+                    { n: "05", name: "AI & Machine Learning",   hasStack: false },
+                  ].map((item) => (
+                    <div key={item.n} className="flex items-center gap-2.5 group cursor-pointer">
+                      {item.hasStack && (
+                        <div className="flex -space-x-1.5 mr-0.5">
+                          <div className="w-[18px] h-[20px] rounded-[3px] bg-amber-400/80" />
+                          <div className="w-[18px] h-[20px] rounded-[3px] bg-amber-300/60" />
+                          <div className="w-[18px] h-[20px] rounded-[3px] bg-amber-200/50" />
+                        </div>
+                      )}
+                      <span className="text-[14px] text-gray-600 group-hover:text-gray-900 transition-colors">
+                        {item.name}
+                      </span>
+                      <span className="text-[11px] text-gray-400 font-light">{item.n}.</span>
                     </div>
-                    <p className="text-white/40 text-[10px] font-medium">
-                      Trusted by <span className="text-white/80">15,000+</span> devs
-                    </p>
-                  </div>
+                  ))}
                 </div>
-              </FadeInSection>
-            </div>
 
-            {/* ── Right: Interactive Showcase ───────────────────────────── */}
-            <FadeInSection delay={0.2} direction="left">
-              <div className="hidden lg:block">
-                <HeroShowcase />
+                {/* CTA button */}
+                <Link
+                  href="/courses"
+                  className="mt-8 self-start inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-700 text-white text-sm font-semibold px-7 py-3.5 rounded-full transition-all shadow-lg shadow-gray-900/20 group"
+                >
+                  Start Exploring!
+                  <span className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <ArrowRight className="w-3 h-3" />
+                  </span>
+                </Link>
+
+                {/* Featured course card */}
+                <div className="mt-5 bg-white rounded-2xl p-5 shadow-sm border border-gray-100/80 hover:shadow-md transition-shadow">
+                  <h3 className="text-gray-900 font-semibold text-[15px] leading-snug">
+                    <span className="border-b-2 border-orange-500 pb-0.5">Mastering the Art</span> of Digital Marketing
+                  </h3>
+                  <p className="text-gray-400 text-xs mt-1.5">A Comprehensive Course</p>
+                </div>
               </div>
             </FadeInSection>
-          </div>
 
-          {/* ── Stat cards (below) ──────────────────────────────────────── */}
-          <FadeInSection delay={0.55}>
-            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mx-auto">
-              {[
-                { value: Math.max(stats.courseCount, 20), suffix: "+", label: "Courses", icon: BookOpen, gradient: "from-orange-600/20 to-orange-500/15" },
-                { value: Math.max(stats.studentCount, 99), suffix: "+", label: "Students", icon: Users, gradient: "from-blue-500/20 to-cyan-500/10" },
-                { value: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Enrollments", icon: TrendingUp, gradient: "from-emerald-500/20 to-teal-500/10" },
-                { value: Math.max(stats.reviewCount, 399), suffix: "+", label: "Reviews", icon: Star, gradient: "from-amber-500/20 to-yellow-500/10" },
-              ].map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <div
-                    key={stat.label}
-                    className={`backdrop-blur-md bg-gradient-to-br ${stat.gradient} border border-white/[0.08] rounded-lg p-4 sm:p-5 text-center hover:border-white/[0.15] transition-all group`}
-                  >
-                    <Icon className="w-5 h-5 text-white/30 mx-auto mb-2 group-hover:text-muted-foreground transition-colors" />
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-0.5">
-                      <AnimatedCounter end={stat.value} suffix={stat.suffix} />
-                    </div>
-                    <div className="text-white/35 text-xs">{stat.label}</div>
+            {/* ── CENTER: Large visual + floating cards ────────────────── */}
+            <FadeInSection delay={0.15}>
+              <div className="hidden lg:flex flex-col gap-3 h-full">
+
+                {/* Top floating card */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex gap-3 mb-2 text-gray-300">
+                    <Star   className="w-[17px] h-[17px]" />
+                    <BookOpen className="w-[17px] h-[17px]" />
+                    <Award  className="w-[17px] h-[17px]" />
                   </div>
-                );
-              })}
-            </div>
-          </FadeInSection>
+                  <p className="text-[13px] font-semibold text-gray-800 leading-snug">
+                    Excel with Cutting-<br />edge Courses.
+                  </p>
+                </div>
+
+                {/* Main large visual */}
+                <div className="flex-1 rounded-[24px] overflow-hidden relative bg-gradient-to-b from-stone-200 via-stone-200 to-stone-300" style={{ minHeight: "360px" }}>
+                  {/* Warm decorative orbs */}
+                  <div className="absolute top-10 left-1/2 -translate-x-1/2 w-52 h-52 rounded-full bg-orange-200/50" />
+                  <div className="absolute top-14 left-1/2 -translate-x-1/2 w-36 h-36 rounded-full bg-orange-300/35" />
+
+                  {/* Instructor avatar */}
+                  <div className="absolute top-16 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2.5 z-10">
+                    <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center shadow-2xl shadow-orange-500/40 ring-4 ring-white/60">
+                      <GraduationCap className="w-11 h-11 text-white" />
+                    </div>
+                    <div className="bg-white/90 backdrop-blur-sm rounded-full px-3.5 py-1 text-[11px] font-semibold text-gray-700 shadow-sm">
+                      Top Instructor
+                    </div>
+                  </div>
+
+                  {/* Peach stat card */}
+                  <div className="absolute bottom-[90px] left-4 right-4 bg-[#F0C4A0]/95 backdrop-blur-sm rounded-xl p-4 shadow-md z-10">
+                    <div className="flex items-end justify-between gap-2">
+                      <div>
+                        <p className="text-2xl font-black text-gray-900">
+                          {stats.enrollmentCount > 99
+                            ? `${(stats.enrollmentCount / 1000).toFixed(1)}K`
+                            : "20.4K"}
+                        </p>
+                        <p className="text-xs text-gray-700/80 mt-0.5 leading-snug">
+                          People completed a course today
+                        </p>
+                      </div>
+                      <div className="w-11 h-11 rounded-full bg-gradient-to-br from-amber-300 to-orange-400 flex items-center justify-center flex-shrink-0 shadow-md">
+                        <Users className="w-5 h-5 text-white" />
+                      </div>
+                    </div>
+                    <Link
+                      href="/courses"
+                      className="mt-3 inline-block text-[11px] bg-white/80 hover:bg-white text-gray-700 px-3.5 py-1 rounded-full font-semibold transition-colors"
+                    >
+                      Browse Courses
+                    </Link>
+                  </div>
+                </div>
+
+                {/* Bottom floating card */}
+                <div className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                  <div className="flex items-center gap-2 mb-2">
+                    <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center">
+                      <GraduationCap className="w-3.5 h-3.5 text-gray-500" />
+                    </div>
+                    <span className="text-[10px] text-gray-600 bg-gray-100 rounded-full px-2.5 py-0.5 font-medium">
+                      Learning
+                    </span>
+                  </div>
+                  <p className="text-[13px] font-semibold text-gray-800">
+                    Education for the Digital Age.
+                  </p>
+                </div>
+              </div>
+            </FadeInSection>
+
+            {/* ── RIGHT: Student grid + tagline ────────────────────────── */}
+            <FadeInSection delay={0.25} direction="left">
+              <div className="hidden lg:flex flex-col gap-5 pt-4">
+
+                {/* 2×2 student photos grid */}
+                <div className="grid grid-cols-2 gap-1.5 rounded-3xl overflow-hidden p-1.5 bg-[#E0DBD5]">
+                  {[
+                    { name: "Freya",  bg: "bg-[#DDD4C5]", dot: "bg-amber-300/70" },
+                    { name: "Xavier", bg: "bg-[#D0C9C4]", dot: "bg-rose-300/60"  },
+                    { name: "Ixyin",  bg: "bg-[#C5CDD4]", dot: "bg-blue-300/60"  },
+                  ].map((s) => (
+                    <div
+                      key={s.name}
+                      className={`${s.bg} h-[145px] rounded-2xl relative flex items-end p-3 overflow-hidden`}
+                    >
+                      <div className={`absolute top-3 right-3 w-10 h-10 rounded-full ${s.dot}`} />
+                      <div className={`absolute top-7 right-6 w-5  h-5  rounded-full ${s.dot} opacity-50`} />
+                      <span className="relative z-10 text-xs font-medium bg-white/70 backdrop-blur-sm px-2.5 py-1 rounded-full text-gray-700 shadow-sm">
+                        {s.name}
+                      </span>
+                    </div>
+                  ))}
+                  {/* 4th cell — community count */}
+                  <div className="bg-[#C9C4BF] h-[145px] rounded-2xl relative overflow-hidden flex flex-col items-center justify-center gap-1">
+                    <p className="text-3xl font-black text-white/80 leading-none">+</p>
+                    <p className="text-lg font-black text-white/80 leading-none">
+                      {stats.studentCount > 999
+                        ? `${Math.floor(stats.studentCount / 1000)}k`
+                        : "12k"}
+                    </p>
+                    <p className="text-[10px] text-white/60 font-semibold tracking-wide">students</p>
+                  </div>
+                </div>
+
+                {/* Secondary tagline */}
+                <div>
+                  <h2 className="text-[28px] xl:text-[32px] font-bold text-gray-900 leading-tight">
+                    The <span className="text-orange-500">Course</span> Revolution in Education.
+                  </h2>
+                  <p className="text-sm text-gray-500 mt-3 leading-relaxed">
+                    Education becomes a personalized adventure at the touch of a screen.
+                  </p>
+                </div>
+              </div>
+            </FadeInSection>
+
+          </div>
         </div>
       </section>
 
