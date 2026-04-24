@@ -10,6 +10,7 @@ import {
   AlertCircle, ChevronLeft, ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils";
 
 const LEVELS = ["beginner", "intermediate", "advanced"];
@@ -306,31 +307,12 @@ export default function SearchPageClient() {
             )}
           </Button>
 
-          {/* Sort — hidden on mobile (lives in the drawer) */}
-          <select
+          <Select
             value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="hidden lg:block input-glass w-auto text-sm py-2.5 ml-auto"
-          >
-            {SORT_OPT.map((o) => (
-              <option key={o.value} value={o.value} className="bg-card">
-                {o.label}
-              </option>
-            ))}
-          </select>
-
-          {/* Mobile sort — compact select */}
-          <select
-            value={sort}
-            onChange={(e) => setSort(e.target.value)}
-            className="lg:hidden flex-1 input-glass text-sm py-2.5"
-          >
-            {SORT_OPT.map((o) => (
-              <option key={o.value} value={o.value} className="bg-card">
-                {o.label}
-              </option>
-            ))}
-          </select>
+            onValueChange={setSort}
+            options={SORT_OPT}
+            className="ml-auto"
+          />
         </div>
       </div>
 
