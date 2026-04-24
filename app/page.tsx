@@ -140,17 +140,17 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           HERO SECTION — Supabase-style clean, centered layout
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative -mt-24 pt-24 pb-8 overflow-hidden">
+      <section className="relative -mt-24 pt-24 pb-4 overflow-hidden">
         <HeroBackground />
 
-        <div className="mx-auto w-full relative z-10 pt-16 sm:pt-20 lg:pt-28 pb-12 lg:pb-16">
-          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
+        <div className="mx-auto w-full relative z-10 pt-12 sm:pt-16 lg:pt-24 pb-8 lg:pb-12">
+          <div className="max-w-3xl mx-auto text-center px-4 sm:px-6">
 
             {/* Announcement banner */}
             <FadeInSection delay={0}>
               <Link
                 href="/courses"
-                className="group inline-flex items-center gap-2.5 bg-orange-500/[0.07] hover:bg-orange-500/[0.12] border border-orange-500/20 hover:border-orange-500/30 text-orange-400 text-[13px] font-medium rounded-full px-4 py-1.5 mb-8 transition-all duration-300"
+                className="group inline-flex items-center gap-2.5 bg-orange-500/[0.07] hover:bg-orange-500/[0.12] border border-orange-500/20 hover:border-orange-500/30 text-orange-400 text-[13px] font-medium rounded-full px-4 py-1.5 mb-6 transition-all duration-300"
               >
                 <span className="flex items-center gap-1.5 bg-orange-500/20 text-orange-300 text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
                   <Sparkles className="w-3 h-3" />
@@ -163,56 +163,36 @@ export default async function HomePage() {
 
             {/* Headline */}
             <FadeInSection delay={0.06}>
-              <h1 className="text-[40px] sm:text-[56px] lg:text-[72px] font-extrabold tracking-tight leading-[1.05] mb-6">
-                <span className="text-foreground">The Learning Platform</span>
-                <br />
+              <h1 className="text-[32px] sm:text-[44px] lg:text-[56px] font-semibold tracking-tight leading-[1.1] mb-4">
+                <span className="text-foreground">CoachNest is the </span>
                 <span className="bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 bg-clip-text text-transparent">
-                  for Modern Skills
+                  Learning Platform
                 </span>
               </h1>
             </FadeInSection>
 
             {/* Sub-headline */}
             <FadeInSection delay={0.12}>
-              <p className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
-                CoachNest is the all-in-one platform for expert-crafted courses, interactive quizzes, progress tracking, and verified certificates. Start learning for free.
+              <p className="text-muted-foreground text-sm sm:text-base lg:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+                Start your learning journey with expert-crafted courses, interactive quizzes, progress tracking, and verified certificates.
               </p>
             </FadeInSection>
 
-            {/* CTA Buttons */}
+            {/* CTA Buttons — Supabase style */}
             <FadeInSection delay={0.18}>
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                 <Link
                   href="/signup"
-                  className="btn-primary inline-flex items-center gap-2 text-base px-8 py-3.5 rounded-lg font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all"
+                  className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white text-sm px-5 py-2 rounded-md font-medium transition-colors"
                 >
-                  Start Learning Free
-                  <ArrowRight className="w-4 h-4" />
+                  Start your project
                 </Link>
                 <Link
                   href="/courses"
-                  className="inline-flex items-center gap-2 bg-secondary/50 hover:bg-secondary/80 border border-border hover:border-border/80 text-foreground text-base px-8 py-3.5 rounded-lg font-semibold transition-all"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-secondary/60 border border-border text-foreground text-sm px-5 py-2 rounded-md font-medium transition-colors"
                 >
                   Browse Courses
-                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
                 </Link>
-              </div>
-            </FadeInSection>
-
-            {/* Trusted-by logos */}
-            <FadeInSection delay={0.24}>
-              <p className="text-muted-foreground/40 text-xs uppercase tracking-[0.2em] font-medium mb-6">
-                Trusted by learners from top companies
-              </p>
-              <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 opacity-40 hover:opacity-60 transition-opacity duration-500">
-                {["Google", "Microsoft", "Amazon", "Meta", "Apple", "Netflix"].map((company) => (
-                  <span
-                    key={company}
-                    className="text-foreground/50 font-bold text-lg sm:text-xl tracking-wider select-none"
-                  >
-                    {company}
-                  </span>
-                ))}
               </div>
             </FadeInSection>
 
