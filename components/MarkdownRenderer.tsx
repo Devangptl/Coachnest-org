@@ -106,6 +106,58 @@ function vimeoId(url: string): string | null {
   return m ? m[1] : null;
 }
 
+// ─── Language → text-color mapping ─────────────────────────────────────────────
+
+const LANG_COLORS: Record<string, string> = {
+  // Web
+  javascript:  "text-yellow-300",
+  js:          "text-yellow-300",
+  jsx:         "text-yellow-300",
+  typescript:  "text-blue-400",
+  ts:          "text-blue-400",
+  tsx:         "text-blue-400",
+  html:        "text-orange-400",
+  css:         "text-purple-400",
+  scss:        "text-pink-400",
+  sass:        "text-pink-400",
+  // Backend / systems
+  python:      "text-sky-400",
+  py:          "text-sky-400",
+  java:        "text-amber-400",
+  kotlin:      "text-violet-400",
+  swift:       "text-orange-300",
+  go:          "text-cyan-400",
+  rust:        "text-orange-400",
+  cpp:         "text-blue-300",
+  c:           "text-blue-300",
+  csharp:      "text-green-400",
+  cs:          "text-green-400",
+  php:         "text-indigo-400",
+  ruby:        "text-red-400",
+  rb:          "text-red-400",
+  // Data / config
+  sql:         "text-cyan-300",
+  json:        "text-amber-300",
+  yaml:        "text-lime-400",
+  yml:         "text-lime-400",
+  toml:        "text-lime-300",
+  xml:         "text-orange-300",
+  // Shell
+  bash:        "text-emerald-400",
+  sh:          "text-emerald-400",
+  shell:       "text-emerald-400",
+  zsh:         "text-emerald-400",
+  powershell:  "text-blue-400",
+  // Markup / docs
+  markdown:    "text-slate-300",
+  md:          "text-slate-300",
+  // Default fallback handled below
+};
+
+function langColor(lang: string): string {
+  return LANG_COLORS[lang.toLowerCase()] ?? "text-slate-300";
+}
+
 // ─── Sub-components ─────────────────────────────────────────────────────────────
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
@@ -120,8 +172,10 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
   const lines = code.split("\n");
   if (lines[lines.length - 1] === "") lines.pop();
 
+  const codeColor = langColor(lang);
+
   return (
-    <div className="rounded-md overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-4 sm:my-5">
+    <div className="rounded-md overflow-hidden border border-white/[0.08] shadow-lg my-4 sm:my-5">
       {/* Header */}
       <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-white/[0.03] border-b border-white/[0.06]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -149,7 +203,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
               <span className="select-none text-white/[0.15] text-right w-8 mr-4 flex-shrink-0 text-xs leading-relaxed">
                 {i + 1}
               </span>
-              <code className="text-emerald-300/85 whitespace-pre">{line || " "}</code>
+              <code className={cn(codeColor, "whitespace-pre")}>{line || " "}</code>
             </div>
           ))}
         </pre>
