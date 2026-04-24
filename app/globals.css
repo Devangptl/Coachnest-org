@@ -16,10 +16,10 @@
 /* ─── Claude Code theme — CSS variable tokens ────────────────────────────── */
 @layer base {
   :root {
-    --background: 0 0% 5%;
+    --background: 0 0% 10%;
     /* --background: #171717; */
     --foreground: 0 0% 91%;
-    --card: 0 0% 8%;
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 91%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 91%;
@@ -41,7 +41,7 @@
 
   /* ── Claude Code light theme ────────────────────────────────────────────── */
   .light {
-    --background: 33 60% 97%;          /* #fdf9f5 — warm parchment */
+    --background: 33 60% 97%;          
     --foreground: 20 30% 9%;           /* #1c1411 — rich warm near-black */
     --card: 0 0% 100%;                 /* #ffffff — pure white cards */
     --card-foreground: 20 30% 9%;
@@ -109,13 +109,26 @@
     @apply glass glass-hover cursor-pointer;
   }
 
-  /* Buttons */
   .btn-primary {
-    @apply bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold
-           px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600
-           transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/35
-           disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center
-           justify-center gap-2 text-sm;
+    background-color: #f97316ab;
+    border: 1px solid #f97316;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 0.4rem 1.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+  .btn-primary:hover {
+    background-color: #f97316cc;
+  }
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   .btn-secondary {
     @apply bg-secondary border border-border text-foreground font-medium px-4 py-2
@@ -380,8 +393,15 @@ html.light .from-orange-600.text-white,
 html.light .from-orange-500.text-white,
 html.light .from-orange-400.text-white { color: #ffffff; }
 
-/* Utility-class buttons (btn-primary uses @apply) */
-html.light .btn-primary                { color: #ffffff; }
+/* Utility-class buttons — light mode: opaque orange bg + white text */
+html.light .btn-primary {
+  background-color: #ea580c;
+  border-color: #c2410c;
+  color: #ffffff !important;
+}
+html.light .btn-primary:hover {
+  background-color: #f97316;
+}
 
 /* ── text-white/X → warm-dark equivalent ────────────────────────────────── */
 html.light .text-white\/5  { color: rgb(15 23 42 / 0.06); }

@@ -15,7 +15,7 @@ import FAQItem from "@/components/landing/FAQItem";
 
 // Lazy-load heavy animation components (framer-motion) — separate JS chunks
 const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
-const RotatingWords = dynamic(() => import("@/components/landing/RotatingWords"));
+
 const FadeInSection = dynamic(() => import("@/components/landing/FadeInSection"));
 const AnimatedCounter = dynamic(() => import("@/components/landing/AnimatedCounter"));
 const TestimonialCard = dynamic(() => import("@/components/landing/TestimonialCard"));
@@ -23,10 +23,9 @@ const StaggerChildren = dynamic(() => import("@/components/landing/StaggerChildr
 const StaggerItem = dynamic(() =>
   import("@/components/landing/StaggerChildren").then((mod) => ({ default: mod.StaggerItem }))
 );
-const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
 const CompareSection = dynamic(() => import("@/components/landing/CompareSection"));
 import {
-  BookOpen, Zap, Users, Award, ArrowRight, Play, Shield, Clock,
+  BookOpen, Zap, Users, Award, ArrowRight, ArrowLeft, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,
   BarChart3, Sparkles, CheckCircle2, GraduationCap, Target,
   MessageSquare, HeartHandshake, ChevronRight, Star,
@@ -98,35 +97,35 @@ const CATEGORY_COLORS: Record<string, string> = {
 // Soft background wash colours that match each category gradient
 const CATEGORY_BG: Record<string, string> = {
   "web-development": "from-orange-500/10 via-orange-500/5 to-transparent border-orange-500/20",
-  react:             "from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-500/20",
-  design:            "from-pink-500/10 via-rose-500/5 to-transparent border-pink-500/20",
-  database:          "from-emerald-500/10 via-green-500/5 to-transparent border-emerald-500/20",
-  mobile:            "from-amber-500/10 via-orange-500/5 to-transparent border-amber-500/20",
-  ai:                "from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20",
-  analytics:         "from-teal-500/10 via-cyan-500/5 to-transparent border-teal-500/20",
-  default:           "from-slate-500/10 via-gray-500/5 to-transparent border-slate-500/20",
+  react: "from-cyan-500/10 via-blue-500/5 to-transparent border-cyan-500/20",
+  design: "from-pink-500/10 via-rose-500/5 to-transparent border-pink-500/20",
+  database: "from-emerald-500/10 via-green-500/5 to-transparent border-emerald-500/20",
+  mobile: "from-amber-500/10 via-orange-500/5 to-transparent border-amber-500/20",
+  ai: "from-indigo-500/10 via-purple-500/5 to-transparent border-indigo-500/20",
+  analytics: "from-teal-500/10 via-cyan-500/5 to-transparent border-teal-500/20",
+  default: "from-slate-500/10 via-gray-500/5 to-transparent border-slate-500/20",
 };
 
 const CATEGORY_GLOW: Record<string, string> = {
   "web-development": "group-hover:shadow-orange-500/20",
-  react:             "group-hover:shadow-cyan-500/20",
-  design:            "group-hover:shadow-pink-500/20",
-  database:          "group-hover:shadow-emerald-500/20",
-  mobile:            "group-hover:shadow-amber-500/20",
-  ai:                "group-hover:shadow-indigo-500/20",
-  analytics:         "group-hover:shadow-teal-500/20",
-  default:           "group-hover:shadow-slate-500/20",
+  react: "group-hover:shadow-cyan-500/20",
+  design: "group-hover:shadow-pink-500/20",
+  database: "group-hover:shadow-emerald-500/20",
+  mobile: "group-hover:shadow-amber-500/20",
+  ai: "group-hover:shadow-indigo-500/20",
+  analytics: "group-hover:shadow-teal-500/20",
+  default: "group-hover:shadow-slate-500/20",
 };
 
 const CATEGORY_ICON_COLOR: Record<string, string> = {
   "web-development": "text-orange-500",
-  react:             "text-cyan-500",
-  design:            "text-pink-500",
-  database:          "text-emerald-500",
-  mobile:            "text-amber-500",
-  ai:                "text-indigo-500",
-  analytics:         "text-teal-500",
-  default:           "text-slate-400",
+  react: "text-cyan-500",
+  design: "text-pink-500",
+  database: "text-emerald-500",
+  mobile: "text-amber-500",
+  ai: "text-indigo-500",
+  analytics: "text-teal-500",
+  default: "text-slate-400",
 };
 
 export default async function HomePage() {
@@ -139,146 +138,68 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION — Split layout: text left, interactive showcase right
+          HERO SECTION — Supabase-style clean, centered layout
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative min-h-[100vh] flex items-center -mt-24 pt-24">
+      <section className="relative -mt-24 pt-24 pb-4 overflow-hidden">
         <HeroBackground />
 
-        <div className="mx-auto w-full relative z-10 py-10">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-            {/* ── Left: Text Content ────────────────────────────────────── */}
-            <div className="text-left relative max-w-lg">
+        <div className="mx-auto w-full relative z-10 pt-12 sm:pt-16 lg:pt-24 pb-8 lg:pb-12">
+          <div className="max-w-3xl mx-auto text-center px-4 sm:px-6">
 
-              {/* Announcement badge */}
-              <FadeInSection delay={0}>
-                <div className="inline-flex items-center gap-2 bg-white/[0.03] border border-white/[0.08] rounded-full p-0.5 pr-3 text-xs backdrop-blur-md mb-5 group hover:bg-white/[0.06] hover:border-white/[0.15] transition-all cursor-pointer shadow-xl shadow-orange-500/5">
-                  <span className="bg-gradient-to-r from-orange-500 to-orange-600 text-white text-[9px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full shadow-inner">
-                    <Sparkles className="w-2.5 h-2.5 inline-block mr-1 -mt-0.5" />
-                    CoachNest 2.0
-                  </span>
-                  <span className="text-white/80 text-xs font-medium">
-                    The ultimate platform for developers
-                  </span>
-                  <ArrowRight className="w-3 h-3 text-white/40 /80 group-hover:translate-x-0.5 transition-all" />
-                </div>
-              </FadeInSection>
+            {/* Announcement banner */}
+            <FadeInSection delay={0}>
+              <Link
+                href="/courses"
+                className="group inline-flex items-center gap-2.5 bg-orange-500/[0.07] hover:bg-orange-500/[0.12] border border-orange-500/20 hover:border-orange-500/30 text-orange-400 text-[13px] font-medium rounded-full px-4 py-1.5 mb-6 transition-all duration-300"
+              >
+                <span className="flex items-center gap-1.5 bg-orange-500/20 text-orange-300 text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
+                  <Sparkles className="w-3 h-3" />
+                  New
+                </span>
+                Explore our latest courses and start learning today
+                <ArrowRight className="w-3.5 h-3.5 text-orange-400/70 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all" />
+              </Link>
+            </FadeInSection>
 
-              {/* Heading */}
-              <FadeInSection delay={0.1}>
-                <h1 className="text-left font-extrabold text-white leading-[1.1] mb-5 tracking-tight">
-                  <span className="block text-4xl sm:text-5xl lg:text-6xl mb-2 whitespace-nowrap">
-                    <RotatingWords
-                      words={["Engineering", "System Design", "AI & ML", "Full-Stack", "Data Science"]}
-                      className="text-orange-400 "
-                    />
-                  </span>
-                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-zinc-100 via-zinc-300 to-zinc-500 text-2xl sm:text-3xl lg:text-4xl block pb-1">
-                    Accelerate your tech career.
-                  </span>
-                </h1>
-              </FadeInSection>
+            {/* Headline */}
+            <FadeInSection delay={0.06}>
+              <h1 className="text-[32px] sm:text-[44px] lg:text-[56px] font-semibold tracking-tight leading-[1.1] mb-4">
+                <span className="text-foreground">CoachNest is the </span>
+                <span className="bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+                  Learning Platform
+                </span>
+              </h1>
+            </FadeInSection>
 
-              {/* Subheading */}
-              <FadeInSection delay={0.2}>
-                <p className="text-sm lg:text-base text-white/50 max-w-md mb-6 leading-relaxed font-light">
-                  Elevate your skills with <strong className="text-white/80 font-medium tracking-wide">CoachNest</strong>. Experience interactive coding environments, expert-led tutorials, and verified certificates.
-                </p>
-              </FadeInSection>
+            {/* Sub-headline */}
+            <FadeInSection delay={0.12}>
+              <p className="text-muted-foreground text-sm sm:text-base lg:text-lg max-w-xl mx-auto mb-8 leading-relaxed">
+                Start your learning journey with expert-crafted courses, interactive quizzes, progress tracking, and verified certificates.
+              </p>
+            </FadeInSection>
 
-              {/* CTA buttons */}
-              <FadeInSection delay={0.3}>
-                <div className="flex flex-col sm:flex-row gap-3 mb-5">
-                  <Link
-                    href="/courses"
-                    className="group relative inline-flex items-center justify-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 text-white font-semibold text-sm px-6 py-2.5 rounded-lg overflow-hidden shadow-lg shadow-orange-600/20 hover:shadow-orange-600/40 transition-all hover:-translate-y-0.5"
-                  >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out" />
-                    <span className="relative z-10 flex items-center gap-1.5">
-                      Start Exploring <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                    </span>
-                  </Link>
-                  <Link
-                    href="/signup"
-                    className="group inline-flex items-center justify-center gap-2 bg-white/[0.04] border border-white/[0.1] text-white/80 hover:text-white font-medium text-sm px-6 py-2.5 rounded-lg hover:bg-white/[0.08] hover:border-white/[0.2] transition-all hover:-translate-y-0.5"
-                  >
-                    <Play className="w-3.5 h-3.5 text-orange-400 group-hover:scale-110 transition-transform" /> View Demo
-                  </Link>
-                </div>
-                <div className="flex flex-wrap items-center gap-3 text-white/30 text-[10px] sm:text-xs font-medium">
-                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> No credit card required</span>
-                  <span className="flex items-center gap-1"><CheckCircle2 className="w-3 h-3 text-emerald-500/70" /> Lifetime access</span>
-                </div>
-              </FadeInSection>
-
-              {/* Social proof */}
-              <FadeInSection delay={0.45}>
-                <div className="mt-8 flex items-center gap-4 p-3 rounded-md bg-white/[0.02] border border-white/[0.05] w-fit backdrop-blur-sm hover:bg-white/[0.04] transition-colors">
-                  <div className="flex -space-x-2.5">
-                    {[
-                      { l: "D", c: "from-blue-500 to-cyan-500" },
-                      { l: "A", c: "from-emerald-500 to-teal-500" },
-                      { l: "J", c: "from-orange-500 to-red-500" },
-                      { l: "S", c: "from-purple-500 to-pink-500" },
-                    ].map((avatar, i) => (
-                      <div
-                        key={i}
-                        className={`w-7 h-7 rounded-full border border-black/50 flex items-center justify-center text-white text-[10px] font-bold bg-gradient-to-br ${avatar.c} shadow-md`}
-                        style={{ zIndex: 10 - i }}
-                      >
-                        {avatar.l}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-1 mb-0.5">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <Star key={i} className="w-3 h-3 text-orange-400 fill-orange-400 drop-shadow-[0_0_6px_rgba(251,146,60,0.5)]" />
-                      ))}
-                      <span className="text-white font-semibold text-xs ml-1">4.9/5</span>
-                    </div>
-                    <p className="text-white/40 text-[10px] font-medium">
-                      Trusted by <span className="text-white/80">15,000+</span> devs
-                    </p>
-                  </div>
-                </div>
-              </FadeInSection>
-            </div>
-
-            {/* ── Right: Interactive Showcase ───────────────────────────── */}
-            <FadeInSection delay={0.2} direction="left">
-              <div className="hidden lg:block">
-                <HeroShowcase />
+            {/* CTA Buttons — Supabase style */}
+            <FadeInSection delay={0.18}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+                <Link
+                  href="/signup"
+                  className="btn-primary"
+                >
+                  Start your project
+                </Link>
+                <Link
+                  href="/courses"
+                  className="inline-flex items-center gap-2 bg-transparent hover:bg-secondary/60 border border-border text-foreground text-sm px-5 py-2 rounded-md font-medium transition-colors"
+                >
+                  Browse Courses
+                </Link>
               </div>
             </FadeInSection>
-          </div>
 
-          {/* ── Stat cards (below) ──────────────────────────────────────── */}
-          <FadeInSection delay={0.55}>
-            <div className="mt-16 grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mx-auto">
-              {[
-                { value: Math.max(stats.courseCount, 20), suffix: "+", label: "Courses", icon: BookOpen, gradient: "from-orange-600/20 to-orange-500/15" },
-                { value: Math.max(stats.studentCount, 99), suffix: "+", label: "Students", icon: Users, gradient: "from-blue-500/20 to-cyan-500/10" },
-                { value: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Enrollments", icon: TrendingUp, gradient: "from-emerald-500/20 to-teal-500/10" },
-                { value: Math.max(stats.reviewCount, 399), suffix: "+", label: "Reviews", icon: Star, gradient: "from-amber-500/20 to-yellow-500/10" },
-              ].map((stat) => {
-                const Icon = stat.icon;
-                return (
-                  <div
-                    key={stat.label}
-                    className={`backdrop-blur-md bg-gradient-to-br ${stat.gradient} border border-white/[0.08] rounded-lg p-4 sm:p-5 text-center hover:border-white/[0.15] transition-all group`}
-                  >
-                    <Icon className="w-5 h-5 text-white/30 mx-auto mb-2 group-hover:text-muted-foreground transition-colors" />
-                    <div className="text-2xl sm:text-3xl font-bold text-white mb-0.5">
-                      <AnimatedCounter end={stat.value} suffix={stat.suffix} />
-                    </div>
-                    <div className="text-white/35 text-xs">{stat.label}</div>
-                  </div>
-                );
-              })}
-            </div>
-          </FadeInSection>
+          </div>
         </div>
       </section>
+
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           TRUSTED BY / SOCIAL PROOF BAR
@@ -300,7 +221,7 @@ export default async function HomePage() {
         </div>
       </section>
       ═══════════════════════════════════════════════════════════════════════════ */}
-      
+
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           WHY COACHNEST — 6 feature cards
@@ -312,11 +233,11 @@ export default async function HomePage() {
               <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
                 Why CoachNest
               </span>
-              <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-white mb-4">
                 Everything you need to{" "}
                 <span className="text-orange-400">level up</span>
               </h2>
-              <p className="text-muted-foreground/70 max-w-2xl mx-auto text-lg">
+              <p className="text-muted-foreground/70 max-w-2xl mx-auto">
                 A platform built from the ground up with features that make learning effective, engaging, and enjoyable.
               </p>
             </div>
@@ -508,24 +429,24 @@ export default async function HomePage() {
           <StaggerChildren className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3" staggerDelay={0.05}>
             {(categories.length > 0
               ? categories.map((cat) => ({
-                  name: cat.name,
-                  slug: cat.slug,
-                  count: cat._count.courses,
-                  icon: cat.icon,
-                }))
+                name: cat.name,
+                slug: cat.slug,
+                count: cat._count.courses,
+                icon: cat.icon,
+              }))
               : [
-                  { name: "Web Development", slug: "web-development", count: 12, icon: null },
-                  { name: "React & Next.js", slug: "react",           count: 8,  icon: null },
-                  { name: "UI/UX Design",    slug: "design",          count: 6,  icon: null },
-                  { name: "Databases",       slug: "database",        count: 5,  icon: null },
-                  { name: "Mobile Dev",      slug: "mobile",          count: 4,  icon: null },
-                  { name: "AI & ML",         slug: "ai",              count: 7,  icon: null },
-                  { name: "Data Analytics",  slug: "analytics",       count: 3,  icon: null },
-                  { name: "DevOps",          slug: "default",         count: 4,  icon: null },
-                ]
+                { name: "Web Development", slug: "web-development", count: 12, icon: null },
+                { name: "React & Next.js", slug: "react", count: 8, icon: null },
+                { name: "UI/UX Design", slug: "design", count: 6, icon: null },
+                { name: "Databases", slug: "database", count: 5, icon: null },
+                { name: "Mobile Dev", slug: "mobile", count: 4, icon: null },
+                { name: "AI & ML", slug: "ai", count: 7, icon: null },
+                { name: "Data Analytics", slug: "analytics", count: 3, icon: null },
+                { name: "DevOps", slug: "default", count: 4, icon: null },
+              ]
             ).map((cat) => {
-              const IconComponent = CATEGORY_ICONS[cat.slug]      ?? CATEGORY_ICONS.default;
-              const iconColor     = CATEGORY_ICON_COLOR[cat.slug] ?? CATEGORY_ICON_COLOR.default;
+              const IconComponent = CATEGORY_ICONS[cat.slug] ?? CATEGORY_ICONS.default;
+              const iconColor = CATEGORY_ICON_COLOR[cat.slug] ?? CATEGORY_ICON_COLOR.default;
 
               return (
                 <StaggerItem key={cat.slug}>
@@ -753,105 +674,55 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 px-4 sm:px-6 lg:px-8">
         <div className="mx-auto">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <FadeInSection direction="right">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+          <FadeInSection>
+            <div className="text-center mb-16">
+              <span className="inline-flex items-center gap-1.5 bg-orange-500/[0.07] border border-orange-500/20 text-orange-400 text-xs font-medium uppercase tracking-widest px-3 py-1 rounded-full mb-4 mx-auto">
+                <Sparkles className="w-3 h-3" />
                 Learning Experience
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                A learning experience{" "}
-                <span className="text-orange-400">designed for you</span>
+                A learning experience <span className="text-orange-400">designed for you</span>
               </h2>
-              <p className="text-white/45 text-lg leading-relaxed mb-8">
+              <p className="text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
                 Our platform adapts to your learning style. Whether you prefer video lessons,
-                reading material, or hands-on quizzes, we have you covered.
+                reading material, or hands-on quizzes, we have you covered with a seamless workflow.
               </p>
-              <div className="space-y-4">
-                {[
-                  { text: "HD video lessons with code-along exercises", icon: Play },
-                  { text: "Rich text lessons with syntax-highlighted code", icon: Code },
-                  { text: "Interactive quizzes to reinforce concepts", icon: Target },
-                  { text: "Downloadable certificates of completion", icon: Award },
-                  { text: "Progress tracking across all your courses", icon: BarChart3 },
-                  { text: "Mobile-friendly — learn anywhere, anytime", icon: Smartphone },
-                ].map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.text} className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-orange-500/10 flex items-center justify-center flex-shrink-0">
-                        <Icon className="w-4 h-4 text-orange-400" />
+            </div>
+          </FadeInSection>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[
+              { title: "Video Lessons", text: "HD video lessons with code-along exercises to master practical skills.", icon: Play, color: "text-orange-400", bg: "bg-orange-500/10" },
+              { title: "Syntax Highlighting", text: "Rich text lessons with syntax-highlighted code for better readability.", icon: Code, color: "text-blue-400", bg: "bg-blue-500/10" },
+              { title: "Adaptive Quizzes", text: "Interactive quizzes to reinforce concepts and test your knowledge.", icon: Target, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+              { title: "Certifications", text: "Downloadable certificates of completion to showcase your achievements.", icon: Award, color: "text-yellow-400", bg: "bg-yellow-500/10" },
+              { title: "Analytics", text: "Deep progress tracking across all your courses with visual insights.", icon: BarChart3, color: "text-pink-400", bg: "bg-pink-500/10" },
+              { title: "Mobile Ready", text: "Mobile-friendly platform — learn anywhere, anytime on any device.", icon: Smartphone, color: "text-violet-400", bg: "bg-violet-500/10" },
+            ].map((item, idx) => {
+              const Icon = item.icon;
+              return (
+                <FadeInSection key={item.title} delay={idx * 0.08}>
+                  <div className="group p-1 rounded-xl bg-gradient-to-br from-white/5 to-transparent border border-white/5 hover:border-orange-500/20 transition-all h-full">
+                    <div className="p-5 flex flex-col gap-4 h-full">
+                      <div className={`w-10 h-10 rounded-lg ${item.bg} flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform`}>
+                        <Icon className={`w-5 h-5 ${item.color}`} />
                       </div>
-                      <span className="text-muted-foreground text-sm">{item.text}</span>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-8">
-                <Link href="/signup" className="btn-primary inline-flex items-center gap-2">
-                  Start Learning Free <ArrowRight className="w-4 h-4" />
-                </Link>
-              </div>
-            </FadeInSection>
-
-            <FadeInSection direction="left">
-              <div className="relative">
-                {/* Mock course viewer */}
-                <div className="backdrop-blur-lg bg-white/[0.07] border border-border rounded-lg overflow-hidden shadow-2xl">
-                  {/* Title bar */}
-                  <div className="flex items-center gap-2 px-4 py-3 bg-secondary border-b border-border">
-                    <div className="w-3 h-3 rounded-full bg-red-400/60" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-400/60" />
-                    <div className="w-3 h-3 rounded-full bg-green-400/60" />
-                    <span className="text-white/30 text-xs ml-2">CoachNest Course Viewer</span>
-                  </div>
-                  {/* Video placeholder */}
-                  <div className="aspect-video bg-gradient-to-br from-orange-700/30 to-orange-700/30 flex items-center justify-center relative">
-                    <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
-                      <Play className="w-7 h-7 text-white ml-1" />
-                    </div>
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2">
-                      <div className="h-1 flex-1 bg-secondary rounded-full overflow-hidden">
-                        <div className="h-full w-[35%] bg-gradient-to-r from-orange-600 to-orange-500 rounded-full" />
+                      <div>
+                        <h4 className="text-white font-semibold text-base mb-2">{item.title}</h4>
+                        <p className="text-muted-foreground text-sm leading-relaxed">{item.text}</p>
                       </div>
-                      <span className="text-muted-foreground/70 text-xs">3:24 / 9:45</span>
                     </div>
                   </div>
-                  {/* Lesson info */}
-                  <div className="p-5">
-                    <div className="flex items-center gap-2 mb-3">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      <span className="text-muted-foreground text-xs">Lesson 4 of 12</span>
-                    </div>
-                    <h4 className="text-white font-semibold text-sm mb-1">Building Responsive Layouts</h4>
-                    <p className="text-white/30 text-xs">Learn CSS Grid and Flexbox to create modern, responsive designs.</p>
-                  </div>
-                </div>
-
-                {/* Floating progress card */}
-                <div className="absolute -bottom-6 -right-6 bg-card border border-border rounded-md p-4 shadow-xl w-48">
-                  <div className="flex items-center gap-2 mb-2">
-                    <TrendingUp className="w-4 h-4 text-emerald-400" />
-                    <span className="text-white text-xs font-medium">Your Progress</span>
-                  </div>
-                  <div className="h-2 bg-secondary rounded-full overflow-hidden mb-1">
-                    <div className="h-full w-[68%] bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full" />
-                  </div>
-                  <span className="text-muted-foreground/70 text-[10px]">68% complete</span>
-                </div>
-
-                {/* Floating certificate badge */}
-                <div className="absolute -top-4 -left-4 bg-card border border-border rounded-md p-3 shadow-xl">
-                  <div className="flex items-center gap-2">
-                    <Award className="w-5 h-5 text-yellow-400" />
-                    <div>
-                      <p className="text-white text-[10px] font-medium">Certificate Earned!</p>
-                      <p className="text-white/30 text-[9px]">Web Dev Fundamentals</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </FadeInSection>
+                </FadeInSection>
+              );
+            })}
           </div>
+          <FadeInSection delay={0.4}>
+            <div className="mt-16 text-center">
+              <Link href="/signup" className="btn-primary px-8 py-3">
+                Start Learning For Free
+              </Link>
+            </div>
+          </FadeInSection>
         </div>
       </section>
 
@@ -930,7 +801,7 @@ export default async function HomePage() {
         </div>
       </section>
       ═══════════════════════════════════════════════════════════════════════════ */}
-      
+
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           BECOME AN INSTRUCTOR
@@ -1130,7 +1001,7 @@ export default async function HomePage() {
           FOOTER
           //<Footer />
       ═══════════════════════════════════════════════════════════════════════════ */}
-      
+
     </div>
   );
 }

@@ -118,7 +118,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         </p>
         <Link
           href={`/courses/${courseId}`}
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-md transition-all shadow-lg shadow-orange-600/20"
+          className="btn-primary px-6 py-3 font-semibold"
         >
           View Course &amp; Enroll
         </Link>
