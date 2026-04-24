@@ -29,7 +29,7 @@ import {
   BookOpen, Zap, Users, Award, ArrowRight, ArrowLeft, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,
   BarChart3, Sparkles, CheckCircle2, GraduationCap, Target,
-  MessageSquare, HeartHandshake, ChevronRight, Star,
+  MessageSquare, HeartHandshake, ChevronRight, Star, Search,
 } from "lucide-react";
 
 const getFeaturedCourses = unstable_cache(
@@ -167,27 +167,21 @@ export default async function HomePage() {
               </h1>
             </FadeInSection>
 
-            {/* Tab pill — sits flush on top of the search bar */}
+            {/* ── Search bar — matches project SearchBar style ───────────── */}
             <FadeInSection delay={0.14}>
-              <div className="flex justify-center -mb-px relative z-10">
-                <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-t-xl px-5 py-2 text-sm text-gray-700 font-semibold shadow-sm"
-                  style={{ borderBottomColor: "white" }}>
-                  <BookOpen className="w-3.5 h-3.5 text-orange-500" />
-                  Courses
-                </div>
-              </div>
-            </FadeInSection>
-
-            {/* ── Unified search bar ─────────────────────────────────────── */}
-            <FadeInSection delay={0.2}>
               <form action="/courses" method="GET" className="mb-5">
-                <div className="bg-white rounded-2xl shadow-[0_8px_40px_rgba(0,0,0,0.18)] overflow-hidden flex flex-col sm:flex-row border border-gray-200/60">
+                <div className="flex items-center backdrop-blur-lg bg-secondary border border-border rounded-md overflow-hidden transition-all focus-within:border-orange-400/25 hover:border-orange-400/15">
 
-                  {/* Select Category */}
-                  <div className="relative flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-gray-200">
+                  {/* Search icon */}
+                  <Search className="w-4 h-4 text-muted-foreground/70 flex-shrink-0 mx-3.5" />
+
+                  {/* Fields row with dividers */}
+                  <div className="flex flex-1 items-center divide-x divide-border min-w-0">
+
+                    {/* Category */}
                     <select
                       name="category"
-                      className="w-full appearance-none bg-transparent text-gray-500 text-sm pl-4 pr-9 py-4 focus:outline-none cursor-pointer"
+                      className="flex-1 min-w-0 appearance-none bg-transparent text-sm text-muted-foreground/70 px-3 py-3.5 focus:outline-none cursor-pointer"
                     >
                       <option value="">Select Category</option>
                       {categories.length > 0
@@ -201,28 +195,22 @@ export default async function HomePage() {
                             ["database",        "Databases"       ],
                           ].map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                     </select>
-                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
 
-                  {/* Select Level */}
-                  <div className="relative flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-gray-200">
+                    {/* Level */}
                     <select
                       name="level"
-                      className="w-full appearance-none bg-transparent text-gray-500 text-sm pl-4 pr-9 py-4 focus:outline-none cursor-pointer"
+                      className="flex-1 min-w-0 appearance-none bg-transparent text-sm text-muted-foreground/70 px-3 py-3.5 focus:outline-none cursor-pointer"
                     >
                       <option value="">Select Level</option>
                       <option value="BEGINNER">Beginner</option>
                       <option value="INTERMEDIATE">Intermediate</option>
                       <option value="ADVANCED">Advanced</option>
                     </select>
-                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
 
-                  {/* Select Subject */}
-                  <div className="relative flex-1 flex items-center border-b sm:border-b-0 sm:border-r border-gray-200">
+                    {/* Subject */}
                     <select
                       name="subject"
-                      className="w-full appearance-none bg-transparent text-gray-500 text-sm pl-4 pr-9 py-4 focus:outline-none cursor-pointer"
+                      className="flex-1 min-w-0 appearance-none bg-transparent text-sm text-muted-foreground/70 px-3 py-3.5 focus:outline-none cursor-pointer"
                     >
                       <option value="">Select Subject(s)</option>
                       <option value="react">React</option>
@@ -231,21 +219,20 @@ export default async function HomePage() {
                       <option value="machine-learning">Machine Learning</option>
                       <option value="system-design">System Design</option>
                     </select>
-                    <ChevronRight className="absolute right-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 rotate-90 pointer-events-none" />
-                  </div>
 
-                  {/* Keyword input */}
-                  <input
-                    type="text"
-                    name="q"
-                    placeholder="Enter Keyword (Optional)"
-                    className="flex-[1.2] bg-transparent text-gray-700 text-sm pl-4 pr-3 py-4 placeholder-gray-400 focus:outline-none border-b sm:border-b-0 border-gray-200"
-                  />
+                    {/* Keyword */}
+                    <input
+                      type="text"
+                      name="q"
+                      placeholder="Enter Keyword (Optional)"
+                      className="flex-[1.3] min-w-0 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/50 px-3 py-3.5 focus:outline-none"
+                    />
+                  </div>
 
                   {/* Search button */}
                   <button
                     type="submit"
-                    className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-semibold text-sm px-8 py-4 transition-colors whitespace-nowrap"
+                    className="flex-shrink-0 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-semibold px-6 py-3.5 transition-all"
                   >
                     Search
                   </button>
