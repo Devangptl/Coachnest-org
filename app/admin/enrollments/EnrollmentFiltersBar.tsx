@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Search, X } from "lucide-react";
 
 export default function EnrollmentFiltersBar() {
@@ -56,16 +57,16 @@ export default function EnrollmentFiltersBar() {
           <div className="space-y-3 pt-3 border-t border-border">
             <div>
               <label className="label">Status</label>
-              <select
-                className="input-glass w-full"
+              <Select
                 value={status}
-                onChange={(e) => setStatus(e.target.value)}
-              >
-                <option value="all">All Statuses</option>
-                <option value="ACTIVE">Active</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="DROPPED">Dropped</option>
-              </select>
+                onValueChange={setStatus}
+                options={[
+                  { value: "all",       label: "All Statuses" },
+                  { value: "ACTIVE",    label: "Active"       },
+                  { value: "COMPLETED", label: "Completed"    },
+                  { value: "DROPPED",   label: "Dropped"      },
+                ]}
+              />
             </div>
           </div>
         )}

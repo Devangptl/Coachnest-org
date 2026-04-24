@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { ArrowLeft, PlusCircle, Trash2, GripVertical, Check, HelpCircle, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -189,22 +190,18 @@ export default function NewQuizPage() {
                   All lessons already have quizzes. Create a new lesson with QUIZ type from the course editor instead.
                 </div>
               ) : (
-                <select
-                  className="input-glass w-full"
+                <Select
                   value={lessonId}
-                  onChange={(e) => setLessonId(e.target.value)}
-                >
-                  <option value="">Select a lesson...</option>
-                  {Object.entries(grouped).map(([courseId, group]) => (
-                    <optgroup key={courseId} label={group.courseTitle}>
-                      {group.lessons.map((l) => (
-                        <option key={l.id} value={l.id}>
-                          {l.title} ({l.type})
-                        </option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
+                  onValueChange={setLessonId}
+                  placeholder="Select a lesson…"
+                  groups={Object.entries(grouped).map(([, group]) => ({
+                    label: group.courseTitle,
+                    options: group.lessons.map((l) => ({
+                      value: l.id,
+                      label: `${l.title} (${l.type})`,
+                    })),
+                  }))}
+                />
               )}
               {lessonId && (
                 <p className="text-muted-foreground/50 text-xs mt-1">
