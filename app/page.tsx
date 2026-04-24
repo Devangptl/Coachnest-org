@@ -15,7 +15,7 @@ import FAQItem from "@/components/landing/FAQItem";
 
 // Lazy-load heavy animation components (framer-motion) — separate JS chunks
 const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
-const RotatingWords = dynamic(() => import("@/components/landing/RotatingWords"));
+
 const FadeInSection = dynamic(() => import("@/components/landing/FadeInSection"));
 const AnimatedCounter = dynamic(() => import("@/components/landing/AnimatedCounter"));
 const TestimonialCard = dynamic(() => import("@/components/landing/TestimonialCard"));
@@ -23,14 +23,12 @@ const StaggerChildren = dynamic(() => import("@/components/landing/StaggerChildr
 const StaggerItem = dynamic(() =>
   import("@/components/landing/StaggerChildren").then((mod) => ({ default: mod.StaggerItem }))
 );
-const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
 const CompareSection = dynamic(() => import("@/components/landing/CompareSection"));
-const HeroSearchBar = dynamic(() => import("@/components/landing/HeroSearchBar"));
 import {
   BookOpen, Zap, Users, Award, ArrowRight, ArrowLeft, Play, Shield, Clock,
   TrendingUp, Globe, Code, Palette, Database, Smartphone, Brain,
   BarChart3, Sparkles, CheckCircle2, GraduationCap, Target,
-  MessageSquare, HeartHandshake, ChevronRight, Star, Search,
+  MessageSquare, HeartHandshake, ChevronRight, Star,
 } from "lucide-react";
 
 const getFeaturedCourses = unstable_cache(
@@ -140,57 +138,80 @@ export default async function HomePage() {
   return (
     <div className="overflow-hidden">
       {/* ═══════════════════════════════════════════════════════════════════════════
-          HERO SECTION — Centered, compact, search-first
+          HERO SECTION — Supabase-style clean, centered layout
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative -mt-24 pt-24 pb-16 overflow-hidden">
+      <section className="relative -mt-24 pt-24 pb-8 overflow-hidden">
         <HeroBackground />
 
-        <div className="mx-auto w-full relative z-10 py-14 lg:py-20">
-          <div className="max-w-[680px] mx-auto text-center">
+        <div className="mx-auto w-full relative z-10 pt-16 sm:pt-20 lg:pt-28 pb-12 lg:pb-16">
+          <div className="max-w-4xl mx-auto text-center px-4 sm:px-6">
 
-            {/* Eyebrow badge */}
+            {/* Announcement banner */}
             <FadeInSection delay={0}>
-              <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold rounded-full px-3.5 py-1.5 mb-6">
-                <GraduationCap className="w-3.5 h-3.5" />
-                CoachNest Courses
-              </div>
+              <Link
+                href="/courses"
+                className="group inline-flex items-center gap-2.5 bg-orange-500/[0.07] hover:bg-orange-500/[0.12] border border-orange-500/20 hover:border-orange-500/30 text-orange-400 text-[13px] font-medium rounded-full px-4 py-1.5 mb-8 transition-all duration-300"
+              >
+                <span className="flex items-center gap-1.5 bg-orange-500/20 text-orange-300 text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
+                  <Sparkles className="w-3 h-3" />
+                  New
+                </span>
+                Explore our latest courses and start learning today
+                <ArrowRight className="w-3.5 h-3.5 text-orange-400/70 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all" />
+              </Link>
             </FadeInSection>
 
-            {/* Headline — exactly 2 lines */}
-            <FadeInSection delay={0.08}>
-              <h1 className="font-black tracking-tight leading-[1.1] mb-8">
-                <span className="block text-[36px] sm:text-[44px] lg:text-[50px] text-white">
-                  Find Expert Courses,
-                </span>
-                <span className="block text-[36px] sm:text-[44px] lg:text-[50px] text-orange-400">
-                  Build Skills That Matter.
+            {/* Headline */}
+            <FadeInSection delay={0.06}>
+              <h1 className="text-[40px] sm:text-[56px] lg:text-[72px] font-extrabold tracking-tight leading-[1.05] mb-6">
+                <span className="text-foreground">The Learning Platform</span>
+                <br />
+                <span className="bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+                  for Modern Skills
                 </span>
               </h1>
             </FadeInSection>
 
-            {/* ── Search bar ───────────────────────────────────────────── */}
-            <FadeInSection delay={0.14}>
-              <HeroSearchBar categories={categories} />
+            {/* Sub-headline */}
+            <FadeInSection delay={0.12}>
+              <p className="text-muted-foreground text-base sm:text-lg lg:text-xl max-w-2xl mx-auto mb-10 leading-relaxed">
+                CoachNest is the all-in-one platform for expert-crafted courses, interactive quizzes, progress tracking, and verified certificates. Start learning for free.
+              </p>
             </FadeInSection>
 
-            {/* Popular search tags */}
-            <FadeInSection delay={0.28}>
-              <div className="flex flex-wrap items-center justify-center gap-2">
-                <span className="text-white/40 text-sm font-medium mr-0.5">Popular Searches:</span>
-                {[
-                  { label: "Mathematics",             q: "mathematics"          },
-                  { label: "Basic Math",              q: "basic-math"           },
-                  { label: "Engineering",             q: "engineering"          },
-                  { label: "AI & ML",                 q: "ai"                   },
-                  { label: "Artificial Intelligence (All)", q: "artificial-intelligence" },
-                ].map(({ label, q }) => (
-                  <Link
-                    key={label}
-                    href={`/courses?q=${encodeURIComponent(q)}`}
-                    className="text-xs text-white/60 hover:text-orange-400 bg-white/[0.06] hover:bg-orange-500/10 border border-white/[0.09] hover:border-orange-500/20 rounded-full px-3 py-1 font-medium transition-all"
+            {/* CTA Buttons */}
+            <FadeInSection delay={0.18}>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-12">
+                <Link
+                  href="/signup"
+                  className="btn-primary inline-flex items-center gap-2 text-base px-8 py-3.5 rounded-lg font-semibold shadow-lg shadow-orange-500/20 hover:shadow-orange-500/30 transition-all"
+                >
+                  Start Learning Free
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+                <Link
+                  href="/courses"
+                  className="inline-flex items-center gap-2 bg-secondary/50 hover:bg-secondary/80 border border-border hover:border-border/80 text-foreground text-base px-8 py-3.5 rounded-lg font-semibold transition-all"
+                >
+                  Browse Courses
+                  <ChevronRight className="w-4 h-4 text-muted-foreground" />
+                </Link>
+              </div>
+            </FadeInSection>
+
+            {/* Trusted-by logos */}
+            <FadeInSection delay={0.24}>
+              <p className="text-muted-foreground/40 text-xs uppercase tracking-[0.2em] font-medium mb-6">
+                Trusted by learners from top companies
+              </p>
+              <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-4 opacity-40 hover:opacity-60 transition-opacity duration-500">
+                {["Google", "Microsoft", "Amazon", "Meta", "Apple", "Netflix"].map((company) => (
+                  <span
+                    key={company}
+                    className="text-foreground/50 font-bold text-lg sm:text-xl tracking-wider select-none"
                   >
-                    {label}
-                  </Link>
+                    {company}
+                  </span>
                 ))}
               </div>
             </FadeInSection>
