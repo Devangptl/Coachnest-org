@@ -210,6 +210,27 @@
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
 
+/* Floating gradient orbs in hero background */
+@keyframes hero-orb-float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(40px, -30px) scale(1.05); }
+  66%      { transform: translate(-30px, 25px) scale(0.95); }
+}
+@keyframes hero-orb-float-delayed {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33%      { transform: translate(-35px, 30px) scale(1.08); }
+  66%      { transform: translate(25px, -20px) scale(0.94); }
+}
+.hero-orb-float         { animation: hero-orb-float 18s ease-in-out infinite; }
+.hero-orb-float-delayed { animation: hero-orb-float-delayed 22s ease-in-out infinite; }
+
+/* Soft pulsing badge ring */
+@keyframes hero-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249,115,22,0.35); }
+  50%      { box-shadow: 0 0 0 6px rgba(249,115,22,0); }
+}
+.hero-badge-pulse { animation: hero-badge-pulse 2.4s ease-in-out infinite; }
+
 /* Subtle terminal grid */
 .hero-grid {
   background-image:
