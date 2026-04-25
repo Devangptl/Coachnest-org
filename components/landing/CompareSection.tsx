@@ -6,16 +6,16 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 const features = [
-  { label: "Free courses available",   us: true,  them: "Limited"     },
-  { label: "Verified certificates",    us: true,  them: "Paid add-on" },
-  { label: "Interactive quizzes",      us: true,  them: "Some plans"  },
-  { label: "Progress tracking",        us: true,  them: true          },
-  { label: "70% instructor revenue",   us: true,  them: false         },
-  { label: "Lifetime course access",   us: true,  them: "Subscription"},
-  { label: "Ad-free experience",       us: true,  them: false         },
-  { label: "Community & peer review",  us: true,  them: "Basic"       },
-  { label: "Mobile optimized",         us: true,  them: true          },
-  { label: "Priority support",         us: true,  them: false         },
+  { label: "Free courses available", us: true, them: "Limited" },
+  { label: "Verified certificates", us: true, them: "Paid add-on" },
+  { label: "Interactive quizzes", us: true, them: "Some plans" },
+  { label: "Progress tracking", us: true, them: true },
+  { label: "70% instructor revenue", us: true, them: false },
+  { label: "Lifetime course access", us: true, them: "Subscription" },
+  { label: "Ad-free experience", us: true, them: false },
+  { label: "Community & peer review", us: true, them: "Basic" },
+  { label: "Mobile optimized", us: true, them: true },
+  { label: "Priority support", us: true, them: false },
 ];
 
 function Cell({ value, highlight }: { value: boolean | string; highlight?: boolean }) {
@@ -56,7 +56,7 @@ function Cell({ value, highlight }: { value: boolean | string; highlight?: boole
 
 export default function CompareSection() {
   return (
-    <section className="py-20 px-4 sm:px-6 lg:px-8">
+    <section className="py-20">
 
       <div className="max-w-3xl mx-auto relative z-10">
 

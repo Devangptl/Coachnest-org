@@ -68,7 +68,6 @@ export default async function InstructorEditCoursePage({ params }: Props) {
           shortDesc: course.shortDesc,
           description: course.description,
           thumbnail: course.thumbnail,
-          previewVideo: course.previewVideo,
           price: course.price ? course.price.toString() : null,
           discountPrice: course.discountPrice ? course.discountPrice.toString() : null,
           isFree: course.isFree,
