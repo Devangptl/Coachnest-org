@@ -3,9 +3,9 @@
 /**
  * CourseForm — shared create/edit form for admin courses.
  *
- * Full-width, two-column layout: primary content (title, description, thumbnail,
- * preview video) on the left; a sticky settings sidebar (status, pricing,
- * category, level, language, revenue split, tags) on the right.
+ * Full-width, two-column layout: primary content (title, description, thumbnail)
+ * on the left; a sticky settings sidebar (status, pricing, category, level,
+ * language, revenue split, tags) on the right.
  */
 import { useMemo, useState, FormEvent } from "react";
 import Link from "next/link";
@@ -27,7 +27,6 @@ export interface CourseFormInitial {
   shortDesc?: string | null;
   description?: string;
   thumbnail?: string | null;
-  previewVideo?: string | null;
   price?: number | string | null;
   discountPrice?: number | string | null;
   isFree?: boolean;
@@ -76,7 +75,6 @@ export default function CourseForm({
   const [shortDesc, setShortDesc]       = useState(initial.shortDesc ?? "");
   const [description, setDescription]   = useState(initial.description ?? "");
   const [thumbnail, setThumbnail]       = useState(initial.thumbnail ?? "");
-  const [previewVideo, setPreviewVideo] = useState(initial.previewVideo ?? "");
 
   const [price, setPrice]               = useState(initial.price != null ? String(initial.price) : "");
   const [discountPrice, setDiscountPrice] = useState(
@@ -148,7 +146,6 @@ export default function CourseForm({
         shortDesc: shortDesc.trim() || null,
         description,
         thumbnail: thumbnail || null,
-        previewVideo: previewVideo.trim() || null,
         price: isFree ? null : price ? parseFloat(price) : null,
         discountPrice:
           isFree || !discountPrice ? null : parseFloat(discountPrice),
@@ -247,19 +244,6 @@ export default function CourseForm({
               value={thumbnail}
               onChange={setThumbnail}
             />
-            <div>
-              <label className="label">Preview Video URL</label>
-              <input
-                type="url"
-                value={previewVideo}
-                onChange={(e) => setPreviewVideo(e.target.value)}
-                className="input-glass"
-                placeholder="https://youtu.be/... or MP4 URL"
-              />
-              <p className="text-muted-foreground/70 text-xs mt-1">
-                Shown on the course landing page so students can preview before buying.
-              </p>
-            </div>
           </div>
         </GlassCard>
 
