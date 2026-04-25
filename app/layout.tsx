@@ -3,13 +3,21 @@
  * Provides the global background, font, Navbar, and toast notifications.
  */
 import type { Metadata } from "next";
-import { Poppins } from "next/font/google";
+import { Poppins, Caveat } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-poppins",
+  display: "swap",
+});
+
+// Aesthetic handwritten script for highlight words
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
+  variable: "--font-caveat",
   display: "swap",
 });
 import Navbar from "@/components/Navbar";
@@ -32,7 +40,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={poppins.variable}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${caveat.variable}`}>
       <head>
         {/* Preconnect to external CDNs for faster image loads */}
         <link rel="preconnect" href="https://images.unsplash.com" />
