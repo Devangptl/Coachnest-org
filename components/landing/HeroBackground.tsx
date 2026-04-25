@@ -3,28 +3,31 @@
 import { useTheme } from "@/components/ThemeProvider";
 
 /**
- * Hero background — animated grid lines that subtly drift and a faint
- * radial mask. No coloured glow orbs.
+ * Hero background — base faint grid + a moving diagonal "light beam"
+ * masked over a brighter copy of the same grid. The result: a glow that
+ * appears to travel along the grid lines themselves.
  */
 export default function HeroBackground() {
   const { theme } = useTheme();
   const isLight = theme === "light";
 
-  const lineColor = isLight ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.06)";
-  const accentColor = isLight ? "rgba(234,88,12,0.55)" : "rgba(249,115,22,0.55)";
+  const baseLine = isLight ? "rgba(15,23,42,0.07)" : "rgba(255,255,255,0.06)";
+  const glowLine = isLight ? "rgba(234,88,12,0.85)" : "rgba(249,115,22,0.85)";
+
+  const gridSize = "56px 56px";
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
 
-      {/* ── Drifting grid (animated) ─────────────────────────────────── */}
+      {/* ── Base faint grid ─────────────────────────────────────────── */}
       <div
-        className="absolute inset-0 hero-grid-drift"
+        className="absolute inset-0"
         style={{
           backgroundImage: `
-            linear-gradient(${lineColor} 1px, transparent 1px),
-            linear-gradient(90deg, ${lineColor} 1px, transparent 1px)
+            linear-gradient(${baseLine} 1px, transparent 1px),
+            linear-gradient(90deg, ${baseLine} 1px, transparent 1px)
           `,
-          backgroundSize: "56px 56px",
+          backgroundSize: gridSize,
           maskImage:
             "radial-gradient(ellipse at center, black 25%, transparent 80%)",
           WebkitMaskImage:
@@ -32,27 +35,16 @@ export default function HeroBackground() {
         }}
       />
 
-      {/* ── Sweeping accent line — horizontal ────────────────────────── */}
+      {/* ── Glow grid: bright lines, masked by traveling diagonal beam ── */}
       <div
-        className="absolute left-0 right-0 top-1/3 h-px hero-line-sweep"
+        className="absolute inset-0 hero-grid-glow"
         style={{
-          background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
-        }}
-      />
-
-      {/* ── Sweeping accent line — vertical ──────────────────────────── */}
-      <div
-        className="absolute top-0 bottom-0 left-1/2 w-px hero-line-sweep-v"
-        style={{
-          background: `linear-gradient(180deg, transparent, ${accentColor}, transparent)`,
-        }}
-      />
-
-      {/* ── Bottom border line ───────────────────────────────────────── */}
-      <div
-        className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-px"
-        style={{
-          background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+          backgroundImage: `
+            linear-gradient(${glowLine} 1px, transparent 1px),
+            linear-gradient(90deg, ${glowLine} 1px, transparent 1px)
+          `,
+          backgroundSize: gridSize,
+          filter: "blur(0.5px) drop-shadow(0 0 6px rgba(249,115,22,0.55))",
         }}
       />
     </div>
