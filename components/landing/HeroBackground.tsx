@@ -3,71 +3,56 @@
 import { useTheme } from "@/components/ThemeProvider";
 
 /**
- * Aesthetic hero background — layered gradient orbs, faint grid, and a
- * subtle conic shimmer. Pure CSS (no framer-motion) for performance.
+ * Hero background — animated grid lines that subtly drift and a faint
+ * radial mask. No coloured glow orbs.
  */
 export default function HeroBackground() {
   const { theme } = useTheme();
   const isLight = theme === "light";
 
+  const lineColor = isLight ? "rgba(15,23,42,0.08)" : "rgba(255,255,255,0.06)";
+  const accentColor = isLight ? "rgba(234,88,12,0.55)" : "rgba(249,115,22,0.55)";
+
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
 
-      {/* ── Soft top spotlight ───────────────────────────────────────── */}
+      {/* ── Drifting grid (animated) ─────────────────────────────────── */}
       <div
-        className="absolute -top-32 left-1/2 -translate-x-1/2 w-[1100px] h-[600px] opacity-70"
+        className="absolute inset-0 hero-grid-drift"
         style={{
-          background: isLight
-            ? "radial-gradient(ellipse at center, rgba(249,115,22,0.18) 0%, rgba(251,146,60,0.08) 35%, transparent 70%)"
-            : "radial-gradient(ellipse at center, rgba(249,115,22,0.18) 0%, rgba(234,88,12,0.08) 35%, transparent 70%)",
-          filter: "blur(40px)",
-        }}
-      />
-
-      {/* ── Floating amber orb (left) ────────────────────────────────── */}
-      <div
-        className="absolute top-24 -left-32 w-[420px] h-[420px] rounded-full opacity-60 hero-orb-float"
-        style={{
-          background: isLight
-            ? "radial-gradient(circle, rgba(251,191,36,0.22) 0%, transparent 65%)"
-            : "radial-gradient(circle, rgba(251,191,36,0.18) 0%, transparent 65%)",
-          filter: "blur(60px)",
-        }}
-      />
-
-      {/* ── Floating orange orb (right) ──────────────────────────────── */}
-      <div
-        className="absolute top-40 -right-40 w-[480px] h-[480px] rounded-full opacity-60 hero-orb-float-delayed"
-        style={{
-          background: isLight
-            ? "radial-gradient(circle, rgba(234,88,12,0.20) 0%, transparent 65%)"
-            : "radial-gradient(circle, rgba(234,88,12,0.22) 0%, transparent 65%)",
-          filter: "blur(70px)",
-        }}
-      />
-
-      {/* ── Subtle grid pattern (faded by mask) ──────────────────────── */}
-      <div
-        className="absolute inset-0"
-        style={{
-          backgroundImage: isLight
-            ? `linear-gradient(rgba(0,0,0,0.035) 1px, transparent 1px),
-               linear-gradient(90deg, rgba(0,0,0,0.035) 1px, transparent 1px)`
-            : `linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-               linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px)`,
+          backgroundImage: `
+            linear-gradient(${lineColor} 1px, transparent 1px),
+            linear-gradient(90deg, ${lineColor} 1px, transparent 1px)
+          `,
           backgroundSize: "56px 56px",
-          maskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)",
-          WebkitMaskImage: "radial-gradient(ellipse at center, black 30%, transparent 75%)",
+          maskImage:
+            "radial-gradient(ellipse at center, black 25%, transparent 80%)",
+          WebkitMaskImage:
+            "radial-gradient(ellipse at center, black 25%, transparent 80%)",
         }}
       />
 
-      {/* ── Glow line at bottom ──────────────────────────────────────── */}
+      {/* ── Sweeping accent line — horizontal ────────────────────────── */}
+      <div
+        className="absolute left-0 right-0 top-1/3 h-px hero-line-sweep"
+        style={{
+          background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+        }}
+      />
+
+      {/* ── Sweeping accent line — vertical ──────────────────────────── */}
+      <div
+        className="absolute top-0 bottom-0 left-1/2 w-px hero-line-sweep-v"
+        style={{
+          background: `linear-gradient(180deg, transparent, ${accentColor}, transparent)`,
+        }}
+      />
+
+      {/* ── Bottom border line ───────────────────────────────────────── */}
       <div
         className="absolute bottom-0 left-1/2 -translate-x-1/2 w-[80%] h-px"
         style={{
-          background: isLight
-            ? "linear-gradient(90deg, transparent, rgba(234,88,12,0.35), transparent)"
-            : "linear-gradient(90deg, transparent, rgba(249,115,22,0.4), transparent)",
+          background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
         }}
       />
     </div>

@@ -274,19 +274,7 @@ export default async function HomePage() {
             {/* ── RIGHT COLUMN — Showcase visual ────────────────────── */}
             <div className="lg:col-span-5 relative hidden lg:block">
               <FadeInSection delay={0.2} direction="left">
-                <div className="relative">
-                  {/* Glow halo behind showcase */}
-                  <div
-                    aria-hidden="true"
-                    className="absolute -inset-8 rounded-3xl opacity-60"
-                    style={{
-                      background:
-                        "radial-gradient(ellipse at center, rgba(249,115,22,0.18) 0%, transparent 65%)",
-                      filter: "blur(40px)",
-                    }}
-                  />
-                  <HeroShowcase />
-                </div>
+                <HeroShowcase />
               </FadeInSection>
             </div>
           </div>

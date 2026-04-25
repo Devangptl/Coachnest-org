@@ -210,19 +210,30 @@
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
 
-/* Floating gradient orbs in hero background */
-@keyframes hero-orb-float {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(40px, -30px) scale(1.05); }
-  66%      { transform: translate(-30px, 25px) scale(0.95); }
+/* Slowly drifting grid background */
+@keyframes hero-grid-drift {
+  0%   { background-position: 0 0, 0 0; }
+  100% { background-position: 56px 56px, 56px 56px; }
 }
-@keyframes hero-orb-float-delayed {
-  0%, 100% { transform: translate(0, 0) scale(1); }
-  33%      { transform: translate(-35px, 30px) scale(1.08); }
-  66%      { transform: translate(25px, -20px) scale(0.94); }
+.hero-grid-drift { animation: hero-grid-drift 14s linear infinite; }
+
+/* Horizontal accent line sweep */
+@keyframes hero-line-sweep {
+  0%   { transform: translateX(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
 }
-.hero-orb-float         { animation: hero-orb-float 18s ease-in-out infinite; }
-.hero-orb-float-delayed { animation: hero-orb-float-delayed 22s ease-in-out infinite; }
+.hero-line-sweep { animation: hero-line-sweep 7s ease-in-out infinite; }
+
+/* Vertical accent line sweep */
+@keyframes hero-line-sweep-v {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.hero-line-sweep-v { animation: hero-line-sweep-v 9s ease-in-out infinite 1.5s; }
 
 /* Soft pulsing badge ring */
 @keyframes hero-badge-pulse {
