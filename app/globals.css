@@ -210,30 +210,40 @@
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
 
-/* Glow that travels along the grid lines (mask sweeps a diagonal beam) */
-@keyframes hero-grid-glow {
-  0%   { -webkit-mask-position: -50% -50%;   mask-position: -50% -50%; }
-  100% { -webkit-mask-position: 150% 150%;   mask-position: 150% 150%; }
+/* Small glow segments that travel along individual grid lines.
+   Top/left are animated (parent-relative %) so the beam crosses the
+   full height/width of its track. drop-shadow gives a soft halo. */
+.hero-beam {
+  position: absolute;
+  filter: drop-shadow(0 0 5px rgba(249,115,22,0.45));
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
 }
-.hero-grid-glow {
-  -webkit-mask-image: linear-gradient(135deg,
-    transparent 35%,
-    rgba(0,0,0,0.55) 47%,
-    rgba(0,0,0,1)    50%,
-    rgba(0,0,0,0.55) 53%,
-    transparent 65%);
-  mask-image: linear-gradient(135deg,
-    transparent 35%,
-    rgba(0,0,0,0.55) 47%,
-    rgba(0,0,0,1)    50%,
-    rgba(0,0,0,0.55) 53%,
-    transparent 65%);
-  -webkit-mask-size: 220% 220%;
-  mask-size: 220% 220%;
-  -webkit-mask-repeat: no-repeat;
-  mask-repeat: no-repeat;
-  animation: hero-grid-glow 7s linear infinite;
-  will-change: mask-position;
+
+@keyframes hero-beam-down {
+  0%   { top: -70px;  opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { top: 100%;   opacity: 0; }
+}
+@keyframes hero-beam-up {
+  0%   { top: 100%;   opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { top: -70px;  opacity: 0; }
+}
+@keyframes hero-beam-right {
+  0%   { left: -70px; opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { left: 100%;  opacity: 0; }
+}
+@keyframes hero-beam-left {
+  0%   { left: 100%;  opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { left: -70px; opacity: 0; }
 }
 
 /* Soft pulsing badge ring */
