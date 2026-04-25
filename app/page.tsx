@@ -176,12 +176,12 @@ export default async function HomePage() {
                   <span className="text-foreground">Learn to </span>
                   <RotatingWords
                     words={["Code.", "Design.", "Create.", "Lead."]}
-                    className="hero-gradient-text"
+                    className="hero-gradient-text font-handwritten text-[1.2em] align-baseline"
                   />
                   <br className="hidden sm:block" />
                   <span className="text-foreground">Build the </span>
                   <span className="relative inline-block">
-                    <span className="bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 bg-clip-text text-transparent">
                       career
                     </span>
                     <svg
