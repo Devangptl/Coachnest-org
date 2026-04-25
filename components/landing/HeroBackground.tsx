@@ -11,7 +11,7 @@ export default function HeroBackground() {
   const { theme } = useTheme();
   const isLight = theme === "light";
 
-  const baseLine = isLight ? "rgba(15,23,42,0.07)" : "rgba(255,255,255,0.06)";
+  const baseLine = isLight ? "rgba(15, 23, 42, 0.03)" : "rgba(255, 255, 255, 0.03)";
   const gridSize = "56px 56px";
 
   /* Each entry sits on a specific grid line.
@@ -24,14 +24,14 @@ export default function HeroBackground() {
     duration: number;  // seconds for one full pass
     delay: number;     // seconds before first run
   }> = [
-    { axis: "v", dir:  1, track:  4,  duration: 6.5, delay: 0   },
-    { axis: "v", dir: -1, track:  9,  duration: 8,   delay: 1.4 },
-    { axis: "v", dir:  1, track: 15,  duration: 7,   delay: 3   },
-    { axis: "v", dir: -1, track: 21,  duration: 9,   delay: 0.8 },
-    { axis: "h", dir:  1, track:  3,  duration: 7.5, delay: 0.4 },
-    { axis: "h", dir: -1, track:  6,  duration: 8.5, delay: 2.2 },
-    { axis: "h", dir:  1, track:  9,  duration: 6.8, delay: 4   },
-  ];
+      { axis: "v", dir: 1, track: 4, duration: 6.5, delay: 0 },
+      { axis: "v", dir: -1, track: 9, duration: 8, delay: 1.4 },
+      { axis: "v", dir: 1, track: 15, duration: 7, delay: 3 },
+      { axis: "v", dir: -1, track: 21, duration: 9, delay: 0.8 },
+      { axis: "h", dir: 1, track: 3, duration: 7.5, delay: 0.4 },
+      { axis: "h", dir: -1, track: 6, duration: 8.5, delay: 2.2 },
+      { axis: "h", dir: 1, track: 9, duration: 6.8, delay: 4 },
+    ];
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none">
