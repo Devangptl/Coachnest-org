@@ -242,6 +242,27 @@
 }
 .hero-badge-pulse { animation: hero-badge-pulse 2.4s ease-in-out infinite; }
 
+/* Floating chips around the showcase */
+@keyframes hero-float-chip {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(0, -6px); }
+}
+@keyframes hero-float-chip-delayed {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-4px, 5px); }
+}
+.hero-float-chip         { animation: hero-float-chip 4.5s ease-in-out infinite; }
+.hero-float-chip-delayed { animation: hero-float-chip-delayed 5.5s ease-in-out infinite 1s; }
+
+/* Scroll cue — line travels downward */
+@keyframes hero-scroll-cue {
+  0%   { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  35%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  65%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+}
+.hero-scroll-cue { animation: hero-scroll-cue 2.4s ease-in-out infinite; }
+
 /* Subtle terminal grid */
 .hero-grid {
   background-image:

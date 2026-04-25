@@ -145,7 +145,11 @@ export default async function HomePage() {
       <section className="relative -mt-24 pt-24 pb-4 overflow-hidden">
         <HeroBackground />
 
-        <div className="mx-auto w-full max-w-7xl relative z-10 px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 lg:pt-20 pb-10 lg:pb-16">
+        {/* Decorative corner accents */}
+        <div aria-hidden="true" className="pointer-events-none absolute top-28 left-6 w-12 h-12 border-l border-t border-orange-500/30" />
+        <div aria-hidden="true" className="pointer-events-none absolute top-28 right-6 w-12 h-12 border-r border-t border-orange-500/30" />
+
+        <div className="mx-auto w-full max-w-7xl relative z-10 px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 lg:pt-20 pb-12 lg:pb-20">
           <div className="grid lg:grid-cols-12 gap-10 lg:gap-12 items-center">
 
             {/* ── LEFT COLUMN — Copy + CTA ──────────────────────────── */}
@@ -155,11 +159,11 @@ export default async function HomePage() {
               <FadeInSection delay={0}>
                 <Link
                   href="/courses"
-                  className="group inline-flex items-center gap-2.5 bg-orange-500/[0.08] hover:bg-orange-500/[0.14] border border-orange-500/25 hover:border-orange-500/40 text-orange-400 text-[13px] font-medium rounded-full pl-1.5 pr-4 py-1 mb-6 transition-all duration-300 backdrop-blur-sm"
+                  className="group inline-flex items-center gap-2.5 bg-orange-500/[0.08] hover:bg-orange-500/[0.14] border border-orange-500/25 hover:border-orange-500/40 text-orange-400 text-[13px] font-medium rounded-full pl-1.5 pr-4 py-1 mb-7 transition-all duration-300 backdrop-blur-sm"
                 >
                   <span className="hero-badge-pulse flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
                     <Sparkles className="w-3 h-3" />
-                    New
+                    v2.0
                   </span>
                   <span>Spring drop — 40+ new lessons live</span>
                   <ArrowRight className="w-3.5 h-3.5 text-orange-400/70 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all" />
@@ -168,7 +172,7 @@ export default async function HomePage() {
 
               {/* Headline with rotating word */}
               <FadeInSection delay={0.06}>
-                <h1 className="text-[34px] sm:text-[48px] lg:text-[60px] font-bold tracking-tight leading-[1.05] mb-5">
+                <h1 className="text-[36px] sm:text-[52px] lg:text-[64px] font-bold tracking-tight leading-[1.02] mb-6">
                   <span className="text-foreground">Learn to </span>
                   <RotatingWords
                     words={["Code.", "Design.", "Create.", "Lead."]}
@@ -201,7 +205,7 @@ export default async function HomePage() {
 
               {/* Sub-headline */}
               <FadeInSection delay={0.12}>
-                <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto lg:mx-0 mb-8 leading-relaxed">
+                <p className="text-muted-foreground text-base sm:text-lg max-w-xl mx-auto lg:mx-0 mb-9 leading-relaxed">
                   Expert-crafted courses, interactive quizzes, progress tracking and
                   verified certificates — everything you need to level up, in one
                   beautifully simple platform.
@@ -210,19 +214,23 @@ export default async function HomePage() {
 
               {/* CTA Buttons */}
               <FadeInSection delay={0.18}>
-                <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-8">
+                <div className="flex flex-col sm:flex-row items-center lg:items-start justify-center lg:justify-start gap-3 mb-10">
                   <Link
                     href="/signup"
-                    className="group relative inline-flex items-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-600 text-white text-[15px] font-semibold px-7 py-3 rounded-md shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all hover:-translate-y-0.5 ring-1 ring-orange-400/40"
+                    className="group relative inline-flex items-center gap-2 bg-gradient-to-b from-orange-500 to-orange-600 hover:from-orange-400 hover:to-orange-600 text-white text-[15px] font-semibold px-7 py-3 rounded-md shadow-lg shadow-orange-500/30 hover:shadow-orange-500/40 transition-all hover:-translate-y-0.5 ring-1 ring-orange-400/40 overflow-hidden"
                   >
-                    Start learning free
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    {/* Shine sweep on hover */}
+                    <span aria-hidden="true" className="absolute inset-0 -translate-x-full group-hover:translate-x-full transition-transform duration-700 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
+                    <span className="relative">Start learning free</span>
+                    <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                   </Link>
                   <Link
                     href="/courses"
                     className="group inline-flex items-center gap-2 bg-secondary/40 hover:bg-secondary/70 backdrop-blur-sm border border-border hover:border-orange-500/30 text-foreground text-[15px] px-6 py-3 rounded-md font-medium transition-all"
                   >
-                    <Play className="w-3.5 h-3.5 text-orange-500 fill-current" />
+                    <span className="flex items-center justify-center w-5 h-5 rounded-full bg-orange-500/20 group-hover:bg-orange-500/30 transition-colors">
+                      <Play className="w-2.5 h-2.5 text-orange-500 fill-current ml-0.5" />
+                    </span>
                     Browse courses
                   </Link>
                 </div>
@@ -256,7 +264,7 @@ export default async function HomePage() {
                         <span className="ml-1 text-foreground text-xs font-semibold">4.9</span>
                       </div>
                       <p className="text-muted-foreground text-[11px]">
-                        from 2,400+ happy learners
+                        loved by 2,400+ learners
                       </p>
                     </div>
                   </div>
@@ -271,35 +279,43 @@ export default async function HomePage() {
               </FadeInSection>
             </div>
 
-            {/* ── RIGHT COLUMN — Showcase visual ────────────────────── */}
+            {/* ── RIGHT COLUMN — Showcase visual + floating chips ───── */}
             <div className="lg:col-span-5 relative hidden lg:block">
               <FadeInSection delay={0.2} direction="left">
-                <HeroShowcase />
+                <div className="relative">
+                  {/* Floating keyword chips around showcase */}
+                  <div aria-hidden="true" className="pointer-events-none absolute -top-4 -left-2 z-30">
+                    <div className="hero-float-chip flex items-center gap-1.5 bg-card/80 backdrop-blur-md border border-border rounded-full px-2.5 py-1 shadow-md text-[11px] text-foreground/80 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      Live cohort
+                    </div>
+                  </div>
+                  <div aria-hidden="true" className="pointer-events-none absolute top-1/2 -right-3 z-30">
+                    <div className="hero-float-chip-delayed flex items-center gap-1.5 bg-card/80 backdrop-blur-md border border-border rounded-full px-2.5 py-1 shadow-md text-[11px] text-foreground/80 font-medium">
+                      <Award className="w-3 h-3 text-orange-400" />
+                      Certified
+                    </div>
+                  </div>
+                  <div aria-hidden="true" className="pointer-events-none absolute -bottom-2 left-6 z-30">
+                    <div className="hero-float-chip flex items-center gap-1.5 bg-card/80 backdrop-blur-md border border-border rounded-full px-2.5 py-1 shadow-md text-[11px] text-foreground/80 font-medium">
+                      <Zap className="w-3 h-3 text-amber-400" />
+                      AI-assisted
+                    </div>
+                  </div>
+
+                  <HeroShowcase />
+                </div>
               </FadeInSection>
             </div>
           </div>
 
-          {/* ── Inline mini-stats strip ─────────────────────────────── */}
-          <FadeInSection delay={0.3}>
-            <div className="mt-12 lg:mt-16 grid grid-cols-2 sm:grid-cols-4 gap-px rounded-xl overflow-hidden border border-border bg-border/60 backdrop-blur-sm">
-              {([
-                { label: "Active learners", value: Math.max(stats.studentCount, 99), suffix: "+", display: null },
-                { label: "Expert courses", value: Math.max(stats.courseCount, 20), suffix: "+", display: null },
-                { label: "Lessons completed", value: Math.max(stats.enrollmentCount, 12000), suffix: "+", display: null },
-                { label: "Avg. rating", value: 49, suffix: "", display: "4.9" },
-              ] as { label: string; value: number; suffix: string; display: string | null }[]).map((s) => (
-                <div
-                  key={s.label}
-                  className="bg-background/60 px-4 py-5 text-center"
-                >
-                  <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
-                    {s.display ?? <AnimatedCounter end={s.value} suffix={s.suffix} />}
-                  </div>
-                  <p className="text-muted-foreground text-[11px] uppercase tracking-wider mt-1">
-                    {s.label}
-                  </p>
-                </div>
-              ))}
+          {/* ── Scroll cue ──────────────────────────────────────────── */}
+          <FadeInSection delay={0.4}>
+            <div className="hidden sm:flex flex-col items-center mt-14 lg:mt-20">
+              <span className="text-[10px] uppercase tracking-[0.3em] text-muted-foreground/60 mb-2">
+                Scroll to explore
+              </span>
+              <div className="hero-scroll-cue w-px h-10 bg-gradient-to-b from-orange-500/60 to-transparent" />
             </div>
           </FadeInSection>
         </div>
