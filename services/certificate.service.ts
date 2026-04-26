@@ -85,7 +85,16 @@ export async function generateCertificatePDFForAdmin(certId: string) {
 export async function getUserCertificates(userId: string) {
   return prisma.certificate.findMany({
     where: { userId },
-    include: { course: { select: { id: true, title: true, thumbnail: true } } },
+    include: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+          thumbnail: true,
+          createdBy: { select: { name: true } },
+        },
+      },
+    },
     orderBy: { issuedAt: "desc" },
   });
 }

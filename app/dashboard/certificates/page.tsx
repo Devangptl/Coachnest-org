@@ -1,10 +1,15 @@
 /**
  * /dashboard/certificates — Student's earned certificates.
+ *
+ * Renders each certificate as a full on-screen preview matching the printable
+ * design, with a Download PDF action.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getUserCertificates } from "@/services/certificate.service";
-import CertificateCard from "@/components/CertificateCard";
+import CertificatePreview from "@/components/CertificatePreview";
+import CertificateDownloadButton from "@/components/CertificateDownloadButton";
+import { format } from "date-fns";
 import { Award } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 
@@ -35,19 +40,28 @@ export default async function CertificatesPage() {
           </a>
         </GlassCard>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-8">
           {certs.map((cert) => (
-            <CertificateCard
-              key={cert.id}
-              cert={{
-                ...cert,
-                issuedAt: cert.issuedAt.toISOString(),
-                course: {
-                  ...cert.course,
-                  thumbnail: cert.course.thumbnail ?? null,
-                },
-              }}
-            />
+            <div key={cert.id} className="space-y-3">
+              <CertificatePreview
+                recipientName={session.name}
+                courseTitle={cert.course.title}
+                issuedAt={cert.issuedAt}
+                certificateId={cert.id}
+                instructorName={cert.course.createdBy?.name ?? "Course Instructor"}
+              />
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+                <div className="text-xs text-muted-foreground/70">
+                  Issued {format(new Date(cert.issuedAt), "d MMM yyyy")}
+                  <span className="mx-2">·</span>
+                  ID {cert.id.slice(0, 12).toUpperCase()}
+                </div>
+                <CertificateDownloadButton
+                  courseId={cert.course.id}
+                  courseTitle={cert.course.title}
+                />
+              </div>
+            </div>
           ))}
         </div>
       )}
