@@ -1,9 +1,9 @@
 /**
  * Certificate PDF generation using pdf-lib.
  *
- * Visual language matches the on-screen CertificatePreview component:
+ * Visual language matches the on-screen certificate design:
  *   - Light background with a subtle guilloché pattern
- *   - CoachNest brand mark top-left
+ *   - CoachNest logo top-left (embedded from /public/logo.png)
  *   - Big serif "CERTIFICATE OF COMPLETION" title
  *   - Recipient name in brand-orange italic
  *   - Course title + completion date
@@ -13,6 +13,8 @@
  *
  * Landscape A4: 841.89 × 595.28 pt
  */
+import { promises as fs } from "node:fs";
+import path from "node:path";
 import { PDFDocument, PDFFont, PDFPage, degrees, rgb, StandardFonts } from "pdf-lib";
 
 interface CertificateData {
@@ -150,25 +152,18 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: C.bg });
   drawGuilloche(page, W * 0.62, H * 0.5);
 
-  // ── Brand mark top-left ────────────────────────────────────────────────────
-  // Logo placeholder square (the actual /logo.png isn't loaded here to keep
-  // PDF generation file-system-free; an outlined square stands in for the
-  // mark and the wordmark carries the brand recognition).
+  // ── Brand logo top-left ────────────────────────────────────────────────────
   const brandX = 42;
-  const brandY = H - 60;
-  page.drawRectangle({
-    x: brandX, y: brandY - 4,
-    width: 28, height: 28,
-    borderColor: C.orange, borderWidth: 1.4,
-    color: C.bg, opacity: 0,
+  const logoBytes = await fs.readFile(path.join(process.cwd(), "public", "logo.png"));
+  const logo = await doc.embedPng(logoBytes);
+  const logoH = 36;
+  const logoW = (logo.width / logo.height) * logoH;
+  page.drawImage(logo, {
+    x: brandX,
+    y: H - 30 - logoH,
+    width: logoW,
+    height: logoH,
   });
-  page.drawText("CN", {
-    x: brandX + 4, y: brandY + 4,
-    size: 14, font: sans, color: C.orange,
-  });
-
-  page.drawText("Coach", { x: brandX + 38, y: brandY + 12, size: 13, font: sans, color: C.orange });
-  page.drawText("Nest",  { x: brandX + 38, y: brandY - 2,  size: 13, font: sans, color: C.ink });
 
   // ── Title ──────────────────────────────────────────────────────────────────
   // Tracked-out by inserting hair spaces (pdf-lib has no characterSpacing prop).

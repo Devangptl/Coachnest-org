@@ -1,54 +1,27 @@
 /**
- * Certificates loading skeleton — header + full-preview placeholders that
- * match the redesigned dashboard layout.
+ * Certificates loading skeleton — header + table-style row placeholders.
  */
 import { Skeleton } from "@/components/ui/Skeleton";
 
-function CertificatePreviewSkeleton() {
+function CertificateRowSkeleton() {
   return (
-    <div className="space-y-3">
-      <div className="relative w-full aspect-[1.414/1] bg-card border border-border rounded-lg overflow-hidden animate-pulse">
-        {/* Brand mark */}
-        <div className="absolute top-[5%] left-[5%] flex items-center gap-3">
-          <Skeleton className="w-10 h-10 rounded-md flex-shrink-0" />
-          <div className="space-y-1.5">
-            <Skeleton h="h-3" w="w-14" />
-            <Skeleton h="h-3" w="w-12" />
-          </div>
-        </div>
-        {/* Title */}
-        <div className="absolute top-[26%] left-[5%] right-[24%] space-y-2">
-          <Skeleton className="h-7 w-2/3 rounded-md" />
-        </div>
-        {/* Body */}
-        <div className="absolute top-[42%] left-[5%] right-[26%] space-y-3">
-          <Skeleton h="h-3" w="w-24" />
-          <Skeleton className="h-7 w-1/2 rounded-md" />
-          <div className="pt-2 space-y-2">
-            <Skeleton h="h-3" w="w-48" />
-            <Skeleton className="h-5 w-2/3 rounded-md" />
-            <Skeleton h="h-3" w="w-40" />
-          </div>
-        </div>
-        {/* Signature */}
-        <div className="absolute bottom-[7%] left-[5%] space-y-1.5">
-          <Skeleton className="h-8 w-24 rounded-md" />
-          <Skeleton h="h-3" w="w-28" />
-        </div>
-        {/* Ribbon */}
-        <div className="absolute top-0 right-[18%] w-[7%] min-w-[36px] max-w-[72px] h-[58%]">
-          <Skeleton className="w-full h-full rounded-none" />
-        </div>
-        {/* QR */}
-        <div className="absolute bottom-[7%] right-[5%]">
-          <Skeleton className="w-[clamp(48px,7vw,84px)] aspect-square" />
-        </div>
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4 animate-pulse">
+      {/* Course */}
+      <div className="col-span-6 flex items-center gap-3 min-w-0">
+        <Skeleton className="w-10 h-10 rounded-lg flex-shrink-0" />
+        <Skeleton h="h-4" w="w-2/3" />
       </div>
-
-      {/* Footer row: meta + button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 animate-pulse">
-        <Skeleton h="h-3" w="w-56" />
-        <Skeleton className="h-9 w-32 rounded-md" />
+      {/* Date */}
+      <div className="col-span-2">
+        <Skeleton h="h-3.5" w="w-24" />
+      </div>
+      {/* ID */}
+      <div className="col-span-2">
+        <Skeleton h="h-3" w="w-20" />
+      </div>
+      {/* Action */}
+      <div className="col-span-2 flex justify-end">
+        <Skeleton className="h-8 w-28 rounded-md" />
       </div>
     </div>
   );
@@ -63,11 +36,21 @@ export default function CertificatesLoading() {
         <Skeleton className="h-4 w-36 rounded-lg" />
       </div>
 
-      {/* Certificate previews */}
-      <div className="space-y-8">
-        {Array.from({ length: 2 }).map((_, i) => (
-          <CertificatePreviewSkeleton key={i} />
-        ))}
+      {/* Table */}
+      <div className="bg-card border border-border rounded-md overflow-hidden">
+        {/* Header row */}
+        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-border animate-pulse">
+          <Skeleton h="h-3" w="w-20" className="col-span-6" />
+          <Skeleton h="h-3" w="w-16" className="col-span-2" />
+          <Skeleton h="h-3" w="w-24" className="col-span-2" />
+          <Skeleton h="h-3" w="w-16" className="col-span-2 ml-auto" />
+        </div>
+        {/* Rows */}
+        <div className="divide-y divide-border/50">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CertificateRowSkeleton key={i} />
+          ))}
+        </div>
       </div>
     </div>
   );

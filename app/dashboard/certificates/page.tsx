@@ -1,17 +1,14 @@
 /**
- * /dashboard/certificates — Student's earned certificates.
- *
- * Renders each certificate as a full on-screen preview matching the printable
- * design, with a Download PDF action.
+ * /dashboard/certificates — Student's earned certificates listed as a table.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getUserCertificates } from "@/services/certificate.service";
-import CertificatePreview from "@/components/CertificatePreview";
 import CertificateDownloadButton from "@/components/CertificateDownloadButton";
-import { format } from "date-fns";
-import { Award } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import Image from "next/image";
+import { Award, BookOpen, Calendar, Hash } from "lucide-react";
+import { formatDate } from "@/lib/utils";
 
 export default async function CertificatesPage() {
   const session = await getSession();
@@ -40,30 +37,73 @@ export default async function CertificatesPage() {
           </a>
         </GlassCard>
       ) : (
-        <div className="space-y-8">
-          {certs.map((cert) => (
-            <div key={cert.id} className="space-y-3">
-              <CertificatePreview
-                recipientName={session.name}
-                courseTitle={cert.course.title}
-                issuedAt={cert.issuedAt}
-                certificateId={cert.id}
-                instructorName={cert.course.createdBy?.name ?? "Course Instructor"}
-              />
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-                <div className="text-xs text-muted-foreground/70">
-                  Issued {format(new Date(cert.issuedAt), "d MMM yyyy")}
-                  <span className="mx-2">·</span>
-                  ID {cert.id.slice(0, 12).toUpperCase()}
-                </div>
-                <CertificateDownloadButton
-                  courseId={cert.course.id}
-                  courseTitle={cert.course.title}
-                />
-              </div>
+        <GlassCard padding="sm">
+          {/* Table header */}
+          <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-border text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider">
+            <div className="col-span-6 flex items-center gap-2">
+              <BookOpen className="w-3 h-3" /> Course
             </div>
-          ))}
-        </div>
+            <div className="col-span-2 flex items-center gap-2">
+              <Calendar className="w-3 h-3" /> Issued
+            </div>
+            <div className="col-span-2 flex items-center gap-2">
+              <Hash className="w-3 h-3" /> Certificate ID
+            </div>
+            <div className="col-span-2 text-right">Action</div>
+          </div>
+
+          {/* Rows */}
+          <div className="divide-y divide-border/50">
+            {certs.map((cert) => (
+              <div
+                key={cert.id}
+                className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4 transition-colors"
+              >
+                {/* Course */}
+                <div className="col-span-6 flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center flex-shrink-0 overflow-hidden">
+                    {cert.course.thumbnail ? (
+                      <Image
+                        src={cert.course.thumbnail}
+                        alt={cert.course.title}
+                        width={40}
+                        height={40}
+                        className="object-cover w-full h-full"
+                      />
+                    ) : (
+                      <BookOpen className="w-4 h-4 text-muted-foreground/40" />
+                    )}
+                  </div>
+                  <p className="text-foreground text-sm font-medium truncate">
+                    {cert.course.title}
+                  </p>
+                </div>
+
+                {/* Date */}
+                <div className="col-span-2">
+                  <p className="text-muted-foreground text-sm">
+                    {formatDate(cert.issuedAt)}
+                  </p>
+                </div>
+
+                {/* Certificate ID */}
+                <div className="col-span-2">
+                  <p className="text-muted-foreground/80 text-xs font-mono tracking-wider truncate">
+                    {cert.id.slice(0, 12).toUpperCase()}
+                  </p>
+                </div>
+
+                {/* Action */}
+                <div className="col-span-2 flex justify-end">
+                  <CertificateDownloadButton
+                    courseId={cert.course.id}
+                    courseTitle={cert.course.title}
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        </GlassCard>
       )}
     </div>
   );
