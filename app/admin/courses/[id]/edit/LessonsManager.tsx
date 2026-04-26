@@ -111,6 +111,15 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   const autosaveAbortRef = useRef<AbortController | null>(null);
   const savedHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // New-lesson autosave state — creates a draft lesson on first save, then PATCHes
+  const [draftLessonId, setDraftLessonId] = useState<string | null>(null);
+  const [formAutosaveStatus, setFormAutosaveStatus] =
+    useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  const lastFormSavedRef = useRef<typeof emptyForm | null>(null);
+  const formAutosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const formAutosaveAbortRef = useRef<AbortController | null>(null);
+  const formSavedHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   function cancelPendingAutosave() {
     if (autosaveTimerRef.current) {
       clearTimeout(autosaveTimerRef.current);
@@ -188,6 +197,102 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
   useEffect(() => () => cancelPendingAutosave(), []);
 
+  function cancelPendingFormAutosave() {
+    if (formAutosaveTimerRef.current) {
+      clearTimeout(formAutosaveTimerRef.current);
+      formAutosaveTimerRef.current = null;
+    }
+    if (formAutosaveAbortRef.current) {
+      formAutosaveAbortRef.current.abort();
+      formAutosaveAbortRef.current = null;
+    }
+    if (formSavedHideTimerRef.current) {
+      clearTimeout(formSavedHideTimerRef.current);
+      formSavedHideTimerRef.current = null;
+    }
+  }
+
+  // Debounced autosave for new TEXT/VIDEO lesson — POST on first save, then PATCH
+  useEffect(() => {
+    if (!showForm) return;
+    if (form.type === "QUIZ") return;
+    if (!form.title.trim()) return;
+
+    const last = lastFormSavedRef.current;
+    const unchanged =
+      last &&
+      form.title === last.title &&
+      form.type === last.type &&
+      form.content === last.content &&
+      form.duration === last.duration &&
+      form.isFree === last.isFree;
+    if (unchanged) return;
+
+    if (formSavedHideTimerRef.current) {
+      clearTimeout(formSavedHideTimerRef.current);
+      formSavedHideTimerRef.current = null;
+    }
+    setFormAutosaveStatus("pending");
+    if (formAutosaveTimerRef.current) clearTimeout(formAutosaveTimerRef.current);
+
+    formAutosaveTimerRef.current = setTimeout(async () => {
+      if (formAutosaveAbortRef.current) formAutosaveAbortRef.current.abort();
+      const controller = new AbortController();
+      formAutosaveAbortRef.current = controller;
+      const snapshot = { ...form };
+
+      setFormAutosaveStatus("saving");
+      try {
+        const payload = {
+          title: snapshot.title,
+          type: snapshot.type,
+          content: snapshot.type === "QUIZ" ? null : snapshot.content,
+          duration:
+            snapshot.type === "VIDEO" ? Number(snapshot.duration) || null : null,
+          isFree: snapshot.isFree,
+        };
+        let res: Response;
+        if (draftLessonId) {
+          res = await fetch(`/api/lessons/${draftLessonId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+        } else {
+          res = await fetch("/api/lessons", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ courseId, ...payload }),
+            signal: controller.signal,
+          });
+          if (res.ok) {
+            const { lesson } = await res.json();
+            setDraftLessonId(lesson.id);
+            router.refresh();
+          }
+        }
+        if (!res.ok) throw new Error();
+        lastFormSavedRef.current = snapshot;
+        setFormAutosaveStatus("saved");
+        if (formSavedHideTimerRef.current) clearTimeout(formSavedHideTimerRef.current);
+        formSavedHideTimerRef.current = setTimeout(
+          () => setFormAutosaveStatus("idle"),
+          2000,
+        );
+      } catch (err) {
+        if ((err as { name?: string })?.name === "AbortError") return;
+        setFormAutosaveStatus("error");
+      }
+    }, 1200);
+
+    return () => {
+      if (formAutosaveTimerRef.current) clearTimeout(formAutosaveTimerRef.current);
+    };
+  }, [form, showForm, draftLessonId, courseId, router]);
+
+  useEffect(() => () => cancelPendingFormAutosave(), []);
+
   // ── Quiz builder helpers ──────────────────────────────────────────────────
 
   function addQuestion(setQF: typeof setQuizForm) {
@@ -262,8 +367,60 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
   // ── Add lesson ────────────────────────────────────────────────────────────
 
+  function closeNewLessonForm() {
+    cancelPendingFormAutosave();
+    setForm(emptyForm);
+    setQuizForm(emptyQuizForm);
+    setShowForm(false);
+    setDraftLessonId(null);
+    lastFormSavedRef.current = null;
+    setFormAutosaveStatus("idle");
+  }
+
   async function handleAddLesson() {
     if (!form.title) return;
+
+    // TEXT/VIDEO lessons are autosaved — if a draft already exists, just close.
+    if (form.type !== "QUIZ" && draftLessonId) {
+      cancelPendingFormAutosave();
+      // If the user typed more after the last successful save, flush it first.
+      const last = lastFormSavedRef.current;
+      const dirty =
+        !last ||
+        form.title !== last.title ||
+        form.type !== last.type ||
+        form.content !== last.content ||
+        form.duration !== last.duration ||
+        form.isFree !== last.isFree;
+
+      if (dirty) {
+        setSubmitting(true);
+        try {
+          const res = await fetch(`/api/lessons/${draftLessonId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: form.title,
+              type: form.type,
+              content: form.content,
+              duration: form.type === "VIDEO" ? Number(form.duration) || null : null,
+              isFree: form.isFree,
+            }),
+          });
+          if (!res.ok) throw new Error();
+        } catch {
+          toast.error("Failed to save lesson");
+          setSubmitting(false);
+          return;
+        }
+        setSubmitting(false);
+      }
+
+      toast.success("Lesson added!");
+      closeNewLessonForm();
+      router.refresh();
+      return;
+    }
 
     if (form.type === "QUIZ" && !validateQuiz(quizForm)) return;
 
@@ -312,9 +469,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       }
 
       toast.success("Lesson added!");
-      setForm(emptyForm);
-      setQuizForm(emptyQuizForm);
-      setShowForm(false);
+      closeNewLessonForm();
       router.refresh();
     } catch {
       toast.error("Failed to add lesson");
@@ -597,10 +752,15 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       {/* Add lesson form */}
       {showForm && (
         <GlassCard className="space-y-4">
-          <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-            <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
-            New Lesson
-          </h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
+              <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
+              New Lesson
+            </h3>
+            {form.type !== "QUIZ" && (
+              <AutosaveIndicator status={formAutosaveStatus} />
+            )}
+          </div>
 
           <LessonFormFields
             form={form}
@@ -618,14 +778,14 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
               className="btn-primary flex items-center gap-2 text-sm"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Add Lesson
+              {form.type !== "QUIZ" && draftLessonId ? "Done" : "Add Lesson"}
             </button>
             <button
               type="button"
-              onClick={() => { setShowForm(false); setQuizForm(emptyQuizForm); }}
+              onClick={closeNewLessonForm}
               className="btn-ghost text-sm border border-border"
             >
-              Cancel
+              {form.type !== "QUIZ" && draftLessonId ? "Close" : "Cancel"}
             </button>
           </div>
         </GlassCard>
