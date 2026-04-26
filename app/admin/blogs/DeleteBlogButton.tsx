@@ -31,7 +31,7 @@ export default function DeleteBlogButton({ blogId }: { blogId: string }) {
       ) : (
         <Trash2 className="w-3 h-3" />
       )}
-      <span className="hidden lg:inline">Delete</span>
+      <span className="hidden md:inline">Delete</span>
     </button>
   );
 }

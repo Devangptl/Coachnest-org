@@ -47,11 +47,11 @@ export default async function AdminBlogsPage() {
         <GlassCard padding="sm">
           {/* Table header — md+ only */}
           <div className="hidden md:grid grid-cols-12 gap-4 px-4 py-3 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
-            <div className="col-span-5">Title</div>
+            <div className="col-span-4">Title</div>
             <div className="col-span-2">Author</div>
-            <div className="col-span-2 text-center">Date</div>
+            <div className="col-span-2">Date</div>
             <div className="col-span-1 text-center">Status</div>
-            <div className="col-span-2 text-right">Actions</div>
+            <div className="col-span-3 text-right">Actions</div>
           </div>
 
           <div className="divide-y divide-border/50">
@@ -61,7 +61,7 @@ export default async function AdminBlogsPage() {
                 className="md:grid md:grid-cols-12 md:gap-4 md:items-center px-4 py-4 hover:bg-secondary transition-colors"
               >
                 {/* Title + tags */}
-                <div className="md:col-span-5 min-w-0">
+                <div className="md:col-span-4 min-w-0">
                   <div className="flex items-start justify-between gap-2 md:block">
                     <p className="text-foreground text-sm font-medium truncate flex-1">
                       {blog.title}
@@ -99,11 +99,11 @@ export default async function AdminBlogsPage() {
                   </div>
                 </div>
 
-                <div className="hidden md:block md:col-span-2 text-muted-foreground text-sm truncate">
+                <div className="hidden md:block md:col-span-2 min-w-0 text-muted-foreground text-sm truncate">
                   {blog.author.name}
                 </div>
 
-                <div className="hidden md:block md:col-span-2 text-center text-muted-foreground text-xs">
+                <div className="hidden md:block md:col-span-2 text-muted-foreground text-xs whitespace-nowrap">
                   {formatDate(blog.createdAt)}
                 </div>
 
@@ -120,20 +120,20 @@ export default async function AdminBlogsPage() {
                 </div>
 
                 {/* Actions */}
-                <div className="md:col-span-2 flex justify-end items-center gap-1 mt-3 md:mt-0 pt-3 md:pt-0 border-t border-border/40 md:border-0">
+                <div className="md:col-span-3 flex justify-end items-center gap-1 mt-3 md:mt-0 pt-3 md:pt-0 border-t border-border/40 md:border-0">
                   <Link
                     href={`/admin/blogs/${blog.id}/edit`}
                     className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 py-1 rounded-lg hover:bg-secondary"
                   >
                     <Pencil className="w-3 h-3" />
-                    <span className="hidden lg:inline">Edit</span>
+                    <span className="hidden md:inline">Edit</span>
                   </Link>
                   <Link
                     href={`/blog/${blog.slug}`}
                     className="inline-flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded-lg hover:bg-orange-500/10"
                   >
                     <Eye className="w-3 h-3" />
-                    <span className="hidden lg:inline">View</span>
+                    <span className="hidden md:inline">View</span>
                   </Link>
                   <DeleteBlogButton blogId={blog.id} />
                 </div>
