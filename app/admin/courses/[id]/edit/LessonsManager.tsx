@@ -5,7 +5,7 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import MarkdownEditor from "@/components/MarkdownEditor";
@@ -23,6 +23,8 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  CloudUpload,
+  CloudOff,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -100,6 +102,91 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   const [editQuizId, setEditQuizId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loadingQuiz, setLoadingQuiz] = useState(false);
+
+  // Autosave state — only used for TEXT/VIDEO lesson edits
+  const [autosaveStatus, setAutosaveStatus] =
+    useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  const lastSavedRef = useRef<typeof emptyForm | null>(null);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autosaveAbortRef = useRef<AbortController | null>(null);
+  const savedHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function cancelPendingAutosave() {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    if (autosaveAbortRef.current) {
+      autosaveAbortRef.current.abort();
+      autosaveAbortRef.current = null;
+    }
+    if (savedHideTimerRef.current) {
+      clearTimeout(savedHideTimerRef.current);
+      savedHideTimerRef.current = null;
+    }
+  }
+
+  // Debounced autosave for TEXT/VIDEO lesson edits
+  useEffect(() => {
+    if (!editingId) return;
+    if (editForm.type === "QUIZ") return;
+    if (!editForm.title.trim()) return;
+    if (!lastSavedRef.current) return;
+
+    const last = lastSavedRef.current;
+    const unchanged =
+      editForm.title === last.title &&
+      editForm.type === last.type &&
+      editForm.content === last.content &&
+      editForm.duration === last.duration &&
+      editForm.isFree === last.isFree;
+    if (unchanged) return;
+
+    if (savedHideTimerRef.current) {
+      clearTimeout(savedHideTimerRef.current);
+      savedHideTimerRef.current = null;
+    }
+    setAutosaveStatus("pending");
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+
+    autosaveTimerRef.current = setTimeout(async () => {
+      if (autosaveAbortRef.current) autosaveAbortRef.current.abort();
+      const controller = new AbortController();
+      autosaveAbortRef.current = controller;
+      const snapshot = { ...editForm };
+
+      setAutosaveStatus("saving");
+      try {
+        const res = await fetch(`/api/lessons/${editingId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: snapshot.title,
+            type: snapshot.type,
+            content: snapshot.type === "QUIZ" ? null : snapshot.content,
+            duration:
+              snapshot.type === "VIDEO" ? Number(snapshot.duration) || null : null,
+            isFree: snapshot.isFree,
+          }),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error();
+        lastSavedRef.current = snapshot;
+        setAutosaveStatus("saved");
+        if (savedHideTimerRef.current) clearTimeout(savedHideTimerRef.current);
+        savedHideTimerRef.current = setTimeout(() => setAutosaveStatus("idle"), 2000);
+      } catch (err) {
+        if ((err as { name?: string })?.name === "AbortError") return;
+        setAutosaveStatus("error");
+      }
+    }, 1200);
+
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+  }, [editForm, editingId]);
+
+  useEffect(() => () => cancelPendingAutosave(), []);
 
   // ── Quiz builder helpers ──────────────────────────────────────────────────
 
@@ -257,14 +344,18 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   // ── Edit lesson ───────────────────────────────────────────────────────────
 
   async function startEditing(lesson: Lesson) {
-    setEditingId(lesson.id);
-    setEditForm({
+    cancelPendingAutosave();
+    const initialEditForm = {
       title: lesson.title,
       type: lesson.type,
       content: lesson.content ?? "",
       duration: lesson.duration?.toString() ?? "",
       isFree: lesson.isFree,
-    });
+    };
+    setEditingId(lesson.id);
+    setEditForm(initialEditForm);
+    lastSavedRef.current = initialEditForm;
+    setAutosaveStatus("idle");
     setShowForm(false);
 
     // If QUIZ type, load existing quiz data
@@ -297,10 +388,14 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   }
 
   function cancelEditing() {
+    cancelPendingAutosave();
     setEditingId(null);
     setEditForm(emptyForm);
     setEditQuizForm(emptyQuizForm);
     setEditQuizId(null);
+    lastSavedRef.current = null;
+    setAutosaveStatus("idle");
+    router.refresh();
   }
 
   async function handleSaveEdit() {
@@ -308,6 +403,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
     if (editForm.type === "QUIZ" && !validateQuiz(editQuizForm)) return;
 
+    cancelPendingAutosave();
     setSaving(true);
     try {
       const res = await fetch(`/api/lessons/${editingId}`, {
@@ -391,17 +487,23 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
           return (
             <GlassCard key={lesson.id} className="space-y-4">
               {/* Edit header */}
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
                   <Pencil className="w-3.5 h-3.5 text-orange-400" />
                   Edit Lesson
                 </h3>
-                <button
-                  onClick={cancelEditing}
-                  className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+                <div className="flex items-center gap-3">
+                  {editForm.type !== "QUIZ" && (
+                    <AutosaveIndicator status={autosaveStatus} />
+                  )}
+                  <button
+                    onClick={cancelEditing}
+                    className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
+                    title="Close"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
 
               <LessonFormFields
@@ -855,5 +957,49 @@ function QuizBuilderInline({
         )}
       </div>
     </div>
+  );
+}
+
+// ── Autosave indicator ───────────────────────────────────────────────────────
+
+function AutosaveIndicator({
+  status,
+}: {
+  status: "idle" | "pending" | "saving" | "saved" | "error";
+}) {
+  if (status === "idle") return null;
+
+  if (status === "pending") {
+    return (
+      <span className="flex items-center gap-1.5 text-muted-foreground/70 text-xs">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+        Unsaved changes
+      </span>
+    );
+  }
+
+  if (status === "saving") {
+    return (
+      <span className="flex items-center gap-1.5 text-muted-foreground text-xs">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        Saving…
+      </span>
+    );
+  }
+
+  if (status === "saved") {
+    return (
+      <span className="flex items-center gap-1.5 text-emerald-400 text-xs">
+        <CloudUpload className="w-3 h-3" />
+        Saved
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-1.5 text-red-400 text-xs">
+      <CloudOff className="w-3 h-3" />
+      Save failed
+    </span>
   );
 }
