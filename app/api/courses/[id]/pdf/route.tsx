@@ -346,6 +346,29 @@ async function generateCoursePDF(course: any) {
     if (y - needed < contentBot) newPage();
   };
 
+  // ── Vertical rhythm tokens ───────────────────────────────────────────────
+  // Centralized so spacing stays consistent across every block type.
+  // Convention: each block consumes its OWN trailing gap so the next block
+  // starts directly. The "before" gaps below are only for blocks that need
+  // extra breathing room above (headings, code, quotes, hr).
+  const SP = {
+    beforeH1:     20,
+    beforeH2:     16,
+    beforeH3:     12,
+    afterHeading:  6,
+    afterPara:    10,
+    listItemGap:   4,
+    afterList:     8,
+    beforeCode:   12,
+    afterCode:    14,
+    beforeQuote:  10,
+    afterQuote:   10,
+    hrAbove:      14,
+    hrBelow:      14,
+    lessonGap:    32,
+    afterLessonHeader: 16,
+  };
+
   // Render markdown spans with per-token font/colour, wrapping at usableW.
   // Supports bold, italic, inline code, and underlined links.
   const drawRichSpans = (
@@ -357,7 +380,8 @@ async function generateCoursePDF(course: any) {
   ) => {
     if (spans.length === 0) return;
 
-    const lineH  = baseSize + 5;
+    // Body text uses ~1.55 leading; headings stay tighter (~1.3) for impact.
+    const lineH  = baseSize >= 13 ? baseSize + 4 : baseSize + 6;
     const startX = margin + indent;
     const maxW   = usableW - indent;
 
@@ -428,22 +452,15 @@ async function generateCoursePDF(course: any) {
   };
 
   // ── Lessons ──────────────────────────────────────────────────────────────
+  const headerH = 38;
   for (let i = 0; i < course.lessons.length; i++) {
     const lesson = course.lessons[i];
 
-    ensureSpace(80);
+    // Reserve a comfortable amount of room so a lesson header doesn't strand
+    // alone at the bottom of a page.
+    ensureSpace(headerH + SP.afterLessonHeader + 60);
     lessonPageIndices.push(doc.getPageCount() - 1);
 
-    y -= 12;
-
-    // Check again after possible page break, update index
-    if (lessonPageIndices[i] !== doc.getPageCount() - 1) {
-      lessonPageIndices[i] = doc.getPageCount() - 1;
-    }
-
-    // Lesson section header
-    const headerH = 38;
-    ensureSpace(headerH + 16);
     if (lessonPageIndices[i] !== doc.getPageCount() - 1) {
       lessonPageIndices[i] = doc.getPageCount() - 1;
     }
@@ -467,13 +484,13 @@ async function generateCoursePDF(course: any) {
 
     y -= headerH;
 
-    // Separator
+    // Separator + breathing room before the lesson body
     page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
-    y -= 14;
+    y -= SP.afterLessonHeader;
 
     if (!lesson.content) {
       page.drawText("No text content available for this lesson.", { x: margin, y, size: 10, font: fontOblique, color: textLight });
-      y -= 20;
+      y -= 24;
       continue;
     }
 
@@ -482,27 +499,29 @@ async function generateCoursePDF(course: any) {
     for (const block of blocks) {
       switch (block.type) {
         case "h1":
-          y -= 8; ensureSpace(24);
+          y -= SP.beforeH1; ensureSpace(28);
           drawRichSpans(parseInline(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
+          y -= SP.afterHeading;
           break;
         case "h2":
-          y -= 6; ensureSpace(21);
+          y -= SP.beforeH2; ensureSpace(24);
           drawRichSpans(parseInline(block.text), fontBold, 13, textDark);
+          y -= SP.afterHeading;
           break;
         case "h3":
-          y -= 4; ensureSpace(18);
+          y -= SP.beforeH3; ensureSpace(20);
           drawRichSpans(parseInline(block.text), fontBold, 11, textMid);
+          y -= SP.afterHeading;
           break;
         case "paragraph":
-          y -= 3;
           drawRichSpans(parseInline(block.text), font, 10.5, textDark);
+          y -= SP.afterPara;
           break;
         case "blockquote": {
-          y -= 4; ensureSpace(20);
+          y -= SP.beforeQuote; ensureSpace(24);
           const quoteIndent = 18;
           const startY = y + 4;
-          const spans  = parseInline(block.text);
-          drawRichSpans(spans, fontOblique, 10.5, textMid, quoteIndent);
+          drawRichSpans(parseInline(block.text), fontOblique, 10.5, textMid, quoteIndent);
           // Left orange bar spanning the rendered block
           const endY = y + 4;
           page.drawRectangle({
@@ -513,20 +532,20 @@ async function generateCoursePDF(course: any) {
             color: orange,
             opacity: 0.7,
           });
-          y -= 2;
+          y -= SP.afterQuote;
           break;
         }
         case "hr":
-          y -= 8; ensureSpace(12);
+          y -= SP.hrAbove; ensureSpace(12);
           page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
-          y -= 10;
+          y -= SP.hrBelow;
           break;
         case "code": {
-          y -= 6;
+          y -= SP.beforeCode;
           const codeLines = block.code.split("\n");
           const hasLabel  = block.lang && block.lang !== "code";
           const langH     = hasLabel ? 14 : 0;
-          const blockH    = 8 + langH + codeLines.length * 12 + 8;
+          const blockH    = 10 + langH + codeLines.length * 12 + 10;
 
           const pageH = contentTop - contentBot;
           if (blockH <= pageH && y - blockH < contentBot) newPage();
@@ -537,7 +556,7 @@ async function generateCoursePDF(course: any) {
             page.drawRectangle({ x: margin, y: y - blockH, width: 3,     height: blockH, color: orange, opacity: 0.65 });
           }
 
-          y -= 8;
+          y -= 10;
 
           if (hasLabel) {
             if (y < contentBot) newPage();
@@ -551,29 +570,31 @@ async function generateCoursePDF(course: any) {
             y -= 12;
           }
 
-          y -= 8;
+          y -= SP.afterCode;
           break;
         }
         case "list":
-          y -= 3;
           for (const item of block.items) {
-            ensureSpace(16);
+            ensureSpace(20);
             page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
             drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            y -= SP.listItemGap;
           }
+          y -= SP.afterList - SP.listItemGap;
           break;
         case "numlist":
-          y -= 3;
           block.items.forEach((item, idx) => {
-            ensureSpace(16);
+            ensureSpace(20);
             page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
             drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            y -= SP.listItemGap;
           });
+          y -= SP.afterList - SP.listItemGap;
           break;
       }
     }
 
-    y -= 10;
+    y -= SP.lessonGap;
   }
 
   // ─── TABLE OF CONTENTS (inserted at page index 1) ─────────────────────────
