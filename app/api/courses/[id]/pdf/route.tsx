@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
+import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
 
-// Types corresponding to parsed markdown blocks
 type Block =
   | { type: "h1"; text: string }
   | { type: "h2"; text: string }
@@ -34,21 +33,9 @@ function parseContent(raw: string): Block[] {
       continue;
     }
 
-    if (line.startsWith("### ")) {
-      blocks.push({ type: "h3", text: line.slice(4).trim() });
-      i++;
-      continue;
-    }
-    if (line.startsWith("## ")) {
-      blocks.push({ type: "h2", text: line.slice(3).trim() });
-      i++;
-      continue;
-    }
-    if (line.startsWith("# ")) {
-      blocks.push({ type: "h1", text: line.slice(2).trim() });
-      i++;
-      continue;
-    }
+    if (line.startsWith("### ")) { blocks.push({ type: "h3", text: line.slice(4).trim() }); i++; continue; }
+    if (line.startsWith("## "))  { blocks.push({ type: "h2", text: line.slice(3).trim() }); i++; continue; }
+    if (line.startsWith("# "))   { blocks.push({ type: "h1", text: line.slice(2).trim() }); i++; continue; }
 
     if (/^[\s]*[•\-\*]\s/.test(line)) {
       const items: string[] = [];
@@ -70,10 +57,7 @@ function parseContent(raw: string): Block[] {
       continue;
     }
 
-    if (line.trim() === "") {
-      i++;
-      continue;
-    }
+    if (line.trim() === "") { i++; continue; }
 
     const paraLines: string[] = [];
     while (
@@ -87,19 +71,17 @@ function parseContent(raw: string): Block[] {
       paraLines.push(lines[i]);
       i++;
     }
-    if (paraLines.length > 0) {
-      blocks.push({ type: "paragraph", text: paraLines.join(" ") });
-    }
+    if (paraLines.length > 0) blocks.push({ type: "paragraph", text: paraLines.join(" ") });
   }
 
   return blocks;
 }
 
-// Function to split text into array of strings that fit the maxWidth
 function wrapText(text: string, maxWidth: number, font: any, fontSize: number): string[] {
+  if (!text) return [""];
   const words = text.split(" ");
   const lines: string[] = [];
-  let currentLine = words[0];
+  let currentLine = words[0] ?? "";
 
   for (let i = 1; i < words.length; i++) {
     const word = words[i];
@@ -117,127 +99,354 @@ function wrapText(text: string, maxWidth: number, font: any, fontSize: number): 
 
 async function generateCoursePDF(course: any) {
   const doc = await PDFDocument.create();
-  
-  // Page size A4 (595.28 x 841.89 points)
-  const pageWidth = 595.28;
+
+  const pageWidth  = 595.28;
   const pageHeight = 841.89;
-  const margin = 50;
-  const usableWidth = pageWidth - margin * 2;
+  const margin     = 52;
+  const usableW    = pageWidth - margin * 2;
+
+  // Design tokens
+  const orange   = rgb(0.976, 0.451, 0.086);
+  const white    = rgb(1, 1, 1);
+  const darkBg   = rgb(0.05, 0.05, 0.07);
+  const textDark = rgb(0.1, 0.1, 0.13);
+  const textMid  = rgb(0.38, 0.38, 0.43);
+  const textLight= rgb(0.6, 0.6, 0.65);
+  const codeBg   = rgb(0.95, 0.95, 0.97);
+  const codeText = rgb(0.1, 0.1, 0.45);
+  const panelBg  = rgb(0.97, 0.97, 0.99);
+  const divider  = rgb(0.87, 0.87, 0.90);
+
+  const HEADER_H   = 36;
+  const FOOTER_H   = 26;
+  const contentTop = pageHeight - HEADER_H - 14;
+  const contentBot = FOOTER_H + 14;
+
+  const font        = await doc.embedFont(StandardFonts.Helvetica);
+  const fontBold    = await doc.embedFont(StandardFonts.HelveticaBold);
+  const fontMono    = await doc.embedFont(StandardFonts.Courier);
+  const fontOblique = await doc.embedFont(StandardFonts.HelveticaOblique);
+
+  const instructorName = course.createdBy?.name || "LearnHub Instructor";
+
+  // ─── COVER PAGE ───────────────────────────────────────────────────────────
+  const cover = doc.addPage([pageWidth, pageHeight]);
+
+  // Full dark background
+  cover.drawRectangle({ x: 0, y: 0, width: pageWidth, height: pageHeight, color: darkBg });
+
+  // Orange left strip
+  cover.drawRectangle({ x: 0, y: 0, width: 5, height: pageHeight, color: orange });
+
+  // Orange top strip
+  cover.drawRectangle({ x: 5, y: pageHeight - 5, width: pageWidth - 5, height: 5, color: orange });
+
+  // Bottom-right corner accents (decorative)
+  cover.drawRectangle({ x: pageWidth - 130, y: 32, width: 95, height: 3, color: orange, opacity: 0.3 });
+  cover.drawRectangle({ x: pageWidth - 35,  y: 32, width: 3, height: 100, color: orange, opacity: 0.3 });
+
+  // "COURSE MATERIAL" label
+  cover.drawText("COURSE MATERIAL", {
+    x: margin + 12, y: pageHeight - 70,
+    size: 9, font: fontBold, color: orange, characterSpacing: 2.5,
+  });
+
+  // Thin rule
+  cover.drawRectangle({ x: margin + 12, y: pageHeight - 84, width: usableW - 12, height: 0.5, color: white, opacity: 0.07 });
+
+  // Course title
+  let coverY = pageHeight - 150;
+  const titleLines = wrapText(course.title, usableW - 12, fontBold, 28);
+  for (const line of titleLines) {
+    cover.drawText(line, { x: margin + 12, y: coverY, size: 28, font: fontBold, color: white });
+    coverY -= 36;
+  }
+
+  // Orange accent bar
+  cover.drawRectangle({ x: margin + 12, y: coverY, width: 72, height: 3, color: orange });
+  coverY -= 26;
+
+  // Description
+  if (course.description) {
+    const descLines = wrapText(course.description, usableW - 12, font, 11);
+    for (const line of descLines.slice(0, 6)) {
+      cover.drawText(line, { x: margin + 12, y: coverY, size: 11, font, color: rgb(0.64, 0.64, 0.70) });
+      coverY -= 17;
+    }
+    coverY -= 6;
+  }
+
+  // Meta chips
+  const metaParts: string[] = [`${course.lessons.length} Lessons`];
+  if (course.level)    metaParts.push(course.level.charAt(0).toUpperCase() + course.level.slice(1) + " Level");
+  if (course.language) metaParts.push(course.language);
+  cover.drawText(metaParts.join("  ·  "), { x: margin + 12, y: coverY, size: 9.5, font, color: rgb(0.48, 0.48, 0.54) });
+
+  // Bottom divider
+  cover.drawRectangle({ x: margin + 12, y: 130, width: usableW - 12, height: 0.5, color: white, opacity: 0.07 });
+
+  // Instructor info
+  cover.drawText("INSTRUCTOR", { x: margin + 12, y: 114, size: 7.5, font: fontBold, color: rgb(0.42, 0.42, 0.48), characterSpacing: 2 });
+  cover.drawText(instructorName, { x: margin + 12, y: 92, size: 15, font: fontBold, color: white });
+
+  // LearnHub brand
+  const brandW = fontBold.widthOfTextAtSize("LearnHub", 18);
+  cover.drawText("LearnHub", { x: pageWidth - margin - brandW, y: 92, size: 18, font: fontBold, color: orange });
+  const subW = font.widthOfTextAtSize("Learning Platform", 8.5);
+  cover.drawText("Learning Platform", { x: pageWidth - margin - subW, y: 75, size: 8.5, font, color: rgb(0.38, 0.38, 0.44) });
+
+  // Generated date
+  const genDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  cover.drawText(`Generated ${genDate}`, { x: margin + 12, y: 50, size: 8, font, color: rgb(0.34, 0.34, 0.40) });
+
+  // ─── CONTENT PAGES ────────────────────────────────────────────────────────
+  const lessonPageIndices: number[] = [];
 
   let page = doc.addPage([pageWidth, pageHeight]);
-  let y = pageHeight - margin;
+  let y = contentTop;
 
-  const font = await doc.embedFont(StandardFonts.Helvetica);
-  const fontBold = await doc.embedFont(StandardFonts.HelveticaBold);
-  const fontMono = await doc.embedFont(StandardFonts.Courier);
-
-  // Helper to ensure we don't draw off the page
-  const checkPageSpace = (needed: number) => {
-    if (y - needed < margin) {
-      page = doc.addPage([pageWidth, pageHeight]);
-      y = pageHeight - margin;
-    }
+  const newPage = () => {
+    page = doc.addPage([pageWidth, pageHeight]);
+    y = contentTop;
   };
 
-  const drawWrappedText = (text: string, txtFont: any, size: number, color: any, indent: number = 0) => {
+  const ensureSpace = (needed: number) => {
+    if (y - needed < contentBot) newPage();
+  };
+
+  const drawWrapped = (text: string, fnt: any, size: number, color: any, indent = 0) => {
     if (!text) return;
-    const lines = wrapText(text, usableWidth - indent, txtFont, size);
-    for (const line of lines) {
-      checkPageSpace(size + 5);
-      page.drawText(line, { x: margin + indent, y, size, font: txtFont, color });
-      y -= (size + 5);
+    const lineH = size + 5;
+    for (const ln of wrapText(text, usableW - indent, fnt, size)) {
+      if (y - size < contentBot) newPage();
+      page.drawText(ln, { x: margin + indent, y, size, font: fnt, color });
+      y -= lineH;
     }
   };
 
-  // --- Title Page ---
-  y -= 40;
-  drawWrappedText(course.title, fontBold, 24, rgb(0, 0, 0));
-  y -= 20;
-
-  if (course.description) {
-    drawWrappedText(course.description, font, 12, rgb(0.2, 0.2, 0.2));
-  }
-  y -= 20;
-
-  drawWrappedText(`Instructor: ${course.createdBy?.name || "Unknown"}`, font, 10, rgb(0.4, 0.4, 0.4));
-  
-  // Start on new page if cover page isn't enough, but it usually is. 
-  y -= 40;
-
-  // --- Lessons Content ---
+  // ── Lessons ──────────────────────────────────────────────────────────────
   for (let i = 0; i < course.lessons.length; i++) {
     const lesson = course.lessons[i];
-    // Start every lesson with some breathing room
-    checkPageSpace(60); 
-    y -= 20;
 
-    // Lesson Title
-    drawWrappedText(`Lesson ${i + 1}: ${lesson.title}`, fontBold, 18, rgb(0.1, 0.1, 0.4));
-    y -= 10;
+    ensureSpace(80);
+    lessonPageIndices.push(doc.getPageCount() - 1);
 
-    if (!lesson.content && lesson.type !== "TEXT") {
-      drawWrappedText("No text content available for this lesson.", font, 11, rgb(0.5, 0.5, 0.5));
+    y -= 12;
+
+    // Check again after possible page break, update index
+    if (lessonPageIndices[i] !== doc.getPageCount() - 1) {
+      lessonPageIndices[i] = doc.getPageCount() - 1;
+    }
+
+    // Lesson section header
+    const headerH = 38;
+    ensureSpace(headerH + 16);
+    if (lessonPageIndices[i] !== doc.getPageCount() - 1) {
+      lessonPageIndices[i] = doc.getPageCount() - 1;
+    }
+
+    // Light accent background for lesson header
+    page.drawRectangle({ x: margin, y: y - headerH + 4, width: usableW, height: headerH - 4, color: rgb(0.97, 0.97, 0.99) });
+    page.drawRectangle({ x: margin, y: y - headerH + 4, width: 3, height: headerH - 4, color: orange });
+    page.drawRectangle({ x: margin, y: y - headerH + 3, width: usableW, height: 0.5, color: divider });
+
+    // Lesson number badge
+    const numStr = String(i + 1).padStart(2, "0");
+    page.drawText(numStr, { x: margin + 10, y: y - 11, size: 10, font: fontBold, color: orange });
+
+    // Lesson title
+    const ltLines = wrapText(lesson.title, usableW - 48, fontBold, 13);
+    let ltY = y - 8;
+    for (const ltLine of ltLines) {
+      page.drawText(ltLine, { x: margin + 36, y: ltY, size: 13, font: fontBold, color: textDark });
+      ltY -= 17;
+    }
+
+    y -= headerH;
+
+    // Separator
+    page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
+    y -= 14;
+
+    if (!lesson.content) {
+      page.drawText("No text content available for this lesson.", { x: margin, y, size: 10, font: fontOblique, color: textLight });
+      y -= 20;
       continue;
     }
 
-    const blocks = parseContent(lesson.content || "");
-    
+    const blocks = parseContent(lesson.content);
+
     for (const block of blocks) {
       switch (block.type) {
         case "h1":
-          y -= 10;
-          drawWrappedText(block.text, fontBold, 16, rgb(0, 0, 0));
+          y -= 8; ensureSpace(24);
+          drawWrapped(block.text, fontBold, 15, rgb(0.05, 0.05, 0.10));
           break;
         case "h2":
-          y -= 8;
-          drawWrappedText(block.text, fontBold, 14, rgb(0.1, 0.1, 0.1));
+          y -= 6; ensureSpace(21);
+          drawWrapped(block.text, fontBold, 13, textDark);
           break;
         case "h3":
-          y -= 6;
-          drawWrappedText(block.text, fontBold, 12, rgb(0.2, 0.2, 0.2));
+          y -= 4; ensureSpace(18);
+          drawWrapped(block.text, fontBold, 11, textMid);
           break;
         case "paragraph":
-          y -= 4;
-          drawWrappedText(block.text, font, 11, rgb(0.15, 0.15, 0.15));
+          y -= 3;
+          drawWrapped(block.text, font, 10.5, textDark);
           break;
-        case "code":
-          y -= 4;
+        case "code": {
+          y -= 6;
           const codeLines = block.code.split("\n");
-          for (const line of codeLines) {
-            checkPageSpace(12);
-            page.drawText(line, { x: margin + 10, y, size: 10, font: fontMono, color: rgb(0.3, 0.3, 0.3) });
+          const hasLabel  = block.lang && block.lang !== "code";
+          const langH     = hasLabel ? 14 : 0;
+          const blockH    = 8 + langH + codeLines.length * 12 + 8;
+
+          const pageH = contentTop - contentBot;
+          if (blockH <= pageH && y - blockH < contentBot) newPage();
+
+          // Draw background only when block fits on one page
+          if (y - blockH >= contentBot) {
+            page.drawRectangle({ x: margin, y: y - blockH, width: usableW, height: blockH, color: codeBg });
+            page.drawRectangle({ x: margin, y: y - blockH, width: 3,     height: blockH, color: orange, opacity: 0.65 });
+          }
+
+          y -= 8;
+
+          if (hasLabel) {
+            if (y < contentBot) newPage();
+            page.drawText(block.lang.toUpperCase(), { x: margin + 10, y, size: 7.5, font: fontBold, color: orange });
+            y -= 14;
+          }
+
+          for (const codeLine of codeLines) {
+            if (y - 12 < contentBot) newPage();
+            page.drawText(codeLine || " ", { x: margin + 10, y, size: 9.5, font: fontMono, color: codeText });
             y -= 12;
           }
-          y -= 4;
+
+          y -= 8;
           break;
+        }
         case "list":
-          y -= 4;
-          block.items.forEach((item) => {
-            drawWrappedText(`• ${item}`, font, 11, rgb(0.15, 0.15, 0.15), 15);
-          });
+          y -= 3;
+          for (const item of block.items) {
+            ensureSpace(16);
+            page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
+            drawWrapped(item, font, 10.5, textDark, 22);
+          }
           break;
         case "numlist":
-          y -= 4;
+          y -= 3;
           block.items.forEach((item, idx) => {
-            drawWrappedText(`${idx + 1}. ${item}`, font, 11, rgb(0.15, 0.15, 0.15), 15);
+            ensureSpace(16);
+            page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
+            drawWrapped(item, font, 10.5, textDark, 22);
           });
           break;
       }
     }
+
+    y -= 10;
   }
 
-  // Footer / Page numbers 
-  const pages = doc.getPages();
-  pages.forEach((p, idx) => {
-    const text = `Page ${idx + 1} of ${pages.length} - ${course.title}`;
-    const textWidth = font.widthOfTextAtSize(text, 9);
-    p.drawText(text, {
-      x: (pageWidth - textWidth) / 2,
-      y: 20,
-      size: 9,
-      font: font,
-      color: rgb(0.5, 0.5, 0.5)
+  // ─── TABLE OF CONTENTS (inserted at page index 1) ─────────────────────────
+  // Content pages are currently: cover=0, content=1+
+  // After inserting TOC at 1: cover=0, toc=1, content=2+
+  // So lessonPageIndices[i] + 2 = 1-based page number for TOC display.
+
+  const tocPage = doc.insertPage(1, [pageWidth, pageHeight]);
+
+  // TOC header bar
+  tocPage.drawRectangle({ x: 0, y: pageHeight - 62, width: pageWidth, height: 62, color: panelBg });
+  tocPage.drawRectangle({ x: 0, y: pageHeight - 62, width: 3,         height: 62, color: orange });
+  tocPage.drawRectangle({ x: 0, y: pageHeight - 62, width: pageWidth, height: 0.5, color: divider });
+  tocPage.drawText("Table of Contents", { x: margin, y: pageHeight - 36, size: 19, font: fontBold, color: textDark });
+  tocPage.drawText(course.title, { x: margin, y: pageHeight - 54, size: 9, font, color: textMid });
+  const lhW = fontBold.widthOfTextAtSize("LearnHub", 10);
+  tocPage.drawText("LearnHub", { x: pageWidth - margin - lhW, y: pageHeight - 40, size: 10, font: fontBold, color: orange });
+
+  // TOC rows
+  let tocY    = pageHeight - 84;
+  const rowH  = 25;
+  const tocBt = FOOTER_H + 18;
+
+  course.lessons.forEach((lesson: any, i: number) => {
+    if (tocY < tocBt) return;
+
+    if (i % 2 === 0) {
+      tocPage.drawRectangle({ x: margin - 8, y: tocY - 8, width: usableW + 16, height: rowH, color: rgb(0.975, 0.975, 0.985) });
+    }
+
+    // Lesson number
+    tocPage.drawText(String(i + 1).padStart(2, "0"), { x: margin, y: tocY + 5, size: 9, font: fontBold, color: orange });
+
+    // Lesson title
+    const maxTitleW  = usableW - 60;
+    const truncTitle = lesson.title.length > 68 ? lesson.title.slice(0, 65) + "…" : lesson.title;
+    tocPage.drawText(truncTitle, { x: margin + 28, y: tocY + 5, size: 9.5, font, color: textDark });
+
+    // Dot leaders
+    const titleEndX = margin + 28 + font.widthOfTextAtSize(truncTitle, 9.5);
+    const pgNumX    = pageWidth - margin - 26;
+    let dotX = titleEndX + 6;
+    while (dotX + 5 < pgNumX - 8) {
+      tocPage.drawText(".", { x: dotX, y: tocY + 5, size: 9, font, color: rgb(0.76, 0.76, 0.80) });
+      dotX += 5.5;
+    }
+
+    // Page number
+    const pgNum  = String(lessonPageIndices[i] + 2);
+    const pgNumW = fontBold.widthOfTextAtSize(pgNum, 9);
+    tocPage.drawText(pgNum, { x: pageWidth - margin - pgNumW, y: tocY + 5, size: 9, font: fontBold, color: textDark });
+
+    tocY -= rowH;
+  });
+
+  // ─── WATERMARK + HEADERS + FOOTERS (all pages) ────────────────────────────
+  const wmText  = instructorName;
+  const wmSize  = 38;
+  const wmWidth = fontBold.widthOfTextAtSize(wmText, wmSize);
+  const wmAngle = 35;
+  const wmRad   = (wmAngle * Math.PI) / 180;
+  const wmX     = pageWidth  / 2 - (wmWidth / 2) * Math.cos(wmRad);
+  const wmY     = pageHeight / 2 - (wmWidth / 2) * Math.sin(wmRad);
+
+  const allPages = doc.getPages();
+  const total    = allPages.length;
+
+  allPages.forEach((p: any, idx: number) => {
+    // Diagonal instructor watermark
+    p.drawText(wmText, {
+      x: wmX, y: wmY,
+      size: wmSize,
+      font: fontBold,
+      color: idx === 0 ? white : rgb(0.55, 0.55, 0.60),
+      opacity: idx === 0 ? 0.045 : 0.06,
+      rotate: degrees(wmAngle),
     });
+
+    if (idx === 0) return; // Cover has its own full design
+
+    // ── Footer ──────────────────────────────────────────────────────────────
+    p.drawRectangle({ x: 0, y: 0, width: pageWidth, height: FOOTER_H, color: panelBg });
+    p.drawRectangle({ x: 0, y: FOOTER_H, width: pageWidth, height: 0.5, color: divider });
+    p.drawRectangle({ x: 0, y: 0, width: 3, height: FOOTER_H, color: orange });
+    const pgTxt = `Page ${idx + 1} of ${total}`;
+    const pgW   = font.widthOfTextAtSize(pgTxt, 8);
+    p.drawText(pgTxt, { x: (pageWidth - pgW) / 2, y: 8, size: 8, font, color: textLight });
+    p.drawText(`© ${instructorName} | LearnHub`, { x: margin, y: 8, size: 7.5, font, color: textLight });
+
+    // ── Header (content pages only; TOC at idx=1 has its own) ───────────────
+    if (idx >= 2) {
+      p.drawRectangle({ x: 0, y: pageHeight - HEADER_H, width: pageWidth, height: HEADER_H, color: panelBg });
+      p.drawRectangle({ x: 0, y: pageHeight - HEADER_H, width: pageWidth, height: 0.5, color: divider });
+      p.drawRectangle({ x: 0, y: pageHeight - HEADER_H, width: 3, height: HEADER_H, color: orange });
+      const hTitle = course.title.length > 60 ? course.title.slice(0, 57) + "…" : course.title;
+      p.drawText(hTitle, { x: margin, y: pageHeight - HEADER_H + 13, size: 9, font, color: textMid });
+      const lhLabel = "LearnHub";
+      const lhLabelW = fontBold.widthOfTextAtSize(lhLabel, 9);
+      p.drawText(lhLabel, { x: pageWidth - margin - lhLabelW, y: pageHeight - HEADER_H + 13, size: 9, font: fontBold, color: orange });
+    }
   });
 
   const pdfBytes = await doc.save();
@@ -257,7 +466,7 @@ export async function GET(
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
-        lessons: { orderBy: { order: "asc" } },
+        lessons:   { orderBy: { order: "asc" } },
         createdBy: { select: { name: true } },
       },
     });
@@ -265,7 +474,7 @@ export async function GET(
     if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
 
     const isPrivileged = session.role === "ADMIN" || session.role === "INSTRUCTOR";
-    
+
     if (!isPrivileged) {
       const enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId: session.userId, courseId } },
