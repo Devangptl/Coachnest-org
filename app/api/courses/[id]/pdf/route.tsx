@@ -148,7 +148,7 @@ async function generateCoursePDF(course: any) {
   // "COURSE MATERIAL" label
   cover.drawText("COURSE MATERIAL", {
     x: margin + 12, y: pageHeight - 70,
-    size: 9, font: fontBold, color: orange, characterSpacing: 2.5,
+    size: 9, font: fontBold, color: orange,
   });
 
   // Thin rule
@@ -186,7 +186,7 @@ async function generateCoursePDF(course: any) {
   cover.drawRectangle({ x: margin + 12, y: 130, width: usableW - 12, height: 0.5, color: white, opacity: 0.07 });
 
   // Instructor info
-  cover.drawText("INSTRUCTOR", { x: margin + 12, y: 114, size: 7.5, font: fontBold, color: rgb(0.42, 0.42, 0.48), characterSpacing: 2 });
+  cover.drawText("INSTRUCTOR", { x: margin + 12, y: 114, size: 7.5, font: fontBold, color: rgb(0.42, 0.42, 0.48) });
   cover.drawText(instructorName, { x: margin + 12, y: 92, size: 15, font: fontBold, color: white });
 
   // LearnHub brand
