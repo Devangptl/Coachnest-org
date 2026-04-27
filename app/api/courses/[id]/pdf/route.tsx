@@ -129,6 +129,44 @@ function parseContent(raw: string): Block[] {
   return blocks;
 }
 
+// pdf-lib's StandardFonts (Helvetica/Courier) only encode WinAnsi (CP-1252).
+// Any character outside that range -- e.g. Unicode minus (U+2212), CJK,
+// emoji, zero-widths -- throws "WinAnsi cannot encode ..." on drawText.
+// We rewrite common typography to ASCII equivalents and replace anything
+// still outside CP-1252 with "?" so the PDF can always render.
+const WINANSI_HIGH = new Set<number>([
+  0x20AC, 0x201A, 0x0192, 0x201E, 0x2026, 0x2020, 0x2021, 0x02C6,
+  0x2030, 0x0160, 0x2039, 0x0152, 0x017D, 0x2018, 0x2019, 0x201C,
+  0x201D, 0x2022, 0x2013, 0x2014, 0x02DC, 0x2122, 0x0161, 0x203A,
+  0x0153, 0x017E, 0x0178,
+]);
+
+function sanitize(s: string | null | undefined): string {
+  if (!s) return "";
+  let out = "";
+  for (const ch of s) {
+    const cp = ch.codePointAt(0)!;
+    if (cp <= 0x7F) { out += ch; continue; }                    // ASCII
+    if (cp >= 0xA0 && cp <= 0xFF) { out += ch; continue; }      // Latin-1
+    if (WINANSI_HIGH.has(cp)) { out += ch; continue; }          // CP-1252 high
+    // Common substitutions
+    if (cp === 0x2212 || cp === 0x2010 || cp === 0x2011 || cp === 0x2012) {
+      out += "-"; continue;                                     // dashes/minus
+    }
+    if (cp === 0x2002 || cp === 0x2003 || cp === 0x2009 ||
+        cp === 0x202F || cp === 0x205F || cp === 0x3000) {
+      out += " "; continue;                                     // exotic spaces
+    }
+    if ((cp >= 0x200B && cp <= 0x200F) ||
+        (cp >= 0x202A && cp <= 0x202E) ||
+        cp === 0x2060 || cp === 0xFEFF) {
+      continue;                                                 // zero-width / bidi: drop
+    }
+    out += "?";                                                 // unsupported
+  }
+  return out;
+}
+
 function wrapText(text: string, maxWidth: number, font: any, fontSize: number): string[] {
   if (!text) return [""];
   const words = text.split(" ");
@@ -150,6 +188,25 @@ function wrapText(text: string, maxWidth: number, font: any, fontSize: number): 
 }
 
 async function generateCoursePDF(course: any) {
+  // Normalize every user-supplied string up front so no draw call ever sees
+  // a character outside WinAnsi (CP-1252). Avoids "WinAnsi cannot encode"
+  // crashes on lessons that contain typographic minus, CJK, emoji, etc.
+  course = {
+    ...course,
+    title:       sanitize(course.title),
+    description: course.description == null ? course.description : sanitize(course.description),
+    level:       course.level == null       ? course.level       : sanitize(course.level),
+    language:    course.language == null    ? course.language    : sanitize(course.language),
+    createdBy:   course.createdBy
+      ? { ...course.createdBy, name: sanitize(course.createdBy.name) }
+      : course.createdBy,
+    lessons: (course.lessons || []).map((l: any) => ({
+      ...l,
+      title:   sanitize(l.title),
+      content: l.content == null ? l.content : sanitize(l.content),
+    })),
+  };
+
   const doc = await PDFDocument.create();
 
   const pageWidth  = 595.28;
