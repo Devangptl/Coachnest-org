@@ -119,8 +119,11 @@ export default async function CourseDetailPage({ params }: Props) {
   }));
 
   // First incomplete lesson (or first lesson) for the "Continue Learning" link
-  const firstLessonId =
-    (lessonsWithCompletion.find((l) => !l.completed) ?? lessonsWithCompletion[0])?.id;
+  const nextLesson =
+    lessonsWithCompletion.find((l) => !l.completed) ?? lessonsWithCompletion[0];
+  const firstLessonId = nextLesson?.id;
+  const nextLessonTitle = nextLesson?.title;
+  const completedCount = completedLessonIds.length;
 
   const priceNum = course.price ? Number(course.price) : null;
   const discountNum = course.discountPrice ? Number(course.discountPrice) : null;
@@ -164,6 +167,8 @@ export default async function CourseDetailPage({ params }: Props) {
             language={course.language}
             level={course.level}
             firstLessonId={firstLessonId}
+            completedCount={completedCount}
+            nextLessonTitle={nextLessonTitle}
           />
         }
       >

@@ -49,7 +49,7 @@ export default function CourseContent({
   isLoggedIn,
   reviewCount,
 }: Props) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(isEnrolled ? "curriculum" : "overview");
 
   // Auto-switch to curriculum when Access Now enrollment completes
   useEffect(() => {

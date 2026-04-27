@@ -78,22 +78,42 @@ export default function CourseDetailLoading() {
 
       {/* ── Enroll bar + tabs ──────────────────────────────────────────────── */}
       <div className="mt-5">
-        {/* Enroll bar */}
+        {/*
+          Enroll bar skeleton — neutral shape that fits both the enrolled
+          (Continue Learning + progress) and non-enrolled (price + Enroll)
+          layouts so the swap-in doesn't jarringly resize the page.
+        */}
         <div className="mb-6 bg-card border border-border rounded-md overflow-hidden animate-pulse">
-          <div className="px-4 py-3 sm:px-5 sm:py-3.5 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <Skeleton className="h-8 w-32 rounded-lg" />
-            <div className="flex flex-col sm:flex-row gap-2">
-              <Skeleton className="h-10 w-full sm:w-32 rounded-lg" />
+          <div className="px-4 py-4 sm:px-5 sm:py-5 border-b border-border flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+            {/* Status / title / progress area */}
+            <div className="flex-1 min-w-0 space-y-2.5">
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-20 rounded-full" />
+                <Skeleton h="h-3" w="w-24" />
+              </div>
+              <Skeleton className="h-5 w-2/3 max-w-[260px] rounded-md" />
+              <Skeleton h="h-3" w="w-1/2" className="max-w-[200px]" />
+              <div className="flex items-center gap-3 pt-1">
+                <Skeleton className="h-2 flex-1 rounded-full" />
+                <Skeleton h="h-4" w="w-10" />
+              </div>
+            </div>
+
+            {/* CTA + action icons */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:flex-shrink-0">
+              <Skeleton className="h-[46px] w-full sm:w-40 rounded-md" />
               <div className="flex gap-2">
                 <Skeleton className="h-[46px] w-[46px] rounded-md" />
                 <Skeleton className="h-[46px] w-[46px] rounded-md" />
               </div>
             </div>
           </div>
+
+          {/* Resources / Course-includes grid */}
           <div className="px-4 py-3 sm:px-5 sm:py-3.5">
             <Skeleton h="h-4" w="w-32" className="mb-4" />
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {Array.from({ length: 8 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-3">
                   <Skeleton className="w-7 h-7 rounded-lg flex-shrink-0" />
                   <Skeleton h="h-3.5" w="w-24" />

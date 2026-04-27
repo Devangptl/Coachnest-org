@@ -2,16 +2,15 @@
 
 import { motion } from "framer-motion";
 import {
-  Shield, Share2, CheckCircle2, Crown, Edit3,
+  Shield, Share2, CheckCircle2, Edit3,
   BookOpen, Clock, Globe, Award, Smartphone, Download,
-  Infinity, Zap,
+  Infinity, PlayCircle, Trophy, Sparkles,
 } from "lucide-react";
 import { useState } from "react";
 import EnrollButton from "./EnrollButton";
 import WishlistButton from "@/components/WishlistButton";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import type { PlanAccess } from "@/services/subscription.service";
 
 interface Props {
   courseId: string;
@@ -30,6 +29,10 @@ interface Props {
   level: string;
   /** First incomplete (or first) lesson ID — used for "Continue Learning" link */
   firstLessonId?: string;
+  /** Number of completed lessons — used for the enrolled progress view */
+  completedCount?: number;
+  /** Title of the next lesson to continue — used for the enrolled progress view */
+  nextLessonTitle?: string;
 }
 
 export default function CourseEnrollBar({
@@ -38,10 +41,17 @@ export default function CourseEnrollBar({
   isWishlisted, isLoggedIn, userRole,
   lessonCount, totalDuration, language, level,
   firstLessonId,
+  completedCount = 0,
+  nextLessonTitle,
 }: Props) {
   const [copied, setCopied] = useState(false);
   const discountNum = discountPrice ? Number(discountPrice) : null;
   const hasDiscount = !isFree && discountNum && price && discountNum < price;
+  const progressPercent = lessonCount > 0 ? Math.round((completedCount / lessonCount) * 100) : 0;
+  const isCompleted = progressPercent === 100;
+  const continueHref = firstLessonId
+    ? `/courses/${courseId}/lessons/${firstLessonId}`
+    : `/courses/${courseId}`;
 
 
 
@@ -58,6 +68,151 @@ export default function CourseEnrollBar({
 
 
 
+  // ── Enrolled view: progress + Continue Learning + resources ─────────────────
+  if (isEnrolled && userRole === "STUDENT") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4 }}
+        className={`relative backdrop-blur-xl border rounded-md overflow-hidden shadow-sm ${
+          isCompleted
+            ? "bg-gradient-to-br from-amber-500/10 via-transparent to-yellow-500/5 border-amber-400/25"
+            : "bg-gradient-to-br from-orange-500/10 via-transparent to-orange-500/5 border-orange-400/20"
+        }`}
+      >
+        {/* ── Top section: Continue Learning hero ── */}
+        <div className="px-4 py-4 sm:px-5 sm:py-5 border-b border-white/[0.06]">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
+            {/* Status + progress */}
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 mb-2">
+                <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+                  isCompleted
+                    ? "bg-amber-500/20 text-amber-300 border border-amber-400/30"
+                    : "bg-emerald-500/20 text-emerald-300 border border-emerald-400/30"
+                }`}>
+                  {isCompleted ? <Trophy className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
+                  {isCompleted ? "Completed" : "Enrolled"}
+                </div>
+                <span className="text-muted-foreground/70 text-[11px]">
+                  {completedCount} of {lessonCount} lessons
+                </span>
+              </div>
+
+              <h3 className="text-foreground font-semibold text-base sm:text-lg leading-tight mb-1">
+                {isCompleted
+                  ? "You finished this course!"
+                  : completedCount === 0
+                    ? "Ready to start learning?"
+                    : "Pick up where you left off"}
+              </h3>
+              {!isCompleted && nextLessonTitle && (
+                <p className="text-muted-foreground/80 text-xs sm:text-sm truncate">
+                  Next up: <span className="text-foreground/90 font-medium">{nextLessonTitle}</span>
+                </p>
+              )}
+
+              {/* Progress bar */}
+              <div className="mt-3 flex items-center gap-3">
+                <div className="relative h-2 flex-1 bg-white/[0.07] rounded-full overflow-hidden">
+                  <motion.div
+                    className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r ${
+                      isCompleted
+                        ? "from-amber-400 via-yellow-400 to-amber-500"
+                        : "from-orange-600 via-orange-500 to-orange-400"
+                    }`}
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94], delay: 0.2 }}
+                  />
+                </div>
+                <span className={`text-sm font-bold tabular-nums ${
+                  isCompleted ? "text-amber-400" : "text-orange-400"
+                }`}>
+                  {progressPercent}%
+                </span>
+              </div>
+            </div>
+
+            {/* CTA + actions */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:flex-shrink-0">
+              <Link
+                href={continueHref}
+                className="btn-primary inline-flex items-center justify-center gap-2 h-[46px] px-5 font-semibold whitespace-nowrap"
+              >
+                {isCompleted ? (
+                  <>
+                    <Sparkles className="w-4 h-4" /> Review Course
+                  </>
+                ) : (
+                  <>
+                    <PlayCircle className="w-4 h-4" />
+                    {completedCount === 0 ? "Start Learning" : "Continue Learning"}
+                  </>
+                )}
+              </Link>
+
+              <div className="flex gap-2 justify-center sm:justify-start">
+                <WishlistButton
+                  courseId={courseId}
+                  initialState={isWishlisted}
+                  className="flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center"
+                />
+                <button
+                  onClick={handleCopyLink}
+                  className="p-2 rounded-full transition-all flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center text-muted-foreground/70 hover:text-foreground"
+                  title="Share this course"
+                >
+                  {copied ? (
+                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                  ) : (
+                    <Share2 className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ── Bottom section: Course Resources ── */}
+        <div className="px-4 py-3 sm:px-5 sm:py-3.5">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
+            <h3 className="text-foreground font-semibold text-sm">Your course resources</h3>
+            <button
+              onClick={() => { window.location.href = `/api/courses/${courseId}/pdf`; }}
+              title="Download Full Course PDF"
+              className="flex items-center gap-2 text-muted-foreground/70 hover:text-muted-foreground text-[11px] font-medium px-3 py-2 rounded-lg border border-white/[0.06] hover:border-border hover:bg-white/[0.03] transition-all w-full sm:w-auto justify-center"
+            >
+              <Download className="w-3.5 h-3.5" />
+              Download Course PDF
+            </button>
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            <IncludeItem icon={BookOpen} text={`${lessonCount} lessons`} />
+            {totalDuration > 0 && (
+              <IncludeItem
+                icon={Clock}
+                text={totalDuration > 60
+                  ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m of content`
+                  : `${totalDuration} minutes of content`}
+              />
+            )}
+            <IncludeItem icon={Infinity}  text="Lifetime access" />
+            <IncludeItem icon={Smartphone} text="Mobile and desktop" />
+            <IncludeItem
+              icon={Award}
+              text={isCompleted ? "Certificate earned" : "Certificate on completion"}
+            />
+            <IncludeItem icon={Download} text="Offline downloads" />
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
+
+  // ── Non-enrolled view: pricing + enroll CTA + course pitch ──────────────────
   return (
     <motion.div
       initial={{ opacity: 0, y: 12 }}
@@ -129,10 +284,10 @@ export default function CourseEnrollBar({
               <div className="flex w-full sm:w-auto gap-2 justify-center sm:justify-start flex-shrink-0 mt-3 sm:mt-0">
                 {/* Wishlist */}
                 {isLoggedIn && (
-                  <WishlistButton 
-                    courseId={courseId} 
-                    initialState={isWishlisted} 
-                    className="flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center" 
+                  <WishlistButton
+                    courseId={courseId}
+                    initialState={isWishlisted}
+                    className="flex-shrink-0 !w-[46px] !h-[46px] flex items-center justify-center"
                   />
                 )}
 
@@ -152,7 +307,7 @@ export default function CourseEnrollBar({
             </div>
 
             {/* Money-back guarantee — subtle inline */}
-            {!isEnrolled && !isFree && (
+            {!isFree && (
               <div className="flex items-center justify-center sm:justify-start gap-2 mt-3 pt-3 border-t border-white/[0.04]">
                 <Shield className="w-3.5 h-3.5 text-emerald-400/80 flex-shrink-0" />
                 <p className="text-muted-foreground/50 text-[11px] leading-relaxed text-center sm:text-left">
@@ -168,9 +323,8 @@ export default function CourseEnrollBar({
       <div className="px-4 py-3 sm:px-5 sm:py-3.5">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-3">
           <h3 className="text-foreground font-semibold text-sm">This course includes</h3>
-          
-          {/* Download PDF button only for enrolled/admins */}
-          {(isEnrolled || userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
+
+          {(userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
             <button
               onClick={() => { window.location.href = `/api/courses/${courseId}/pdf`; }}
               title="Download Full Course PDF"
@@ -197,7 +351,7 @@ export default function CourseEnrollBar({
           <IncludeItem icon={Infinity}  text="Lifetime access" />
           <IncludeItem icon={Smartphone} text="Access on mobile and desktop" />
           <IncludeItem icon={Award}     text="Certificate of completion" />
-          
+
           <IncludeItem icon={Download} text="Offline downloads" />
         </div>
       </div>
