@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { readFile } from "node:fs/promises";
+import path from "node:path";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PDFDocument, StandardFonts, rgb, degrees } from "pdf-lib";
@@ -127,7 +129,23 @@ async function generateCoursePDF(course: any) {
   const fontMono    = await doc.embedFont(StandardFonts.Courier);
   const fontOblique = await doc.embedFont(StandardFonts.HelveticaOblique);
 
-  const instructorName = course.createdBy?.name || "LearnHub Instructor";
+  // Embed site logo from /public/logo.png so the PDF matches the website branding
+  let logoImage: Awaited<ReturnType<typeof doc.embedPng>> | null = null;
+  try {
+    const logoBytes = await readFile(path.join(process.cwd(), "public", "logo.png"));
+    logoImage = await doc.embedPng(logoBytes);
+  } catch {
+    logoImage = null; // fall back to text branding if the file is missing
+  }
+
+  // Returns {width, height} for the logo scaled to a target height, preserving aspect ratio
+  const logoSize = (targetHeight: number) => {
+    if (!logoImage) return { width: 0, height: 0 };
+    const ratio = logoImage.width / logoImage.height;
+    return { width: targetHeight * ratio, height: targetHeight };
+  };
+
+  const instructorName = course.createdBy?.name || "Instructor";
 
   // ─── COVER PAGE ───────────────────────────────────────────────────────────
   const cover = doc.addPage([pageWidth, pageHeight]);
@@ -189,9 +207,17 @@ async function generateCoursePDF(course: any) {
   cover.drawText("INSTRUCTOR", { x: margin + 12, y: 114, size: 7.5, font: fontBold, color: rgb(0.42, 0.42, 0.48) });
   cover.drawText(instructorName, { x: margin + 12, y: 92, size: 15, font: fontBold, color: white });
 
-  // LearnHub brand
-  const brandW = fontBold.widthOfTextAtSize("LearnHub", 18);
-  cover.drawText("LearnHub", { x: pageWidth - margin - brandW, y: 92, size: 18, font: fontBold, color: orange });
+  // Site logo (replaces former "LearnHub" wordmark)
+  if (logoImage) {
+    const { width: logoW, height: logoH } = logoSize(28);
+    cover.drawImage(logoImage, {
+      x: pageWidth - margin - logoW,
+      y: 88,
+      width: logoW,
+      height: logoH,
+      opacity: 0.95,
+    });
+  }
   const subW = font.widthOfTextAtSize("Learning Platform", 8.5);
   cover.drawText("Learning Platform", { x: pageWidth - margin - subW, y: 75, size: 8.5, font, color: rgb(0.38, 0.38, 0.44) });
 
@@ -362,8 +388,15 @@ async function generateCoursePDF(course: any) {
   tocPage.drawRectangle({ x: 0, y: pageHeight - 62, width: pageWidth, height: 0.5, color: divider });
   tocPage.drawText("Table of Contents", { x: margin, y: pageHeight - 36, size: 19, font: fontBold, color: textDark });
   tocPage.drawText(course.title, { x: margin, y: pageHeight - 54, size: 9, font, color: textMid });
-  const lhW = fontBold.widthOfTextAtSize("LearnHub", 10);
-  tocPage.drawText("LearnHub", { x: pageWidth - margin - lhW, y: pageHeight - 40, size: 10, font: fontBold, color: orange });
+  if (logoImage) {
+    const { width: tocLogoW, height: tocLogoH } = logoSize(18);
+    tocPage.drawImage(logoImage, {
+      x: pageWidth - margin - tocLogoW,
+      y: pageHeight - 42,
+      width: tocLogoW,
+      height: tocLogoH,
+    });
+  }
 
   // TOC rows
   let tocY    = pageHeight - 84;
@@ -403,27 +436,29 @@ async function generateCoursePDF(course: any) {
   });
 
   // ─── WATERMARK + HEADERS + FOOTERS (all pages) ────────────────────────────
-  const wmText  = instructorName;
-  const wmSize  = 38;
-  const wmWidth = fontBold.widthOfTextAtSize(wmText, wmSize);
+  // Use the site logo as a faint diagonal watermark to match the website
+  const wmTargetW = 320;
+  const wmH = logoImage ? wmTargetW * (logoImage.height / logoImage.width) : 0;
   const wmAngle = 35;
   const wmRad   = (wmAngle * Math.PI) / 180;
-  const wmX     = pageWidth  / 2 - (wmWidth / 2) * Math.cos(wmRad);
-  const wmY     = pageHeight / 2 - (wmWidth / 2) * Math.sin(wmRad);
+  // Position the rotated logo so its visual centre lands at the page centre
+  const wmX = pageWidth  / 2 - (wmTargetW / 2) * Math.cos(wmRad) + (wmH / 2) * Math.sin(wmRad);
+  const wmY = pageHeight / 2 - (wmTargetW / 2) * Math.sin(wmRad) - (wmH / 2) * Math.cos(wmRad);
 
   const allPages = doc.getPages();
   const total    = allPages.length;
 
   allPages.forEach((p: any, idx: number) => {
-    // Diagonal instructor watermark
-    p.drawText(wmText, {
-      x: wmX, y: wmY,
-      size: wmSize,
-      font: fontBold,
-      color: idx === 0 ? white : rgb(0.55, 0.55, 0.60),
-      opacity: idx === 0 ? 0.045 : 0.06,
-      rotate: degrees(wmAngle),
-    });
+    // Diagonal logo watermark (skips when the logo failed to load)
+    if (logoImage) {
+      p.drawImage(logoImage, {
+        x: wmX, y: wmY,
+        width:  wmTargetW,
+        height: wmH,
+        rotate: degrees(wmAngle),
+        opacity: idx === 0 ? 0.05 : 0.06,
+      });
+    }
 
     if (idx === 0) return; // Cover has its own full design
 
@@ -434,7 +469,7 @@ async function generateCoursePDF(course: any) {
     const pgTxt = `Page ${idx + 1} of ${total}`;
     const pgW   = font.widthOfTextAtSize(pgTxt, 8);
     p.drawText(pgTxt, { x: (pageWidth - pgW) / 2, y: 8, size: 8, font, color: textLight });
-    p.drawText(`© ${instructorName} | LearnHub`, { x: margin, y: 8, size: 7.5, font, color: textLight });
+    p.drawText(`© ${instructorName}`, { x: margin, y: 8, size: 7.5, font, color: textLight });
 
     // ── Header (content pages only; TOC at idx=1 has its own) ───────────────
     if (idx >= 2) {
@@ -443,9 +478,15 @@ async function generateCoursePDF(course: any) {
       p.drawRectangle({ x: 0, y: pageHeight - HEADER_H, width: 3, height: HEADER_H, color: orange });
       const hTitle = course.title.length > 60 ? course.title.slice(0, 57) + "…" : course.title;
       p.drawText(hTitle, { x: margin, y: pageHeight - HEADER_H + 13, size: 9, font, color: textMid });
-      const lhLabel = "LearnHub";
-      const lhLabelW = fontBold.widthOfTextAtSize(lhLabel, 9);
-      p.drawText(lhLabel, { x: pageWidth - margin - lhLabelW, y: pageHeight - HEADER_H + 13, size: 9, font: fontBold, color: orange });
+      if (logoImage) {
+        const { width: hdrLogoW, height: hdrLogoH } = logoSize(14);
+        p.drawImage(logoImage, {
+          x: pageWidth - margin - hdrLogoW,
+          y: pageHeight - HEADER_H + 11,
+          width: hdrLogoW,
+          height: hdrLogoH,
+        });
+      }
     }
   });
 
