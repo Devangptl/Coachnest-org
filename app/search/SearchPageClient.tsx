@@ -277,43 +277,39 @@ export default function SearchPageClient() {
   return (
     <div className="pt-6 pb-16">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
-      <div className="mb-6 space-y-3">
-        {/* Row 1: search (full width) */}
+      <div className="mb-6 flex items-center gap-2">
         <SearchBar
           initialValue={query}
           onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
           navigateTo={false}
-          className="w-full"
+          className="flex-1 min-w-0"
           placeholder="Search courses..."
         />
 
-        {/* Row 2: filter btn + sort (desktop: inline; mobile: both in one row) */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => setSideOpen((o) => !o)}
-            className={cn(
-              "flex-shrink-0",
-              sideOpen && "border-orange-400/40 bg-orange-500/10 text-orange-400"
-            )}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
+        <Button
+          variant="secondary"
+          size="md"
+          onClick={() => setSideOpen((o) => !o)}
+          className={cn(
+            "flex-shrink-0",
+            sideOpen && "border-orange-400/40 bg-orange-500/10 text-orange-400"
+          )}
+        >
+          <SlidersHorizontal className="w-4 h-4" />
+          <span className="hidden sm:inline">Filters</span>
+          {activeFilterCount > 0 && (
+            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
+              {activeFilterCount}
+            </span>
+          )}
+        </Button>
 
-          <Select
-            value={sort}
-            onValueChange={setSort}
-            options={SORT_OPT}
-            className="ml-auto"
-          />
-        </div>
+        <Select
+          value={sort}
+          onValueChange={setSort}
+          options={SORT_OPT}
+          className="flex-shrink-0"
+        />
       </div>
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
