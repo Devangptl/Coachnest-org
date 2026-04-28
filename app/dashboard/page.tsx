@@ -119,7 +119,7 @@ async function getFollowedInstructorCourses(userId: string, enrolledIds: string[
     },
   });
 
-  return follows
+  const courses = follows
     .flatMap((f) =>
       f.instructor.courses.map((c) => ({
         ...c,
@@ -129,6 +129,8 @@ async function getFollowedInstructorCourses(userId: string, enrolledIds: string[
       }))
     )
     .slice(0, 6);
+
+  return { courses, followCount: follows.length };
 }
 
 export default async function DashboardPage() {
@@ -147,7 +149,7 @@ export default async function DashboardPage() {
     ]);
 
   const enrolledIds = enrollments.map((e) => e.courseId);
-  const followedCourses = await getFollowedInstructorCourses(session.userId, enrolledIds);
+  const { courses: followedCourses, followCount } = await getFollowedInstructorCourses(session.userId, enrolledIds);
 
   const inProgress = enrollments.filter(
     (e) => e.progress > 0 && e.progress < 100
@@ -289,15 +291,15 @@ export default async function DashboardPage() {
       <RecommendedCourses />
 
       {/* ─── From Followed Instructors ───────────────────────────────────── */}
-      {followedCourses.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2">
-              <GraduationCap className="w-5 h-5 text-orange-400" />
-              <h2 className="text-xl font-semibold text-foreground">
-                From Instructors You Follow
-              </h2>
-            </div>
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-orange-400" />
+            <h2 className="text-xl font-semibold text-foreground">
+              From Instructors You Follow
+            </h2>
+          </div>
+          {followedCourses.length > 0 && (
             <Link
               href="/courses"
               className="text-orange-400 hover:text-orange-300 text-sm font-medium
@@ -305,8 +307,10 @@ export default async function DashboardPage() {
             >
               View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
-          </div>
+          )}
+        </div>
 
+        {followedCourses.length > 0 ? (
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {followedCourses.map((c) => (
               <CourseCard
@@ -325,8 +329,35 @@ export default async function DashboardPage() {
               />
             ))}
           </div>
-        </section>
-      )}
+        ) : (
+          <GlassCard className="flex flex-col sm:flex-row items-center gap-5 py-8 px-6">
+            <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/20
+                            flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-6 h-6 text-orange-400" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="font-semibold text-foreground text-sm">
+                {followCount === 0
+                  ? "You haven't followed any instructors yet"
+                  : "No new courses from your instructors right now"}
+              </p>
+              <p className="text-muted-foreground text-xs mt-1">
+                {followCount === 0
+                  ? "Follow instructors to see their latest courses here."
+                  : "Check back later — new courses will appear here as they're published."}
+              </p>
+            </div>
+            {followCount === 0 && (
+              <Link
+                href="/courses"
+                className="btn-primary text-sm px-4 py-2 flex-shrink-0 whitespace-nowrap"
+              >
+                Discover Instructors
+              </Link>
+            )}
+          </GlassCard>
+        )}
+      </section>
 
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (
