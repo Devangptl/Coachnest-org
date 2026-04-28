@@ -1,5 +1,15 @@
 import { Suspense } from "react";
 import SearchPageClient from "./SearchPageClient";
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
+export const metadata: Metadata = {
+  title: "Search Courses",
+  description: "Search thousands of courses on CoachNest. Find tutorials on web development, design, AI, data science, and more.",
+  alternates: { canonical: `${BASE_URL}/search` },
+  robots: { index: false, follow: true },
+};
 
 export default function SearchPage() {
   return (

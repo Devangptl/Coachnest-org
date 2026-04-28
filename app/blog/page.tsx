@@ -6,6 +6,27 @@ import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 import { FileText } from "lucide-react";
 import BlogGrid from "./BlogGrid";
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
+export const metadata: Metadata = {
+  title: "Blog — Tips, Tutorials & Learning Resources",
+  description:
+    "Read the CoachNest blog for programming tutorials, career advice, industry insights, and tips to accelerate your learning journey.",
+  keywords: [
+    "programming blog", "coding tutorials", "web development tips",
+    "learning resources", "tech articles", "career advice",
+  ],
+  alternates: { canonical: `${BASE_URL}/blog` },
+  openGraph: {
+    type: "website",
+    url: `${BASE_URL}/blog`,
+    title: "Blog — Tips, Tutorials & Learning Resources",
+    description:
+      "Programming tutorials, career advice, and tips to accelerate your learning journey.",
+  },
+};
 
 export const revalidate = 300;
 
