@@ -6,8 +6,7 @@ import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
 import { CourseCardSkeleton } from "@/components/ui/Skeleton";
 import {
-  Filter, SlidersHorizontal, X, BookOpen,
-  AlertCircle, ChevronLeft, ChevronRight,
+  BookOpen, AlertCircle, ChevronLeft, ChevronRight, X, SlidersHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -34,110 +33,6 @@ interface Category {
   _count: { courses: number };
 }
 
-// ─── Filter panel content (shared by sidebar + drawer) ─────────────────────
-function FilterContent({
-  level, setLevel,
-  category, setCategory,
-  categories,
-  hasActiveFilters,
-  clearFilters,
-  isMobile = false,
-}: {
-  level: string; setLevel: (v: string) => void;
-  category: string; setCategory: (v: string) => void;
-  categories: Category[];
-  hasActiveFilters: boolean;
-  clearFilters: () => void;
-  isMobile?: boolean;
-}) {
-  return (
-    <div className={cn("space-y-6", isMobile && "pb-4")}>
-      {/* Level filter */}
-      <div>
-        <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
-          <Filter className="w-3 h-3" /> Level
-        </h4>
-        <div className={cn("gap-2", isMobile ? "grid grid-cols-2" : "space-y-1")}>
-          {["", ...LEVELS].map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all",
-                isMobile && "text-center",
-                level === l
-                  ? "bg-orange-500/15 text-orange-400 border border-orange-400/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              {l || "All levels"}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Category filter */}
-      {categories.length > 0 && (
-        <div>
-          <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <BookOpen className="w-3 h-3" /> Category
-          </h4>
-          <div className={cn(
-            "space-y-1",
-            !isMobile && "max-h-48 overflow-y-auto pr-1 scrollbar-hide",
-          )}>
-            <button
-              onClick={() => setCategory("")}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-sm transition-all",
-                category === ""
-                  ? "bg-orange-500/15 text-orange-400 border border-orange-400/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              All categories
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.slug)}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2",
-                  category === cat.slug
-                    ? "bg-orange-500/15 text-orange-400 border border-orange-400/25"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                <span className="flex items-center gap-1.5 truncate">
-                  {cat.icon && <span>{cat.icon}</span>}
-                  <span className="truncate">{cat.name}</span>
-                </span>
-                <span className="text-xs text-muted-foreground/50 flex-shrink-0">
-                  {cat._count.courses}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Clear */}
-      {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full text-muted-foreground hover:text-foreground"
-          onClick={clearFilters}
-        >
-          <X className="w-3.5 h-3.5 mr-1" />
-          Clear all filters
-        </Button>
-      )}
-    </div>
-  );
-}
-
-// ─── Main component ─────────────────────────────────────────────────────────
 export default function SearchPageClient() {
   const sp     = useSearchParams();
   const router = useRouter();
@@ -152,35 +47,10 @@ export default function SearchPageClient() {
   const [pages,      setPages]      = useState(1);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState<string | null>(null);
-  const [sideOpen,   setSideOpen]   = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [isMobile,   setIsMobile]   = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
 
-  // Track viewport for mobile/desktop filter treatment
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1023px)");
-    setIsMobile(mq.matches);
-    const onChange = (e: MediaQueryListEvent) => {
-      setIsMobile(e.matches);
-      if (!e.matches) setSideOpen(false); // close drawer when resizing to desktop
-    };
-    mq.addEventListener("change", onChange);
-    return () => mq.removeEventListener("change", onChange);
-  }, []);
-
-  // Lock body scroll when mobile drawer is open
-  useEffect(() => {
-    if (isMobile && sideOpen) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [isMobile, sideOpen]);
-
-  // Fetch categories once
   useEffect(() => {
     fetch("/api/categories")
       .then((r) => r.json())
@@ -204,7 +74,7 @@ export default function SearchPageClient() {
       ...(category && { category }),
       sort,
       page:  String(pg),
-      limit: "12",
+      limit: "20",
     });
 
     const urlParams = new URLSearchParams();
@@ -261,23 +131,20 @@ export default function SearchPageClient() {
   }, [page]);
 
   const hasActiveFilters = level !== "" || category !== "" || sort !== "popular";
-  const activeFilterCount = [level, category, sort !== "popular"].filter(Boolean).length;
 
-  function clearFilters() {
-    setLevel("");
-    setCategory("");
-    setSort("popular");
-  }
-
-  const filterProps = {
-    level, setLevel, category, setCategory,
-    categories, hasActiveFilters, clearFilters,
-  };
+  const categoryOptions = [
+    { value: "", label: "All Categories" },
+    ...categories.map((c) => ({
+      value: c.slug,
+      label: `${c.icon ? c.icon + " " : ""}${c.name}`,
+    })),
+  ];
 
   return (
     <div className="pt-6 pb-16">
-      {/* ── Top bar ─────────────────────────────────────────────────────── */}
-      <div className="mb-6 flex items-center gap-2">
+
+      {/* ── Search + Sort row ──────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 mb-3">
         <SearchBar
           initialValue={query}
           onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
@@ -285,25 +152,6 @@ export default function SearchPageClient() {
           className="flex-1 min-w-0"
           placeholder="Search courses..."
         />
-
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={() => setSideOpen((o) => !o)}
-          className={cn(
-            "flex-shrink-0",
-            sideOpen && "border-orange-400/40 bg-orange-500/10 text-orange-400"
-          )}
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span className="hidden sm:inline">Filters</span>
-          {activeFilterCount > 0 && (
-            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
-
         <Select
           value={sort}
           onValueChange={setSort}
@@ -312,246 +160,178 @@ export default function SearchPageClient() {
         />
       </div>
 
-      {/* ── Active filter chips ──────────────────────────────────────────── */}
-      <AnimatePresence>
-        {(level || category) && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="flex items-center gap-2 flex-wrap mb-4 overflow-hidden"
-          >
-            {level && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                onClick={() => setLevel("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-orange-400 border border-orange-400/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
-              >
-                <span className="capitalize">{level}</span>
-                <X className="w-3 h-3" />
-              </motion.button>
-            )}
-            {category && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                onClick={() => setCategory("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-orange-400 border border-orange-400/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
-              >
-                <span>{categories.find((c) => c.slug === category)?.name ?? category}</span>
-                <X className="w-3 h-3" />
-              </motion.button>
-            )}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* ── Filter bar ─────────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-2 flex-wrap mb-5 p-2.5 bg-secondary/40 border border-border/50 rounded-lg">
 
-      {/* ── Layout: sidebar + results ────────────────────────────────────── */}
-      <div className="flex gap-6">
-
-        {/* Desktop inline sidebar */}
-        <AnimatePresence>
-          {sideOpen && !isMobile && (
-            <motion.aside
-              initial={{ opacity: 0, x: -16, width: 0 }}
-              animate={{ opacity: 1, x: 0, width: 260 }}
-              exit={{ opacity: 0, x: -16, width: 0 }}
-              transition={{ duration: 0.2 }}
-              className="hidden lg:block flex-shrink-0 overflow-hidden"
+        {/* Level pills */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          <span className="text-muted-foreground/60 text-xs font-medium flex items-center gap-1 mr-1">
+            <SlidersHorizontal className="w-3 h-3" /> Level
+          </span>
+          {["", ...LEVELS].map((l) => (
+            <button
+              key={l}
+              onClick={() => setLevel(l)}
+              className={cn(
+                "px-2.5 py-1 rounded-full text-xs font-medium border transition-all capitalize",
+                level === l
+                  ? "bg-orange-500/15 text-orange-400 border-orange-400/30"
+                  : "border-border/60 text-muted-foreground hover:border-orange-400/30 hover:text-foreground bg-card"
+              )}
             >
-              <div className="glass p-5 w-[260px] sticky top-20">
-                <FilterContent {...filterProps} />
-              </div>
-            </motion.aside>
+              {l || "All"}
+            </button>
+          ))}
+        </div>
+
+        {/* Divider */}
+        <div className="hidden sm:block h-5 w-px bg-border/60 mx-1" />
+
+        {/* Category select */}
+        <Select
+          value={category}
+          onValueChange={setCategory}
+          options={categoryOptions}
+          className="flex-shrink-0"
+        />
+
+        {/* Clear all */}
+        <AnimatePresence>
+          {hasActiveFilters && (
+            <motion.button
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              onClick={() => { setLevel(""); setCategory(""); setSort("popular"); }}
+              className="ml-auto flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <X className="w-3 h-3" /> Clear
+            </motion.button>
           )}
         </AnimatePresence>
-
-        {/* Results column */}
-        <div className="flex-1 min-w-0">
-          {/* Result count */}
-          <p className="text-muted-foreground/70 text-sm mb-4">
-            {loading
-              ? "Searching…"
-              : error
-                ? "Search error"
-                : `${total.toLocaleString()} course${total !== 1 ? "s" : ""} found`}
-          </p>
-
-          {/* Error banner */}
-          {error && !loading && (
-            <div className="flex items-center gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 mb-5">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <p className="text-sm flex-1">{error}</p>
-              <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 flex-shrink-0"
-                onClick={() => search({ reset: true })}>
-                Retry
-              </Button>
-            </div>
-          )}
-
-          {/* Grid — adapts columns based on sidebar open state */}
-          <div className={cn(
-            "grid gap-3",
-            sideOpen && !isMobile
-              ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
-              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
-          )}>
-            {loading
-              ? Array.from({ length: 6 }).map((_, i) => <CourseCardSkeleton key={i} compact />)
-              : courses.map((c, i) => (
-                  <motion.div
-                    key={c.id}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: Math.min(i * 0.04, 0.3) }}
-                  >
-                    <CourseCard
-                      id={c.id}
-                      title={c.title}
-                      description={c.description}
-                      thumbnail={c.thumbnail}
-                      instructorName={c.createdBy.name}
-                      price={c.price}
-                      discountPrice={c.discountPrice}
-                      isFree={c.isFree}
-                      level={c.level}
-                      totalLessons={c.totalLessons}
-                      enrollmentCount={c._count.enrollments}
-                      avgRating={c.avgRating}
-                      reviewCount={c._count.reviews}
-                      compact
-                    />
-                  </motion.div>
-                ))}
-          </div>
-
-          {/* Empty state */}
-          {!loading && !error && courses.length === 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-center py-16 sm:py-20"
-            >
-              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-secondary mb-4">
-                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground/40" />
-              </div>
-              <p className="text-base sm:text-lg font-medium text-foreground mb-2">No courses found</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Try different keywords or adjust your filters
-              </p>
-              {hasActiveFilters && (
-                <Button variant="secondary" size="sm" onClick={clearFilters}>
-                  Clear filters
-                </Button>
-              )}
-            </motion.div>
-          )}
-
-          {/* Pagination */}
-          {pages > 1 && !loading && (
-            <div className="flex justify-center items-center gap-1 sm:gap-1.5 mt-8 sm:mt-10">
-              <button
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={page === 1}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </button>
-
-              {Array.from({ length: pages }, (_, i) => i + 1)
-                .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 1)
-                .reduce<(number | "…")[]>((acc, p, idx, arr) => {
-                  if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("…");
-                  acc.push(p);
-                  return acc;
-                }, [])
-                .map((p, i) =>
-                  p === "…" ? (
-                    <span key={`ellipsis-${i}`} className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center text-muted-foreground/50 text-sm">
-                      …
-                    </span>
-                  ) : (
-                    <button
-                      key={p}
-                      onClick={() => setPage(p)}
-                      className={cn(
-                        "w-8 h-8 sm:w-9 sm:h-9 rounded-md text-sm font-medium transition-all",
-                        page === p
-                          ? "bg-orange-500 text-white shadow-md shadow-orange-500/25"
-                          : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
-                      )}
-                    >
-                      {p}
-                    </button>
-                  )
-                )}
-
-              <button
-                onClick={() => setPage((p) => Math.min(pages, p + 1))}
-                disabled={page === pages}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
-              >
-                <ChevronRight className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* ── Mobile filter bottom sheet ───────────────────────────────────── */}
-      <AnimatePresence>
-        {sideOpen && isMobile && (
-          <>
-            {/* Backdrop */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
-              onClick={() => setSideOpen(false)}
-            />
+      {/* ── Result count ───────────────────────────────────────────────────── */}
+      <p className="text-muted-foreground/60 text-xs mb-4">
+        {loading
+          ? "Searching…"
+          : error
+            ? "Search error"
+            : `${total.toLocaleString()} course${total !== 1 ? "s" : ""} found`}
+      </p>
 
-            {/* Sheet */}
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl max-h-[85dvh] flex flex-col"
-            >
-              {/* Drag handle + header */}
-              <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border flex-shrink-0">
-                <div className="absolute left-1/2 -translate-x-1/2 top-2 w-10 h-1 rounded-full bg-border" />
-                <h3 className="text-foreground font-semibold text-base mt-1">Filters</h3>
+      {/* ── Error banner ───────────────────────────────────────────────────── */}
+      {error && !loading && (
+        <div className="flex items-center gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 mb-5">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          <p className="text-sm flex-1">{error}</p>
+          <Button variant="ghost" size="sm" className="text-red-400 hover:text-red-300 flex-shrink-0"
+            onClick={() => search({ reset: true })}>
+            Retry
+          </Button>
+        </div>
+      )}
+
+      {/* ── Course grid ────────────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {loading
+          ? Array.from({ length: 10 }).map((_, i) => <CourseCardSkeleton key={i} compact />)
+          : courses.map((c, i) => (
+              <motion.div
+                key={c.id}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: Math.min(i * 0.03, 0.25) }}
+              >
+                <CourseCard
+                  id={c.id}
+                  title={c.title}
+                  description={c.description}
+                  thumbnail={c.thumbnail}
+                  instructorName={c.createdBy.name}
+                  price={c.price}
+                  discountPrice={c.discountPrice}
+                  isFree={c.isFree}
+                  level={c.level}
+                  totalLessons={c.totalLessons}
+                  enrollmentCount={c._count.enrollments}
+                  avgRating={c.avgRating}
+                  reviewCount={c._count.reviews}
+                  compact
+                />
+              </motion.div>
+            ))}
+      </div>
+
+      {/* ── Empty state ────────────────────────────────────────────────────── */}
+      {!loading && !error && courses.length === 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16 sm:py-20"
+        >
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-secondary mb-4">
+            <BookOpen className="w-6 h-6 text-muted-foreground/40" />
+          </div>
+          <p className="text-base font-medium text-foreground mb-2">No courses found</p>
+          <p className="text-sm text-muted-foreground mb-6">
+            Try different keywords or adjust your filters
+          </p>
+          {hasActiveFilters && (
+            <Button variant="secondary" size="sm"
+              onClick={() => { setLevel(""); setCategory(""); setSort("popular"); }}>
+              Clear filters
+            </Button>
+          )}
+        </motion.div>
+      )}
+
+      {/* ── Pagination ─────────────────────────────────────────────────────── */}
+      {pages > 1 && !loading && (
+        <div className="flex justify-center items-center gap-1 mt-8">
+          <button
+            onClick={() => setPage((p) => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {Array.from({ length: pages }, (_, i) => i + 1)
+            .filter((p) => p === 1 || p === pages || Math.abs(p - page) <= 1)
+            .reduce<(number | "…")[]>((acc, p, idx, arr) => {
+              if (idx > 0 && p - (arr[idx - 1] as number) > 1) acc.push("…");
+              acc.push(p);
+              return acc;
+            }, [])
+            .map((p, i) =>
+              p === "…" ? (
+                <span key={`ellipsis-${i}`} className="w-8 h-8 flex items-center justify-center text-muted-foreground/50 text-sm">…</span>
+              ) : (
                 <button
-                  onClick={() => setSideOpen(false)}
-                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                  key={p}
+                  onClick={() => setPage(p)}
+                  className={cn(
+                    "w-8 h-8 rounded-md text-sm font-medium transition-all",
+                    page === p
+                      ? "bg-orange-500 text-white shadow-sm shadow-orange-500/25"
+                      : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                  )}
                 >
-                  <X className="w-4 h-4" />
+                  {p}
                 </button>
-              </div>
+              )
+            )}
 
-              {/* Scrollable filter content */}
-              <div className="flex-1 overflow-y-auto px-5 pt-5 pb-2">
-                <FilterContent {...filterProps} isMobile />
-              </div>
-
-              {/* Apply button */}
-              <div className="px-5 py-4 border-t border-border flex-shrink-0">
-                <Button
-                  variant="primary"
-                  size="md"
-                  className="w-full"
-                  onClick={() => setSideOpen(false)}
-                >
-                  {total > 0
-                    ? `Show ${total.toLocaleString()} course${total !== 1 ? "s" : ""}`
-                    : "Apply filters"}
-                </Button>
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+          <button
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            disabled={page === pages}
+            className="w-8 h-8 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
