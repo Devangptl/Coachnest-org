@@ -8,7 +8,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
 import CourseCard from "@/components/CourseCard";
-import { BookOpen, Trophy, Clock, ArrowRight, ShoppingBag, Users, CheckCircle2 } from "lucide-react";
+import { BookOpen, Trophy, Clock, ArrowRight, ShoppingBag, Users, CheckCircle2, GraduationCap } from "lucide-react";
 import { calcProgress } from "@/lib/utils";
 import { getLevelForXp, xpToNextLevel } from "@/lib/badges";
 import XpProgressBar from "@/components/XpProgressBar";
@@ -87,6 +87,50 @@ async function getFeatureAccess(userId: string) {
   };
 }
 
+async function getFollowedInstructorCourses(userId: string, enrolledIds: string[]) {
+  const follows = await prisma.userInstructorFollow.findMany({
+    where: { userId },
+    select: {
+      instructor: {
+        select: {
+          id:   true,
+          name: true,
+          courses: {
+            where: {
+              status: "PUBLISHED",
+              ...(enrolledIds.length > 0 && { id: { notIn: enrolledIds } }),
+            },
+            orderBy: { createdAt: "desc" },
+            take: 3,
+            select: {
+              id:            true,
+              title:         true,
+              description:   true,
+              thumbnail:     true,
+              price:         true,
+              discountPrice: true,
+              isFree:        true,
+              level:         true,
+              _count: { select: { lessons: true, enrollments: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return follows
+    .flatMap((f) =>
+      f.instructor.courses.map((c) => ({
+        ...c,
+        price:          c.price         ? Number(c.price)         : null,
+        discountPrice:  c.discountPrice ? Number(c.discountPrice) : null,
+        instructorName: f.instructor.name,
+      }))
+    )
+    .slice(0, 6);
+}
+
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
@@ -101,6 +145,9 @@ export default async function DashboardPage() {
         select: { hasCompletedOnboarding: true },
       }),
     ]);
+
+  const enrolledIds = enrollments.map((e) => e.courseId);
+  const followedCourses = await getFollowedInstructorCourses(session.userId, enrolledIds);
 
   const inProgress = enrollments.filter(
     (e) => e.progress > 0 && e.progress < 100
@@ -240,6 +287,46 @@ export default async function DashboardPage() {
 
       {/* ─── Recommended Courses ─────────────────────────────────────────── */}
       <RecommendedCourses />
+
+      {/* ─── From Followed Instructors ───────────────────────────────────── */}
+      {followedCourses.length > 0 && (
+        <section className="mb-10">
+          <div className="flex items-center justify-between mb-5">
+            <div className="flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-orange-400" />
+              <h2 className="text-xl font-semibold text-foreground">
+                From Instructors You Follow
+              </h2>
+            </div>
+            <Link
+              href="/courses"
+              className="text-orange-400 hover:text-orange-300 text-sm font-medium
+                         flex items-center gap-1 transition-colors"
+            >
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {followedCourses.map((c) => (
+              <CourseCard
+                key={c.id}
+                id={c.id}
+                title={c.title}
+                description={c.description}
+                thumbnail={c.thumbnail}
+                instructorName={c.instructorName}
+                price={c.price}
+                discountPrice={c.discountPrice}
+                isFree={c.isFree}
+                level={c.level}
+                totalLessons={c._count.lessons}
+                enrollmentCount={c._count.enrollments}
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (
