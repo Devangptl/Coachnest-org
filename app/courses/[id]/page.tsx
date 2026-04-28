@@ -12,6 +12,9 @@ import CourseEnrollBar from "./CourseEnrollBar";
 import CourseLayout from "./CourseLayout";
 import PaymentStatus from "./PaymentStatus";
 import { getPlanAccess } from "@/services/subscription.service";
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -87,6 +90,39 @@ async function getUserCourseData(
   };
 }
 
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+  const data = await getCourseById(id);
+  if (!data) return { title: "Course Not Found" };
+
+  const { course, avgRating } = data;
+  const price = course.price ? Number(course.price) : null;
+  const pageUrl = `${BASE_URL}/courses/${id}`;
+
+  return {
+    title: course.title,
+    description: course.description?.slice(0, 160) ?? undefined,
+    openGraph: {
+      type: "website",
+      url: pageUrl,
+      title: course.title,
+      description: course.description?.slice(0, 160) ?? undefined,
+      images: course.thumbnail ? [{ url: course.thumbnail, alt: course.title }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: course.title,
+      description: course.description?.slice(0, 160) ?? undefined,
+      images: course.thumbnail ? [course.thumbnail] : [],
+    },
+    alternates: { canonical: pageUrl },
+    other: {
+      "course:rating": String(avgRating.toFixed(1)),
+      ...(price ? { "course:price": String(price) } : {}),
+    },
+  };
+}
+
 export default async function CourseDetailPage({ params }: Props) {
   const { id } = await params;
 
@@ -128,8 +164,54 @@ export default async function CourseDetailPage({ params }: Props) {
   const priceNum = course.price ? Number(course.price) : null;
   const discountNum = course.discountPrice ? Number(course.discountPrice) : null;
 
+  const courseJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    name: course.title,
+    description: course.description ?? undefined,
+    url: `${BASE_URL}/courses/${id}`,
+    image: course.thumbnail ?? undefined,
+    provider: {
+      "@type": "Organization",
+      name: "CoachNest",
+      sameAs: BASE_URL,
+    },
+    instructor: {
+      "@type": "Person",
+      name: course.createdBy.name,
+    },
+    ...(course.category ? { about: { "@type": "Thing", name: course.category.name } } : {}),
+    ...(avgRating > 0
+      ? {
+          aggregateRating: {
+            "@type": "AggregateRating",
+            ratingValue: avgRating.toFixed(1),
+            reviewCount: course._count.reviews,
+            bestRating: "5",
+            worstRating: "1",
+          },
+        }
+      : {}),
+    offers: {
+      "@type": "Offer",
+      price: course.isFree ? "0" : (course.discountPrice ?? course.price ?? "0"),
+      priceCurrency: "USD",
+      availability: "https://schema.org/InStock",
+      url: `${BASE_URL}/courses/${id}`,
+    },
+    hasCourseInstance: {
+      "@type": "CourseInstance",
+      courseMode: "Online",
+      courseWorkload: `PT${Math.round(totalDuration / 60)}H`,
+    },
+  };
+
   return (
     <div className="pb-10">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }}
+      />
       <PaymentStatus />
       {/* ── Hero section ───────────────────────────────────── */}
       <CourseHero

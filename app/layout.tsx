@@ -28,10 +28,61 @@ import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
 export const metadata: Metadata = {
-  title: "CoachNest — Modern Learning Platform",
+  metadataBase: new URL(BASE_URL),
+  title: {
+    default: "CoachNest — Modern Learning Platform",
+    template: "%s | CoachNest",
+  },
   description:
-    "Master new skills with expert-crafted courses. Learn at your own pace.",
+    "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates — everything you need to level up your career.",
+  keywords: [
+    "online courses",
+    "learn to code",
+    "web development",
+    "e-learning",
+    "certificates",
+    "programming tutorials",
+    "CoachNest",
+  ],
+  authors: [{ name: "CoachNest" }],
+  creator: "CoachNest",
+  publisher: "CoachNest",
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true, "max-image-preview": "large" },
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: BASE_URL,
+    siteName: "CoachNest",
+    title: "CoachNest — Modern Learning Platform",
+    description:
+      "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "CoachNest — Modern Learning Platform",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CoachNest — Modern Learning Platform",
+    description:
+      "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates.",
+    images: ["/og-image.png"],
+    creator: "@coachnest",
+  },
+  alternates: {
+    canonical: BASE_URL,
+  },
 };
 
 export default function RootLayout({

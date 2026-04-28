@@ -3,6 +3,7 @@
  * categories, courses, how-it-works, FAQ, instructor CTA, and final CTA.
  * Server Component: fetches data; delegates animations to client components.
  */
+import type { Metadata } from "next";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
@@ -33,6 +34,32 @@ import {
   BarChart3, Sparkles, CheckCircle2, GraduationCap, Target,
   MessageSquare, HeartHandshake, ChevronRight, Star,
 } from "lucide-react";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
+export const metadata: Metadata = {
+  title: "CoachNest — Learn to Code, Design & Build Your Career",
+  description:
+    "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates. Start learning free today — no credit card required.",
+  keywords: [
+    "online learning platform",
+    "learn programming",
+    "web development courses",
+    "coding tutorials",
+    "earn certificates online",
+    "e-learning",
+    "instructor-led courses",
+    "CoachNest",
+  ],
+  alternates: { canonical: BASE_URL },
+  openGraph: {
+    type: "website",
+    url: BASE_URL,
+    title: "CoachNest — Learn to Code, Design & Build Your Career",
+    description:
+      "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
+  },
+};
 
 const getFeaturedCourses = unstable_cache(
   () =>
@@ -138,8 +165,44 @@ export default async function HomePage() {
     getStats(),
   ]);
 
+  const websiteJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "CoachNest",
+    url: BASE_URL,
+    description:
+      "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
+    potentialAction: {
+      "@type": "SearchAction",
+      target: { "@type": "EntryPoint", urlTemplate: `${BASE_URL}/search?q={search_term_string}` },
+      "query-input": "required name=search_term_string",
+    },
+  };
+
+  const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "CoachNest",
+    url: BASE_URL,
+    logo: `${BASE_URL}/logo.png`,
+    sameAs: [],
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "customer support",
+      url: `${BASE_URL}/contact`,
+    },
+  };
+
   return (
     <div className="overflow-hidden">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
       {/* ═══════════════════════════════════════════════════════════════════════════
           HERO SECTION — Aesthetic two-column with showcase
       ═══════════════════════════════════════════════════════════════════════════ */}

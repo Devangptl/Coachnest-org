@@ -68,14 +68,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const blog = await getBlog(slug);
   if (!blog) return { title: "Post Not Found" };
+  const pageUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com"}/blog/${slug}`;
   return {
     title:       blog.title,
     description: blog.excerpt ?? undefined,
+    alternates:  { canonical: pageUrl },
     openGraph: {
-      title:       blog.title,
-      description: blog.excerpt ?? undefined,
-      images:      blog.thumbnail ? [{ url: blog.thumbnail }] : [],
-      type:        "article",
+      title:           blog.title,
+      description:     blog.excerpt ?? undefined,
+      images:          blog.thumbnail ? [{ url: blog.thumbnail }] : [],
+      type:            "article",
+      publishedTime:   blog.createdAt.toISOString(),
+      modifiedTime:    blog.updatedAt?.toISOString(),
+      url:             pageUrl,
     },
     twitter: {
       card:        "summary_large_image",
@@ -87,6 +92,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 
 export default async function BlogDetailPage({ params }: Props) {
   const { slug } = await params;
@@ -100,8 +107,34 @@ export default async function BlogDetailPage({ params }: Props) {
 
   const tagList = blog.tags?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
 
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    headline: blog.title,
+    description: blog.excerpt ?? undefined,
+    image: blog.thumbnail ?? undefined,
+    url: `${BASE_URL}/blog/${slug}`,
+    datePublished: blog.createdAt.toISOString(),
+    dateModified: blog.updatedAt?.toISOString() ?? blog.createdAt.toISOString(),
+    author: {
+      "@type": "Person",
+      name: blog.author.name,
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "CoachNest",
+      logo: { "@type": "ImageObject", url: `${BASE_URL}/logo.png` },
+    },
+    ...(tagList.length > 0 ? { keywords: tagList.join(", ") } : {}),
+    ...(blog.readTime ? { timeRequired: `PT${blog.readTime}M` } : {}),
+  };
+
   return (
     <div className="mx-auto px-4 sm:px-6 py-10 sm:py-14">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
 
       {/* Back */}
       <Link
