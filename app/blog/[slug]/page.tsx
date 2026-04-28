@@ -76,7 +76,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     openGraph: {
       title:           blog.title,
       description:     blog.excerpt ?? undefined,
-      images:          blog.thumbnail ? [{ url: blog.thumbnail }] : [],
+      images: blog.thumbnail
+        ? [{ url: blog.thumbnail }]
+        : [{ url: `/api/og?title=${encodeURIComponent(blog.title)}&type=blog`, width: 1200, height: 630 }],
       type:            "article",
       publishedTime:   blog.createdAt.toISOString(),
       modifiedTime:    blog.updatedAt?.toISOString(),
@@ -86,7 +88,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       card:        "summary_large_image",
       title:       blog.title,
       description: blog.excerpt ?? undefined,
-      images:      blog.thumbnail ? [blog.thumbnail] : [],
+      images: blog.thumbnail
+        ? [blog.thumbnail]
+        : [`/api/og?title=${encodeURIComponent(blog.title)}&type=blog`],
     },
   };
 }
@@ -129,11 +133,25 @@ export default async function BlogDetailPage({ params }: Props) {
     ...(blog.readTime ? { timeRequired: `PT${blog.readTime}M` } : {}),
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home", item: BASE_URL },
+      { "@type": "ListItem", position: 2, name: "Blog", item: `${BASE_URL}/blog` },
+      { "@type": "ListItem", position: 3, name: blog.title, item: `${BASE_URL}/blog/${slug}` },
+    ],
+  };
+
   return (
     <div className="mx-auto px-4 sm:px-6 py-10 sm:py-14">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
 
       {/* Back */}

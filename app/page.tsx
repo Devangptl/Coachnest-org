@@ -193,6 +193,69 @@ export default async function HomePage() {
     },
   };
 
+  const faqJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: [
+      {
+        "@type": "Question",
+        name: "Is CoachNest really free to get started?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes! You can create a free account and access all our free courses without any credit card. Paid courses are available for purchase individually — no subscription required.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "How do certificates work?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "When you complete all lessons in a course, a verified PDF certificate is automatically generated. You can download it, share it on LinkedIn, or add it to your resume. Each certificate has a unique verification code.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I learn at my own pace?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Absolutely. All courses are self-paced with no deadlines. Your progress is saved automatically, so you can pick up right where you left off — even across devices.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "What payment methods do you accept?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "We accept all major credit/debit cards, UPI, net banking, and wallets through our secure Stripe payment gateway. All transactions are encrypted and PCI-DSS compliant.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Do I get lifetime access to purchased courses?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes. Once you purchase a course, you have lifetime access including all future updates and additions the instructor makes. No recurring fees.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Can I become an instructor?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "Yes! Anyone with expertise can apply to become an instructor. You'll get access to our course builder tools, analytics dashboard, and earn 70% of revenue from your course sales.",
+        },
+      },
+      {
+        "@type": "Question",
+        name: "Is there a refund policy?",
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: "We offer a 30-day money-back guarantee on all paid courses. If you're not satisfied with a course for any reason, contact our support team for a full refund.",
+        },
+      },
+    ],
+  };
+
   return (
     <div className="overflow-hidden">
       <script
@@ -202,6 +265,10 @@ export default async function HomePage() {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}
       />
       {/* ═══════════════════════════════════════════════════════════════════════════
           HERO SECTION — Aesthetic two-column with showcase

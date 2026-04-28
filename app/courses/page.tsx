@@ -8,6 +8,27 @@ import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { BookOpen } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
+export const metadata: Metadata = {
+  title: "Browse Courses — Learn Programming, Design & More",
+  description:
+    "Explore our full catalog of expert-crafted online courses in web development, design, AI, data science, and more. Free and paid courses available.",
+  keywords: [
+    "online courses", "programming courses", "web development", "design courses",
+    "learn to code", "AI courses", "data science", "free online courses",
+  ],
+  alternates: { canonical: `${BASE_URL}/courses` },
+  openGraph: {
+    type: "website",
+    url: `${BASE_URL}/courses`,
+    title: "Browse Courses — Learn Programming, Design & More",
+    description:
+      "Explore expert-crafted courses in web development, design, AI, and more. Start learning free today.",
+  },
+};
 
 async function getCourses() {
   return prisma.course.findMany({

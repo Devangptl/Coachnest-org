@@ -65,7 +65,7 @@ export const metadata: Metadata = {
       "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates.",
     images: [
       {
-        url: "/og-image.png",
+        url: `/api/og?title=CoachNest+%E2%80%94+Modern+Learning+Platform&subtitle=Expert-crafted+courses.+Learn+at+your+own+pace.`,
         width: 1200,
         height: 630,
         alt: "CoachNest — Modern Learning Platform",
@@ -77,7 +77,7 @@ export const metadata: Metadata = {
     title: "CoachNest — Modern Learning Platform",
     description:
       "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates.",
-    images: ["/og-image.png"],
+    images: [`/api/og?title=CoachNest+%E2%80%94+Modern+Learning+Platform&subtitle=Expert-crafted+courses.+Learn+at+your+own+pace.`],
     creator: "@coachnest",
   },
   alternates: {

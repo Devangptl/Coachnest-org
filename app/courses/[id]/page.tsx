@@ -107,13 +107,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       url: pageUrl,
       title: course.title,
       description: course.description?.slice(0, 160) ?? undefined,
-      images: course.thumbnail ? [{ url: course.thumbnail, alt: course.title }] : [],
+      images: course.thumbnail
+        ? [{ url: course.thumbnail, alt: course.title }]
+        : [{ url: `/api/og?title=${encodeURIComponent(course.title)}&type=course`, width: 1200, height: 630 }],
     },
     twitter: {
       card: "summary_large_image",
       title: course.title,
       description: course.description?.slice(0, 160) ?? undefined,
-      images: course.thumbnail ? [course.thumbnail] : [],
+      images: course.thumbnail
+        ? [course.thumbnail]
+        : [`/api/og?title=${encodeURIComponent(course.title)}&type=course`],
     },
     alternates: { canonical: pageUrl },
     other: {
@@ -206,11 +210,25 @@ export default async function CourseDetailPage({ params }: Props) {
     },
   };
 
+  const breadcrumbJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      { "@type": "ListItem", position: 1, name: "Home",    item: BASE_URL },
+      { "@type": "ListItem", position: 2, name: "Courses", item: `${BASE_URL}/courses` },
+      { "@type": "ListItem", position: 3, name: course.title, item: `${BASE_URL}/courses/${id}` },
+    ],
+  };
+
   return (
     <div className="pb-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       <PaymentStatus />
       {/* ── Hero section ───────────────────────────────────── */}
