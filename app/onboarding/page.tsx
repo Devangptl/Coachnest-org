@@ -28,17 +28,8 @@ async function getPopularInstructors(): Promise<InstructorData[]> {
       avatar:   true,
       headline: true,
       courses: {
-        where:   { status: "PUBLISHED" },
-        orderBy: { createdAt: "desc" },
-        select: {
-          id:        true,
-          title:     true,
-          thumbnail: true,
-          price:     true,
-          isFree:    true,
-          level:     true,
-          _count: { select: { enrollments: true } },
-        },
+        where:  { status: "PUBLISHED" },
+        select: { _count: { select: { enrollments: true } } },
       },
       _count: {
         select: { courses: { where: { status: "PUBLISHED" } } },
@@ -55,15 +46,6 @@ async function getPopularInstructors(): Promise<InstructorData[]> {
       headline:     i.headline,
       courseCount:  i._count.courses,
       studentCount: i.courses.reduce((sum, c) => sum + c._count.enrollments, 0),
-      courses: i.courses.slice(0, 3).map((c) => ({
-        id:              c.id,
-        title:           c.title,
-        thumbnail:       c.thumbnail,
-        price:           c.price ? Number(c.price) : null,
-        isFree:          c.isFree,
-        level:           c.level,
-        enrollmentCount: c._count.enrollments,
-      })),
     }))
     .sort((a, b) => b.studentCount - a.studentCount)
     .slice(0, 5);
