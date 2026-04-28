@@ -2,66 +2,66 @@
 
 /**
  * RecommendedCourses
- * Fetches /api/recommendations on mount and renders a "For You" section.
- * Displayed on the student dashboard when the user has professions set.
+ * Fetches /api/recommendations on mount and renders a course section.
+ * - Personalised match  → "Recommended For You" with "Based on: …" label
+ * - No professions set  → "Popular Courses" (fallback to top-enrolled)
  */
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Sparkles, ArrowRight, Loader2, BookOpen } from "lucide-react";
+import { Sparkles, TrendingUp, ArrowRight } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
-import GlassCard from "@/components/GlassCard";
 
 interface Course {
-  id:          string;
-  title:       string;
-  description: string;
-  thumbnail:   string | null;
-  _count:      { lessons: number; enrollments: number };
+  id:             string;
+  title:          string;
+  description:    string;
+  thumbnail:      string | null;
+  price:          number | null;
+  discountPrice:  number | null;
+  isFree:         boolean;
+  level:          string;
+  instructorName: string;
+  enrollmentCount: number;
+  totalLessons:   number;
+  avgRating:      number | null;
+  reviewCount:    number | null;
 }
 
 export default function RecommendedCourses() {
-  const [courses,  setCourses]  = useState<Course[]>([]);
-  const [basedOn,  setBasedOn]  = useState<string[]>([]);
-  const [loading,  setLoading]  = useState(true);
+  const [courses,         setCourses]         = useState<Course[]>([]);
+  const [basedOn,         setBasedOn]         = useState<string[]>([]);
+  const [isPersonalized,  setIsPersonalized]  = useState(false);
+  const [loading,         setLoading]         = useState(true);
 
   useEffect(() => {
     fetch("/api/recommendations?limit=6")
       .then((r) => r.json())
       .then((data) => {
-        setCourses(data.courses ?? []);
-        setBasedOn(data.basedOn  ?? []);
+        setCourses(data.courses        ?? []);
+        setBasedOn(data.basedOn        ?? []);
+        setIsPersonalized(data.isPersonalized ?? false);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) {
-    return (
-      <section className="mb-10">
-        <div className="flex items-center gap-2 mb-5">
-          <Sparkles className="w-5 h-5 text-orange-400" />
-          <h2 className="text-xl font-semibold text-foreground">Recommended For You</h2>
-        </div>
-        <div className="flex items-center justify-center py-12">
-          <Loader2 className="w-6 h-6 text-muted-foreground animate-spin" />
-        </div>
-      </section>
-    );
-  }
-
+  if (loading) return <SkeletonSection />;
   if (courses.length === 0) return null;
+
+  const Icon  = isPersonalized ? Sparkles   : TrendingUp;
+  const title = isPersonalized ? "Recommended For You" : "Popular Courses";
 
   return (
     <section className="mb-10">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-orange-400" />
+          <Icon className="w-5 h-5 text-orange-400" />
           <div>
             <h2 className="text-xl font-semibold text-foreground leading-none">
-              Recommended For You
+              {title}
             </h2>
-            {basedOn.length > 0 && (
+            {isPersonalized && basedOn.length > 0 && (
               <p className="text-xs text-muted-foreground mt-1">
                 Based on: {basedOn.join(", ")}
               </p>
@@ -85,8 +85,42 @@ export default function RecommendedCourses() {
             title={c.title}
             description={c.description}
             thumbnail={c.thumbnail}
-            totalLessons={c._count.lessons}
+            instructorName={c.instructorName}
+            price={c.price}
+            discountPrice={c.discountPrice}
+            isFree={c.isFree}
+            level={c.level}
+            totalLessons={c.totalLessons}
+            enrollmentCount={c.enrollmentCount}
+            avgRating={c.avgRating ?? undefined}
+            reviewCount={c.reviewCount ?? undefined}
           />
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ── Skeleton ──────────────────────────────────────────────────────────────────
+
+function SkeletonSection() {
+  return (
+    <section className="mb-10">
+      <div className="flex items-center gap-2 mb-5">
+        <div className="w-5 h-5 rounded bg-secondary animate-pulse" />
+        <div className="w-48 h-6 rounded bg-secondary animate-pulse" />
+      </div>
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div key={i} className="rounded-md border border-border/60 overflow-hidden bg-card">
+            <div className="h-44 bg-secondary animate-pulse" />
+            <div className="p-4 space-y-3">
+              <div className="w-3/4 h-4 rounded bg-secondary animate-pulse" />
+              <div className="w-full h-3 rounded bg-secondary animate-pulse" />
+              <div className="w-2/3 h-3 rounded bg-secondary animate-pulse" />
+              <div className="w-1/3 h-3 rounded bg-secondary animate-pulse mt-4" />
+            </div>
+          </div>
         ))}
       </div>
     </section>

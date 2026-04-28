@@ -6,6 +6,7 @@
  *   {
  *     professionIds:  string[]   // IDs of predefined professions to select
  *     customNames:    string[]   // custom profession names (free-text)
+ *     instructorIds:  string[]   // IDs of instructors to follow (optional)
  *     complete:       boolean    // true = mark hasCompletedOnboarding
  *   }
  */
@@ -57,13 +58,15 @@ export async function PUT(req: NextRequest) {
 
   try {
     const {
-      professionIds = [],
-      customNames   = [],
-      complete      = false,
+      professionIds  = [],
+      customNames    = [],
+      instructorIds  = [],
+      complete       = false,
     }: {
-      professionIds?: string[];
-      customNames?:   string[];
-      complete?:      boolean;
+      professionIds?:  string[];
+      customNames?:    string[];
+      instructorIds?:  string[];
+      complete?:       boolean;
     } = await req.json();
 
     // Validate that passed professionIds exist
@@ -108,6 +111,19 @@ export async function PUT(req: NextRequest) {
             professionId: null,
             customName,
           })),
+        });
+      }
+
+      // Save instructor follows (replace existing)
+      await tx.userInstructorFollow.deleteMany({ where: { userId: session.userId } });
+
+      if (instructorIds.length > 0) {
+        await tx.userInstructorFollow.createMany({
+          data: instructorIds.map((instructorId) => ({
+            userId: session.userId,
+            instructorId,
+          })),
+          skipDuplicates: true,
         });
       }
 
