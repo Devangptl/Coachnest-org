@@ -79,7 +79,7 @@ export default async function CoursesPage() {
 
       {/* Grid */}
       {courses.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
           {courses.map((course) => {
             const avg = course.reviews.length
               ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
