@@ -41,7 +41,7 @@ export default function CourseCard({
 
   return (
     <Link href={`/courses/${id}`} className="group block h-full">
-      <div className="relative bg-card border border-border/60 rounded-md overflow-hidden transition-all duration-300 group-hover:border-orange-500/30 group-hover:-translate-y-1 group-hover:shadow-xl group-hover:shadow-orange-500/8 h-full flex flex-col">
+      <div className="relative bg-card border border-border/60 rounded-md overflow-hidden transition-colors duration-300 group-hover:border-orange-500/30 h-full flex flex-col">
 
         {/* Top orange accent line */}
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
@@ -53,11 +53,11 @@ export default function CourseCard({
               src={thumbnail}
               alt={title}
               fill
-              className="object-cover transition-all duration-700 ease-out group-hover:scale-110 group-hover:brightness-110"
+              className="object-cover"
             />
           ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-orange-600/15 to-amber-500/20 flex items-center justify-center transition-all duration-700 group-hover:from-orange-500/30 group-hover:via-orange-600/25 group-hover:to-amber-500/30">
-              <BookOpen className={`${compact ? "w-7 h-7" : "w-12 h-12"} text-orange-500/25 transition-all duration-500 group-hover:scale-110 group-hover:text-orange-500/40`} />
+            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-orange-600/15 to-amber-500/20 flex items-center justify-center">
+              <BookOpen className={`${compact ? "w-7 h-7" : "w-12 h-12"} text-orange-500/25`} />
             </div>
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
