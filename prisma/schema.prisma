@@ -213,6 +213,10 @@ model User {
   // Media Library
   mediaAssets           MediaAsset[]
 
+  // Instructor follows (student → instructor)
+  followedInstructors   UserInstructorFollow[] @relation("StudentFollows")
+  followers             UserInstructorFollow[] @relation("InstructorFollowers")
+
   @@map("users")
 }
 
@@ -1090,4 +1094,19 @@ model PayoutRequest {
   instructor User             @relation(fields: [instructorId], references: [id])
 
   @@map("payout_requests")
+}
+
+// ─── Instructor Follow ────────────────────────────────────────────────────────
+
+model UserInstructorFollow {
+  id           String   @id @default(cuid())
+  userId       String
+  instructorId String
+  createdAt    DateTime @default(now())
+
+  user       User @relation("StudentFollows",      fields: [userId],       references: [id], onDelete: Cascade)
+  instructor User @relation("InstructorFollowers", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, instructorId])
+  @@map("user_instructor_follows")
 }
