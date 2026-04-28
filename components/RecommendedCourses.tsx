@@ -77,7 +77,7 @@ export default function RecommendedCourses() {
         </Link>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         {courses.map((c) => (
           <CourseCard
             key={c.id}
@@ -111,8 +111,8 @@ function SkeletonSection() {
         <div className="w-5 h-5 rounded bg-secondary animate-pulse" />
         <div className="w-48 h-6 rounded bg-secondary animate-pulse" />
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {Array.from({ length: 4 }).map((_, i) => (
+      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="rounded-md border border-border/60 overflow-hidden bg-card">
             <div className="h-28 bg-secondary animate-pulse" />
             <div className="p-2.5 space-y-2">
