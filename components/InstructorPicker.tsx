@@ -3,17 +3,23 @@
 /**
  * InstructorPicker
  * Shown during student onboarding to optionally follow instructors.
- *
- * Props:
- *   popularInstructors – top-5 instructors preloaded by the server
- *   selectedIds        – currently selected instructor IDs
- *   onToggle           – toggle follow/unfollow for an instructor
+ * Each card shows the instructor's profile and a strip of their courses.
  */
 
 import { useState, useEffect, useRef } from "react";
 import { Search, Check, BookOpen, Users, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+
+export interface CoursePreview {
+  id:              string;
+  title:           string;
+  thumbnail:       string | null;
+  price:           number | null;
+  isFree:          boolean;
+  level:           string;
+  enrollmentCount: number;
+}
 
 export interface InstructorData {
   id:           string;
@@ -22,6 +28,7 @@ export interface InstructorData {
   headline:     string | null;
   courseCount:  number;
   studentCount: number;
+  courses:      CoursePreview[];
 }
 
 interface InstructorPickerProps {
@@ -40,7 +47,6 @@ export default function InstructorPicker({
   const [loading,  setLoading]  = useState(false);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Debounced search: reset to popular on empty query
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
 
@@ -96,7 +102,7 @@ export default function InstructorPicker({
 
       {/* Instructor list */}
       {results.length > 0 ? (
-        <div className="space-y-2.5">
+        <div className="space-y-3">
           {results.map((instructor) => (
             <InstructorCard
               key={instructor.id}
@@ -112,12 +118,74 @@ export default function InstructorPicker({
         </div>
       )}
 
-      {/* Label */}
       {!query && results.length > 0 && (
         <p className="text-xs text-muted-foreground/60 text-center">
           Showing popular instructors · search to find more
         </p>
       )}
+    </div>
+  );
+}
+
+// ── Level badge ────────────────────────────────────────────────────────────────
+
+const LEVEL_STYLES: Record<string, string> = {
+  beginner:     "bg-green-500/10  text-green-400  border-green-500/20",
+  intermediate: "bg-amber-500/10  text-amber-400  border-amber-500/20",
+  advanced:     "bg-red-500/10    text-red-400    border-red-500/20",
+};
+
+function LevelBadge({ level }: { level: string }) {
+  const style = LEVEL_STYLES[level.toLowerCase()] ?? "bg-secondary text-muted-foreground border-border";
+  return (
+    <span className={cn("inline-block text-[10px] font-medium px-1.5 py-0.5 rounded border capitalize", style)}>
+      {level}
+    </span>
+  );
+}
+
+// ── Course mini-card ───────────────────────────────────────────────────────────
+
+function CourseMiniCard({ course }: { course: CoursePreview }) {
+  const priceLabel = course.isFree || !course.price
+    ? "Free"
+    : `₹${course.price.toLocaleString("en-IN")}`;
+
+  return (
+    <div className="flex-shrink-0 w-40 rounded-lg border border-border bg-background overflow-hidden">
+      {/* Thumbnail */}
+      <div className="relative w-full h-20 bg-muted">
+        {course.thumbnail ? (
+          <Image
+            src={course.thumbnail}
+            alt={course.title}
+            fill
+            className="object-cover"
+            sizes="160px"
+            unoptimized
+          />
+        ) : (
+          <div className="flex h-full items-center justify-center">
+            <BookOpen className="w-6 h-6 text-muted-foreground/30" />
+          </div>
+        )}
+      </div>
+
+      {/* Details */}
+      <div className="p-2 space-y-1.5">
+        <p className="text-xs font-medium text-foreground leading-tight line-clamp-2">
+          {course.title}
+        </p>
+        <div className="flex items-center justify-between gap-1">
+          <LevelBadge level={course.level} />
+          <span className={cn(
+            "text-[10px] font-semibold",
+            course.isFree || !course.price ? "text-green-400" : "text-foreground"
+          )}>
+            {priceLabel}
+          </span>
+        </div>
+      </div>
     </div>
   );
 }
@@ -140,69 +208,90 @@ function InstructorCard({
     .join("")
     .toUpperCase();
 
+  const extraCourses = instructor.courseCount - instructor.courses.length;
+
   return (
-    <button
-      type="button"
-      onClick={() => onToggle(instructor.id)}
-      className={cn(
-        "w-full flex items-center gap-4 px-4 py-3.5 rounded-xl border transition-all text-left",
-        selected
-          ? "bg-orange-500/10 border-orange-500/30"
-          : "bg-secondary border-border hover:border-orange-400/20 hover:bg-secondary/80"
-      )}
-    >
-      {/* Avatar */}
-      <div className="relative flex-shrink-0 w-11 h-11 rounded-full overflow-hidden bg-muted">
-        {instructor.avatar ? (
-          <Image
-            src={instructor.avatar}
-            alt={instructor.name}
-            fill
-            className="object-cover"
-            sizes="44px"
-            unoptimized
-          />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
-            {initials}
-          </span>
-        )}
-      </div>
-
-      {/* Info */}
-      <div className="flex-1 min-w-0">
-        <p className={cn(
-          "font-semibold text-sm truncate",
-          selected ? "text-orange-400" : "text-foreground"
-        )}>
-          {instructor.name}
-        </p>
-        {instructor.headline && (
-          <p className="text-xs text-muted-foreground truncate mt-0.5">
-            {instructor.headline}
-          </p>
-        )}
-        <div className="flex items-center gap-3 mt-1.5">
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
-            <BookOpen className="w-3 h-3" />
-            {instructor.courseCount} course{instructor.courseCount !== 1 ? "s" : ""}
-          </span>
-          <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
-            <Users className="w-3 h-3" />
-            {instructor.studentCount.toLocaleString()} student{instructor.studentCount !== 1 ? "s" : ""}
-          </span>
+    <div className={cn(
+      "rounded-xl border transition-all overflow-hidden",
+      selected ? "border-orange-500/30 bg-orange-500/5" : "border-border bg-secondary"
+    )}>
+      {/* ── Header row ── */}
+      <div className="flex items-start gap-3 px-4 pt-4 pb-3">
+        {/* Avatar */}
+        <div className="relative flex-shrink-0 w-11 h-11 rounded-full overflow-hidden bg-muted mt-0.5">
+          {instructor.avatar ? (
+            <Image
+              src={instructor.avatar}
+              alt={instructor.name}
+              fill
+              className="object-cover"
+              sizes="44px"
+              unoptimized
+            />
+          ) : (
+            <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
+              {initials}
+            </span>
+          )}
         </div>
+
+        {/* Name / headline / stats */}
+        <div className="flex-1 min-w-0">
+          <p className={cn(
+            "font-semibold text-sm truncate",
+            selected ? "text-orange-400" : "text-foreground"
+          )}>
+            {instructor.name}
+          </p>
+          {instructor.headline && (
+            <p className="text-xs text-muted-foreground truncate mt-0.5">
+              {instructor.headline}
+            </p>
+          )}
+          <div className="flex items-center gap-3 mt-1.5">
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
+              <BookOpen className="w-3 h-3" />
+              {instructor.courseCount} course{instructor.courseCount !== 1 ? "s" : ""}
+            </span>
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground/70">
+              <Users className="w-3 h-3" />
+              {instructor.studentCount.toLocaleString()} student{instructor.studentCount !== 1 ? "s" : ""}
+            </span>
+          </div>
+        </div>
+
+        {/* Follow toggle */}
+        <button
+          type="button"
+          onClick={() => onToggle(instructor.id)}
+          className={cn(
+            "flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
+            selected
+              ? "bg-orange-500 text-white hover:bg-orange-400"
+              : "bg-background border border-border text-muted-foreground hover:border-orange-400/40 hover:text-foreground"
+          )}
+        >
+          {selected && <Check className="w-3 h-3" strokeWidth={3} />}
+          {selected ? "Following" : "Follow"}
+        </button>
       </div>
 
-      {/* Check indicator */}
-      <div className={cn(
-        "flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all",
-        selected
-          ? "bg-orange-500 border-orange-500"
-          : "border-border bg-transparent"
-      )}>
-        {selected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
-      </div>
-    </button>
+      {/* ── Course strip ── */}
+      {instructor.courses.length > 0 && (
+        <div className="px-4 pb-4">
+          <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide">
+            {instructor.courses.map((course) => (
+              <CourseMiniCard key={course.id} course={course} />
+            ))}
+            {extraCourses > 0 && (
+              <div className="flex-shrink-0 w-40 rounded-lg border border-dashed border-border
+                              flex items-center justify-center text-xs text-muted-foreground/60">
+                +{extraCourses} more course{extraCourses > 1 ? "s" : ""}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
