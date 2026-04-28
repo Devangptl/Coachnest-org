@@ -132,13 +132,10 @@ export default function SearchPageClient() {
 
   const hasActiveFilters = level !== "" || category !== "" || sort !== "popular";
 
-  const categoryOptions = [
-    { value: "", label: "All Categories" },
-    ...categories.map((c) => ({
-      value: c.slug,
-      label: `${c.icon ? c.icon + " " : ""}${c.name}`,
-    })),
-  ];
+  const categoryOptions = categories.map((c) => ({
+    value: c.slug,
+    label: `${c.icon ? c.icon + " " : ""}${c.name}`,
+  }));
 
   return (
     <div className="pt-6 pb-16">
@@ -192,6 +189,7 @@ export default function SearchPageClient() {
           value={category}
           onValueChange={setCategory}
           options={categoryOptions}
+          placeholder="All Categories"
           className="flex-shrink-0"
         />
 
