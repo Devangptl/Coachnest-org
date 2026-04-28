@@ -54,7 +54,7 @@ export default async function CoursesPage() {
   const [courses, categories] = await Promise.all([getCourses(), getCategories()]);
 
   return (
-    <div className=" pb-16">
+    <div className="pt-6 pb-16">
       {/* Header */}
       <div className="mb-8 animate-fade-in">
         <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">All Courses</h1>

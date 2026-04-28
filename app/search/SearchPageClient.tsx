@@ -275,7 +275,7 @@ export default function SearchPageClient() {
   };
 
   return (
-    <div className="pb-16">
+    <div className="pt-6 pb-16">
       {/* ── Top bar ─────────────────────────────────────────────────────── */}
       <div className="mb-6 space-y-3">
         {/* Row 1: search (full width) */}
