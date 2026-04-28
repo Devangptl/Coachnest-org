@@ -11,7 +11,7 @@ export default async function InstructorLayout({ children }: { children: React.R
     <div className="pb-8">
       <div className="flex flex-col lg:flex-row lg:gap-6 lg:min-h-[calc(100vh-4rem)]">
         <InstructorSidebar />
-        <div className="flex-1 min-w-0 animate-fade-in">{children}</div>
+        <div className="flex-1 min-w-0 animate-fade-in pt-6">{children}</div>
       </div>
     </div>
   );
