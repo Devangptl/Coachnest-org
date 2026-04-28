@@ -44,7 +44,7 @@ export default function SearchBar({
   return (
     <form onSubmit={handleSubmit} className={cn("relative", className)}>
       <div className={cn(
-        "flex items-center gap-2 backdrop-blur-lg bg-secondary border rounded-md px-4 py-3 transition-all",
+        "flex items-center gap-2 bg-secondary border rounded-md px-4 py-3 transition-all",
         focused ? "border-orange-400/25 bg-secondary" : "border-border"
       )}>
         <Search className="w-4 h-4 text-muted-foreground/70 flex-shrink-0" />
