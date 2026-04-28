@@ -47,7 +47,7 @@ export default function CourseCard({
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
 
         {/* ── Thumbnail ─────────────────────────────────────── */}
-        <div className={`relative ${compact ? "h-28" : "h-44"} bg-secondary overflow-hidden flex-shrink-0`}>
+        <div className={`relative ${compact ? "h-[100px]" : "h-44"} bg-secondary overflow-hidden flex-shrink-0`}>
           {thumbnail ? (
             <Image
               src={thumbnail}
@@ -57,28 +57,28 @@ export default function CourseCard({
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-orange-600/15 to-amber-500/20 flex items-center justify-center transition-all duration-700 group-hover:from-orange-500/30 group-hover:via-orange-600/25 group-hover:to-amber-500/30">
-              <BookOpen className={`${compact ? "w-8 h-8" : "w-12 h-12"} text-orange-500/25 transition-all duration-500 group-hover:scale-110 group-hover:text-orange-500/40`} />
+              <BookOpen className={`${compact ? "w-7 h-7" : "w-12 h-12"} text-orange-500/25 transition-all duration-500 group-hover:scale-110 group-hover:text-orange-500/40`} />
             </div>
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
 
           {/* Top-left: level badge */}
-          <div className="absolute top-2 left-2 flex gap-1 flex-wrap">
-            {level && (
-              <Badge variant={LEVEL_COLORS[level as keyof typeof LEVEL_COLORS] ?? "gray"} className={`capitalize ${compact ? "text-[9px] px-1.5 py-0" : ""}`}>
+          {level && !compact && (
+            <div className="absolute top-2 left-2">
+              <Badge variant={LEVEL_COLORS[level as keyof typeof LEVEL_COLORS] ?? "gray"} className="capitalize">
                 {level}
               </Badge>
-            )}
-          </div>
+            </div>
+          )}
 
           {/* Discount badge — top right */}
           {hasDiscount && discountPct > 0 && (
-            <div className={`absolute top-2 right-2 bg-orange-500 text-[#fff] font-bold rounded-md ${compact ? "text-[9px] px-1.5 py-0.5" : "text-[10px] px-2 py-0.5"}`}>
+            <div className={`absolute top-1.5 right-1.5 bg-orange-500 text-[#fff] font-bold rounded ${compact ? "text-[8px] px-1 py-px" : "text-[10px] px-2 py-0.5 rounded-md"}`}>
               -{discountPct}%
             </div>
           )}
 
-          {/* Bottom-left — lesson count (hidden in compact) */}
+          {/* Bottom-left — lesson count (non-compact only) */}
           {!compact && (
             <div className="absolute bottom-3 left-3">
               <div className="flex items-center gap-1.5 bg-black/50 backdrop-blur-sm border border-white/10 rounded-md px-2 py-1">
@@ -92,18 +92,18 @@ export default function CourseCard({
 
           {/* Bottom-right — price */}
           {!isFree && price != null && (
-            <div className={`absolute right-2 bg-black/75 border border-white/10 rounded-md ${compact ? "bottom-2 px-2 py-0.5" : "bottom-3 px-2.5 py-1"}`}>
+            <div className={`absolute right-1.5 bg-black/75 border border-white/10 rounded ${compact ? "bottom-1.5 px-1.5 py-px" : "bottom-3 px-2.5 py-1 rounded-md"}`}>
               {hasDiscount ? (
                 <div className="flex items-center gap-1">
-                  <span className={`text-[#fff] font-bold leading-none ${compact ? "text-xs" : "text-sm"}`}>
+                  <span className={`text-[#fff] font-bold leading-none ${compact ? "text-[10px]" : "text-sm"}`}>
                     ₹{discountPrice!.toLocaleString("en-IN")}
                   </span>
-                  <span className="text-[#fff]/60 text-[9px] line-through leading-none">
+                  <span className="text-[#fff]/60 text-[8px] line-through leading-none">
                     ₹{price.toLocaleString("en-IN")}
                   </span>
                 </div>
               ) : (
-                <span className={`text-[#fff] font-bold leading-none ${compact ? "text-xs" : "text-sm"}`}>
+                <span className={`text-[#fff] font-bold leading-none ${compact ? "text-[10px]" : "text-sm"}`}>
                   ₹{price.toLocaleString("en-IN")}
                 </span>
               )}
@@ -112,21 +112,21 @@ export default function CourseCard({
         </div>
 
         {/* ── Content ───────────────────────────────────────── */}
-        <div className={`${compact ? "p-2.5" : "p-4"} flex-1 flex flex-col`}>
+        <div className={`${compact ? "p-2" : "p-4"} flex-1 flex flex-col`}>
 
-          {/* Instructor */}
-          {instructorName && (
-            <p className={`text-muted-foreground/60 truncate ${compact ? "text-[10px] mb-1" : "text-xs mb-1.5"}`}>
+          {/* Instructor — non-compact only */}
+          {instructorName && !compact && (
+            <p className="text-muted-foreground/60 text-xs mb-1.5 truncate">
               by {instructorName}
             </p>
           )}
 
           {/* Title */}
-          <h3 className={`text-foreground font-semibold line-clamp-2 group-hover:text-orange-500 transition-colors leading-snug ${compact ? "text-xs mb-1.5" : "text-[15px] mb-2"}`}>
+          <h3 className={`text-foreground font-semibold line-clamp-2 group-hover:text-orange-500 transition-colors leading-snug ${compact ? "text-[11px] mb-1" : "text-[15px] mb-2"}`}>
             {title}
           </h3>
 
-          {/* Description — hidden in compact mode */}
+          {/* Description — non-compact only */}
           {!compact && (
             <p className="text-muted-foreground text-xs leading-relaxed line-clamp-2 flex-1">
               {truncate(description, 90)}
@@ -134,8 +134,8 @@ export default function CourseCard({
           )}
 
           {/* ── Footer stats ──────────────────────────────── */}
-          <div className={`${compact ? "mt-2 pt-2" : "mt-3 pt-3"} border-t border-border/50 flex items-center justify-between gap-1`}>
-            <div className={`flex items-center gap-2 text-muted-foreground/70 ${compact ? "text-[10px]" : "text-xs"}`}>
+          <div className={`flex items-center justify-between gap-1 ${compact ? "mt-1.5" : "mt-3 pt-3 border-t border-border/50"}`}>
+            <div className={`flex items-center gap-1.5 text-muted-foreground/70 ${compact ? "text-[10px]" : "text-xs"}`}>
               {avgRating != null && avgRating > 0 && (
                 <span className="flex items-center gap-0.5 text-amber-500 font-medium">
                   <Star className={`${compact ? "w-2.5 h-2.5" : "w-3 h-3"} fill-current`} />
@@ -148,16 +148,10 @@ export default function CourseCard({
                   {enrollmentCount.toLocaleString()}
                 </span>
               )}
-              {compact && totalLessons > 0 && (
-                <span className="flex items-center gap-0.5">
-                  <Clock className="w-2.5 h-2.5 text-orange-400" />
-                  {totalLessons}
-                </span>
-              )}
             </div>
 
             {isFree && (
-              <span className={`font-semibold text-green-600 dark:text-green-400 ${compact ? "text-[10px]" : "text-xs"}`}>Free</span>
+              <span className={`font-semibold text-green-500 ${compact ? "text-[10px]" : "text-xs"}`}>Free</span>
             )}
           </div>
 

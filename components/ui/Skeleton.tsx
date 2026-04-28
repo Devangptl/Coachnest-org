@@ -25,8 +25,8 @@ export function Skeleton({ className, h, w, ...props }: SkeletonProps) {
 export function CourseCardSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <div className="glass overflow-hidden animate-pulse">
-      <Skeleton className={`${compact ? "h-28" : "h-44"} w-full rounded-none`} />
-      <div className={`${compact ? "p-2.5 space-y-2" : "p-5 space-y-3"}`}>
+      <Skeleton className={`${compact ? "h-[100px]" : "h-44"} w-full rounded-none`} />
+      <div className={`${compact ? "p-2 space-y-1.5" : "p-5 space-y-3"}`}>
         <Skeleton h={compact ? "h-3" : "h-5"} w="w-4/5" />
         {!compact && <Skeleton h="h-3" w="w-full" />}
         {!compact && <Skeleton h="h-3" w="w-2/3" />}

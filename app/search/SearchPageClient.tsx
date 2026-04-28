@@ -393,10 +393,10 @@ export default function SearchPageClient() {
 
           {/* Grid — adapts columns based on sidebar open state */}
           <div className={cn(
-            "grid gap-4",
+            "grid gap-3",
             sideOpen && !isMobile
-              ? "grid-cols-2 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4"
-              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4"
+              ? "grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5"
+              : "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5"
           )}>
             {loading
               ? Array.from({ length: 6 }).map((_, i) => <CourseCardSkeleton key={i} compact />)
