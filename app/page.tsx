@@ -273,7 +273,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           HERO SECTION — Aesthetic two-column with showcase
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="relative -mt-32 pt-32 pb-4 overflow-hidden">
+      <section className="relative -mt-24 pt-24 pb-4 overflow-hidden">
         <HeroBackground />
 
         {/* Decorative corner accents */}
