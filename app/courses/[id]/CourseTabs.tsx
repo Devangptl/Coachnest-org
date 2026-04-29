@@ -5,9 +5,9 @@ import { cn } from "@/lib/utils";
 import { BookOpen, ListChecks, MessageSquare } from "lucide-react";
 
 const TABS = [
-  { id: "overview",    label: "Overview",   icon: BookOpen,       countKey: null },
-  { id: "curriculum",  label: "Curriculum", icon: ListChecks,     countKey: "curriculum" },
-  { id: "reviews",     label: "Reviews",    icon: MessageSquare,  countKey: "reviews" },
+  { id: "overview",   label: "Overview",   icon: BookOpen,      countKey: null },
+  { id: "curriculum", label: "Curriculum", icon: ListChecks,    countKey: "curriculum" },
+  { id: "reviews",    label: "Reviews",    icon: MessageSquare, countKey: "reviews" },
 ] as const;
 
 interface Props {
@@ -24,7 +24,7 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
         const isActive = activeTab === tab.id;
         const Icon = tab.icon;
         const count =
-          tab.countKey === "reviews" ? reviewCount :
+          tab.countKey === "reviews"    ? reviewCount :
           tab.countKey === "curriculum" ? lessonCount :
           undefined;
 
@@ -33,7 +33,8 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
             key={tab.id}
             onClick={() => onTabChange(tab.id)}
             className={cn(
-              "relative flex-1 flex items-center justify-center gap-2 rounded px-3 py-2 text-sm font-medium transition-colors select-none min-h-[40px]",
+              "relative flex-1 flex items-center justify-center gap-1.5 rounded py-2 font-medium transition-colors select-none min-h-[40px]",
+              "px-1.5 sm:px-3",
               isActive
                 ? "text-foreground"
                 : "text-muted-foreground hover:text-foreground"
@@ -46,13 +47,14 @@ export default function CourseTabs({ activeTab, onTabChange, reviewCount, lesson
                 transition={{ type: "spring", stiffness: 380, damping: 30 }}
               />
             )}
-            <span className="relative z-[1] flex items-center gap-1.5">
+            <span className="relative z-[1] flex items-center gap-1 sm:gap-1.5 min-w-0">
               <Icon className="w-4 h-4 flex-shrink-0" />
-              <span className="hidden sm:inline">{tab.label}</span>
-              <span className="sm:hidden text-xs font-semibold">{tab.label}</span>
+              <span className="text-[11px] sm:text-[13px] font-semibold leading-none truncate">
+                {tab.label}
+              </span>
               {count !== undefined && count > 0 && (
                 <span className={cn(
-                  "text-[10px] min-w-[18px] text-center px-1 py-0.5 rounded-full font-bold leading-none",
+                  "hidden sm:inline-flex text-[10px] min-w-[18px] items-center justify-center px-1 py-0.5 rounded-full font-bold leading-none",
                   isActive
                     ? "bg-orange-500/15 text-orange-500"
                     : "bg-border text-muted-foreground/70"
