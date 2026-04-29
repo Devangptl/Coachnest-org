@@ -276,8 +276,13 @@ export default function SearchPageClient() {
 
   return (
     <div className="pt-6 pb-16">
-      {/* ── Top bar: Filters | Search | Sort — single responsive row ──── */}
-      <div className="mb-6 flex items-center gap-2">
+      {/* ── Top bar ───────────────────────────────────────────────────────
+           Mobile  : [Search — full width]
+                     [Filters btn] [Sort — flex-1]
+           Tablet+ : [Filters btn] [Search — flex-1] [Sort — fixed]
+      ──────────────────────────────────────────────────────────────── */}
+      <div className="mb-6 flex flex-wrap items-center gap-2">
+        {/* Filters button — left on all sizes */}
         <Button
           variant="secondary"
           size="md"
@@ -288,7 +293,7 @@ export default function SearchPageClient() {
           )}
         >
           <SlidersHorizontal className="w-4 h-4" />
-          <span className="hidden sm:inline">Filters</span>
+          <span className="hidden xs:inline sm:inline">Filters</span>
           {activeFilterCount > 0 && (
             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
               {activeFilterCount}
@@ -296,19 +301,21 @@ export default function SearchPageClient() {
           )}
         </Button>
 
-        <SearchBar
-          initialValue={query}
-          onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
-          navigateTo={false}
-          className="flex-1 min-w-0"
-          placeholder="Search courses..."
-        />
-
+        {/* Sort — right of Filters on mobile, right-end on desktop */}
         <Select
           value={sort}
           onValueChange={setSort}
           options={SORT_OPT}
-          className="flex-shrink-0 w-auto min-w-[150px]"
+          className="flex-1 sm:flex-none sm:w-auto sm:min-w-[150px]"
+        />
+
+        {/* Search — full width below on mobile, flex-1 middle on desktop */}
+        <SearchBar
+          initialValue={query}
+          onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
+          navigateTo={false}
+          className="order-last w-full sm:order-none sm:flex-1 sm:min-w-0 sm:w-auto"
+          placeholder="Search courses..."
         />
       </div>
 

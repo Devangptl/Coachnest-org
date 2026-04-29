@@ -56,17 +56,21 @@ export default async function CoursesPage() {
   return (
     <div className="pt-6 pb-16">
       {/* Header */}
-      <div className="mb-8 animate-fade-in">
-        <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">All Courses</h1>
-        <p className="text-muted-foreground mb-6">
-          {courses.length} course{courses.length !== 1 ? "s" : ""} available
-        </p>
-        <SearchBar className="max-w-md" placeholder="Search courses..." />
+      <div className="mb-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">All Courses</h1>
+            <p className="text-muted-foreground text-sm">
+              {courses.length} course{courses.length !== 1 ? "s" : ""} available
+            </p>
+          </div>
+          <SearchBar className="w-full sm:w-72" placeholder="Search courses..." />
+        </div>
       </div>
 
       {/* Category pills */}
       {categories.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-6">
           {categories.map((cat) => (
             <Link key={cat.id} href={`/search?category=${cat.slug}`}>
               <Badge variant="outline" className="cursor-pointer hover:bg-secondary transition-colors">
