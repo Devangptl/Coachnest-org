@@ -77,7 +77,7 @@ export default function RecommendedCourses() {
         </Link>
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
         {courses.map((c) => (
           <CourseCard
             key={c.id}
@@ -94,6 +94,7 @@ export default function RecommendedCourses() {
             enrollmentCount={c.enrollmentCount}
             avgRating={c.avgRating ?? undefined}
             reviewCount={c.reviewCount ?? undefined}
+            compact
           />
         ))}
       </div>
@@ -110,15 +111,14 @@ function SkeletonSection() {
         <div className="w-5 h-5 rounded bg-secondary animate-pulse" />
         <div className="w-48 h-6 rounded bg-secondary animate-pulse" />
       </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-        {Array.from({ length: 3 }).map((_, i) => (
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+        {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="rounded-md border border-border/60 overflow-hidden bg-card">
-            <div className="h-44 bg-secondary animate-pulse" />
-            <div className="p-4 space-y-3">
-              <div className="w-3/4 h-4 rounded bg-secondary animate-pulse" />
-              <div className="w-full h-3 rounded bg-secondary animate-pulse" />
-              <div className="w-2/3 h-3 rounded bg-secondary animate-pulse" />
-              <div className="w-1/3 h-3 rounded bg-secondary animate-pulse mt-4" />
+            <div className="h-[100px] bg-secondary animate-pulse" />
+            <div className="p-2 space-y-1.5">
+              <div className="w-3/4 h-3 rounded bg-secondary animate-pulse" />
+              <div className="w-full h-2.5 rounded bg-secondary animate-pulse" />
+              <div className="w-1/2 h-2.5 rounded bg-secondary animate-pulse mt-2" />
             </div>
           </div>
         ))}

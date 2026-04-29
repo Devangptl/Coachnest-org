@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseTabs from "./CourseTabs";
-import CourseProgress from "./CourseProgress";
 import CourseViewer from "./CourseViewer";
 import ReviewsSection from "./ReviewsSection";
 import Link from "next/link";
@@ -74,11 +73,6 @@ export default function CourseContent({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Progress bar for enrolled users */}
-      {isEnrolled && (
-        <CourseProgress completedCount={completedCount} totalCount={lessons.length} />
-      )}
-
       {/* Tabs */}
       <CourseTabs
         activeTab={activeTab}
@@ -99,7 +93,7 @@ export default function CourseContent({
             className="space-y-8"
           >
             {/* About this course */}
-            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-4 sm:p-6">
+            <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
                 <Target className="w-5 h-5 text-orange-400" />
                 About This Course
@@ -110,7 +104,7 @@ export default function CourseContent({
             </div>
 
             {/* What you'll learn */}
-            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-4 sm:p-6">
+            <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-400" />
                 What You&apos;ll Learn
@@ -135,7 +129,7 @@ export default function CourseContent({
             </div>
 
             {/* Quick curriculum preview */}
-            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-4 sm:p-6">
+            <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-1 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Course Content

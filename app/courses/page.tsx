@@ -54,19 +54,23 @@ export default async function CoursesPage() {
   const [courses, categories] = await Promise.all([getCourses(), getCategories()]);
 
   return (
-    <div className=" pb-16">
+    <div className="pt-6 pb-16">
       {/* Header */}
-      <div className="mb-8 animate-fade-in">
-        <h1 className="text-2xl sm:text-4xl font-bold text-foreground mb-2">All Courses</h1>
-        <p className="text-muted-foreground mb-6">
-          {courses.length} course{courses.length !== 1 ? "s" : ""} available
-        </p>
-        <SearchBar className="max-w-md" placeholder="Search courses..." />
+      <div className="mb-6 animate-fade-in">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">All Courses</h1>
+            <p className="text-muted-foreground text-sm">
+              {courses.length} course{courses.length !== 1 ? "s" : ""} available
+            </p>
+          </div>
+          <SearchBar className="w-full sm:w-72" placeholder="Search courses..." />
+        </div>
       </div>
 
       {/* Category pills */}
       {categories.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div className="flex flex-wrap gap-2 mb-6">
           {categories.map((cat) => (
             <Link key={cat.id} href={`/search?category=${cat.slug}`}>
               <Badge variant="outline" className="cursor-pointer hover:bg-secondary transition-colors">
@@ -79,7 +83,7 @@ export default async function CoursesPage() {
 
       {/* Grid */}
       {courses.length > 0 ? (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {courses.map((course) => {
             const avg = course.reviews.length
               ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
@@ -100,6 +104,7 @@ export default async function CoursesPage() {
                 enrollmentCount={course._count.enrollments}
                 avgRating={avg}
                 reviewCount={course.reviews.length}
+                compact
               />
             );
           })}

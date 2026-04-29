@@ -21,7 +21,7 @@ export default function SearchPage() {
 
 function SearchPageSkeleton() {
   return (
-    <div className="pb-16 animate-pulse">
+    <div className="pt-6 pb-16 animate-pulse">
       {/* Search bar */}
       <div className="mb-3 h-11 bg-secondary rounded-md w-full" />
       {/* Filter + sort row */}

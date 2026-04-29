@@ -65,7 +65,7 @@ export function Select({
       <SelectPrimitive.Trigger
         className={cn(
           "group inline-flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm font-medium",
-          "w-full bg-secondary border border-border text-foreground",
+          "bg-secondary border border-border text-foreground",
           "hover:bg-secondary/70 hover:border-border/80",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40",
           "data-[state=open]:border-orange-400/40 data-[state=open]:bg-orange-500/5",
