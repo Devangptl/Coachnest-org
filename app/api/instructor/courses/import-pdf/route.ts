@@ -33,9 +33,17 @@ const FREE_COURSE_LIMIT = 5;
 
 // ── PDF text extraction ────────────────────────────────────────────────────────
 async function extractTextFromPdf(buffer: Buffer): Promise<string> {
+  // pdf-parse v2 needs the pdfjs worker configured before use.
+  // Use the bundled worker path exposed by pdf-parse/worker.
+  const { pathToFileURL } = await import("url");
+  const { getPath }       = await import("pdf-parse/worker");
+  const pdfjs             = await import("pdfjs-dist/legacy/build/pdf.mjs");
+
+  pdfjs.GlobalWorkerOptions.workerSrc = pathToFileURL(getPath()).href;
+
   const { PDFParse } = await import("pdf-parse");
-  const parser = new PDFParse({ data: buffer });
-  const result = await parser.getText();
+  const parser       = new PDFParse({ data: buffer });
+  const result       = await parser.getText();
   return result.text;
 }
 
