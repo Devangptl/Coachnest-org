@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 interface ImportResult {
   course: { id: string; title: string; slug: string; status: string };
   lessonsCreated: number;
+  quizzesCreated: number;
   editUrl: string;
 }
 
@@ -124,12 +125,16 @@ export default function CourseImportUploader() {
               </span>
             </div>
 
-            <div className="mt-4 grid grid-cols-2 gap-3">
-              <div className="bg-card border border-border rounded-lg px-4 py-3 text-center">
+            <div className="mt-4 grid grid-cols-3 gap-3">
+              <div className="bg-card border border-border rounded-lg px-3 py-3 text-center">
                 <p className="text-2xl font-bold text-foreground">{result.lessonsCreated}</p>
-                <p className="text-xs text-muted-foreground mt-0.5">Lesson{result.lessonsCreated !== 1 ? "s" : ""} created</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Lesson{result.lessonsCreated !== 1 ? "s" : ""}</p>
               </div>
-              <div className="bg-card border border-border rounded-lg px-4 py-3 text-center">
+              <div className="bg-card border border-border rounded-lg px-3 py-3 text-center">
+                <p className="text-2xl font-bold text-foreground">{result.quizzesCreated ?? 0}</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Quiz{(result.quizzesCreated ?? 0) !== 1 ? "zes" : ""}</p>
+              </div>
+              <div className="bg-card border border-border rounded-lg px-3 py-3 text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-0.5">
                   <BookOpen className="w-4 h-4 text-orange-400" />
                   <p className="text-sm font-semibold text-foreground">Ready to edit</p>
