@@ -33,12 +33,10 @@ const FREE_COURSE_LIMIT = 5;
 
 // ── PDF text extraction ────────────────────────────────────────────────────────
 async function extractTextFromPdf(buffer: Buffer): Promise<string> {
-  // Use the internal module path to avoid the test-file side-effect that
-  // causes issues in Next.js bundling.
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const pdfParse = require("pdf-parse/lib/pdf-parse.js");
-  const data = await pdfParse(buffer);
-  return data.text as string;
+  const { PDFParse } = await import("pdf-parse");
+  const parser = new PDFParse({ data: buffer });
+  const result = await parser.getText();
+  return result.text;
 }
 
 // ── Template parser ────────────────────────────────────────────────────────────
