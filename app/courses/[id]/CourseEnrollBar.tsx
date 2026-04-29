@@ -107,35 +107,44 @@ export default function CourseEnrollBar({
         {/* Progress + CTA */}
         <div className="p-4 flex flex-col sm:flex-row sm:items-center gap-4">
           <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2 mb-1.5">
-              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold ${isCompleted ? "text-amber-500" : "text-green-500"}`}>
+
+            {/* Status badge + lesson count */}
+            <div className="flex items-center justify-between mb-2">
+              <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded-full border ${
+                isCompleted
+                  ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 border-amber-400/30"
+                  : "text-green-600 dark:text-green-400 bg-green-500/10 border-green-400/30"
+              }`}>
                 {isCompleted ? <Trophy className="w-3 h-3" /> : <CheckCircle2 className="w-3 h-3" />}
                 {isCompleted ? "Completed" : "Enrolled"}
               </span>
-              <span className="text-muted-foreground/60 text-[11px]">
+              <span className="text-muted-foreground text-xs tabular-nums">
                 {completedCount} / {lessonCount} lessons
               </span>
             </div>
 
-            <p className="text-sm font-medium text-foreground mb-2">
-              {isCompleted
-                ? "You finished this course!"
-                : completedCount === 0
-                  ? "Ready to start learning?"
-                  : nextLessonTitle
-                    ? <>Next: <span className="text-muted-foreground font-normal truncate">{nextLessonTitle}</span></>
-                    : "Pick up where you left off"}
-            </p>
+            {/* Next lesson label */}
+            {!isCompleted && nextLessonTitle && completedCount > 0 && (
+              <p className="text-xs text-muted-foreground mb-2 truncate">
+                Next: <span className="text-foreground font-medium">{nextLessonTitle}</span>
+              </p>
+            )}
 
             {/* Progress bar */}
-            <div className="flex items-center gap-2">
-              <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
+            <div className="flex items-center gap-3">
+              <div className="relative flex-1 h-2 bg-border rounded-full overflow-hidden">
                 <div
-                  className={`h-full rounded-full transition-all duration-700 ${isCompleted ? "bg-amber-500" : "bg-orange-500"}`}
+                  className={`h-full rounded-full transition-all duration-700 ${
+                    isCompleted
+                      ? "bg-amber-500"
+                      : "bg-orange-500"
+                  }`}
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
-              <span className={`text-xs font-semibold tabular-nums ${isCompleted ? "text-amber-500" : "text-orange-500"}`}>
+              <span className={`text-xs font-bold tabular-nums w-9 text-right ${
+                isCompleted ? "text-amber-500" : "text-orange-500"
+              }`}>
                 {progressPct}%
               </span>
             </div>
@@ -149,7 +158,7 @@ export default function CourseEnrollBar({
             >
               {isCompleted
                 ? <><Sparkles className="w-4 h-4" /> Review</>
-                : <><PlayCircle className="w-4 h-4" /> {completedCount === 0 ? "Start" : "Continue"}</>}
+                : <><PlayCircle className="w-4 h-4" /> {completedCount === 0 ? "Start Learning" : "Continue"}</>}
             </Link>
             <ActionButtons />
           </div>

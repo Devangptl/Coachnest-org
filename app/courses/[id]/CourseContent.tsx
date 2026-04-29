@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseTabs from "./CourseTabs";
-import CourseProgress from "./CourseProgress";
 import CourseViewer from "./CourseViewer";
 import ReviewsSection from "./ReviewsSection";
 import Link from "next/link";
@@ -74,11 +73,6 @@ export default function CourseContent({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Progress bar for enrolled users */}
-      {isEnrolled && (
-        <CourseProgress completedCount={completedCount} totalCount={lessons.length} />
-      )}
-
       {/* Tabs */}
       <CourseTabs
         activeTab={activeTab}
