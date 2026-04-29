@@ -308,7 +308,7 @@ export default function SearchPageClient() {
           value={sort}
           onValueChange={setSort}
           options={SORT_OPT}
-          className="flex-shrink-0"
+          className="flex-shrink-0 w-auto min-w-[150px]"
         />
       </div>
 
