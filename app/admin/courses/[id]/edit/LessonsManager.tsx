@@ -7,6 +7,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Reorder, useDragControls } from "framer-motion";
 import GlassCard from "@/components/GlassCard";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import {
@@ -89,6 +90,13 @@ const lessonTypeLabels = {
 
 export default function LessonsManager({ courseId, lessons: initial }: Props) {
   const router = useRouter();
+  const [lessons, setLessons] = useState<Lesson[]>(initial);
+  const [reorderSaving, setReorderSaving] = useState(false);
+  const lessonsRef = useRef<Lesson[]>(initial);
+
+  // Keep local lessons and ref in sync when the parent refreshes
+  useEffect(() => { setLessons(initial); lessonsRef.current = initial; }, [initial]);
+
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [quizForm, setQuizForm] = useState(emptyQuizForm);
@@ -496,6 +504,29 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
     }
   }
 
+  // ── Reorder lessons ───────────────────────────────────────────────────────
+
+  async function handleReorderEnd() {
+    const reordered = lessonsRef.current;
+    setReorderSaving(true);
+    try {
+      const res = await fetch(`/api/instructor/courses/${courseId}/reorder-lessons`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order: reordered.map((l, i) => ({ id: l.id, order: i + 1 })),
+        }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to save lesson order");
+      setLessons(initial);
+      lessonsRef.current = initial;
+    } finally {
+      setReorderSaving(false);
+    }
+  }
+
   // ── Edit lesson ───────────────────────────────────────────────────────────
 
   async function startEditing(lesson: Lesson) {
@@ -631,119 +662,109 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Existing lessons */}
-      {initial.map((lesson) => {
-        const isEditing = editingId === lesson.id;
-        const Icon = lessonTypeIcons[lesson.type] ?? FileText;
-        const iconColor = lessonTypeColors[lesson.type] ?? "text-blue-400";
-        const typeLabel = lessonTypeLabels[lesson.type] ?? "Lesson";
+      {/* Reorder saving indicator */}
+      {reorderSaving && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Loader2 className="w-3 h-3 animate-spin" /> Saving order…
+        </p>
+      )}
 
-        if (isEditing) {
+      {/* Existing lessons — drag to reorder */}
+      <Reorder.Group
+        axis="y"
+        values={lessons}
+        onReorder={(reordered) => {
+          setLessons(reordered);
+          lessonsRef.current = reordered;
+        }}
+        as="div"
+        className="space-y-3"
+      >
+        {lessons.map((lesson) => {
+          const isEditing = editingId === lesson.id;
+          const Icon = lessonTypeIcons[lesson.type] ?? FileText;
+          const iconColor = lessonTypeColors[lesson.type] ?? "text-blue-400";
+          const typeLabel = lessonTypeLabels[lesson.type] ?? "Lesson";
+
+          if (isEditing) {
+            return (
+              <Reorder.Item
+                key={lesson.id}
+                value={lesson}
+                as="div"
+                dragListener={false}
+              >
+                <GlassCard className="space-y-4">
+                  {/* Edit header */}
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
+                      <Pencil className="w-3.5 h-3.5 text-orange-400" />
+                      Edit Lesson
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      {editForm.type !== "QUIZ" && (
+                        <AutosaveIndicator status={autosaveStatus} />
+                      )}
+                      <button
+                        onClick={cancelEditing}
+                        className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
+                        title="Close"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <LessonFormFields
+                    form={editForm}
+                    setForm={setEditForm}
+                    quizForm={editQuizForm}
+                    setQuizForm={setEditQuizForm}
+                    loadingQuiz={loadingQuiz}
+                    helpers={{ addQuestion, removeQuestion, updateQuestion, addOption, removeOption, updateOption }}
+                  />
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={saving || !editForm.title}
+                      className="btn-primary flex items-center gap-2 text-sm"
+                    >
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEditing}
+                      className="btn-ghost text-sm border border-border"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </GlassCard>
+              </Reorder.Item>
+            );
+          }
+
+          // Normal lesson row — draggable via GripVertical handle
           return (
-            <GlassCard key={lesson.id} className="space-y-4">
-              {/* Edit header */}
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                  <Pencil className="w-3.5 h-3.5 text-orange-400" />
-                  Edit Lesson
-                </h3>
-                <div className="flex items-center gap-3">
-                  {editForm.type !== "QUIZ" && (
-                    <AutosaveIndicator status={autosaveStatus} />
-                  )}
-                  <button
-                    onClick={cancelEditing}
-                    className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
-                    title="Close"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              <LessonFormFields
-                form={editForm}
-                setForm={setEditForm}
-                quizForm={editQuizForm}
-                setQuizForm={setEditQuizForm}
-                loadingQuiz={loadingQuiz}
-                helpers={{ addQuestion, removeQuestion, updateQuestion, addOption, removeOption, updateOption }}
-              />
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={handleSaveEdit}
-                  disabled={saving || !editForm.title}
-                  className="btn-primary flex items-center gap-2 text-sm"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelEditing}
-                  className="btn-ghost text-sm border border-border"
-                >
-                  Cancel
-                </button>
-              </div>
-            </GlassCard>
+            <DraggableLessonRow
+              key={lesson.id}
+              lesson={lesson}
+              Icon={Icon}
+              iconColor={iconColor}
+              typeLabel={typeLabel}
+              deletingId={deletingId}
+              onEdit={() => startEditing(lesson)}
+              onDelete={() => handleDelete(lesson.id)}
+              onDragEnd={handleReorderEnd}
+            />
           );
-        }
+        })}
+      </Reorder.Group>
 
-        // Normal lesson row
-        return (
-          <GlassCard
-            key={lesson.id}
-            padding="sm"
-            className="flex items-center gap-3 px-4 py-3 group"
-          >
-            <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab flex-shrink-0" />
-            <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-            <div className="flex-1 min-w-0">
-              <p className="text-foreground text-sm font-medium truncate">
-                {lesson.title}
-              </p>
-              <p className="text-muted-foreground/70 text-xs">
-                {lesson.type === "VIDEO"
-                  ? lesson.duration
-                    ? `Video · ${lesson.duration} min`
-                    : "Video"
-                  : typeLabel}
-                {lesson.isFree && (
-                  <span className="ml-2 text-emerald-400 font-medium">· Free preview</span>
-                )}
-              </p>
-            </div>
-
-            {/* Edit + Delete buttons */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => startEditing(lesson)}
-                className="text-orange-400/60 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
-                title="Edit lesson"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleDelete(lesson.id)}
-                disabled={deletingId === lesson.id}
-                className="text-red-400/60 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 flex-shrink-0"
-                title="Delete lesson"
-              >
-                {deletingId === lesson.id ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-          </GlassCard>
-        );
-      })}
-
-      {initial.length === 0 && !showForm && (
+      {lessons.length === 0 && !showForm && (
         <GlassCard className="text-center py-10 text-muted-foreground/70">
           No lessons yet. Add your first lesson below.
         </GlassCard>
@@ -1161,5 +1182,81 @@ function AutosaveIndicator({
       <CloudOff className="w-3 h-3" />
       Save failed
     </span>
+  );
+}
+
+// ── DraggableLessonRow ───────────────────────────────────────────────────────
+// Separate component so each row can call useDragControls() independently,
+// allowing drag to be triggered only from the GripVertical handle.
+
+interface DraggableLessonRowProps {
+  lesson:    Lesson;
+  Icon:      React.ElementType;
+  iconColor: string;
+  typeLabel: string;
+  deletingId: string | null;
+  onEdit:    () => void;
+  onDelete:  () => void;
+  onDragEnd: () => void;
+}
+
+function DraggableLessonRow({
+  lesson, Icon, iconColor, typeLabel,
+  deletingId, onEdit, onDelete, onDragEnd,
+}: DraggableLessonRowProps) {
+  const controls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={lesson}
+      as="div"
+      dragControls={controls}
+      dragListener={false}
+      onDragEnd={onDragEnd}
+      whileDrag={{ scale: 1.01, boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}
+      className="rounded-xl"
+    >
+      <GlassCard padding="sm" className="flex items-center gap-3 px-4 py-3 group">
+        <GripVertical
+          className="w-4 h-4 text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing flex-shrink-0 transition-colors"
+          onPointerDown={(e) => controls.start(e)}
+        />
+        <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-foreground text-sm font-medium truncate">{lesson.title}</p>
+          <p className="text-muted-foreground/70 text-xs">
+            {lesson.type === "VIDEO"
+              ? lesson.duration ? `Video · ${lesson.duration} min` : "Video"
+              : typeLabel}
+            {lesson.isFree && (
+              <span className="ml-2 text-emerald-400 font-medium">· Free preview</span>
+            )}
+          </p>
+        </div>
+
+        {/* Edit + Delete buttons */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={onEdit}
+            className="text-orange-400/60 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
+            title="Edit lesson"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={deletingId === lesson.id}
+            className="text-red-400/60 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 flex-shrink-0"
+            title="Delete lesson"
+          >
+            {deletingId === lesson.id ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+      </GlassCard>
+    </Reorder.Item>
   );
 }
