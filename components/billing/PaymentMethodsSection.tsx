@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { AddCardModal } from "@/components/billing/AddCardModal";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
   const [showAdd,    setShowAdd]    = useState(false);
   const [removingId, setRemovingId] = useState<string | null>(null);
   const [settingId,  setSettingId]  = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const load = useCallback(async () => {
     try {
@@ -72,7 +74,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
   useEffect(() => { load(); }, [load]);
 
   async function handleRemove(id: string) {
-    if (!confirm("Remove this card?")) return;
+    if (!await confirm("Remove this card?", { title: "Remove Card", confirmText: "Remove" })) return;
     setRemovingId(id);
     try {
       const res  = await fetch(`/api/billing/payment-methods/${id}`, { method: "DELETE" });

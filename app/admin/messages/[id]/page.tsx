@@ -4,6 +4,7 @@
 "use client";
 
 import React, { useState, useEffect, use } from "react";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -66,6 +67,7 @@ export default function AdminMessageDetailPage({
   const [reply, setReply] = useState("");
   const [sending, setSending] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const confirm = useConfirm();
 
   useEffect(() => {
     async function fetch_msg() {
@@ -113,7 +115,7 @@ export default function AdminMessageDetailPage({
   }
 
   async function handleDelete() {
-    if (!confirm("Permanently delete this message?")) return;
+    if (!await confirm("Permanently delete this message?", { title: "Delete Message", confirmText: "Delete" })) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/contact/${id}`, { method: "DELETE" });

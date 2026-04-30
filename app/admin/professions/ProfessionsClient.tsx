@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import GlassCard from "@/components/GlassCard";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Loader2,
@@ -259,6 +260,7 @@ export default function ProfessionsClient({ initialProfessions }: ProfessionsCli
   const [editing,     setEditing]     = useState<Profession | null>(null);
   const [togglingId,  setTogglingId]  = useState<string | null>(null);
   const [deletingId,  setDeletingId]  = useState<string | null>(null);
+  const confirm = useConfirm();
 
   function openCreate() { setEditing(null); setModalOpen(true); }
   function openEdit(p: Profession) { setEditing(p); setModalOpen(true); }
@@ -290,7 +292,7 @@ export default function ProfessionsClient({ initialProfessions }: ProfessionsCli
   }
 
   async function handleDelete(p: Profession) {
-    if (!confirm(`Delete "${p.name}"? This will remove it from all users' profiles.`)) return;
+    if (!await confirm(`Delete "${p.name}"? This will remove it from all users' profiles.`, { title: "Delete Profession", confirmText: "Delete" })) return;
     setDeletingId(p.id);
     try {
       const res = await fetch(`/api/admin/professions/${p.id}`, { method: "DELETE" });

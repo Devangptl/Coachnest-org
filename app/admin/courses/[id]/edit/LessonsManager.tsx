@@ -28,6 +28,7 @@ import {
   CloudOff,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 interface Lesson {
   id: string;
@@ -102,6 +103,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   const [quizForm, setQuizForm] = useState(emptyQuizForm);
   const [submitting, setSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   // Edit state
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -489,7 +491,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   // ── Delete lesson ─────────────────────────────────────────────────────────
 
   async function handleDelete(lessonId: string) {
-    if (!confirm("Delete this lesson?")) return;
+    if (!await confirm("Delete this lesson?", { title: "Delete Lesson", confirmText: "Delete" })) return;
     setDeletingId(lessonId);
 
     try {

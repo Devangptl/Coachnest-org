@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Eye, BarChart3, Trash2, Pencil, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import QuizAttemptsModal from "./QuizAttemptsModal";
 import QuizAnalyticsModal from "./QuizAnalyticsModal";
 import QuizPreviewModal from "./QuizPreviewModal";
@@ -17,6 +18,7 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
   const [modalType, setModalType] = useState<"attempts" | "analytics" | "preview" | null>(null);
   const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
   const [duplicating, setDuplicating] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const getPassRateVariant = (rate: number) => {
     if (rate >= 80) return "green" as const;
@@ -25,7 +27,7 @@ export default function QuizTable({ quizzes }: { quizzes: any[] }) {
   };
 
   const handleDelete = async (quizId: string) => {
-    if (!confirm("Delete this quiz and all its questions/attempts? This cannot be undone.")) return;
+    if (!await confirm("Delete this quiz and all its questions/attempts? This cannot be undone.", { title: "Delete Quiz", confirmText: "Delete" })) return;
     setDeleteLoading(quizId);
     try {
       const res = await fetch(`/api/admin/quizzes/${quizId}`, { method: "DELETE" });

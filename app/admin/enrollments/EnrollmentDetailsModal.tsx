@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { formatDate } from "@/lib/utils";
 import { X } from "lucide-react";
 import { useState } from "react";
+import { useAlert } from "@/components/ui/UIDialogProvider";
 
 export default function EnrollmentDetailsModal({
   enrollment,
@@ -19,10 +20,11 @@ export default function EnrollmentDetailsModal({
   const [notificationTitle, setNotificationTitle] = useState("");
   const [notificationMessage, setNotificationMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const alert = useAlert();
 
   const handleSendNotification = async () => {
     if (!notificationTitle || !notificationMessage) {
-      alert("Please fill in all fields");
+      await alert("Please fill in all fields.", { title: "Missing Fields" });
       return;
     }
 
@@ -39,12 +41,12 @@ export default function EnrollmentDetailsModal({
       });
 
       if (!res.ok) throw new Error("Failed to send notification");
-      alert("Notification sent successfully!");
+      await alert("Notification sent successfully!", { title: "Success" });
       setShowNotificationForm(false);
       setNotificationTitle("");
       setNotificationMessage("");
     } catch (error) {
-      alert("Error sending notification");
+      await alert("Error sending notification. Please try again.", { title: "Error" });
     } finally {
       setLoading(false);
     }

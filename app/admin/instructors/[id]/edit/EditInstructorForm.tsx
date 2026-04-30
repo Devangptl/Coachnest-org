@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { UserMinus } from "lucide-react";
@@ -22,6 +23,7 @@ export default function EditInstructorForm({ instructor }: { instructor: Instruc
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [demoting, setDemoting] = useState(false);
+  const confirm = useConfirm();
   const [form, setForm] = useState({
     name: instructor.name,
     headline: instructor.headline ?? "",
@@ -71,9 +73,9 @@ export default function EditInstructorForm({ instructor }: { instructor: Instruc
 
   const handleDemote = async () => {
     if (
-      !confirm(
-        `Demote ${instructor.name} to a Student? They will lose instructor access. ` +
-          `This will fail if they still own any courses.`
+      !await confirm(
+        `Demote ${instructor.name} to a Student? They will lose instructor access. This will fail if they still own any courses.`,
+        { title: "Demote Instructor", confirmText: "Demote" }
       )
     ) {
       return;

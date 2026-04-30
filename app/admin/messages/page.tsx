@@ -4,6 +4,7 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -74,6 +75,7 @@ export default function AdminMessagesPage() {
   const [activeTab, setActiveTab] = useState<string>("ALL");
   const [search, setSearch] = useState("");
   const [deleting, setDeleting] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const fetchMessages = useCallback(async () => {
     setLoading(true);
@@ -99,7 +101,7 @@ export default function AdminMessagesPage() {
   }, [fetchMessages]);
 
   async function handleDelete(id: string) {
-    if (!confirm("Are you sure you want to delete this message?")) return;
+    if (!await confirm("Are you sure you want to delete this message?", { title: "Delete Message", confirmText: "Delete" })) return;
     setDeleting(id);
     try {
       const res = await fetch(`/api/admin/contact/${id}`, { method: "DELETE" });
