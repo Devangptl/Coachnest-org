@@ -348,7 +348,7 @@ export default function CourseForm({
                 type="button"
                 onClick={() => setStatus(published ? "DRAFT" : "PUBLISHED")}
                 className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                  published ? "bg-orange-600" : "bg-white/20"
+                  published ? "bg-orange-600" : "bg-muted-foreground/30"
                 }`}
               >
                 <span
@@ -369,7 +369,7 @@ export default function CourseForm({
               type="button"
               onClick={() => setIsFree(!isFree)}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                isFree ? "bg-emerald-500" : "bg-white/20"
+                isFree ? "bg-emerald-500" : "bg-muted-foreground/30"
               }`}
             >
               <span
