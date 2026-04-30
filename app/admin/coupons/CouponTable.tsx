@@ -104,9 +104,11 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
 
           {/* Actions */}
           <div className="col-span-3 flex items-center justify-end gap-2">
-            <Button size="icon" variant="ghost" title="View usage">
-              <Eye className="w-4 h-4" />
-            </Button>
+            <Link href={`/admin/coupons/${coupon.id}`}>
+              <Button size="icon" variant="ghost" title="View usage">
+                <Eye className="w-4 h-4" />
+              </Button>
+            </Link>
             <Link href={`/admin/coupons/${coupon.id}/edit`}>
               <Button size="icon" variant="ghost" title="Edit">
                 <Pencil className="w-4 h-4" />
