@@ -27,6 +27,7 @@ import Footer from "@/components/Footer";
 import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { UIDialogProvider } from "@/components/ui/UIDialogProvider";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 
@@ -115,14 +116,16 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <ThemeProvider>
-          <NavbarWrapper><Navbar /></NavbarWrapper>
+          <UIDialogProvider>
+            <NavbarWrapper><Navbar /></NavbarWrapper>
 
-          <MainWrapper>{children}</MainWrapper>
+            <MainWrapper>{children}</MainWrapper>
 
-          <FooterWrapper><Footer /></FooterWrapper>
+            <FooterWrapper><Footer /></FooterWrapper>
 
-          {/* Global toast notifications */}
-          <ToasterProvider />
+            {/* Global toast notifications */}
+            <ToasterProvider />
+          </UIDialogProvider>
         </ThemeProvider>
       </body>
     </html>

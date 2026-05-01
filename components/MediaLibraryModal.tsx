@@ -14,6 +14,7 @@
  */
 "use client";
 
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import {
   ChangeEvent,
   DragEvent,
@@ -91,6 +92,7 @@ export default function MediaLibraryModal({
   const [selected,   setSelected]   = useState<MediaAsset | null>(null);
   const [deleting,   setDeleting]   = useState<string | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -179,7 +181,7 @@ export default function MediaLibraryModal({
   // ── Delete ──────────────────────────────────────────────────────────────────
 
   const deleteAsset = async (asset: MediaAsset) => {
-    if (!confirm(`Delete "${asset.filename ?? asset.id}"? This cannot be undone.`)) return;
+    if (!await confirm(`Delete "${asset.filename ?? asset.id}"? This cannot be undone.`)) return;
     setDeleting(asset.id);
     try {
       const res = await fetch(`/api/media/${asset.id}`, { method: "DELETE" });

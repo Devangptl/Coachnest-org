@@ -7,6 +7,7 @@ import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Eye, Pencil, Trash2 } from "lucide-react";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 interface InstructorRow {
   id: string;
@@ -34,11 +35,13 @@ export default function InstructorTable({
   const router = useRouter();
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const handleDelete = async (row: InstructorRow) => {
     if (
-      !confirm(
-        `Delete instructor “${row.name}”? This removes their account permanently.`
+      !await confirm(
+        `Delete instructor "${row.name}"? This removes their account permanently.`,
+        { title: "Delete Instructor", confirmText: "Delete" }
       )
     ) {
       return;
