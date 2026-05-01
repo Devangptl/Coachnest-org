@@ -147,7 +147,7 @@ export default function EditQuizPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-24">
-        <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#d97757] animate-spin" />
       </div>
     );
   }
@@ -300,7 +300,7 @@ export default function EditQuizPage() {
                   <button
                     type="button"
                     onClick={() => addOption(qIdx)}
-                    className="text-orange-400 text-xs hover:text-orange-300 transition-colors"
+                    className="text-[#d97757] text-xs hover:text-orange-300 transition-colors"
                   >
                     + Add option
                   </button>

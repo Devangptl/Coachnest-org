@@ -1,17 +1,28 @@
 /**
- * Certificates loading skeleton — header + certificate row list.
+ * Certificates loading skeleton — header + table-style row placeholders.
  */
 import { Skeleton } from "@/components/ui/Skeleton";
 
 function CertificateRowSkeleton() {
   return (
-    <div className="bg-card border border-border rounded-lg p-6 flex items-center gap-4 animate-pulse">
-      <Skeleton className="w-14 h-14 rounded-md flex-shrink-0" />
-      <div className="flex-1 space-y-2">
-        <Skeleton h="h-5" w="w-1/3" />
-        <Skeleton h="h-3" w="w-1/4" />
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-3 md:gap-4 items-center px-5 py-4 animate-pulse">
+      {/* Course */}
+      <div className="col-span-6 flex items-center gap-3 min-w-0">
+        <Skeleton className="w-10 h-10 rounded-lg flex-shrink-0" />
+        <Skeleton h="h-4" w="w-2/3" />
       </div>
-      <Skeleton className="h-9 w-28 rounded-lg flex-shrink-0" />
+      {/* Date */}
+      <div className="col-span-2">
+        <Skeleton h="h-3.5" w="w-24" />
+      </div>
+      {/* ID */}
+      <div className="col-span-2">
+        <Skeleton h="h-3" w="w-20" />
+      </div>
+      {/* Action */}
+      <div className="col-span-2 flex justify-end">
+        <Skeleton className="h-8 w-28 rounded-md" />
+      </div>
     </div>
   );
 }
@@ -25,11 +36,21 @@ export default function CertificatesLoading() {
         <Skeleton className="h-4 w-36 rounded-lg" />
       </div>
 
-      {/* Certificate rows */}
-      <div className="space-y-3">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <CertificateRowSkeleton key={i} />
-        ))}
+      {/* Table */}
+      <div className="bg-card border border-border rounded-md overflow-hidden">
+        {/* Header row */}
+        <div className="hidden md:grid grid-cols-12 gap-4 px-5 py-3 border-b border-border animate-pulse">
+          <Skeleton h="h-3" w="w-20" className="col-span-6" />
+          <Skeleton h="h-3" w="w-16" className="col-span-2" />
+          <Skeleton h="h-3" w="w-24" className="col-span-2" />
+          <Skeleton h="h-3" w="w-16" className="col-span-2 ml-auto" />
+        </div>
+        {/* Rows */}
+        <div className="divide-y divide-border/50">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <CertificateRowSkeleton key={i} />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -67,7 +67,7 @@ export default function NewInstructorPage() {
   };
 
   const inputCls =
-    "w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all";
+    "w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 transition-all";
 
   return (
     <div>

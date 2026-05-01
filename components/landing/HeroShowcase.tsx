@@ -186,13 +186,13 @@ export default function HeroShowcase() {
           style={{ borderColor: aw(0.07) }}>
           <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md bg-orange-500/15 flex items-center justify-center">
-              <TrendingUp className="w-3 h-3 text-orange-400" />
+              <TrendingUp className="w-3 h-3 text-[#d97757]" />
             </div>
             <span className="text-white/90 text-[13px] font-semibold">Progress</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 bg-orange-500/10 border border-orange-400/15 rounded-full px-2 py-0.5">
-              <span className="text-[9px] text-orange-400 font-bold">
+            <div className="flex items-center gap-1 bg-orange-500/10 border border-[#d97757]/15 rounded-full px-2 py-0.5">
+              <span className="text-[9px] text-[#d97757] font-bold">
                 {completedCount}/{steps.length}
               </span>
             </div>
@@ -236,7 +236,7 @@ export default function HeroShowcase() {
                 {step.text}
               </span>
               {step.id === completedCount + 1 && !step.done && (
-                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-orange-400 animate-pulse flex-shrink-0" />
+                <span className="ml-auto w-1.5 h-1.5 rounded-full bg-[#d97757] animate-pulse flex-shrink-0" />
               )}
             </motion.button>
           ))}
@@ -260,7 +260,7 @@ export default function HeroShowcase() {
             <span className="text-[9px] text-white/20">
               {Math.round((completedCount / steps.length) * 100)}% complete
             </span>
-            <span className="text-[9px] text-orange-400/60 font-medium">
+            <span className="text-[9px] text-[#d97757]/60 font-medium">
               {steps.length - completedCount} remaining
             </span>
           </div>
@@ -279,11 +279,11 @@ export default function HeroShowcase() {
         <div className="px-3.5 py-3 flex items-start gap-3">
 
           <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center flex-shrink-0 border border-orange-500/30">
-            <Play className="w-3.5 h-3.5 text-orange-400 ml-0.5" />
+            <Play className="w-3.5 h-3.5 text-[#d97757] ml-0.5" />
           </div>
 
           <div className="flex-1 min-w-0">
-            <p className="text-[9px] text-orange-400/80 font-bold tracking-wider uppercase mb-0.5">Up Next</p>
+            <p className="text-[9px] text-[#d97757]/80 font-bold tracking-wider uppercase mb-0.5">Up Next</p>
             <p className="text-white/90 text-xs font-semibold truncate">Advanced State Management</p>
             <div className="flex items-center gap-1.5 mt-1">
               <Clock className="w-2.5 h-2.5 text-white/40" />
@@ -295,7 +295,7 @@ export default function HeroShowcase() {
         {/* Progress bar across bottom */}
         <div className="h-1 w-full" style={{ background: aw(0.06) }}>
           <motion.div
-            className="h-full bg-gradient-to-r from-orange-600 to-orange-400"
+            className="h-full bg-gradient-to-r from-orange-600 to-[#d97757]"
             initial={{ width: 0 }}
             animate={{ width: "65%" }}
             transition={{ delay: 0.8, duration: 1 }}

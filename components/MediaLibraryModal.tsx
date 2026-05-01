@@ -213,7 +213,7 @@ export default function MediaLibraryModal({
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       {/* Panel */}
-      <div className="relative w-full max-w-4xl max-h-[90vh] flex flex-col bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
+      <div className="relative w-full max-h-[90vh] flex flex-col bg-card border border-border rounded-xl shadow-2xl overflow-hidden">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
@@ -241,8 +241,8 @@ export default function MediaLibraryModal({
             onClick={() => inputRef.current?.click()}
             className={`flex items-center gap-3 rounded-lg border-2 border-dashed px-4 py-3 cursor-pointer transition-colors ${
               dragOver
-                ? "border-orange-400 bg-orange-500/5"
-                : "border-border bg-secondary/40 hover:border-orange-400/50 hover:bg-secondary"
+                ? "border-[#d97757] bg-orange-500/5"
+                : "border-border bg-secondary/40 hover:border-[#d97757]/50 hover:bg-secondary"
             }`}
           >
             <input
@@ -317,7 +317,7 @@ export default function MediaLibraryModal({
                       className={`group relative aspect-video rounded-lg overflow-hidden border-2 cursor-pointer transition-all ${
                         isSelected
                           ? "border-orange-500 ring-2 ring-orange-500/40 shadow-lg"
-                          : "border-border hover:border-orange-400/50"
+                          : "border-border hover:border-[#d97757]/50"
                       } ${isDeleting ? "opacity-50 pointer-events-none" : ""}`}
                     >
                       {/* eslint-disable-next-line @next/next/no-img-element */}

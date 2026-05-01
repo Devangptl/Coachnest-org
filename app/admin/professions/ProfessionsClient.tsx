@@ -8,6 +8,7 @@ import {
   Users, ToggleLeft, ToggleRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Select";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -42,7 +43,7 @@ const COLOR_CLASS: Record<string, string> = {
   blue:   "bg-blue-500/15 text-blue-400 border-blue-500/20",
   purple: "bg-purple-500/15 text-purple-400 border-purple-500/20",
   green:  "bg-emerald-500/15 text-emerald-400 border-emerald-500/20",
-  orange: "bg-orange-500/15 text-orange-400 border-orange-500/20",
+  orange: "bg-orange-500/15 text-[#d97757] border-orange-500/20",
   amber:  "bg-amber-500/15 text-amber-400 border-amber-500/20",
   teal:   "bg-teal-500/15 text-teal-400 border-teal-500/20",
   rose:   "bg-rose-500/15 text-rose-400 border-rose-500/20",
@@ -156,7 +157,7 @@ function ProfessionModal({
             <label className="text-sm font-medium text-muted-foreground mb-1 block">Name *</label>
             <input required value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="w-full bg-secondary border border-border rounded-lg px-4 py-2.5 text-sm text-foreground
-                         placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/40"
+                         placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/40"
               placeholder="e.g. Data Scientist" />
           </div>
 
@@ -166,7 +167,7 @@ function ProfessionModal({
             <textarea required rows={2} value={form.description}
               onChange={(e) => setForm({ ...form, description: e.target.value })}
               className="w-full bg-secondary border border-border rounded-lg px-4 py-2.5 text-sm text-foreground
-                         placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/40 resize-none"
+                         placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/40 resize-none"
               placeholder="Short description shown on the card" />
           </div>
 
@@ -174,19 +175,19 @@ function ProfessionModal({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1 block">Icon</label>
-              <select value={form.icon} onChange={(e) => setForm({ ...form, icon: e.target.value })}
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground
-                           focus:outline-none focus:border-orange-400/40">
-                {ICON_OPTIONS.map((i) => <option key={i} value={i}>{i}</option>)}
-              </select>
+              <Select
+                value={form.icon}
+                onValueChange={(v) => setForm({ ...form, icon: v })}
+                options={ICON_OPTIONS.map((i) => ({ value: i, label: i }))}
+              />
             </div>
             <div>
               <label className="text-sm font-medium text-muted-foreground mb-1 block">Color</label>
-              <select value={form.color} onChange={(e) => setForm({ ...form, color: e.target.value })}
-                className="w-full bg-secondary border border-border rounded-lg px-3 py-2.5 text-sm text-foreground
-                           focus:outline-none focus:border-orange-400/40 capitalize">
-                {COLOR_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
-              </select>
+              <Select
+                value={form.color}
+                onValueChange={(v) => setForm({ ...form, color: v })}
+                options={COLOR_OPTIONS.map((c) => ({ value: c, label: c.charAt(0).toUpperCase() + c.slice(1) }))}
+              />
             </div>
           </div>
 
@@ -210,7 +211,7 @@ function ProfessionModal({
             <input value={form.courseKeywords}
               onChange={(e) => setForm({ ...form, courseKeywords: e.target.value })}
               className="w-full bg-secondary border border-border rounded-lg px-4 py-2.5 text-sm text-foreground
-                         placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/40"
+                         placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/40"
               placeholder="e.g. programming, javascript, backend" />
             <p className="text-xs text-muted-foreground/60 mt-1">
               Used to match courses for personalised recommendations.
@@ -223,7 +224,7 @@ function ProfessionModal({
             <input type="number" min={0} max={999} value={form.order}
               onChange={(e) => setForm({ ...form, order: e.target.value })}
               className="w-28 bg-secondary border border-border rounded-lg px-4 py-2.5 text-sm text-foreground
-                         focus:outline-none focus:border-orange-400/40" />
+                         focus:outline-none focus:border-[#d97757]/40" />
           </div>
 
           {error && (

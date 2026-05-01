@@ -98,7 +98,7 @@ export default async function OrderHistoryPage() {
           <div className="text-center py-8 text-muted-foreground/70">
             <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="mb-2">No orders yet.</p>
-            <Link href="/courses" className="text-orange-400 hover:text-orange-300">
+            <Link href="/courses" className="text-[#d97757] hover:text-orange-300">
               Browse Courses
             </Link>
           </div>

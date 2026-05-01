@@ -113,7 +113,7 @@ export default async function InstructorDetailPage({
           { label: "Courses",        value: stats.coursesCount.toString(),      icon: BookOpen, color: "text-blue-400" },
           { label: "Students",       value: stats.studentsCount.toString(),     icon: Users,    color: "text-emerald-400" },
           { label: "Avg Rating",     value: stats.averageRating ? stats.averageRating.toFixed(1) : "—", icon: Star, color: "text-yellow-400" },
-          { label: "Reviews",        value: stats.reviewsCount.toString(),      icon: Star,     color: "text-orange-400" },
+          { label: "Reviews",        value: stats.reviewsCount.toString(),      icon: Star,     color: "text-[#d97757]" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
@@ -133,7 +133,7 @@ export default async function InstructorDetailPage({
       {/* Wallet */}
       <GlassCard className="mb-6">
         <div className="flex items-center gap-2 mb-4">
-          <Wallet className="w-5 h-5 text-orange-400" />
+          <Wallet className="w-5 h-5 text-[#d97757]" />
           <h2 className="text-lg font-semibold text-foreground">Wallet</h2>
         </div>
         {wallet ? (
@@ -142,7 +142,7 @@ export default async function InstructorDetailPage({
               <div className="text-muted-foreground/70 text-xs uppercase tracking-wider mb-1">
                 Balance
               </div>
-              <div className="text-xl font-bold text-orange-400">{money(wallet.balance)}</div>
+              <div className="text-xl font-bold text-[#d97757]">{money(wallet.balance)}</div>
             </div>
             <div>
               <div className="text-muted-foreground/70 text-xs uppercase tracking-wider mb-1">
@@ -184,7 +184,7 @@ export default async function InstructorDetailPage({
                 <div className="col-span-5 min-w-0">
                   <Link
                     href={`/admin/courses/${c.id}`}
-                    className="text-foreground text-sm font-medium hover:text-orange-400 truncate block"
+                    className="text-foreground text-sm font-medium hover:text-[#d97757] truncate block"
                   >
                     {c.title}
                   </Link>

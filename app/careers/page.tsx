@@ -57,11 +57,11 @@ export default function CareersPage() {
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto py-16">
+        <div className="mx-auto py-16">
 
           {/* Hero */}
           <div className="text-center mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-400/80 text-xs font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-[#d97757]/80 text-xs font-medium mb-6">
               We&apos;re hiring
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-5 leading-tight">
@@ -79,7 +79,7 @@ export default function CareersPage() {
             {PERKS.map(({ icon: Icon, title, desc }) => (
               <div key={title} className="rounded-md border border-white/8 bg-white/[.02] p-5 flex gap-4">
                 <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-                  <Icon className="w-4 h-4 text-orange-400/70" />
+                  <Icon className="w-4 h-4 text-[#d97757]/70" />
                 </div>
                 <div>
                   <p className="text-white/75 font-medium text-sm mb-0.5">{title}</p>
@@ -117,7 +117,7 @@ export default function CareersPage() {
                     </div>
                     <Link
                       href="/contact"
-                      className="shrink-0 flex items-center gap-1.5 text-xs text-orange-400/70 hover:text-orange-400 font-medium transition-colors"
+                      className="shrink-0 flex items-center gap-1.5 text-xs text-[#d97757]/70 hover:text-[#d97757] font-medium transition-colors"
                     >
                       Apply <ArrowRight className="w-3.5 h-3.5" />
                     </Link>

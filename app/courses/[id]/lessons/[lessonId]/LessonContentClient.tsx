@@ -40,7 +40,7 @@ interface Props {
 }
 
 const typeConfig = {
-  VIDEO: { icon: PlayCircle, color: "text-orange-400", bg: "bg-orange-500/15", border: "border-orange-400/20", label: "Video" },
+  VIDEO: { icon: PlayCircle, color: "text-[#d97757]", bg: "bg-orange-500/15", border: "border-[#d97757]/20", label: "Video" },
   TEXT:  { icon: FileText,   color: "text-blue-400",   bg: "bg-blue-500/15",   border: "border-blue-400/20",   label: "Reading" },
   QUIZ:  { icon: HelpCircle, color: "text-amber-400",  bg: "bg-amber-500/15",  border: "border-amber-400/20",  label: "Quiz" },
 };
@@ -118,7 +118,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         </p>
         <Link
           href={`/courses/${courseId}`}
-          className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold px-6 py-3 rounded-md transition-all shadow-lg shadow-orange-600/20"
+          className="btn-primary px-6 py-3 font-semibold"
         >
           View Course &amp; Enroll
         </Link>
@@ -127,7 +127,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-0 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
+    <div className="mx-auto px-0 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
 
       {/* ── Lesson header ────────────────────────────────────────────────── */}
       <div className="mb-4 sm:mb-6">
@@ -259,7 +259,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                   <Eye className="w-3.5 h-3.5 flex-shrink-0" />
                   <div className="flex-1 bg-secondary rounded-full h-1.5 overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full transition-all duration-500", scrollDone ? "bg-green-500" : "bg-orange-400")}
+                      className={cn("h-full rounded-full transition-all duration-500", scrollDone ? "bg-green-500" : "bg-[#d97757]")}
                       style={{ width: `${scrollPct}%` }}
                     />
                   </div>
@@ -271,7 +271,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                   <Clock className="w-3.5 h-3.5 flex-shrink-0" />
                   <div className="flex-1 bg-secondary rounded-full h-1.5 overflow-hidden">
                     <div
-                      className={cn("h-full rounded-full transition-all duration-500", timeDone ? "bg-green-500" : "bg-orange-400")}
+                      className={cn("h-full rounded-full transition-all duration-500", timeDone ? "bg-green-500" : "bg-[#d97757]")}
                       style={{ width: `${Math.min(100, (activeSecs / TIME_THRESHOLD) * 100)}%` }}
                     />
                   </div>
@@ -324,7 +324,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         {next ? (
           <Link
             href={`/courses/${courseId}/lessons/${next.id}`}
-            className="flex items-center justify-end gap-2.5 sm:gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/20 text-primary hover:text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md transition-all hover:from-orange-600/25 hover:to-orange-500/20"
+            className="flex items-center justify-end gap-2.5 sm:gap-3 group bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-[#d97757]/20 text-primary hover:text-foreground px-3 sm:px-4 py-2.5 sm:py-3 rounded-md transition-all hover:from-orange-600/25 hover:to-orange-500/20"
           >
             <div className="text-right min-w-0 flex-1">
               <p className="text-[10px] text-muted-foreground/50 mb-0.5 font-medium uppercase tracking-wide">Next</p>
@@ -404,7 +404,7 @@ function QuizLoader({ lessonId, onComplete }: { lessonId: string; onComplete: ()
 
   if (loading) return (
     <div className="flex items-center justify-center py-20">
-      <div className="w-8 h-8 border-2 border-orange-400/25 border-t-orange-400 rounded-full animate-spin" />
+      <div className="w-8 h-8 border-2 border-[#d97757]/25 border-t-[#d97757] rounded-full animate-spin" />
     </div>
   );
   if (error || !quiz) return (

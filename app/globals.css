@@ -16,14 +16,14 @@
 /* ─── Claude Code theme — CSS variable tokens ────────────────────────────── */
 @layer base {
   :root {
-    --background: 0 0% 5%;
+    --background: 0 0% 10%;
     /* --background: #171717; */
     --foreground: 0 0% 91%;
-    --card: 0 0% 8%;
+    --card: 0 0% 10%;
     --card-foreground: 0 0% 91%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 91%;
-    --primary: 20 70% 52%;
+    --primary:  #d97757;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 13%;
     --secondary-foreground: 0 0% 78%;
@@ -41,13 +41,13 @@
 
   /* ── Claude Code light theme ────────────────────────────────────────────── */
   .light {
-    --background: 33 60% 97%;          /* #fdf9f5 — warm parchment */
+    --background: 33 60% 98%;          
     --foreground: 20 30% 9%;           /* #1c1411 — rich warm near-black */
     --card: 0 0% 100%;                 /* #ffffff — pure white cards */
     --card-foreground: 20 30% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 30% 9%;
-    --primary: 20 68% 52%;             /* #d4703f — Claude signature orange */
+    --primary: #d97757;             /* #d4703f — Claude signature orange */
     --primary-foreground: 0 0% 100%;
     --secondary: 34 23% 90% / 0;           /* #ece7df — warm light panel */
     --secondary-foreground: 20 10% 18%;
@@ -76,15 +76,13 @@
     @apply bg-background text-foreground antialiased;
     background: hsl(var(--background));
     min-height: 100vh;
-    font-family: var(--font-inter, system-ui, sans-serif);
-    font-feature-settings: "cv11", "ss01";
+    font-family: var(--font-poppins, system-ui, sans-serif);
     -webkit-font-smoothing: antialiased;
   }
 
   /* Claude Code-style heading typography — tight tracking, strong weight */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-inter, system-ui, sans-serif);
-    font-feature-settings: "cv11", "ss01";
+    font-family: var(--font-poppins, system-ui, sans-serif);
     letter-spacing: -0.025em;
     line-height: 1.15;
   }
@@ -111,13 +109,26 @@
     @apply glass glass-hover cursor-pointer;
   }
 
-  /* Buttons */
   .btn-primary {
-    @apply bg-gradient-to-r from-orange-600 to-orange-500 text-white font-semibold
-           px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600
-           transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/35
-           disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center
-           justify-center gap-2 text-sm;
+    background-color: #a95438;
+    border: 1px solid #87432d;
+    color: #ffffff;
+    font-weight: 500;
+    padding: 0.4rem 1.25rem;
+    border-radius: 0.375rem;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+  }
+  /* .btn-primary:hover {
+    background-color: #f97316cc;
+  } */
+  .btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
   }
   .btn-secondary {
     @apply bg-secondary border border-border text-foreground font-medium px-4 py-2
@@ -174,8 +185,8 @@
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium;
   }
-  .badge-orange { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-400/25; }
-  .badge-purple { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-400/25; }
+  .badge-orange { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-[#d97757]/25; }
+  .badge-purple { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-[#d97757]/25; }
   .badge-green  { @apply badge bg-green-500/15  text-green-700  dark:text-green-400  border border-green-400/25;  }
   .badge-amber  { @apply badge bg-amber-500/15  text-amber-700  dark:text-amber-300  border border-amber-400/25;  }
   .badge-red    { @apply badge bg-red-500/15    text-red-600    dark:text-red-400    border border-red-400/25;    }
@@ -197,7 +208,80 @@
   }
 }
 
+/* ─── Handwritten highlight font ─────────────────────────────────────────────── */
+.font-handwritten {
+  font-family: var(--font-caveat, "Caveat", cursive);
+  font-weight: 700;
+  letter-spacing: -0.005em;
+  /* Caveat has a smaller x-height; nudge it up to align with the rest of h1 */
+  line-height: 0.95;
+}
+
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
+
+/* Small glow segments that travel along individual grid lines.
+   Top/left are animated (parent-relative %) so the beam crosses the
+   full height/width of its track. drop-shadow gives a soft halo. */
+.hero-beam {
+  position: absolute;
+  filter: drop-shadow(0 0 5px rgba(249,115,22,0.45));
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  opacity: 0;
+}
+
+@keyframes hero-beam-down {
+  0%   { top: -70px;  opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { top: 100%;   opacity: 0; }
+}
+@keyframes hero-beam-up {
+  0%   { top: 100%;   opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { top: -70px;  opacity: 0; }
+}
+@keyframes hero-beam-right {
+  0%   { left: -70px; opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { left: 100%;  opacity: 0; }
+}
+@keyframes hero-beam-left {
+  0%   { left: 100%;  opacity: 0; }
+  8%   { opacity: 1;  }
+  92%  { opacity: 1;  }
+  100% { left: -70px; opacity: 0; }
+}
+
+/* Soft pulsing badge ring */
+@keyframes hero-badge-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(249,115,22,0.35); }
+  50%      { box-shadow: 0 0 0 6px rgba(249,115,22,0); }
+}
+.hero-badge-pulse { animation: hero-badge-pulse 2.4s ease-in-out infinite; }
+
+/* Floating chips around the showcase */
+@keyframes hero-float-chip {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(0, -6px); }
+}
+@keyframes hero-float-chip-delayed {
+  0%, 100% { transform: translate(0, 0); }
+  50%      { transform: translate(-4px, 5px); }
+}
+.hero-float-chip         { animation: hero-float-chip 4.5s ease-in-out infinite; }
+.hero-float-chip-delayed { animation: hero-float-chip-delayed 5.5s ease-in-out infinite 1s; }
+
+/* Scroll cue — line travels downward */
+@keyframes hero-scroll-cue {
+  0%   { transform: scaleY(0); transform-origin: top; opacity: 0; }
+  35%  { transform: scaleY(1); transform-origin: top; opacity: 1; }
+  65%  { transform: scaleY(1); transform-origin: bottom; opacity: 1; }
+  100% { transform: scaleY(0); transform-origin: bottom; opacity: 0; }
+}
+.hero-scroll-cue { animation: hero-scroll-cue 2.4s ease-in-out infinite; }
 
 /* Subtle terminal grid */
 .hero-grid {
@@ -373,17 +457,24 @@ html.light .text-white { color: hsl(var(--foreground)); }
 /* Restore genuine white for elements on coloured backgrounds */
 html.light .bg-orange-600.text-white,
 html.light .bg-orange-500.text-white,
-html.light .bg-orange-400.text-white,
+html.light .bg-[#d97757].text-white,
 html.light .bg-red-600.text-white,
 html.light .bg-red-500.text-white,
 html.light .bg-emerald-600.text-white,
 html.light .bg-emerald-500.text-white,
 html.light .from-orange-600.text-white,
 html.light .from-orange-500.text-white,
-html.light .from-orange-400.text-white { color: #ffffff; }
+html.light .from-[#d97757].text-white { color: #ffffff; }
 
-/* Utility-class buttons (btn-primary uses @apply) */
-html.light .btn-primary                { color: #ffffff; }
+/* Utility-class buttons — light mode: opaque orange bg + white text */
+html.light .btn-primary {
+  background-color: #d97757;
+  border-color: #bc6346;
+  color: #ffffff !important;
+}
+/* html.light .btn-primary:hover {
+  background-color: #f97316;
+} */
 
 /* ── text-white/X → warm-dark equivalent ────────────────────────────────── */
 html.light .text-white\/5  { color: rgb(15 23 42 / 0.06); }
@@ -468,10 +559,10 @@ html.light .badge-red    { background-color: #fdecea; color: #b71c1c; border-col
 html.light .badge-blue   { background-color: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
 
 /* ── Coloured text — boost contrast on cream ─────────────────────────────── */
-html.light .text-orange-400\/60  { color: rgb(194 65 12 / 0.80); }
-html.light .text-orange-400\/70  { color: rgb(194 65 12 / 0.88); }
-html.light .text-orange-400\/80  { color: rgb(194 65 12 / 0.95); }
-html.light .text-orange-400      { color: #c2410c; }
+html.light .#d97757\/60  { color: rgb(194 65 12 / 0.80); }
+html.light .#d97757\/70  { color: rgb(194 65 12 / 0.88); }
+html.light .#d97757\/80  { color: rgb(194 65 12 / 0.95); }
+html.light .#d97757      { color: #c2410c; }
 html.light .text-orange-300      { color: #c2550e; }
 html.light .text-orange-500      { color: #b83d0a; }
 
@@ -618,4 +709,209 @@ html.light .hero-gradient-text {
 
 /* Ensure the form-panel link / forgot-password orange is readable on light bg */
 html.light .text-orange-500 { color: #b84800; }
-html.light .hover\:text-orange-400:hover { color: #c2550e; }
+html.light .hover\:#d97757:hover { color: #c2550e; }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
+   QUILL RICH TEXT EDITOR — dark theme overrides
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+/* ── Toolbar ──────────────────────────────────────────────────────────────── */
+.ql-toolbar.ql-snow {
+  background: hsl(var(--secondary));
+  border-color: hsl(var(--border));
+  border-top-left-radius: calc(var(--radius) - 2px);
+  border-top-right-radius: calc(var(--radius) - 2px);
+  padding: 6px 8px;
+}
+
+.ql-toolbar.ql-snow .ql-formats { margin-right: 8px; }
+
+/* Toolbar icon strokes & fills */
+.ql-toolbar .ql-stroke { stroke: hsl(var(--muted-foreground)); transition: stroke 0.15s; }
+.ql-toolbar .ql-fill   { fill:   hsl(var(--muted-foreground)); transition: fill   0.15s; }
+.ql-toolbar .ql-thin   { stroke: hsl(var(--muted-foreground)); }
+
+.ql-toolbar button:hover .ql-stroke,
+.ql-toolbar button.ql-active .ql-stroke { stroke: hsl(var(--primary)); }
+.ql-toolbar button:hover .ql-fill,
+.ql-toolbar button.ql-active .ql-fill   { fill:   hsl(var(--primary)); }
+
+/* Picker labels (e.g. Header dropdown) */
+.ql-toolbar .ql-picker-label {
+  color: hsl(var(--muted-foreground));
+  border-color: transparent;
+}
+.ql-toolbar .ql-picker-label:hover,
+.ql-toolbar .ql-picker-label.ql-active { color: hsl(var(--primary)); }
+.ql-toolbar .ql-picker-label .ql-stroke { stroke: hsl(var(--muted-foreground)); }
+.ql-toolbar .ql-picker-label:hover .ql-stroke { stroke: hsl(var(--primary)); }
+
+/* Picker dropdown */
+.ql-toolbar .ql-picker-options {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  padding: 4px;
+}
+.ql-toolbar .ql-picker-item { color: hsl(var(--muted-foreground)); border-radius: 4px; padding: 4px 8px; }
+.ql-toolbar .ql-picker-item:hover,
+.ql-toolbar .ql-picker-item.ql-selected { color: hsl(var(--foreground)); background: hsl(var(--secondary)); }
+
+/* ── Container & editor area ─────────────────────────────────────────────── */
+.ql-container.ql-snow {
+  background: hsl(var(--secondary) / 0.3);
+  border-color: hsl(var(--border));
+  border-bottom-left-radius: calc(var(--radius) - 2px);
+  border-bottom-right-radius: calc(var(--radius) - 2px);
+  font-family: var(--font-poppins, system-ui, sans-serif);
+  font-size: 0.875rem;
+  color: hsl(var(--foreground));
+}
+
+.ql-editor {
+  color: hsl(var(--foreground));
+  line-height: 1.75;
+  padding: 14px 18px;
+}
+
+.ql-editor.ql-blank::before {
+  color: hsl(var(--muted-foreground) / 0.4);
+  font-style: normal;
+}
+
+/* ── Editor content typography ───────────────────────────────────────────── */
+.ql-editor h1 { font-size: 1.5rem;  font-weight: 700; margin: 1.25rem 0 0.5rem; color: hsl(var(--foreground)); }
+.ql-editor h2 { font-size: 1.25rem; font-weight: 600; margin: 1rem 0 0.4rem;   color: hsl(var(--foreground)); }
+.ql-editor h3 { font-size: 1.1rem;  font-weight: 600; margin: 0.875rem 0 0.35rem; color: hsl(var(--foreground)); }
+
+.ql-editor p  { margin-bottom: 0.5rem; }
+
+.ql-editor a  { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+.ql-editor a:hover { opacity: 0.85; }
+
+.ql-editor blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.04);
+  color: hsl(var(--muted-foreground));
+  padding: 8px 14px;
+  margin: 12px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.ql-editor pre.ql-syntax {
+  background: hsl(0 0% 7%);
+  color: #86efac;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-x: auto;
+}
+
+.ql-editor code {
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.82em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.ql-editor ul, .ql-editor ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0;
+}
+
+.ql-editor li { margin-bottom: 0.25rem; }
+
+/* Checklist */
+.ql-editor li.ql-indent-0.ql-direction-ltr.list-bullet::before { color: hsl(var(--primary)); }
+
+/* ── Tooltip (link editor) ───────────────────────────────────────────────── */
+.ql-snow .ql-tooltip {
+  background: hsl(var(--card));
+  border-color: hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  color: hsl(var(--foreground));
+}
+.ql-snow .ql-tooltip input[type=text] {
+  background: hsl(var(--secondary));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+  border-radius: 4px;
+  outline: none;
+}
+.ql-snow .ql-tooltip a.ql-action::after { color: hsl(var(--primary)); }
+.ql-snow .ql-tooltip a.ql-remove::before { color: hsl(var(--muted-foreground)); }
+
+/* ── Light mode adjustments ──────────────────────────────────────────────── */
+html.light .ql-toolbar.ql-snow         { background: hsl(var(--secondary)); }
+html.light .ql-container.ql-snow       { background: hsl(var(--card)); }
+html.light .ql-editor                  { color: hsl(var(--foreground)); }
+html.light .ql-toolbar .ql-stroke      { stroke: hsl(var(--muted-foreground)); }
+html.light .ql-toolbar .ql-fill        { fill:   hsl(var(--muted-foreground)); }
+html.light .ql-toolbar .ql-picker-label { color: hsl(var(--muted-foreground)); }
+html.light .ql-toolbar .ql-picker-options { background: hsl(var(--card)); }
+html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   QUILL CONTENT — rendered output (from MarkdownRenderer HTML branch)
+   ══════════════════════════════════════════════════════════════════════════ */
+.quill-content {
+  font-size: 0.9rem;
+  line-height: 1.8;
+  color: hsl(var(--foreground));
+}
+.quill-content-compact { font-size: 0.85rem; line-height: 1.6; }
+
+.quill-content h1 { font-size: 1.45rem; font-weight: 700; margin: 1.5rem 0 0.6rem;  color: hsl(var(--foreground)); }
+.quill-content h2 { font-size: 1.2rem;  font-weight: 600; margin: 1.2rem 0 0.5rem;  color: hsl(var(--foreground)); }
+.quill-content h3 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 0.4rem;    color: hsl(var(--foreground)); }
+
+.quill-content p  { margin-bottom: 0.75rem; }
+
+.quill-content a  { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
+
+.quill-content strong { font-weight: 600; color: hsl(var(--foreground)); }
+.quill-content em     { font-style: italic; color: hsl(var(--muted-foreground) / 0.9); }
+.quill-content s      { text-decoration: line-through; opacity: 0.6; }
+
+.quill-content blockquote {
+  border-left: 3px solid hsl(var(--primary) / 0.5);
+  background: hsl(var(--primary) / 0.04);
+  color: hsl(var(--muted-foreground));
+  padding: 8px 14px;
+  margin: 12px 0;
+  border-radius: 0 var(--radius) var(--radius) 0;
+}
+
+.quill-content pre {
+  background: hsl(0 0% 7%);
+  color: #86efac;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  padding: 12px 16px;
+  font-size: 0.8rem;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  overflow-x: auto;
+  margin: 12px 0;
+}
+
+.quill-content code {
+  background: hsl(var(--secondary));
+  border-radius: 4px;
+  padding: 1px 5px;
+  font-size: 0.82em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.quill-content ul, .quill-content ol {
+  padding-left: 1.5rem;
+  margin: 0.5rem 0 0.75rem;
+}
+.quill-content li { margin-bottom: 0.3rem; }
+
+.quill-content img { max-width: 100%; border-radius: var(--radius); margin: 8px 0; }

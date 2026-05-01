@@ -5,8 +5,9 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { Reorder, useDragControls } from "framer-motion";
 import GlassCard from "@/components/GlassCard";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import {
@@ -23,6 +24,8 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  CloudUpload,
+  CloudOff,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -74,7 +77,7 @@ const lessonTypeIcons = {
 };
 
 const lessonTypeColors = {
-  VIDEO: "text-orange-400",
+  VIDEO: "text-[#d97757]",
   TEXT: "text-blue-400",
   QUIZ: "text-amber-400",
 };
@@ -87,6 +90,13 @@ const lessonTypeLabels = {
 
 export default function LessonsManager({ courseId, lessons: initial }: Props) {
   const router = useRouter();
+  const [lessons, setLessons] = useState<Lesson[]>(initial);
+  const [reorderSaving, setReorderSaving] = useState(false);
+  const lessonsRef = useRef<Lesson[]>(initial);
+
+  // Keep local lessons and ref in sync when the parent refreshes
+  useEffect(() => { setLessons(initial); lessonsRef.current = initial; }, [initial]);
+
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [quizForm, setQuizForm] = useState(emptyQuizForm);
@@ -100,6 +110,196 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   const [editQuizId, setEditQuizId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [loadingQuiz, setLoadingQuiz] = useState(false);
+
+  // Autosave state — only used for TEXT/VIDEO lesson edits
+  const [autosaveStatus, setAutosaveStatus] =
+    useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  const lastSavedRef = useRef<typeof emptyForm | null>(null);
+  const autosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autosaveAbortRef = useRef<AbortController | null>(null);
+  const savedHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // New-lesson autosave state — creates a draft lesson on first save, then PATCHes
+  const [draftLessonId, setDraftLessonId] = useState<string | null>(null);
+  const [formAutosaveStatus, setFormAutosaveStatus] =
+    useState<"idle" | "pending" | "saving" | "saved" | "error">("idle");
+  const lastFormSavedRef = useRef<typeof emptyForm | null>(null);
+  const formAutosaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const formAutosaveAbortRef = useRef<AbortController | null>(null);
+  const formSavedHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  function cancelPendingAutosave() {
+    if (autosaveTimerRef.current) {
+      clearTimeout(autosaveTimerRef.current);
+      autosaveTimerRef.current = null;
+    }
+    if (autosaveAbortRef.current) {
+      autosaveAbortRef.current.abort();
+      autosaveAbortRef.current = null;
+    }
+    if (savedHideTimerRef.current) {
+      clearTimeout(savedHideTimerRef.current);
+      savedHideTimerRef.current = null;
+    }
+  }
+
+  // Debounced autosave for TEXT/VIDEO lesson edits
+  useEffect(() => {
+    if (!editingId) return;
+    if (editForm.type === "QUIZ") return;
+    if (!editForm.title.trim()) return;
+    if (!lastSavedRef.current) return;
+
+    const last = lastSavedRef.current;
+    const unchanged =
+      editForm.title === last.title &&
+      editForm.type === last.type &&
+      editForm.content === last.content &&
+      editForm.duration === last.duration &&
+      editForm.isFree === last.isFree;
+    if (unchanged) return;
+
+    if (savedHideTimerRef.current) {
+      clearTimeout(savedHideTimerRef.current);
+      savedHideTimerRef.current = null;
+    }
+    setAutosaveStatus("pending");
+    if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+
+    autosaveTimerRef.current = setTimeout(async () => {
+      if (autosaveAbortRef.current) autosaveAbortRef.current.abort();
+      const controller = new AbortController();
+      autosaveAbortRef.current = controller;
+      const snapshot = { ...editForm };
+
+      setAutosaveStatus("saving");
+      try {
+        const res = await fetch(`/api/lessons/${editingId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: snapshot.title,
+            type: snapshot.type,
+            content: snapshot.type === "QUIZ" ? null : snapshot.content,
+            duration:
+              snapshot.type === "VIDEO" ? Number(snapshot.duration) || null : null,
+            isFree: snapshot.isFree,
+          }),
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error();
+        lastSavedRef.current = snapshot;
+        setAutosaveStatus("saved");
+        if (savedHideTimerRef.current) clearTimeout(savedHideTimerRef.current);
+        savedHideTimerRef.current = setTimeout(() => setAutosaveStatus("idle"), 2000);
+      } catch (err) {
+        if ((err as { name?: string })?.name === "AbortError") return;
+        setAutosaveStatus("error");
+      }
+    }, 1200);
+
+    return () => {
+      if (autosaveTimerRef.current) clearTimeout(autosaveTimerRef.current);
+    };
+  }, [editForm, editingId]);
+
+  useEffect(() => () => cancelPendingAutosave(), []);
+
+  function cancelPendingFormAutosave() {
+    if (formAutosaveTimerRef.current) {
+      clearTimeout(formAutosaveTimerRef.current);
+      formAutosaveTimerRef.current = null;
+    }
+    if (formAutosaveAbortRef.current) {
+      formAutosaveAbortRef.current.abort();
+      formAutosaveAbortRef.current = null;
+    }
+    if (formSavedHideTimerRef.current) {
+      clearTimeout(formSavedHideTimerRef.current);
+      formSavedHideTimerRef.current = null;
+    }
+  }
+
+  // Debounced autosave for new TEXT/VIDEO lesson — POST on first save, then PATCH
+  useEffect(() => {
+    if (!showForm) return;
+    if (form.type === "QUIZ") return;
+    if (!form.title.trim()) return;
+
+    const last = lastFormSavedRef.current;
+    const unchanged =
+      last &&
+      form.title === last.title &&
+      form.type === last.type &&
+      form.content === last.content &&
+      form.duration === last.duration &&
+      form.isFree === last.isFree;
+    if (unchanged) return;
+
+    if (formSavedHideTimerRef.current) {
+      clearTimeout(formSavedHideTimerRef.current);
+      formSavedHideTimerRef.current = null;
+    }
+    setFormAutosaveStatus("pending");
+    if (formAutosaveTimerRef.current) clearTimeout(formAutosaveTimerRef.current);
+
+    formAutosaveTimerRef.current = setTimeout(async () => {
+      if (formAutosaveAbortRef.current) formAutosaveAbortRef.current.abort();
+      const controller = new AbortController();
+      formAutosaveAbortRef.current = controller;
+      const snapshot = { ...form };
+
+      setFormAutosaveStatus("saving");
+      try {
+        const payload = {
+          title: snapshot.title,
+          type: snapshot.type,
+          content: snapshot.type === "QUIZ" ? null : snapshot.content,
+          duration:
+            snapshot.type === "VIDEO" ? Number(snapshot.duration) || null : null,
+          isFree: snapshot.isFree,
+        };
+        let res: Response;
+        if (draftLessonId) {
+          res = await fetch(`/api/lessons/${draftLessonId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+            signal: controller.signal,
+          });
+        } else {
+          res = await fetch("/api/lessons", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ courseId, ...payload }),
+            signal: controller.signal,
+          });
+          if (res.ok) {
+            const { lesson } = await res.json();
+            setDraftLessonId(lesson.id);
+            router.refresh();
+          }
+        }
+        if (!res.ok) throw new Error();
+        lastFormSavedRef.current = snapshot;
+        setFormAutosaveStatus("saved");
+        if (formSavedHideTimerRef.current) clearTimeout(formSavedHideTimerRef.current);
+        formSavedHideTimerRef.current = setTimeout(
+          () => setFormAutosaveStatus("idle"),
+          2000,
+        );
+      } catch (err) {
+        if ((err as { name?: string })?.name === "AbortError") return;
+        setFormAutosaveStatus("error");
+      }
+    }, 1200);
+
+    return () => {
+      if (formAutosaveTimerRef.current) clearTimeout(formAutosaveTimerRef.current);
+    };
+  }, [form, showForm, draftLessonId, courseId, router]);
+
+  useEffect(() => () => cancelPendingFormAutosave(), []);
 
   // ── Quiz builder helpers ──────────────────────────────────────────────────
 
@@ -175,8 +375,60 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
   // ── Add lesson ────────────────────────────────────────────────────────────
 
+  function closeNewLessonForm() {
+    cancelPendingFormAutosave();
+    setForm(emptyForm);
+    setQuizForm(emptyQuizForm);
+    setShowForm(false);
+    setDraftLessonId(null);
+    lastFormSavedRef.current = null;
+    setFormAutosaveStatus("idle");
+  }
+
   async function handleAddLesson() {
     if (!form.title) return;
+
+    // TEXT/VIDEO lessons are autosaved — if a draft already exists, just close.
+    if (form.type !== "QUIZ" && draftLessonId) {
+      cancelPendingFormAutosave();
+      // If the user typed more after the last successful save, flush it first.
+      const last = lastFormSavedRef.current;
+      const dirty =
+        !last ||
+        form.title !== last.title ||
+        form.type !== last.type ||
+        form.content !== last.content ||
+        form.duration !== last.duration ||
+        form.isFree !== last.isFree;
+
+      if (dirty) {
+        setSubmitting(true);
+        try {
+          const res = await fetch(`/api/lessons/${draftLessonId}`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              title: form.title,
+              type: form.type,
+              content: form.content,
+              duration: form.type === "VIDEO" ? Number(form.duration) || null : null,
+              isFree: form.isFree,
+            }),
+          });
+          if (!res.ok) throw new Error();
+        } catch {
+          toast.error("Failed to save lesson");
+          setSubmitting(false);
+          return;
+        }
+        setSubmitting(false);
+      }
+
+      toast.success("Lesson added!");
+      closeNewLessonForm();
+      router.refresh();
+      return;
+    }
 
     if (form.type === "QUIZ" && !validateQuiz(quizForm)) return;
 
@@ -225,9 +477,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       }
 
       toast.success("Lesson added!");
-      setForm(emptyForm);
-      setQuizForm(emptyQuizForm);
-      setShowForm(false);
+      closeNewLessonForm();
       router.refresh();
     } catch {
       toast.error("Failed to add lesson");
@@ -254,17 +504,44 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
     }
   }
 
+  // ── Reorder lessons ───────────────────────────────────────────────────────
+
+  async function handleReorderEnd() {
+    const reordered = lessonsRef.current;
+    setReorderSaving(true);
+    try {
+      const res = await fetch(`/api/instructor/courses/${courseId}/reorder-lessons`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          order: reordered.map((l, i) => ({ id: l.id, order: i + 1 })),
+        }),
+      });
+      if (!res.ok) throw new Error();
+    } catch {
+      toast.error("Failed to save lesson order");
+      setLessons(initial);
+      lessonsRef.current = initial;
+    } finally {
+      setReorderSaving(false);
+    }
+  }
+
   // ── Edit lesson ───────────────────────────────────────────────────────────
 
   async function startEditing(lesson: Lesson) {
-    setEditingId(lesson.id);
-    setEditForm({
+    cancelPendingAutosave();
+    const initialEditForm = {
       title: lesson.title,
       type: lesson.type,
       content: lesson.content ?? "",
       duration: lesson.duration?.toString() ?? "",
       isFree: lesson.isFree,
-    });
+    };
+    setEditingId(lesson.id);
+    setEditForm(initialEditForm);
+    lastSavedRef.current = initialEditForm;
+    setAutosaveStatus("idle");
     setShowForm(false);
 
     // If QUIZ type, load existing quiz data
@@ -297,10 +574,14 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
   }
 
   function cancelEditing() {
+    cancelPendingAutosave();
     setEditingId(null);
     setEditForm(emptyForm);
     setEditQuizForm(emptyQuizForm);
     setEditQuizId(null);
+    lastSavedRef.current = null;
+    setAutosaveStatus("idle");
+    router.refresh();
   }
 
   async function handleSaveEdit() {
@@ -308,6 +589,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
     if (editForm.type === "QUIZ" && !validateQuiz(editQuizForm)) return;
 
+    cancelPendingAutosave();
     setSaving(true);
     try {
       const res = await fetch(`/api/lessons/${editingId}`, {
@@ -380,113 +662,109 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
 
   return (
     <div className="space-y-3">
-      {/* Existing lessons */}
-      {initial.map((lesson) => {
-        const isEditing = editingId === lesson.id;
-        const Icon = lessonTypeIcons[lesson.type] ?? FileText;
-        const iconColor = lessonTypeColors[lesson.type] ?? "text-blue-400";
-        const typeLabel = lessonTypeLabels[lesson.type] ?? "Lesson";
+      {/* Reorder saving indicator */}
+      {reorderSaving && (
+        <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+          <Loader2 className="w-3 h-3 animate-spin" /> Saving order…
+        </p>
+      )}
 
-        if (isEditing) {
+      {/* Existing lessons — drag to reorder */}
+      <Reorder.Group
+        axis="y"
+        values={lessons}
+        onReorder={(reordered) => {
+          setLessons(reordered);
+          lessonsRef.current = reordered;
+        }}
+        as="div"
+        className="space-y-3"
+      >
+        {lessons.map((lesson) => {
+          const isEditing = editingId === lesson.id;
+          const Icon = lessonTypeIcons[lesson.type] ?? FileText;
+          const iconColor = lessonTypeColors[lesson.type] ?? "text-blue-400";
+          const typeLabel = lessonTypeLabels[lesson.type] ?? "Lesson";
+
+          if (isEditing) {
+            return (
+              <Reorder.Item
+                key={lesson.id}
+                value={lesson}
+                as="div"
+                dragListener={false}
+              >
+                <GlassCard className="space-y-4">
+                  {/* Edit header */}
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
+                      <Pencil className="w-3.5 h-3.5 text-[#d97757]" />
+                      Edit Lesson
+                    </h3>
+                    <div className="flex items-center gap-3">
+                      {editForm.type !== "QUIZ" && (
+                        <AutosaveIndicator status={autosaveStatus} />
+                      )}
+                      <button
+                        onClick={cancelEditing}
+                        className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
+                        title="Close"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <LessonFormFields
+                    form={editForm}
+                    setForm={setEditForm}
+                    quizForm={editQuizForm}
+                    setQuizForm={setEditQuizForm}
+                    loadingQuiz={loadingQuiz}
+                    helpers={{ addQuestion, removeQuestion, updateQuestion, addOption, removeOption, updateOption }}
+                  />
+
+                  {/* Actions */}
+                  <div className="flex gap-2 pt-1">
+                    <button
+                      onClick={handleSaveEdit}
+                      disabled={saving || !editForm.title}
+                      className="btn-primary flex items-center gap-2 text-sm"
+                    >
+                      {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
+                      Save Changes
+                    </button>
+                    <button
+                      type="button"
+                      onClick={cancelEditing}
+                      className="btn-ghost text-sm border border-border"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </GlassCard>
+              </Reorder.Item>
+            );
+          }
+
+          // Normal lesson row — draggable via GripVertical handle
           return (
-            <GlassCard key={lesson.id} className="space-y-4">
-              {/* Edit header */}
-              <div className="flex items-center justify-between">
-                <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                  <Pencil className="w-3.5 h-3.5 text-orange-400" />
-                  Edit Lesson
-                </h3>
-                <button
-                  onClick={cancelEditing}
-                  className="text-muted-foreground/40 hover:text-muted-foreground transition-colors p-1"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-
-              <LessonFormFields
-                form={editForm}
-                setForm={setEditForm}
-                quizForm={editQuizForm}
-                setQuizForm={setEditQuizForm}
-                loadingQuiz={loadingQuiz}
-                helpers={{ addQuestion, removeQuestion, updateQuestion, addOption, removeOption, updateOption }}
-              />
-
-              {/* Actions */}
-              <div className="flex gap-2 pt-1">
-                <button
-                  onClick={handleSaveEdit}
-                  disabled={saving || !editForm.title}
-                  className="btn-primary flex items-center gap-2 text-sm"
-                >
-                  {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-                  Save Changes
-                </button>
-                <button
-                  type="button"
-                  onClick={cancelEditing}
-                  className="btn-ghost text-sm border border-border"
-                >
-                  Cancel
-                </button>
-              </div>
-            </GlassCard>
+            <DraggableLessonRow
+              key={lesson.id}
+              lesson={lesson}
+              Icon={Icon}
+              iconColor={iconColor}
+              typeLabel={typeLabel}
+              deletingId={deletingId}
+              onEdit={() => startEditing(lesson)}
+              onDelete={() => handleDelete(lesson.id)}
+              onDragEnd={handleReorderEnd}
+            />
           );
-        }
+        })}
+      </Reorder.Group>
 
-        // Normal lesson row
-        return (
-          <GlassCard
-            key={lesson.id}
-            padding="sm"
-            className="flex items-center gap-3 px-4 py-3 group"
-          >
-            <GripVertical className="w-4 h-4 text-muted-foreground/30 cursor-grab flex-shrink-0" />
-            <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
-            <div className="flex-1 min-w-0">
-              <p className="text-foreground text-sm font-medium truncate">
-                {lesson.title}
-              </p>
-              <p className="text-muted-foreground/70 text-xs">
-                {lesson.type === "VIDEO"
-                  ? lesson.duration
-                    ? `Video · ${lesson.duration} min`
-                    : "Video"
-                  : typeLabel}
-                {lesson.isFree && (
-                  <span className="ml-2 text-emerald-400 font-medium">· Free preview</span>
-                )}
-              </p>
-            </div>
-
-            {/* Edit + Delete buttons */}
-            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => startEditing(lesson)}
-                className="text-orange-400/60 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
-                title="Edit lesson"
-              >
-                <Pencil className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => handleDelete(lesson.id)}
-                disabled={deletingId === lesson.id}
-                className="text-red-400/60 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 flex-shrink-0"
-                title="Delete lesson"
-              >
-                {deletingId === lesson.id ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-              </button>
-            </div>
-          </GlassCard>
-        );
-      })}
-
-      {initial.length === 0 && !showForm && (
+      {lessons.length === 0 && !showForm && (
         <GlassCard className="text-center py-10 text-muted-foreground/70">
           No lessons yet. Add your first lesson below.
         </GlassCard>
@@ -495,10 +773,15 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
       {/* Add lesson form */}
       {showForm && (
         <GlassCard className="space-y-4">
-          <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-            <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
-            New Lesson
-          </h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
+              <PlusCircle className="w-3.5 h-3.5 text-emerald-400" />
+              New Lesson
+            </h3>
+            {form.type !== "QUIZ" && (
+              <AutosaveIndicator status={formAutosaveStatus} />
+            )}
+          </div>
 
           <LessonFormFields
             form={form}
@@ -516,14 +799,14 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
               className="btn-primary flex items-center gap-2 text-sm"
             >
               {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
-              Add Lesson
+              {form.type !== "QUIZ" && draftLessonId ? "Done" : "Add Lesson"}
             </button>
             <button
               type="button"
-              onClick={() => { setShowForm(false); setQuizForm(emptyQuizForm); }}
+              onClick={closeNewLessonForm}
               className="btn-ghost text-sm border border-border"
             >
-              Cancel
+              {form.type !== "QUIZ" && draftLessonId ? "Close" : "Cancel"}
             </button>
           </div>
         </GlassCard>
@@ -595,7 +878,7 @@ function LessonFormFields({
                   form.type === t
                     ? t === "QUIZ"
                       ? "bg-amber-500/20 border-amber-400/40 text-foreground"
-                      : "bg-orange-500/15 border-orange-400/25 text-foreground"
+                      : "bg-orange-500/15 border-[#d97757]/25 text-foreground"
                     : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
@@ -697,7 +980,7 @@ function QuizBuilderInline({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 text-orange-400 animate-spin" />
+        <Loader2 className="w-5 h-5 text-[#d97757] animate-spin" />
         <span className="text-muted-foreground/70 text-sm ml-2">Loading quiz data...</span>
       </div>
     );
@@ -833,7 +1116,7 @@ function QuizBuilderInline({
               <button
                 type="button"
                 onClick={() => helpers.addOption(setQuizForm, qIdx)}
-                className="text-orange-400 text-xs hover:text-orange-300 transition-colors"
+                className="text-[#d97757] text-xs hover:text-orange-300 transition-colors"
               >
                 + Add option
               </button>
@@ -855,5 +1138,125 @@ function QuizBuilderInline({
         )}
       </div>
     </div>
+  );
+}
+
+// ── Autosave indicator ───────────────────────────────────────────────────────
+
+function AutosaveIndicator({
+  status,
+}: {
+  status: "idle" | "pending" | "saving" | "saved" | "error";
+}) {
+  if (status === "idle") return null;
+
+  if (status === "pending") {
+    return (
+      <span className="flex items-center gap-1.5 text-muted-foreground/70 text-xs">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-400/80" />
+        Unsaved changes
+      </span>
+    );
+  }
+
+  if (status === "saving") {
+    return (
+      <span className="flex items-center gap-1.5 text-muted-foreground text-xs">
+        <Loader2 className="w-3 h-3 animate-spin" />
+        Saving…
+      </span>
+    );
+  }
+
+  if (status === "saved") {
+    return (
+      <span className="flex items-center gap-1.5 text-emerald-400 text-xs">
+        <CloudUpload className="w-3 h-3" />
+        Saved
+      </span>
+    );
+  }
+
+  return (
+    <span className="flex items-center gap-1.5 text-red-400 text-xs">
+      <CloudOff className="w-3 h-3" />
+      Save failed
+    </span>
+  );
+}
+
+// ── DraggableLessonRow ───────────────────────────────────────────────────────
+// Separate component so each row can call useDragControls() independently,
+// allowing drag to be triggered only from the GripVertical handle.
+
+interface DraggableLessonRowProps {
+  lesson:    Lesson;
+  Icon:      React.ElementType;
+  iconColor: string;
+  typeLabel: string;
+  deletingId: string | null;
+  onEdit:    () => void;
+  onDelete:  () => void;
+  onDragEnd: () => void;
+}
+
+function DraggableLessonRow({
+  lesson, Icon, iconColor, typeLabel,
+  deletingId, onEdit, onDelete, onDragEnd,
+}: DraggableLessonRowProps) {
+  const controls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={lesson}
+      as="div"
+      dragControls={controls}
+      dragListener={false}
+      onDragEnd={onDragEnd}
+      whileDrag={{ scale: 1.01, boxShadow: "0 8px 24px rgba(0,0,0,0.25)" }}
+      className="rounded-xl"
+    >
+      <GlassCard padding="sm" className="flex items-center gap-3 px-4 py-3 group">
+        <GripVertical
+          className="w-4 h-4 text-muted-foreground/40 hover:text-muted-foreground cursor-grab active:cursor-grabbing flex-shrink-0 transition-colors"
+          onPointerDown={(e) => controls.start(e)}
+        />
+        <Icon className={`w-4 h-4 flex-shrink-0 ${iconColor}`} />
+        <div className="flex-1 min-w-0">
+          <p className="text-foreground text-sm font-medium truncate">{lesson.title}</p>
+          <p className="text-muted-foreground/70 text-xs">
+            {lesson.type === "VIDEO"
+              ? lesson.duration ? `Video · ${lesson.duration} min` : "Video"
+              : typeLabel}
+            {lesson.isFree && (
+              <span className="ml-2 text-emerald-400 font-medium">· Free preview</span>
+            )}
+          </p>
+        </div>
+
+        {/* Edit + Delete buttons */}
+        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button
+            onClick={onEdit}
+            className="text-[#d97757]/60 hover:text-[#d97757] transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
+            title="Edit lesson"
+          >
+            <Pencil className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={onDelete}
+            disabled={deletingId === lesson.id}
+            className="text-red-400/60 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 flex-shrink-0"
+            title="Delete lesson"
+          >
+            {deletingId === lesson.id ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Trash2 className="w-3.5 h-3.5" />
+            )}
+          </button>
+        </div>
+      </GlassCard>
+    </Reorder.Item>
   );
 }

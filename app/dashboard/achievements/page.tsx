@@ -74,7 +74,7 @@ export default async function AchievementsPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-          <Trophy className="w-7 h-7 text-orange-400" />
+          <Trophy className="w-7 h-7 text-[#d97757]" />
           Achievements
         </h1>
         <p className="text-muted-foreground mt-1">
@@ -98,7 +98,7 @@ export default async function AchievementsPage() {
       <GlassCard className="mb-6">
         <div className="flex items-center justify-between mb-5">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Medal className="w-5 h-5 text-orange-400" />
+            <Medal className="w-5 h-5 text-[#d97757]" />
             Badges
           </h2>
           <span className="text-sm text-muted-foreground">
@@ -127,7 +127,7 @@ export default async function AchievementsPage() {
                 </p>
               </div>
               {badge.earned && badge.earnedAt && (
-                <span className="text-[10px] text-orange-400/70">
+                <span className="text-[10px] text-[#d97757]/70">
                   {new Date(badge.earnedAt).toLocaleDateString()}
                 </span>
               )}
@@ -187,7 +187,7 @@ export default async function AchievementsPage() {
 
                 {/* Streak */}
                 {entry.streak > 0 && (
-                  <span className="text-xs text-orange-400 flex items-center gap-1">
+                  <span className="text-xs text-[#d97757] flex items-center gap-1">
                     🔥 {entry.streak}
                   </span>
                 )}

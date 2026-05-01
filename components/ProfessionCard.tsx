@@ -32,7 +32,7 @@ const COLOR_MAP: Record<string, { bg: string; border: string; icon: string; sele
   blue:   { bg: "bg-blue-500/10",   border: "border-blue-500/20",   icon: "text-blue-400",   selectedBg: "bg-blue-500/20",   selectedBorder: "border-blue-400" },
   purple: { bg: "bg-purple-500/10", border: "border-purple-500/20", icon: "text-purple-400", selectedBg: "bg-purple-500/20", selectedBorder: "border-purple-400" },
   green:  { bg: "bg-emerald-500/10",border: "border-emerald-500/20",icon: "text-emerald-400",selectedBg: "bg-emerald-500/20",selectedBorder: "border-emerald-400" },
-  orange: { bg: "bg-orange-500/10", border: "border-orange-500/20", icon: "text-orange-400", selectedBg: "bg-orange-500/20", selectedBorder: "border-orange-400" },
+  orange: { bg: "bg-orange-500/10", border: "border-orange-500/20", icon: "text-[#d97757]", selectedBg: "bg-orange-500/20", selectedBorder: "border-[#d97757]" },
   amber:  { bg: "bg-amber-500/10",  border: "border-amber-500/20",  icon: "text-amber-400",  selectedBg: "bg-amber-500/20",  selectedBorder: "border-amber-400"  },
   teal:   { bg: "bg-teal-500/10",   border: "border-teal-500/20",   icon: "text-teal-400",   selectedBg: "bg-teal-500/20",   selectedBorder: "border-teal-400"   },
   rose:   { bg: "bg-rose-500/10",   border: "border-rose-500/20",   icon: "text-rose-400",   selectedBg: "bg-rose-500/20",   selectedBorder: "border-rose-400"   },

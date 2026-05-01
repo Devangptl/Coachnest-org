@@ -587,7 +587,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                   { icon: Zap, label: "Total XP", value: progress.aggregate.totalXp, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
                   { icon: Award, label: "Badges", value: progress.aggregate.totalBadges, color: "text-amber-400", bg: "bg-amber-500/10 border-amber-500/20" },
                   { icon: Target, label: "Quizzes Passed", value: progress.aggregate.totalQuizzes, color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20" },
-                  { icon: TrendingUp, label: "Avg Level", value: progress.aggregate.avgLevel, color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20" },
+                  { icon: TrendingUp, label: "Avg Level", value: progress.aggregate.avgLevel, color: "text-[#d97757]", bg: "bg-orange-500/10 border-orange-500/20" },
                 ].map((stat) => {
                   const Icon = stat.icon;
                   return (
@@ -604,7 +604,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
               <div>
                 <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4 flex items-center gap-2">
-                  <Flame className="w-4 h-4 text-orange-400" /> Member Leaderboard
+                  <Flame className="w-4 h-4 text-[#d97757]" /> Member Leaderboard
                 </h2>
                 <div className="space-y-2">
                   {progress.members.map((m, i) => (
@@ -612,7 +612,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         i === 0 ? "bg-amber-500/15 text-amber-400 border border-amber-500/25" :
                         i === 1 ? "bg-gray-500/15 text-gray-400 border border-gray-500/25" :
-                        i === 2 ? "bg-orange-500/15 text-orange-400 border border-orange-500/25" :
+                        i === 2 ? "bg-orange-500/15 text-[#d97757] border border-orange-500/25" :
                         "bg-secondary text-muted-foreground"
                       }`}>
                         {i + 1}
@@ -626,7 +626,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                         <p className="text-foreground text-sm font-medium truncate">{m.user?.name}</p>
                         <p className="text-muted-foreground text-xs">
                           Lv. {m.level} · {m.completedLessons} lessons · {m.badges} badges
-                          {m.streak > 0 && <span className="text-orange-400"> · 🔥 {m.streak}d streak</span>}
+                          {m.streak > 0 && <span className="text-[#d97757]"> · 🔥 {m.streak}d streak</span>}
                         </p>
                       </div>
                       <span className="text-emerald-400 text-sm font-bold flex-shrink-0">{m.xp} XP</span>

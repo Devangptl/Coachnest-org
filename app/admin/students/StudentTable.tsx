@@ -98,7 +98,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
             {/* XP / Level */}
             <div className="col-span-2 text-center">
               <div className="flex flex-col items-center gap-0.5">
-                <span className="text-xs font-bold text-orange-400">
+                <span className="text-xs font-bold text-[#d97757]">
                   {student.xp > 0 ? `${student.xp.toLocaleString()} XP` : "—"}
                 </span>
                 {student.xp > 0 && (

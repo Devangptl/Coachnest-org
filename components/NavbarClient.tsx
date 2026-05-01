@@ -131,7 +131,7 @@ export default function NavbarClient({ session }: Props) {
     <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2">
       <div
         className={cn(
-          "max-w-8xl mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-2 transition-all duration-300 border",
+          "mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-2 transition-all duration-300 border",
           "bg-card border-border shadow-glass"
         )}
       >
@@ -260,7 +260,7 @@ export default function NavbarClient({ session }: Props) {
                               className={cn(
                                 "flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
                                 isActive
-                                  ? "text-orange-400 bg-orange-500/10"
+                                  ? "text-[#d97757] bg-orange-500/10"
                                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                               )}
                             >
@@ -326,7 +326,7 @@ export default function NavbarClient({ session }: Props) {
               </Link>
               <Link
                 href="/signup"
-                className="bg-gradient-to-r from-orange-600 to-orange-500 text-white text-sm font-medium px-4 py-2 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all shadow-lg shadow-orange-600/20 hover:shadow-orange-600/30"
+                className="btn-primary"
               >
                 Get Started
               </Link>
@@ -363,7 +363,7 @@ export default function NavbarClient({ session }: Props) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="lg:hidden max-w-8xl mx-auto mt-2 overflow-hidden"
+            className="lg:hidden mx-auto mt-2 overflow-hidden"
           >
             <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/50 p-4 space-y-1">
               {session && (
@@ -461,7 +461,7 @@ export default function NavbarClient({ session }: Props) {
                     </Link>
                     <Link
                       href="/signup"
-                      className="flex-1 text-center bg-gradient-to-r from-orange-600 to-orange-500 text-white text-sm font-medium py-2.5 rounded-lg hover:from-orange-700 hover:to-orange-600 transition-all"
+                      className="flex-1 text-center btn-primary py-2.5"
                     >
                       Get Started
                     </Link>

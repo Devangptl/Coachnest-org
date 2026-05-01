@@ -31,7 +31,7 @@ interface Props {
 }
 
 const typeConfig = {
-  VIDEO: { icon: PlayCircle, color: "text-orange-400", label: "Video" },
+  VIDEO: { icon: PlayCircle, color: "text-[#d97757]", label: "Video" },
   TEXT:  { icon: FileText,   color: "text-blue-400",   label: "Reading" },
   QUIZ:  { icon: HelpCircle, color: "text-amber-400",  label: "Quiz" },
 };
@@ -66,7 +66,7 @@ export default function LessonSidebar({ courseId, courseTitle, lessons }: Props)
       {/* Header */}
       <div className="flex items-center justify-between gap-2 px-4 py-3 border-b border-border flex-shrink-0">
         <div className="flex items-center gap-2">
-          <LayoutList className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <LayoutList className="w-4 h-4 text-[#d97757] flex-shrink-0" />
           <span className="text-foreground font-semibold text-sm">Lessons</span>
         </div>
         <span className="text-xs text-muted-foreground/60 bg-secondary px-2.5 py-1 rounded-full flex-shrink-0">
@@ -137,13 +137,13 @@ export default function LessonSidebar({ courseId, courseTitle, lessons }: Props)
                 isDone
                   ? "bg-emerald-500/20"
                   : isActive
-                  ? "bg-orange-500/15 border border-orange-400/30"
+                  ? "bg-orange-500/15 border border-[#d97757]/30"
                   : "bg-secondary"
               )}>
                 {isDone ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
                 ) : isActive ? (
-                  <div className="w-2 h-2 rounded-full bg-orange-400 animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-[#d97757] animate-pulse" />
                 ) : (
                   <span className="text-[11px] text-muted-foreground/50 font-medium">{i + 1}</span>
                 )}
@@ -204,12 +204,12 @@ export default function LessonSidebar({ courseId, courseTitle, lessons }: Props)
           <div className="flex items-center gap-3 min-w-0 flex-1">
             {/* Mini progress ring */}
             <div className="relative flex-shrink-0">
-              <LayoutList className="w-5 h-5 text-orange-400" />
+              <LayoutList className="w-5 h-5 text-[#d97757]" />
               <svg className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5" viewBox="0 0 12 12">
                 <circle cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2" className="text-secondary" />
                 <circle
                   cx="6" cy="6" r="5" fill="none" stroke="currentColor" strokeWidth="2"
-                  className="text-orange-400"
+                  className="text-[#d97757]"
                   strokeDasharray={`${lessons.length > 0 && !loading ? (totalCompleted / lessons.length) * 31.4 : 0} 31.4`}
                   strokeLinecap="round"
                   transform="rotate(-90 6 6)"

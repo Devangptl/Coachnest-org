@@ -126,7 +126,7 @@ export default function OrderDetailsModal({
                 <>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Coupon:</span>
-                    <code className="text-orange-400 text-sm">{order.couponCode}</code>
+                    <code className="text-[#d97757] text-sm">{order.couponCode}</code>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Discount:</span>

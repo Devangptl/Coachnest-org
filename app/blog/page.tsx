@@ -6,6 +6,27 @@ import { prisma } from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
 import { FileText } from "lucide-react";
 import BlogGrid from "./BlogGrid";
+import type { Metadata } from "next";
+
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
+export const metadata: Metadata = {
+  title: "Blog — Tips, Tutorials & Learning Resources",
+  description:
+    "Read the CoachNest blog for programming tutorials, career advice, industry insights, and tips to accelerate your learning journey.",
+  keywords: [
+    "programming blog", "coding tutorials", "web development tips",
+    "learning resources", "tech articles", "career advice",
+  ],
+  alternates: { canonical: `${BASE_URL}/blog` },
+  openGraph: {
+    type: "website",
+    url: `${BASE_URL}/blog`,
+    title: "Blog — Tips, Tutorials & Learning Resources",
+    description:
+      "Programming tutorials, career advice, and tips to accelerate your learning journey.",
+  },
+};
 
 export const revalidate = 300;
 
@@ -73,11 +94,11 @@ export default async function BlogPage() {
   ]);
 
   return (
-    <div className="max-w-8xl mx-auto px-4 sm:px-6 py-12">
+    <div className="mx-auto px-4 sm:px-6 py-12">
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/20 rounded-full px-4 py-1.5 mb-4">
-          <FileText className="w-4 h-4 text-orange-400" />
+        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-[#d97757]/20 rounded-full px-4 py-1.5 mb-4">
+          <FileText className="w-4 h-4 text-[#d97757]" />
           <span className="text-orange-300 text-sm font-medium">Our Blog</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
@@ -94,7 +115,7 @@ export default async function BlogPage() {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs text-muted-foreground bg-white/[0.06] border border-border px-3 py-1.5 rounded-full hover:bg-orange-500/15 hover:text-orange-300 hover:border-orange-400/20 transition-colors cursor-default"
+              className="text-xs text-muted-foreground bg-white/[0.06] border border-border px-3 py-1.5 rounded-full hover:bg-orange-500/15 hover:text-orange-300 hover:border-[#d97757]/20 transition-colors cursor-default"
             >
               {tag}
             </span>

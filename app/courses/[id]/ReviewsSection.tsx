@@ -164,7 +164,7 @@ export default function ReviewsSection({ courseId, isEnrolled, isLoggedIn }: Pro
                 className={cn(
                   "text-xs px-2.5 py-1 rounded-full border transition-all capitalize",
                   sortBy === opt
-                    ? "bg-orange-500/15 border-orange-400/25 text-orange-400"
+                    ? "bg-orange-500/15 border-[#d97757]/25 text-[#d97757]"
                     : "bg-white/[0.03] border-white/[0.08] text-muted-foreground/70 hover:text-muted-foreground"
                 )}
               >

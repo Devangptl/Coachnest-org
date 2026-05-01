@@ -53,11 +53,11 @@ export default function PressPage() {
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto py-16">
+        <div className="mx-auto py-16">
 
           {/* Hero */}
           <div className="mb-16">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-400/80 text-xs font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-[#d97757]/80 text-xs font-medium mb-6">
               Press & Media
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-5">
@@ -139,7 +139,7 @@ export default function PressPage() {
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="text-orange-400/70 text-xs font-semibold">{item.outlet}</span>
+                      <span className="text-[#d97757]/70 text-xs font-semibold">{item.outlet}</span>
                       <span className="text-white/15 text-xs">•</span>
                       <span className="text-white/25 text-xs">{item.date}</span>
                     </div>

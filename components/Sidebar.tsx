@@ -45,14 +45,14 @@ export default function Sidebar({ items, title }: SidebarProps) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-all",
                   isActive
-                    ? "bg-gradient-to-r from-orange-600/30 to-orange-500/20 text-white border border-orange-400/25"
+                    ? "bg-gradient-to-r from-orange-600/30 to-orange-500/20 text-white border border-[#d97757]/25"
                     : "text-muted-foreground hover:text-white hover:bg-secondary"
                 )}
               >
                 <Icon
                   className={cn(
                     "w-4 h-4",
-                    isActive ? "text-orange-400" : "text-muted-foreground"
+                    isActive ? "text-[#d97757]" : "text-muted-foreground"
                   )}
                 />
                 {item.label}

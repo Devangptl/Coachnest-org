@@ -113,7 +113,7 @@ export default function BillingPage() {
         {/* Payment methods */}
         <div className="glass rounded-md border border-border p-5">
           <div className="flex items-center gap-2 mb-5">
-            <CreditCard className="w-4 h-4 text-orange-400" />
+            <CreditCard className="w-4 h-4 text-[#d97757]" />
             <h2 className="font-semibold text-foreground">Payment Methods</h2>
           </div>
           <PaymentMethodsSection onUpdate={loadData} />
@@ -122,7 +122,7 @@ export default function BillingPage() {
         {/* Order history */}
         <div className="glass rounded-md border border-border overflow-hidden">
           <div className="px-5 py-4 border-b border-border flex items-center gap-2">
-            <Receipt className="w-4 h-4 text-orange-400" />
+            <Receipt className="w-4 h-4 text-[#d97757]" />
             <h2 className="font-semibold text-foreground">Order History</h2>
             {studentOrders.length > 0 && (
               <span className="ml-auto text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded-full">

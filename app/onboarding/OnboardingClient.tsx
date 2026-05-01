@@ -2,34 +2,37 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import {
-  Sparkles, ArrowRight, Loader2, SkipForward,
+  Sparkles, ArrowRight, Loader2, SkipForward, GraduationCap,
 } from "lucide-react";
 import ProfessionPicker from "@/components/ProfessionPicker";
 import { ProfessionData } from "@/components/ProfessionCard";
+import InstructorPicker, { InstructorData } from "@/components/InstructorPicker";
 
 interface OnboardingClientProps {
-  userName:    string;
-  professions: ProfessionData[];
+  userName:           string;
+  professions:        ProfessionData[];
+  popularInstructors: InstructorData[];
 }
 
-const STEPS = ["welcome", "professions", "done"] as const;
+const STEPS = ["welcome", "professions", "instructors", "done"] as const;
 type Step = typeof STEPS[number];
 
 export default function OnboardingClient({
   userName,
   professions,
+  popularInstructors,
 }: OnboardingClientProps) {
   const router = useRouter();
 
-  const [step,         setStep]         = useState<Step>("welcome");
-  const [selectedIds,  setSelectedIds]  = useState<string[]>([]);
-  const [customNames,  setCustomNames]  = useState<string[]>([]);
-  const [saving,       setSaving]       = useState(false);
-  const [error,        setError]        = useState("");
+  const [step,                  setStep]                  = useState<Step>("welcome");
+  const [selectedIds,           setSelectedIds]           = useState<string[]>([]);
+  const [customNames,           setCustomNames]           = useState<string[]>([]);
+  const [selectedInstructorIds, setSelectedInstructorIds] = useState<string[]>([]);
+  const [saving,                setSaving]                = useState(false);
+  const [error,                 setError]                 = useState("");
 
-  // ── Profession toggle ────────────────────────────────────────────────────────
+  // ── Profession handlers ──────────────────────────────────────────────────────
   function handleToggle(id: string) {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -44,8 +47,15 @@ export default function OnboardingClient({
     setCustomNames((prev) => prev.filter((_, i) => i !== index));
   }
 
-  // ── Save professions ─────────────────────────────────────────────────────────
-  async function handleSave(skip = false) {
+  // ── Instructor handler ───────────────────────────────────────────────────────
+  function handleToggleInstructor(id: string) {
+    setSelectedInstructorIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }
+
+  // ── Save (called only from the instructors step or "skip for now") ────────────
+  async function handleSave(opts: { skipAll?: boolean } = {}) {
     setSaving(true);
     setError("");
 
@@ -54,8 +64,9 @@ export default function OnboardingClient({
         method:  "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          professionIds: skip ? [] : selectedIds,
-          customNames:   skip ? [] : customNames,
+          professionIds: opts.skipAll ? [] : selectedIds,
+          customNames:   opts.skipAll ? [] : customNames,
+          instructorIds: opts.skipAll ? [] : selectedInstructorIds,
           complete:      true,
         }),
       });
@@ -75,7 +86,7 @@ export default function OnboardingClient({
     }
   }
 
-  const totalSelected = selectedIds.length + customNames.length;
+  const totalProfessions = selectedIds.length + customNames.length;
 
   // ── Render ───────────────────────────────────────────────────────────────────
   return (
@@ -88,9 +99,7 @@ export default function OnboardingClient({
             <div key={s} className="flex-1 h-1.5 rounded-full overflow-hidden bg-border">
               <div
                 className="h-full bg-orange-500 transition-all duration-500 rounded-full"
-                style={{
-                  width: STEPS.indexOf(step) >= i ? "100%" : "0%",
-                }}
+                style={{ width: STEPS.indexOf(step) >= i ? "100%" : "0%" }}
               />
             </div>
           ))}
@@ -103,7 +112,7 @@ export default function OnboardingClient({
           <div className="text-center animate-fade-in">
             <div className="inline-flex w-16 h-16 rounded-md bg-orange-500/10 border border-orange-500/20
                             items-center justify-center mb-6">
-              <Sparkles className="w-8 h-8 text-orange-400" />
+              <Sparkles className="w-8 h-8 text-[#d97757]" />
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
@@ -126,7 +135,7 @@ export default function OnboardingClient({
               </button>
               <button
                 type="button"
-                onClick={() => handleSave(true)}
+                onClick={() => handleSave({ skipAll: true })}
                 disabled={saving}
                 className="inline-flex items-center gap-2 px-6 py-3 rounded-lg text-sm
                            text-muted-foreground hover:text-foreground transition-colors"
@@ -163,13 +172,6 @@ export default function OnboardingClient({
               onRemoveCustom={handleRemoveCustom}
             />
 
-            {error && (
-              <p className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20
-                            rounded-lg px-4 py-2.5">
-                {error}
-              </p>
-            )}
-
             <div className="flex items-center justify-between mt-8 pt-5 border-t border-border">
               <button
                 type="button"
@@ -182,7 +184,74 @@ export default function OnboardingClient({
               <div className="flex items-center gap-3">
                 <button
                   type="button"
-                  onClick={() => handleSave(true)}
+                  onClick={() => setStep("instructors")}
+                  className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  Skip
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStep("instructors")}
+                  disabled={totalProfessions === 0}
+                  className="btn-primary inline-flex items-center gap-2"
+                >
+                  Continue
+                  {totalProfessions > 0 && (
+                    <span className="bg-white/20 rounded-full px-1.5 py-0.5 text-xs leading-none">
+                      {totalProfessions}
+                    </span>
+                  )}
+                  <ArrowRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ════════════════════════════════════════════════════
+            STEP 3 — Instructor picker (optional)
+        ════════════════════════════════════════════════════ */}
+        {step === "instructors" && (
+          <div className="animate-fade-in">
+            <div className="mb-7">
+              <div className="inline-flex w-10 h-10 rounded-md bg-orange-500/10 border border-orange-500/20
+                              items-center justify-center mb-4">
+                <GraduationCap className="w-5 h-5 text-[#d97757]" />
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
+                Follow instructors
+              </h2>
+              <p className="text-muted-foreground text-sm">
+                Optional — follow instructors to stay updated on their new courses.
+              </p>
+            </div>
+
+            <InstructorPicker
+              popularInstructors={popularInstructors}
+              selectedIds={selectedInstructorIds}
+              onToggle={handleToggleInstructor}
+            />
+
+            {error && (
+              <p className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20
+                            rounded-lg px-4 py-2.5">
+                {error}
+              </p>
+            )}
+
+            <div className="flex items-center justify-between mt-8 pt-5 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setStep("professions")}
+                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                ← Back
+              </button>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => handleSave()}
                   disabled={saving}
                   className="text-sm text-muted-foreground hover:text-foreground transition-colors"
                 >
@@ -190,17 +259,17 @@ export default function OnboardingClient({
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleSave(false)}
-                  disabled={saving || totalSelected === 0}
+                  onClick={() => handleSave()}
+                  disabled={saving || selectedInstructorIds.length === 0}
                   className="btn-primary inline-flex items-center gap-2"
                 >
                   {saving
                     ? <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>
                     : <>
-                        Continue
-                        {totalSelected > 0 && (
+                        Finish Setup
+                        {selectedInstructorIds.length > 0 && (
                           <span className="bg-white/20 rounded-full px-1.5 py-0.5 text-xs leading-none">
-                            {totalSelected}
+                            {selectedInstructorIds.length}
                           </span>
                         )}
                         <ArrowRight className="w-4 h-4" />

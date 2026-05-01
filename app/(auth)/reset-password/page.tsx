@@ -116,7 +116,7 @@ function ResetPasswordForm() {
   if (status === "loading") {
     return (
       <div className="flex flex-col items-center gap-4 py-8">
-        <Loader2 className="w-8 h-8 text-orange-400 animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#d97757] animate-spin" />
         <p className="text-muted-foreground text-sm">Verifying your reset link…</p>
       </div>
     );
@@ -297,7 +297,7 @@ export default function ResetPasswordPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Remember your password?{" "}
-          <Link href="/login" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+          <Link href="/login" className="text-orange-500 hover:text-[#d97757] font-medium transition-colors">
             Sign in
           </Link>
         </p>

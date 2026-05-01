@@ -5,7 +5,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import GlassCard from "@/components/GlassCard";
-import { PlusCircle, BookOpen, Edit2, Eye, Trash2 } from "lucide-react";
+import { PlusCircle, BookOpen, Edit2, Eye, FileUp } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import DeleteInstructorCourseButton from "./DeleteInstructorCourseButton";
 
@@ -30,18 +30,28 @@ export default async function InstructorCoursesPage() {
             {courses.length} course{courses.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <Link href="/instructor/courses/new" className="btn-primary flex items-center gap-2 text-sm">
-          <PlusCircle className="w-4 h-4" /> New Course
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link href="/instructor/courses/import" className="btn-secondary flex items-center gap-2 text-sm">
+            <FileUp className="w-4 h-4" /> Import from PDF
+          </Link>
+          <Link href="/instructor/courses/new" className="btn-primary flex items-center gap-2 text-sm">
+            <PlusCircle className="w-4 h-4" /> New Course
+          </Link>
+        </div>
       </div>
 
       {courses.length === 0 ? (
         <GlassCard className="text-center py-16">
           <BookOpen className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
           <p className="text-muted-foreground mb-4">No courses yet.</p>
-          <Link href="/instructor/courses/new" className="btn-primary inline-flex items-center gap-2 text-sm">
-            <PlusCircle className="w-4 h-4" /> Create First Course
-          </Link>
+          <div className="flex items-center justify-center gap-3 flex-wrap">
+            <Link href="/instructor/courses/new" className="btn-primary inline-flex items-center gap-2 text-sm">
+              <PlusCircle className="w-4 h-4" /> Create First Course
+            </Link>
+            <Link href="/instructor/courses/import" className="btn-secondary inline-flex items-center gap-2 text-sm">
+              <FileUp className="w-4 h-4" /> Import from PDF
+            </Link>
+          </div>
         </GlassCard>
       ) : (
         <GlassCard padding="sm">

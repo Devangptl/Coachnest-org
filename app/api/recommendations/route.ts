@@ -1,42 +1,39 @@
 /**
- * GET /api/recommendations?limit=8
+ * GET /api/recommendations?limit=6
  *
  * Returns published courses ranked by relevance to the authenticated user's
- * selected professions (keyword overlap with course category/tags).
- * Falls back to top-enrolled courses when the user has no professions yet.
+ * selected professions. Falls back to top-enrolled courses when the user has
+ * no professions, clearly flagging the response as non-personalised.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+function normalize(s: string): string {
+  return s.toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ").trim();
+}
+
 export async function GET(req: NextRequest) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? "8"), 20);
+  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? "6"), 20);
 
   try {
-    // 1. Get user's profession keywords (including custom professions)
+    // 1. User's profession keywords
     const userProfessions = await prisma.userProfession.findMany({
-      where: { userId: session.userId },
+      where:   { userId: session.userId },
       include: { profession: { select: { courseKeywords: true, name: true } } },
     });
 
-    // Build keywords from both standard professions (courseKeywords + name)
-    // and custom professions (customName)
     const keywords: string[] = [];
     for (const up of userProfessions) {
       if (up.profession) {
-        // Add explicit courseKeywords
-        keywords.push(...(up.profession.courseKeywords ?? []));
-        // Also use the profession name itself as an implicit keyword
-        keywords.push(up.profession.name);
+        keywords.push(...(up.profession.courseKeywords ?? []), up.profession.name);
       } else if (up.customName) {
-        // Custom profession — use the customName as a keyword
         keywords.push(up.customName);
       }
     }
-    // Deduplicate keywords (case-insensitive)
     const seen = new Set<string>();
     const uniqueKeywords = keywords.filter((k) => {
       const lower = k.toLowerCase();
@@ -45,14 +42,14 @@ export async function GET(req: NextRequest) {
       return true;
     });
 
-    // 2. Fetch already-enrolled course IDs to exclude
+    // 2. Already-enrolled IDs to exclude
     const enrollments = await prisma.enrollment.findMany({
       where:  { userId: session.userId },
       select: { courseId: true },
     });
     const enrolledIds = enrollments.map((e) => e.courseId);
 
-    // 3. Fetch published courses (not already enrolled)
+    // 3. Candidate pool — fetch scalar + relation fields needed for display
     const courses = await prisma.course.findMany({
       where: {
         status: "PUBLISHED",
@@ -62,73 +59,77 @@ export async function GET(req: NextRequest) {
         createdBy: { select: { name: true } },
         category:  { select: { name: true, slug: true } },
         tags:      { include: { tag: { select: { name: true, slug: true } } } },
+        reviews:   { select: { rating: true } },
         _count:    { select: { enrollments: true, lessons: true } },
       },
       orderBy: { createdAt: "desc" },
-      take: 100, // candidate pool
+      take: 100,
     });
 
-    /** Normalize a string for comparison: lowercase, replace hyphens with spaces, collapse whitespace */
-    function normalize(s: string): string {
-      return s.toLowerCase().replace(/-/g, " ").replace(/\s+/g, " ").trim();
-    }
+    // 4. Score — track keyword score separately from popularity boost
+    const scored = courses.map((c) => {
+      const catSlug  = normalize(c.category?.slug ?? "");
+      const catName  = normalize(c.category?.name ?? "");
+      const tagParts = c.tags.flatMap((t) => [normalize(t.tag.slug), normalize(t.tag.name)]);
+      const haystack = [catSlug, catName, ...tagParts].filter(Boolean);
 
-    // 4. Score each course by keyword overlap
-    type ScoredCourse = (typeof courses)[number] & { score: number };
+      let keywordScore = 0;
+      for (const kw of uniqueKeywords) {
+        const k = normalize(kw);
+        if (!k) continue;
+        if (haystack.some((h) => h.includes(k) || k.includes(h))) keywordScore += 3;
+        if (normalize(c.title).includes(k))                        keywordScore += 2;
+        if (normalize(c.description).includes(k))                  keywordScore += 0.5;
+      }
 
-    let scored: ScoredCourse[];
+      const score = keywordScore + c._count.enrollments * 0.01;
 
-    if (uniqueKeywords.length === 0) {
-      // No professions → rank by total enrollments
-      scored = courses
-        .map((c) => ({ ...c, score: c._count.enrollments }))
-        .sort((a, b) => b.score - a.score);
-    } else {
-      scored = courses
-        .map((c) => {
-          // Build haystack from both slugs AND names for category + tags
-          const catSlug = normalize(c.category?.slug ?? "");
-          const catName = normalize(c.category?.name ?? "");
-          const tagEntries = c.tags.flatMap((t) => [
-            normalize(t.tag.slug),
-            normalize(t.tag.name),
-          ]);
-          const haystack = [catSlug, catName, ...tagEntries].filter(Boolean);
+      // Compute avg rating inline
+      const ratingSum   = c.reviews.reduce((s, r) => s + r.rating, 0);
+      const reviewCount = c.reviews.length;
+      const avgRating   = reviewCount > 0
+        ? Math.round((ratingSum / reviewCount) * 10) / 10
+        : null;
 
-          let score = 0;
-          for (const kw of uniqueKeywords) {
-            const k = normalize(kw);
-            if (!k) continue;
-            // Category / tag match (highest relevance)
-            if (haystack.some((h) => h.includes(k) || k.includes(h))) score += 3;
-            // Title match
-            if (normalize(c.title).includes(k))                       score += 2;
-            // Description match
-            if (normalize(c.description).includes(k))                 score += 0.5;
-          }
+      return {
+        id:            c.id,
+        title:         c.title,
+        description:   c.description,
+        thumbnail:     c.thumbnail,
+        price:         c.price         ? Number(c.price)         : null,
+        discountPrice: c.discountPrice ? Number(c.discountPrice) : null,
+        isFree:        c.isFree,
+        level:         c.level,
+        instructorName: c.createdBy.name,
+        enrollmentCount: c._count.enrollments,
+        totalLessons:  c._count.lessons,
+        avgRating,
+        reviewCount:   reviewCount > 0 ? reviewCount : null,
+        keywordScore,
+        score,
+      };
+    });
 
-          // Small boost for popularity
-          score += c._count.enrollments * 0.01;
+    // 5. If user has professions: only return courses that actually matched keywords.
+    //    If no professions (or zero matches): fall back to top-enrolled, flag as popular.
+    const hasKeywords = uniqueKeywords.length > 0;
+    const matched     = scored.filter((c) => c.keywordScore > 0).sort((a, b) => b.score - a.score);
+    const isPersonalized = hasKeywords && matched.length > 0;
 
-          return { ...c, score };
-        })
-        .sort((a, b) => b.score - a.score);
-    }
+    const pool = isPersonalized
+      ? matched
+      : scored.sort((a, b) => b.enrollmentCount - a.enrollmentCount);
 
-    // Only show courses that actually matched keywords (score beyond just popularity boost)
-    const relevant = scored.filter((c) => c.score > c._count.enrollments * 0.01);
-    // Fall back to popularity-ranked if no keyword matches at all
-    const pool = relevant.length > 0 ? relevant : scored;
-    const recommended = pool.slice(0, limit).map(({ score: _s, ...c }) => c);
+    const recommended = pool.slice(0, limit).map(({ keywordScore: _ks, score: _s, ...c }) => c);
 
-    // Include both standard and custom profession names for the "Based on" label
     const professionNames = userProfessions
       .map((up) => up.profession?.name ?? up.customName)
       .filter(Boolean);
 
     return NextResponse.json({
-      courses: recommended,
-      basedOn: professionNames,
+      courses:         recommended,
+      basedOn:         isPersonalized ? professionNames : [],
+      isPersonalized,
     });
   } catch (error) {
     console.error("[GET /api/recommendations]", error);

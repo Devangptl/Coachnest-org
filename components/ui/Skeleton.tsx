@@ -22,17 +22,17 @@ export function Skeleton({ className, h, w, ...props }: SkeletonProps) {
 }
 
 /** Full card-shaped skeleton for course grid. */
-export function CourseCardSkeleton() {
+export function CourseCardSkeleton({ compact = false }: { compact?: boolean }) {
   return (
     <div className="glass overflow-hidden animate-pulse">
-      <Skeleton className="h-44 w-full rounded-none" />
-      <div className="p-5 space-y-3">
-        <Skeleton h="h-5" w="w-4/5" />
-        <Skeleton h="h-3" w="w-full" />
-        <Skeleton h="h-3" w="w-2/3" />
-        <div className="flex gap-3 pt-2">
-          <Skeleton h="h-3" w="w-20" />
-          <Skeleton h="h-3" w="w-16" />
+      <Skeleton className={`${compact ? "h-[100px]" : "h-44"} w-full rounded-none`} />
+      <div className={`${compact ? "p-2 space-y-1.5" : "p-5 space-y-3"}`}>
+        <Skeleton h={compact ? "h-3" : "h-5"} w="w-4/5" />
+        {!compact && <Skeleton h="h-3" w="w-full" />}
+        {!compact && <Skeleton h="h-3" w="w-2/3" />}
+        <div className="flex gap-3 pt-1">
+          <Skeleton h="h-3" w="w-14" />
+          <Skeleton h="h-3" w="w-12" />
         </div>
       </div>
     </div>

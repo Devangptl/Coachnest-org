@@ -52,7 +52,7 @@ export default function QuizAnalyticsModal({
         <div className="p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#d97757] animate-spin" />
             </div>
           ) : !analytics || analytics.totalAttempts === 0 ? (
             <div className="text-center py-12 text-muted-foreground/70">
@@ -64,7 +64,7 @@ export default function QuizAnalyticsModal({
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
                   { label: "Attempts", value: analytics.totalAttempts, icon: Users, color: "text-blue-400" },
-                  { label: "Avg Score", value: `${analytics.avgScore}%`, icon: BarChart3, color: "text-orange-400" },
+                  { label: "Avg Score", value: `${analytics.avgScore}%`, icon: BarChart3, color: "text-[#d97757]" },
                   { label: "Pass Rate", value: `${analytics.passRate}%`, icon: Target, color: "text-emerald-400" },
                   { label: "Avg Time", value: `${Math.round(analytics.avgTimeTaken / 60)}m`, icon: Clock, color: "text-amber-400" },
                 ].map((stat) => {

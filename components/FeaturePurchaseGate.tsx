@@ -89,9 +89,9 @@ function CardGate({ config }: { config: FeatureConfig }) {
     <div className="rounded-md border border-orange-500/20 bg-gradient-to-br from-orange-500/8 to-amber-600/5 p-8 text-center space-y-5">
       <div className="flex flex-col items-center gap-3">
         <div className="w-14 h-14 rounded-md bg-white/5 border border-white/10 flex items-center justify-center">
-          <Lock className="w-6 h-6 text-orange-400/60" />
+          <Lock className="w-6 h-6 text-[#d97757]/60" />
         </div>
-        <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-orange-500/10 text-orange-400 border border-orange-500/20">
+        <span className="text-xs font-semibold uppercase tracking-wider px-3 py-1 rounded-full bg-orange-500/10 text-[#d97757] border border-orange-500/20">
           Add-on Required
         </span>
         <h3 className="text-foreground font-bold text-lg">{config.name}</h3>
@@ -102,7 +102,7 @@ function CardGate({ config }: { config: FeatureConfig }) {
         <ul className="inline-flex flex-col gap-2 text-left">
           {config.includes.map((item) => (
             <li key={item} className="flex items-center gap-2 text-sm text-muted-foreground">
-              <CheckCircle2 className="w-4 h-4 text-orange-400 flex-shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-[#d97757] flex-shrink-0" />
               {item}
             </li>
           ))}
@@ -112,7 +112,7 @@ function CardGate({ config }: { config: FeatureConfig }) {
       <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
         <Link
           href={`/features/${config.slug}`}
-          className="flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white text-sm font-semibold px-6 py-2.5 rounded-md transition-colors"
+          className="flex items-center gap-2 bg-orange-500 hover:bg-[#d97757] text-white text-sm font-semibold px-6 py-2.5 rounded-md transition-colors"
         >
           <ShoppingCart className="w-4 h-4" />
           Buy {config.name} — {config.price}
@@ -135,7 +135,7 @@ function InlineGate({ config }: { config: FeatureConfig }) {
     <div className="flex items-center justify-between gap-4 p-4 rounded-md border border-border bg-secondary/40">
       <div className="flex items-center gap-3 min-w-0">
         <div className="w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center flex-shrink-0">
-          <Lock className="w-3.5 h-3.5 text-orange-400" />
+          <Lock className="w-3.5 h-3.5 text-[#d97757]" />
         </div>
         <div className="min-w-0">
           <p className="text-foreground text-sm font-medium truncate">{config.name} required</p>
@@ -144,7 +144,7 @@ function InlineGate({ config }: { config: FeatureConfig }) {
       </div>
       <Link
         href={`/features/${config.slug}`}
-        className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+        className="flex items-center gap-1.5 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
       >
         <ShoppingCart className="w-3.5 h-3.5" />
         Buy Access
@@ -159,7 +159,7 @@ function BannerGate({ config }: { config: FeatureConfig }) {
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 rounded-md border border-orange-500/20 bg-orange-500/5">
       <div className="flex items-start gap-3">
-        <Lock className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+        <Lock className="w-4 h-4 text-[#d97757] mt-0.5 flex-shrink-0" />
         <div>
           <p className="text-foreground text-sm font-medium">{config.name} required</p>
           <p className="text-muted-foreground text-xs mt-0.5">{config.description}</p>
@@ -167,7 +167,7 @@ function BannerGate({ config }: { config: FeatureConfig }) {
       </div>
       <Link
         href={`/features/${config.slug}`}
-        className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+        className="flex items-center gap-1.5 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
       >
         <ShoppingCart className="w-3.5 h-3.5" />
         Buy {config.price}

@@ -79,7 +79,7 @@ export default function ImagePickerField({
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="flex items-center gap-3 w-full max-w-xs rounded-lg border-2 border-dashed border-border bg-secondary/50 hover:border-orange-400/50 hover:bg-secondary px-4 py-6 text-left transition-colors"
+            className="flex items-center gap-3 w-full max-w-xs rounded-lg border-2 border-dashed border-border bg-secondary/50 hover:border-[#d97757]/50 hover:bg-secondary px-4 py-6 text-left transition-colors"
           >
             <ImageIcon className="w-6 h-6 text-muted-foreground shrink-0" />
             <span className="text-sm text-muted-foreground font-medium">
@@ -93,7 +93,7 @@ export default function ImagePickerField({
           <button
             type="button"
             onClick={() => setModalOpen(true)}
-            className="text-xs text-orange-500 hover:text-orange-400 transition-colors"
+            className="text-xs text-orange-500 hover:text-[#d97757] transition-colors"
           >
             Open media library to change
           </button>

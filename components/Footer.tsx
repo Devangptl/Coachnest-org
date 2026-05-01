@@ -60,7 +60,7 @@ export default function Footer() {
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-40 bg-orange-500/[0.04] blur-3xl rounded-full" />
       </div>
 
-      <div className="relative max-w-8xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto px-4 sm:px-6 lg:px-8">
 
         {/* ── CTA strip ── */}
         <div className="py-10 sm:py-12 border-b border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -75,7 +75,7 @@ export default function Footer() {
           <div className="flex items-center gap-3 flex-shrink-0">
             <Link
               href="/courses"
-              className="px-5 py-2.5 rounded-md bg-gradient-to-r from-orange-600 to-orange-500 hover:from-orange-700 hover:to-orange-600 text-white font-semibold text-sm transition-all shadow-lg shadow-orange-600/20"
+              className="btn-primary px-5 py-2.5 font-semibold"
             >
               Explore Courses
             </Link>
@@ -107,7 +107,7 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/30 hover:text-orange-400 hover:bg-orange-500/10 hover:border-orange-400/25 transition-all"
+                  className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/30 hover:text-[#d97757] hover:bg-orange-500/10 hover:border-[#d97757]/25 transition-all"
                 >
                   <Icon className="w-3.5 h-3.5" />
                 </Link>

@@ -26,7 +26,7 @@ export default function ProgressBar({
             <span className="text-muted-foreground text-sm">{label}</span>
           )}
           {showPercent && (
-            <span className="text-orange-400 text-sm font-semibold">
+            <span className="text-[#d97757] text-sm font-semibold">
               {clamped}%
             </span>
           )}

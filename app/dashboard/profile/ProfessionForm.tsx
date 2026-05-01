@@ -108,7 +108,7 @@ export default function ProfessionForm() {
   return (
     <GlassCard>
       <div className="flex items-center gap-2.5 mb-5">
-        <Sparkles className="w-4.5 h-4.5 text-orange-400" />
+        <Sparkles className="w-4.5 h-4.5 text-[#d97757]" />
         <h2 className="text-lg font-semibold text-foreground">My Professions</h2>
       </div>
       <p className="text-sm text-muted-foreground mb-5">

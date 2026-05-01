@@ -45,7 +45,22 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => ({}));
-  const { title, description, thumbnail, price, isFree, level, published, instructorRevenuePercent } = body;
+  const {
+    title,
+    description,
+    shortDesc,
+    thumbnail,
+    previewVideo,
+    price,
+    discountPrice,
+    isFree,
+    level,
+    language,
+    categoryId,
+    published,
+    instructorRevenuePercent,
+    tagNames,
+  } = body;
 
   if (!title?.trim() || !description?.trim()) {
     return NextResponse.json({ error: "Title and description are required." }, { status: 400 });
@@ -79,9 +94,10 @@ export async function POST(req: NextRequest) {
     status = "PUBLISHED";
   }
 
-  // Validate revenue split (70–80 % to instructor, platform gets remainder)
+  // Validate revenue split (70–80 % to instructor). Instructors cannot change
+  // their own revenue percent — only admins may.
   let revenuePercent = 70;
-  if (instructorRevenuePercent !== undefined) {
+  if (instructorRevenuePercent !== undefined && session.role === "ADMIN") {
     const pct = Number(instructorRevenuePercent);
     if (pct < 70 || pct > 80 || !Number.isInteger(pct)) {
       return NextResponse.json(
@@ -92,24 +108,66 @@ export async function POST(req: NextRequest) {
     revenuePercent = pct;
   }
 
+  // Normalise discount price: only kept for paid courses and below the price
+  let normalisedDiscount: number | null = null;
+  if (!wantsFree && discountPrice !== undefined && discountPrice !== null && discountPrice !== "") {
+    const dp = Number(discountPrice);
+    const p  = price != null ? Number(price) : null;
+    if (Number.isFinite(dp) && dp >= 0 && (p == null || dp < p)) {
+      normalisedDiscount = dp;
+    }
+  }
+
   let slug = slugify(title.trim(), { lower: true, strict: true });
   const existing = await prisma.course.findUnique({ where: { slug } });
   if (existing) slug = `${slug}-${Date.now().toString(36)}`;
 
   const course = await prisma.course.create({
     data: {
-      title:                   title.trim(),
+      title:                    title.trim(),
       slug,
-      description:             description.trim(),
-      thumbnail:               thumbnail || null,
-      price:                   wantsFree ? null : price ? parseFloat(price) : null,
-      isFree:                  wantsFree,
-      level:                   level ?? "beginner",
+      description:              description.trim(),
+      shortDesc:                shortDesc?.trim() || null,
+      thumbnail:                thumbnail || null,
+      previewVideo:             previewVideo?.trim() || null,
+      price:                    wantsFree ? null : price ? parseFloat(price) : null,
+      discountPrice:            normalisedDiscount,
+      isFree:                   wantsFree,
+      level:                    level ?? "beginner",
+      language:                 language?.trim() || undefined,
+      categoryId:               categoryId || null,
       status,
-      createdById:             session.userId,
+      createdById:              session.userId,
       instructorRevenuePercent: revenuePercent,
     },
   });
+
+  // Attach tags by name (upserts Tag + CourseTag)
+  if (Array.isArray(tagNames) && tagNames.length > 0) {
+    const cleaned = Array.from(
+      new Set(
+        (tagNames as unknown[])
+          .map((t) => String(t).trim())
+          .filter((t) => t.length > 0 && t.length <= 40)
+      )
+    );
+    await Promise.all(
+      cleaned.map(async (name) => {
+        const slugified = slugify(name, { lower: true, strict: true });
+        if (!slugified) return;
+        const tag = await prisma.tag.upsert({
+          where:  { slug: slugified },
+          create: { name, slug: slugified },
+          update: {},
+        });
+        await prisma.courseTag.upsert({
+          where:  { courseId_tagId: { courseId: course.id, tagId: tag.id } },
+          create: { courseId: course.id, tagId: tag.id },
+          update: {},
+        });
+      })
+    );
+  }
 
   return NextResponse.json({ course }, { status: 201 });
 }

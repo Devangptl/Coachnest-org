@@ -43,7 +43,7 @@ export default async function AdminCertificatesPage({
             type="text"
             defaultValue={search ?? ""}
             placeholder="Search by student or course..."
-            className="w-full pl-9 pr-4 py-2.5 rounded-md bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:ring-1 focus:ring-orange-400/30 transition-all"
+            className="w-full pl-9 pr-4 py-2.5 rounded-md bg-secondary border border-border text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:ring-1 focus:ring-[#d97757]/30 transition-all"
           />
         </div>
       </form>
@@ -91,7 +91,7 @@ export default async function AdminCertificatesPage({
                         className="object-cover w-full h-full"
                       />
                     ) : (
-                      <span className="text-orange-400 font-bold text-sm">
+                      <span className="text-[#d97757] font-bold text-sm">
                         {cert.user.name.charAt(0).toUpperCase()}
                       </span>
                     )}

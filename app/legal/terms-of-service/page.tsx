@@ -29,7 +29,7 @@ export default function TermsOfServicePage() {
   return (
     <>
       <div className="min-h-screen px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto py-12">
+        <div className="mx-auto py-12">
 
           {/* Breadcrumb */}
           <nav className="flex items-center gap-1.5 text-xs text-white/30 mb-10">
@@ -183,7 +183,7 @@ export default function TermsOfServicePage() {
                 <p>Questions about these Terms? Please reach out:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
                   <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Legal Team</p>
-                  <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 text-sm transition-colors">
+                  <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a request via our Contact page →
                   </Link>
                 </div>
@@ -223,7 +223,7 @@ function Section({ id, title, children }: { id: string; title: string; children:
   return (
     <section id={id} className="scroll-mt-28">
       <h2 className="text-lg font-semibold text-white mb-4 pb-2 border-b border-white/8">{title}</h2>
-      <div className="text-white/50 text-sm leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_a.legal-link]:text-orange-400/80 [&_a.legal-link]:hover:text-orange-400 [&_a.legal-link]:transition-colors [&_a.legal-link]:underline [&_a.legal-link]:underline-offset-2">
+      <div className="text-white/50 text-sm leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:space-y-1.5 [&_a.legal-link]:text-[#d97757]/80 [&_a.legal-link]:hover:text-[#d97757] [&_a.legal-link]:transition-colors [&_a.legal-link]:underline [&_a.legal-link]:underline-offset-2">
         {children}
       </div>
     </section>

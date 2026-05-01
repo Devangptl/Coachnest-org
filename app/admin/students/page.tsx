@@ -72,7 +72,7 @@ export default async function AdminStudentsPage() {
         {[
           { label: "Total Students", value: stats.total, icon: Users, color: "text-blue-400" },
           { label: "Active (30d)", value: stats.active, icon: Star, color: "text-emerald-400" },
-          { label: "Total Enrollments", value: stats.totalEnrollments, icon: GraduationCap, color: "text-orange-400" },
+          { label: "Total Enrollments", value: stats.totalEnrollments, icon: GraduationCap, color: "text-[#d97757]" },
           { label: "Certificates Issued", value: stats.totalCertificates, icon: Award, color: "text-yellow-400" },
         ].map((stat) => {
           const Icon = stat.icon;

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import { Search, X } from "lucide-react";
 
 export default function OrderFiltersBar() {
@@ -41,17 +42,18 @@ export default function OrderFiltersBar() {
               onKeyDown={(e) => e.key === "Enter" && handleFilter()}
             />
           </div>
-          <select
-            className="input-glass"
+          <Select
             value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            <option value="all">All Statuses</option>
-            <option value="PAID">Paid</option>
-            <option value="PENDING">Pending</option>
-            <option value="FAILED">Failed</option>
-            <option value="REFUNDED">Refunded</option>
-          </select>
+            onValueChange={setStatus}
+            options={[
+              { value: "all",      label: "All Statuses" },
+              { value: "PAID",     label: "Paid"         },
+              { value: "PENDING",  label: "Pending"      },
+              { value: "FAILED",   label: "Failed"       },
+              { value: "REFUNDED", label: "Refunded"     },
+            ]}
+            className="w-auto"
+          />
           <Button variant="primary" size="sm" onClick={handleFilter}>
             Filter
           </Button>

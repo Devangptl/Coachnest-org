@@ -25,12 +25,12 @@ export default function XpProgressBar({
     return (
       <div className="flex items-center gap-3">
         <div className="flex items-center gap-1.5">
-          <span className="text-xs font-bold text-orange-400">Lv.{level}</span>
+          <span className="text-xs font-bold text-[#d97757]">Lv.{level}</span>
           <span className={cn("text-[10px] font-semibold", levelColor)}>{levelLabel}</span>
         </div>
         <div className="flex-1 h-1.5 bg-secondary rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-orange-500 to-orange-400 rounded-full transition-all duration-700"
+            className="h-full bg-gradient-to-r from-orange-500 to-[#d97757] rounded-full transition-all duration-700"
             style={{ width: `${isMaxLevel ? 100 : nextLevelProgress.progress}%` }}
           />
         </div>
@@ -44,7 +44,7 @@ export default function XpProgressBar({
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <div className="w-9 h-9 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-            <span className="text-sm font-black text-orange-400">{level}</span>
+            <span className="text-sm font-black text-[#d97757]">{level}</span>
           </div>
           <div>
             <p className={cn("text-sm font-bold leading-tight", levelColor)}>{levelLabel}</p>
@@ -59,14 +59,14 @@ export default function XpProgressBar({
 
       <div className="h-2 bg-secondary rounded-full overflow-hidden">
         <div
-          className="h-full bg-gradient-to-r from-orange-600 to-orange-400 rounded-full transition-all duration-700"
+          className="h-full bg-gradient-to-r from-orange-600 to-[#d97757] rounded-full transition-all duration-700"
           style={{ width: `${isMaxLevel ? 100 : nextLevelProgress.progress}%` }}
         />
       </div>
 
       <div className="flex items-center justify-between mt-2">
         {isMaxLevel ? (
-          <span className="text-xs text-orange-400 font-medium">Max Level Reached!</span>
+          <span className="text-xs text-[#d97757] font-medium">Max Level Reached!</span>
         ) : (
           <>
             <span className="text-[11px] text-muted-foreground">

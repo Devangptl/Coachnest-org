@@ -16,6 +16,8 @@
  */
 
 import { useState, useCallback, memo, ReactNode, useContext, createContext, Children, isValidElement, cloneElement } from "react";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import type { Components } from "react-markdown";
@@ -34,6 +36,11 @@ interface Props {
   className?: string;
 }
 
+/** Detect HTML produced by QuillEditor (getSemanticHTML starts with "<") */
+function isHtml(content: string) {
+  return content.trimStart().startsWith("<");
+}
+
 // ─── List-type context (lets <li> know if it's inside <ol> or <ul>) ───────────
 
 const ListTypeCtx = createContext<"ul" | "ol">("ul");
@@ -44,7 +51,7 @@ const CALLOUT_CONFIG = {
   note:      { icon: Info,          border: "border-blue-400/30",    bg: "bg-blue-500/[0.08]",    title: "text-blue-400",    body: "text-blue-200/80",   label: "Note"      },
   tip:       { icon: Lightbulb,     border: "border-emerald-400/30", bg: "bg-emerald-500/[0.08]", title: "text-emerald-400", body: "text-emerald-200/80",label: "Tip"       },
   warning:   { icon: AlertTriangle, border: "border-yellow-400/30",  bg: "bg-yellow-500/[0.08]",  title: "text-yellow-400",  body: "text-yellow-200/80", label: "Warning"   },
-  important: { icon: AlertCircle,   border: "border-orange-400/30",  bg: "bg-orange-500/[0.08]",  title: "text-orange-400",  body: "text-orange-200/80", label: "Important" },
+  important: { icon: AlertCircle,   border: "border-[#d97757]/30",  bg: "bg-orange-500/[0.08]",  title: "text-[#d97757]",  body: "text-orange-200/80", label: "Important" },
   caution:   { icon: Flame,         border: "border-red-400/30",     bg: "bg-red-500/[0.08]",     title: "text-red-400",     body: "text-red-200/80",    label: "Caution"   },
 } as const;
 
@@ -101,6 +108,19 @@ function vimeoId(url: string): string | null {
   return m ? m[1] : null;
 }
 
+// ─── Prism language alias normaliser ────────────────────────────────────────────
+
+const LANG_ALIAS: Record<string, string> = {
+  js: "javascript", ts: "typescript", py: "python",
+  rb: "ruby", cs: "csharp", sh: "bash", zsh: "bash",
+  shell: "bash", yml: "yaml", md: "markdown",
+};
+
+function normLang(lang: string): string {
+  const l = lang.toLowerCase();
+  return LANG_ALIAS[l] ?? l;
+}
+
 // ─── Sub-components ─────────────────────────────────────────────────────────────
 
 function CodeBlock({ lang, code }: { lang: string; code: string }) {
@@ -112,11 +132,8 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setTimeout(() => setCopied(false), 2000);
   }, [code]);
 
-  const lines = code.split("\n");
-  if (lines[lines.length - 1] === "") lines.pop();
-
   return (
-    <div className="rounded-md overflow-hidden border border-white/[0.08] bg-[#0d1117] shadow-lg my-4 sm:my-5">
+    <div className="rounded-md overflow-hidden border border-white/[0.08] shadow-lg my-4 sm:my-5">
       {/* Header */}
       <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-white/[0.03] border-b border-white/[0.06]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -136,19 +153,30 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
             : <><Copy className="w-3 h-3" />Copy</>}
         </button>
       </div>
-      {/* Lines */}
-      <div className="overflow-x-auto">
-        <pre className="p-3 sm:p-4 text-[12px] sm:text-[13px] leading-relaxed font-mono">
-          {lines.map((line, i) => (
-            <div key={i} className="flex">
-              <span className="select-none text-white/[0.15] text-right w-8 mr-4 flex-shrink-0 text-xs leading-relaxed">
-                {i + 1}
-              </span>
-              <code className="text-emerald-300/85 whitespace-pre">{line || " "}</code>
-            </div>
-          ))}
-        </pre>
-      </div>
+      {/* Syntax-highlighted code (VS Code Dark+ theme, transparent bg) */}
+      <SyntaxHighlighter
+        language={normLang(lang) || "text"}
+        style={vscDarkPlus}
+        showLineNumbers
+        wrapLongLines={false}
+        customStyle={{
+          margin: 0,
+          padding: "12px 16px",
+          background: "transparent",
+          fontSize: "13px",
+          lineHeight: "1.65",
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
+        }}
+        lineNumberStyle={{
+          color: "rgba(255,255,255,0.15)",
+          minWidth: "2.25em",
+          paddingRight: "1em",
+          userSelect: "none",
+        }}
+        codeTagProps={{ style: { fontFamily: "inherit" } }}
+      >
+        {code}
+      </SyntaxHighlighter>
     </div>
   );
 }
@@ -339,6 +367,16 @@ function MarkdownListItem({
 // ─── Main renderer ──────────────────────────────────────────────────────────────
 
 const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = false, className }: Props) {
+  // Quill outputs semantic HTML — render it directly with scoped styles
+  if (isHtml(content)) {
+    return (
+      <div
+        className={cn("quill-content", compact && "quill-content-compact", className)}
+        dangerouslySetInnerHTML={{ __html: content }}
+      />
+    );
+  }
+
   const processed = preprocessCallouts(content);
   let blockIdx = 0;
 
@@ -347,12 +385,12 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     // ── Headings ────────────────────────────────────────────────────────────────
     h1: ({ children }) => (
       <h1 data-block-index={blockIdx++} className={cn("text-xl sm:text-2xl font-bold text-foreground mt-6 sm:mt-8 mb-3 sm:mb-4 flex items-center gap-2.5 sm:gap-3 first:mt-0", compact && "text-lg sm:text-xl mt-4 sm:mt-5 mb-2")}>
-        <span className="text-orange-400 font-black text-base sm:text-lg select-none">#</span>
+        <span className="text-[#d97757] font-black text-base sm:text-lg select-none">#</span>
         {children}
       </h1>
     ),
     h2: ({ children }) => (
-      <h2 data-block-index={blockIdx++} className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-orange-400/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
+      <h2 data-block-index={blockIdx++} className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-[#d97757]/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
         {children}
       </h2>
     ),
@@ -401,7 +439,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
       // Inline code — no className → no language
       if (!cls) {
         return (
-          <code className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-orange-400/25">
+          <code className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-[#d97757]/25">
             {children}
           </code>
         );
@@ -427,7 +465,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
           href={href}
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noopener noreferrer" : undefined}
-          className="text-orange-400 hover:text-orange-300 underline underline-offset-4 decoration-orange-400/40 hover:decoration-orange-300/60 transition-colors inline-flex items-center gap-1"
+          className="text-[#d97757] hover:text-orange-300 underline underline-offset-4 decoration-[#d97757]/40 hover:decoration-orange-300/60 transition-colors inline-flex items-center gap-1"
         >
           {children}
           {isExternal && <ExternalLink className="w-3 h-3 opacity-50 flex-shrink-0" />}

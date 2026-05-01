@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import slugify from "slugify";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -42,15 +43,81 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const data = await req.json().catch(() => ({}));
   const update: Record<string, unknown> = {};
 
-  if (data.title       !== undefined) update.title       = data.title;
-  if (data.description !== undefined) update.description = data.description;
-  if (data.thumbnail   !== undefined) update.thumbnail   = data.thumbnail || null;
-  if (data.level       !== undefined) update.level       = data.level;
-  if (data.isFree      !== undefined) update.isFree      = data.isFree;
-  if (data.price       !== undefined) update.price       = data.isFree ? null : data.price ? parseFloat(data.price) : null;
-  if (data.status      !== undefined) update.status      = data.status;
+  if (data.title !== undefined) {
+    update.title = data.title;
+    update.slug  = slugify(data.title, { lower: true, strict: true });
+  }
+  if (data.description  !== undefined) update.description  = data.description;
+  if (data.shortDesc    !== undefined) update.shortDesc    = data.shortDesc?.trim() || null;
+  if (data.thumbnail    !== undefined) update.thumbnail    = data.thumbnail || null;
+  if (data.previewVideo !== undefined) update.previewVideo = data.previewVideo?.trim() || null;
+  if (data.level        !== undefined) update.level        = data.level;
+  if (data.language     !== undefined) update.language     = data.language?.trim() || "English";
+  if (data.categoryId   !== undefined) update.categoryId   = data.categoryId || null;
+  if (data.isFree       !== undefined) update.isFree       = data.isFree;
+  if (data.price        !== undefined) {
+    update.price = data.isFree ? null : data.price ? parseFloat(data.price) : null;
+  }
+  if (data.discountPrice !== undefined) {
+    const dp = data.discountPrice;
+    update.discountPrice =
+      dp === null || dp === "" ? null : Number.isFinite(Number(dp)) ? Number(dp) : null;
+  }
+  if (data.status !== undefined) update.status = data.status;
+  if (data.instructorRevenuePercent !== undefined && session.role === "ADMIN") {
+    const pct = Number(data.instructorRevenuePercent);
+    if (!Number.isInteger(pct) || pct < 70 || pct > 80) {
+      return NextResponse.json(
+        { error: "instructorRevenuePercent must be an integer between 70 and 80." },
+        { status: 400 }
+      );
+    }
+    update.instructorRevenuePercent = pct;
+  }
+
+  if (update.isFree === true) {
+    update.price = null;
+    update.discountPrice = null;
+  }
 
   const course = await prisma.course.update({ where: { id }, data: update });
+
+  // Replace tag set if tagNames is provided
+  if (Array.isArray(data.tagNames)) {
+    const cleaned = Array.from(
+      new Set(
+        (data.tagNames as unknown[])
+          .map((t) => String(t).trim())
+          .filter((t) => t.length > 0 && t.length <= 40)
+      )
+    );
+    const tags = await Promise.all(
+      cleaned.map(async (name) => {
+        const slugified = slugify(name, { lower: true, strict: true });
+        if (!slugified) return null;
+        return prisma.tag.upsert({
+          where:  { slug: slugified },
+          create: { name, slug: slugified },
+          update: {},
+        });
+      })
+    );
+    const tagIds = tags.filter((t): t is NonNullable<typeof t> => !!t).map((t) => t.id);
+
+    await prisma.courseTag.deleteMany({
+      where: { courseId: id, tagId: { notIn: tagIds.length ? tagIds : [""] } },
+    });
+    await Promise.all(
+      tagIds.map((tagId) =>
+        prisma.courseTag.upsert({
+          where:  { courseId_tagId: { courseId: id, tagId } },
+          create: { courseId: id, tagId },
+          update: {},
+        })
+      )
+    );
+  }
+
   return NextResponse.json({ course });
 }
 

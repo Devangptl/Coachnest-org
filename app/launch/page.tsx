@@ -121,7 +121,7 @@ export default function LaunchPage() {
           className="text-4xl sm:text-4xl lg:text-5xl font-bold tracking-[-0.04em] leading-[1.1] max-w-3xl mb-6"
         >
           We&apos;re launching{" "}
-          <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-orange-400 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-orange-600 via-orange-500 to-[#d97757] bg-clip-text text-transparent">
             very soon
           </span>
         </motion.h1>
@@ -167,7 +167,7 @@ export default function LaunchPage() {
           className="w-full max-w-md mb-10"
         >
           {submitted ? (
-            <div className="glass border-orange-400/30 shadow-glow flex items-center justify-center gap-2.5 py-4 px-6 rounded-md text-orange-400 font-medium">
+            <div className="glass border-[#d97757]/30 shadow-glow flex items-center justify-center gap-2.5 py-4 px-6 rounded-md text-[#d97757] font-medium">
               <Sparkles className="w-4 h-4 shrink-0" />
               You&apos;re on the list — we&apos;ll be in touch!
             </div>

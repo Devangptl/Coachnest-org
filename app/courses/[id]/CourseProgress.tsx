@@ -35,13 +35,13 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
     percent === 100
       ? "from-amber-500/8 to-yellow-500/5 border-amber-400/15"
       : percent > 0
-      ? "from-orange-600/8 to-orange-500/15 border-orange-400/25"
+      ? "from-orange-600/8 to-orange-500/15 border-[#d97757]/25"
       : "from-white/5 to-white/[0.02] border-border";
 
   const barGradient =
     percent === 100
       ? "from-amber-400 via-yellow-400 to-amber-500"
-      : "from-orange-600 via-orange-500 to-orange-400";
+      : "from-orange-600 via-orange-500 to-[#d97757]";
 
   return (
     <motion.div
@@ -74,9 +74,9 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
               {percent === 100 ? (
                 <Trophy className="w-5 h-5 text-amber-400" />
               ) : percent > 50 ? (
-                <Flame className="w-5 h-5 text-orange-400" />
+                <Flame className="w-5 h-5 text-[#d97757]" />
               ) : percent > 0 ? (
-                <Zap className="w-5 h-5 text-orange-400" />
+                <Zap className="w-5 h-5 text-[#d97757]" />
               ) : (
                 <Target className="w-5 h-5 text-muted-foreground/70" />
               )}
@@ -97,7 +97,7 @@ export default function CourseProgress({ completedCount, totalCount }: Props) {
             className="text-right"
           >
             <span className={`text-xl font-bold tabular-nums ${
-              percent === 100 ? "text-amber-400" : percent > 0 ? "text-orange-400" : "text-white/20"
+              percent === 100 ? "text-amber-400" : percent > 0 ? "text-[#d97757]" : "text-white/20"
             }`}>
               {percent}%
             </span>

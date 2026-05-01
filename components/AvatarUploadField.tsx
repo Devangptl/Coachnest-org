@@ -116,7 +116,7 @@ export default function AvatarUploadField({
           type="button"
           disabled={uploading}
           onClick={() => inputRef.current?.click()}
-          className="flex items-center gap-3 w-full max-w-xs rounded-lg border-2 border-dashed border-border bg-secondary/50 hover:border-orange-400/50 hover:bg-secondary px-4 py-6 text-left transition-colors disabled:opacity-50"
+          className="flex items-center gap-3 w-full max-w-xs rounded-lg border-2 border-dashed border-border bg-secondary/50 hover:border-[#d97757]/50 hover:bg-secondary px-4 py-6 text-left transition-colors disabled:opacity-50"
         >
           <Upload className="w-6 h-6 text-muted-foreground shrink-0" />
           <span className="text-sm text-muted-foreground font-medium">

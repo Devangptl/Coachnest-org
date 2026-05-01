@@ -34,7 +34,7 @@ export default function ReviewCard({ review }: ReviewCardProps) {
             className="w-10 h-10 rounded-full object-cover flex-shrink-0"
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-orange-400/25 flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-orange-500/20 border border-[#d97757]/25 flex items-center justify-center flex-shrink-0">
             <span className="text-orange-300 text-xs font-bold">{initials}</span>
           </div>
         )}

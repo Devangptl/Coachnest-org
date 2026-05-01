@@ -46,7 +46,7 @@ export default function OrderTable({ orders }: { orders: any[] }) {
           >
             {/* Order ID */}
             <div className="col-span-2 min-w-0">
-              <code className="text-orange-400 text-xs font-mono bg-orange-500/5 border border-orange-400/15 rounded px-1.5 py-0.5">
+              <code className="text-[#d97757] text-xs font-mono bg-orange-500/5 border border-[#d97757]/15 rounded px-1.5 py-0.5">
                 #{order.id.slice(0, 8)}
               </code>
               <p className="text-[11px] text-muted-foreground/50 mt-1">

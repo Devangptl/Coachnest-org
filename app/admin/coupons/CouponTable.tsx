@@ -59,7 +59,7 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
         >
           {/* Code */}
           <div className="col-span-2 min-w-0 flex items-center gap-2">
-            <code className="text-orange-400 font-mono text-sm">{coupon.code}</code>
+            <code className="text-[#d97757] font-mono text-sm">{coupon.code}</code>
             <button
               onClick={() => copyCode(coupon.code)}
               className="text-muted-foreground/70 hover:text-foreground transition-colors"

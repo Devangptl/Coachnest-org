@@ -49,7 +49,7 @@ const STATUS_CFG = {
   PROCESSING: { label: "Processing", color: "text-blue-400",    bg: "bg-blue-500/10",    icon: Loader2 },
   PROCESSED:  { label: "Processed",  color: "text-emerald-400", bg: "bg-emerald-500/10", icon: CheckCircle2 },
   REJECTED:   { label: "Rejected",   color: "text-red-400",     bg: "bg-red-500/10",     icon: XCircle },
-  FAILED:     { label: "Failed",     color: "text-orange-400",  bg: "bg-orange-500/10",  icon: AlertCircle },
+  FAILED:     { label: "Failed",     color: "text-[#d97757]",  bg: "bg-orange-500/10",  icon: AlertCircle },
 } as const;
 
 const ALL_STATUSES = ["ALL", "PENDING", "PROCESSING", "PROCESSED", "REJECTED", "FAILED"] as const;

@@ -197,7 +197,7 @@ export default function RefundRequestModal({
                 <button
                   onClick={handleSubmit}
                   disabled={submitting}
-                  className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-orange-400 text-white text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 py-2 rounded-lg bg-orange-500 hover:bg-[#d97757] text-white text-sm font-medium transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {submitting
                     ? <Loader2 className="w-4 h-4 animate-spin" />

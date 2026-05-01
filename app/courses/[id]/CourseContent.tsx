@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseTabs from "./CourseTabs";
-import CourseProgress from "./CourseProgress";
 import CourseViewer from "./CourseViewer";
 import ReviewsSection from "./ReviewsSection";
 import Link from "next/link";
@@ -49,7 +48,7 @@ export default function CourseContent({
   isLoggedIn,
   reviewCount,
 }: Props) {
-  const [activeTab, setActiveTab] = useState("overview");
+  const [activeTab, setActiveTab] = useState(isEnrolled ? "curriculum" : "overview");
 
   // Auto-switch to curriculum when Access Now enrollment completes
   useEffect(() => {
@@ -74,11 +73,6 @@ export default function CourseContent({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Progress bar for enrolled users */}
-      {isEnrolled && (
-        <CourseProgress completedCount={completedCount} totalCount={lessons.length} />
-      )}
-
       {/* Tabs */}
       <CourseTabs
         activeTab={activeTab}
@@ -99,9 +93,9 @@ export default function CourseContent({
             className="space-y-8"
           >
             {/* About this course */}
-            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-4 sm:p-6">
+            <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-orange-400" />
+                <Target className="w-5 h-5 text-[#d97757]" />
                 About This Course
               </h2>
               <div className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
@@ -110,7 +104,7 @@ export default function CourseContent({
             </div>
 
             {/* What you'll learn */}
-            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-4 sm:p-6">
+            <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
                 <Lightbulb className="w-5 h-5 text-amber-400" />
                 What You&apos;ll Learn
@@ -126,7 +120,7 @@ export default function CourseContent({
                   </div>
                 ))}
                 {lessons.length > 8 && (
-                  <div className="flex items-center gap-2 text-orange-400 text-sm">
+                  <div className="flex items-center gap-2 text-[#d97757] text-sm">
                     <Zap className="w-4 h-4" />
                     And {lessons.length - 8} more topics...
                   </div>
@@ -135,7 +129,7 @@ export default function CourseContent({
             </div>
 
             {/* Quick curriculum preview */}
-            <div className="backdrop-blur-md bg-secondary border border-border rounded-lg p-4 sm:p-6">
+            <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-1 flex items-center gap-2">
                 <FileText className="w-5 h-5 text-blue-400" />
                 Course Content
@@ -248,7 +242,7 @@ function CurriculumPreview({ lessons, courseId, isEnrolled }: { lessons: Lesson[
       {lessons.length > 5 && (
         <button
           onClick={() => setExpanded((e) => !e)}
-          className="flex items-center gap-2 text-orange-400 hover:text-orange-300 text-sm px-3 py-2 transition-colors w-full"
+          className="flex items-center gap-2 text-[#d97757] hover:text-orange-300 text-sm px-3 py-2 transition-colors w-full"
         >
           <ChevronDown className={cn("w-4 h-4 transition-transform", expanded && "rotate-180")} />
           {expanded ? "Show less" : `Show all ${lessons.length} lessons`}

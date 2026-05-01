@@ -60,7 +60,7 @@ async function PurchasesPage({ userId }: { userId: string }) {
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         <GlassCard className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
-            <BookOpen className="w-5 h-5 text-orange-400" />
+            <BookOpen className="w-5 h-5 text-[#d97757]" />
           </div>
           <div>
             <div className="text-2xl font-bold text-foreground">{enrollments.length}</div>
@@ -142,7 +142,7 @@ async function PurchasesPage({ userId }: { userId: string }) {
             </div>
             <Link
               href="/features/community"
-              className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
+              className="flex items-center gap-1.5 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors flex-shrink-0"
             >
               <ShoppingCart className="w-3.5 h-3.5" /> Buy Access
             </Link>
@@ -154,7 +154,7 @@ async function PurchasesPage({ userId }: { userId: string }) {
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <ShoppingBag className="w-4 h-4 text-orange-400" /> Enrolled Courses
+            <ShoppingBag className="w-4 h-4 text-[#d97757]" /> Enrolled Courses
           </h2>
           <Link href="/courses" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
             Browse more <ArrowRight className="w-3 h-3" />

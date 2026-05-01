@@ -8,7 +8,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
 import CourseCard from "@/components/CourseCard";
-import { BookOpen, Trophy, Clock, ArrowRight, ShoppingBag, Users, CheckCircle2 } from "lucide-react";
+import { BookOpen, Trophy, Clock, ArrowRight, ShoppingBag, Users, CheckCircle2, GraduationCap } from "lucide-react";
 import { calcProgress } from "@/lib/utils";
 import { getLevelForXp, xpToNextLevel } from "@/lib/badges";
 import XpProgressBar from "@/components/XpProgressBar";
@@ -87,6 +87,52 @@ async function getFeatureAccess(userId: string) {
   };
 }
 
+async function getFollowedInstructorCourses(userId: string, enrolledIds: string[]) {
+  const follows = await prisma.userInstructorFollow.findMany({
+    where: { userId },
+    select: {
+      instructor: {
+        select: {
+          id:   true,
+          name: true,
+          courses: {
+            where: {
+              status: "PUBLISHED",
+              ...(enrolledIds.length > 0 && { id: { notIn: enrolledIds } }),
+            },
+            orderBy: { createdAt: "desc" },
+            take: 3,
+            select: {
+              id:            true,
+              title:         true,
+              description:   true,
+              thumbnail:     true,
+              price:         true,
+              discountPrice: true,
+              isFree:        true,
+              level:         true,
+              _count: { select: { lessons: true, enrollments: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const courses = follows
+    .flatMap((f) =>
+      f.instructor.courses.map((c) => ({
+        ...c,
+        price:          c.price         ? Number(c.price)         : null,
+        discountPrice:  c.discountPrice ? Number(c.discountPrice) : null,
+        instructorName: f.instructor.name,
+      }))
+    )
+    .slice(0, 6);
+
+  return { courses, followCount: follows.length };
+}
+
 export default async function DashboardPage() {
   const session = await getSession();
   if (!session) redirect("/login");
@@ -101,6 +147,9 @@ export default async function DashboardPage() {
         select: { hasCompletedOnboarding: true },
       }),
     ]);
+
+  const enrolledIds = enrollments.map((e) => e.courseId);
+  const { courses: followedCourses, followCount } = await getFollowedInstructorCourses(session.userId, enrolledIds);
 
   const inProgress = enrollments.filter(
     (e) => e.progress > 0 && e.progress < 100
@@ -117,7 +166,7 @@ export default async function DashboardPage() {
       <div className="mb-10 animate-fade-in">
         <h1 className="text-2xl sm:text-4xl font-bold text-foreground">
           Welcome back,{" "}
-          <span className="text-orange-400">{session.name.split(" ")[0]}</span>
+          <span className="text-[#d97757]">{session.name.split(" ")[0]}</span>
         </h1>
         <p className="text-muted-foreground mt-2">
           Keep up the great work. You&apos;re doing amazing!
@@ -131,7 +180,7 @@ export default async function DashboardPage() {
             label: "Enrolled",
             value: enrollments.length,
             icon: BookOpen,
-            color: "text-orange-400",
+            color: "text-[#d97757]",
           },
           {
             label: "In Progress",
@@ -173,7 +222,7 @@ export default async function DashboardPage() {
         <GlassCard className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
-              <ShoppingBag className="w-5 h-5 text-orange-400" />
+              <ShoppingBag className="w-5 h-5 text-[#d97757]" />
             </div>
             <div>
               <p className="text-foreground font-semibold text-sm">
@@ -182,7 +231,7 @@ export default async function DashboardPage() {
               <p className="text-muted-foreground text-xs">Lifetime access, no expiry</p>
             </div>
           </div>
-          <Link href="/courses" className="text-orange-400 hover:text-orange-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
+          <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
             Browse <ArrowRight className="w-3 h-3" />
           </Link>
         </GlassCard>
@@ -240,6 +289,75 @@ export default async function DashboardPage() {
 
       {/* ─── Recommended Courses ─────────────────────────────────────────── */}
       <RecommendedCourses />
+
+      {/* ─── From Followed Instructors ───────────────────────────────────── */}
+      <section className="mb-10">
+        <div className="flex items-center justify-between mb-5">
+          <div className="flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-[#d97757]" />
+            <h2 className="text-xl font-semibold text-foreground">
+              From Instructors You Follow
+            </h2>
+          </div>
+          {followedCourses.length > 0 && (
+            <Link
+              href="/courses"
+              className="text-[#d97757] hover:text-orange-300 text-sm font-medium
+                         flex items-center gap-1 transition-colors"
+            >
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          )}
+        </div>
+
+        {followedCourses.length > 0 ? (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+            {followedCourses.map((c) => (
+              <CourseCard
+                key={c.id}
+                id={c.id}
+                title={c.title}
+                description={c.description}
+                thumbnail={c.thumbnail}
+                instructorName={c.instructorName}
+                price={c.price}
+                discountPrice={c.discountPrice}
+                isFree={c.isFree}
+                level={c.level}
+                totalLessons={c._count.lessons}
+                enrollmentCount={c._count.enrollments}
+              />
+            ))}
+          </div>
+        ) : (
+          <GlassCard className="flex flex-col sm:flex-row items-center gap-5 py-8 px-6">
+            <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/20
+                            flex items-center justify-center flex-shrink-0">
+              <GraduationCap className="w-6 h-6 text-[#d97757]" />
+            </div>
+            <div className="flex-1 text-center sm:text-left">
+              <p className="font-semibold text-foreground text-sm">
+                {followCount === 0
+                  ? "You haven't followed any instructors yet"
+                  : "No new courses from your instructors right now"}
+              </p>
+              <p className="text-muted-foreground text-xs mt-1">
+                {followCount === 0
+                  ? "Follow instructors to see their latest courses here."
+                  : "Check back later — new courses will appear here as they're published."}
+              </p>
+            </div>
+            {followCount === 0 && (
+              <Link
+                href="/courses"
+                className="btn-primary text-sm px-4 py-2 flex-shrink-0 whitespace-nowrap"
+              >
+                Discover Instructors
+              </Link>
+            )}
+          </GlassCard>
+        )}
+      </section>
 
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (

@@ -131,7 +131,7 @@ function AddCardForm({ onSuccess, onClose, title, description, submitLabel = "Sa
         <button
           type="submit"
           disabled={!stripe || !cardComplete || loading}
-          className="flex-1 py-2.5 rounded-md bg-gradient-to-r from-orange-500 to-orange-400 text-white text-sm font-semibold hover:opacity-90 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {loading ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Saving…</>

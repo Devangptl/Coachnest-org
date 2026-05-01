@@ -18,7 +18,7 @@ const TabsTrigger = ({ className, ...props }: React.ComponentProps<typeof TabsPr
       "flex-1 px-4 py-2 text-sm font-medium text-muted-foreground rounded-lg transition-all",
       "hover:text-white/80",
       "data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-600/30 data-[state=active]:to-orange-500/20",
-      "data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-orange-400/25",
+      "data-[state=active]:text-white data-[state=active]:border data-[state=active]:border-[#d97757]/25",
       className
     )}
     {...props}

@@ -24,14 +24,14 @@ export default function DeleteBlogButton({ blogId }: { blogId: string }) {
     <button
       onClick={handleDelete}
       disabled={loading}
-      className="text-xs text-red-400/70 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10 flex items-center gap-1"
+      className="text-xs text-red-400/70 hover:text-red-400 transition-colors px-2 py-1 rounded-lg hover:bg-red-500/10 inline-flex items-center gap-1"
     >
       {loading ? (
         <Loader2 className="w-3 h-3 animate-spin" />
       ) : (
         <Trash2 className="w-3 h-3" />
       )}
-      Delete
+      <span className="hidden md:inline">Delete</span>
     </button>
   );
 }

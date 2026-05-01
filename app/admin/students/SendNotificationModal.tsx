@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Select } from "@/components/ui/Select";
 import GlassCard from "@/components/GlassCard";
 import { X, Send } from "lucide-react";
 
@@ -66,16 +67,16 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
         <div className="p-6 space-y-4">
           <div>
             <label className="text-muted-foreground text-sm font-medium mb-1.5 block">Type</label>
-            <select
+            <Select
               value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm focus:outline-none focus:border-orange-400/25 transition-all"
-            >
-              <option value="SYSTEM">System</option>
-              <option value="COURSE_UPDATE">Course Update</option>
-              <option value="REMINDER">Reminder</option>
-              <option value="OFFER">Offer</option>
-            </select>
+              onValueChange={setType}
+              options={[
+                { value: "SYSTEM",        label: "System"        },
+                { value: "COURSE_UPDATE", label: "Course Update" },
+                { value: "REMINDER",      label: "Reminder"      },
+                { value: "OFFER",         label: "Offer"         },
+              ]}
+            />
           </div>
 
           <div>
@@ -83,7 +84,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <input
               type="text"
               placeholder="Notification title"
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 transition-all"
               value={title}
               onChange={(e) => { setTitle(e.target.value); setResult(null); }}
             />
@@ -94,7 +95,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <textarea
               rows={3}
               placeholder="Your message to the student..."
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 transition-all resize-none"
               value={message}
               onChange={(e) => { setMessage(e.target.value); setResult(null); }}
             />

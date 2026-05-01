@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Highlighter, Trash2, X, Palette } from "lucide-react";
+import { Highlighter, Trash2, X, Palette, StickyNote, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -32,34 +32,64 @@ const COLORS = [
   { value: "#ef4444", label: "Red", bg: "bg-red-500", ring: "ring-red-400" },
 ];
 
+const POPUP_WIDTH = 260;   // approximate — used for viewport clamping
+const TOOLTIP_WIDTH = 300; // approximate — used for viewport clamping
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function TextHighlighter({ lessonId, isEnrolled, children }: TextHighlighterProps) {
   const [highlights, setHighlights] = useState<HighlightData[]>([]);
-  const [popup, setPopup] = useState<{ x: number; y: number; text: string; blockIndex: number; startOffset: number; endOffset: number } | null>(null);
+  const [popup, setPopup] = useState<{
+    x: number;
+    y: number;
+    text: string;
+    blockIndex: number;
+    startOffset: number;
+    endOffset: number;
+  } | null>(null);
   const [selectedColor, setSelectedColor] = useState(COLORS[0].value);
   const [saving, setSaving] = useState(false);
   const [activeHighlight, setActiveHighlight] = useState<HighlightData | null>(null);
   const [activeHlPos, setActiveHlPos] = useState<{ x: number; y: number } | null>(null);
+  const [noteEditing, setNoteEditing] = useState(false);
+  const [noteDraft, setNoteDraft] = useState("");
+  const [noteSaving, setNoteSaving] = useState(false);
+  const [copied, setCopied] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ── Fetch existing highlights ────────────────────────────────────────────
   useEffect(() => {
     if (!isEnrolled) return;
+    let cancelled = false;
     fetch(`/api/highlights?lessonId=${lessonId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data) => setHighlights(data.highlights || []))
+      .then((data) => {
+        if (!cancelled) setHighlights(data.highlights || []);
+      })
       .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
   }, [lessonId, isEnrolled]);
+
+  // ── Clamp a point to the container's visible width ───────────────────────
+  function clampX(containerRelativeX: number, width: number) {
+    const container = containerRef.current;
+    if (!container) return containerRelativeX;
+    const rect = container.getBoundingClientRect();
+    const half = width / 2;
+    const min = half + 8;
+    const max = rect.width - half - 8;
+    if (max <= min) return rect.width / 2;
+    return Math.max(min, Math.min(max, containerRelativeX));
+  }
 
   // ── Handle text selection ────────────────────────────────────────────────
   const handleMouseUp = useCallback(() => {
     if (!isEnrolled) return;
 
     const selection = window.getSelection();
-    if (!selection || selection.isCollapsed || !selection.rangeCount) {
-      return;
-    }
+    if (!selection || selection.isCollapsed || !selection.rangeCount) return;
 
     const text = selection.toString().trim();
     if (!text || text.length < 2) return;
@@ -68,11 +98,20 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     const container = containerRef.current;
     if (!container || !container.contains(range.commonAncestorContainer)) return;
 
+    // Don't trigger when the selection is entirely inside an existing highlight
+    let probe: Node | null = range.commonAncestorContainer;
+    while (probe && probe !== container) {
+      if (probe.nodeType === Node.ELEMENT_NODE) {
+        const el = probe as HTMLElement;
+        if (el.dataset && el.dataset.highlightId) return;
+      }
+      probe = probe.parentNode;
+    }
+
     // Find the block element
     let blockEl = range.startContainer as HTMLElement;
     if (blockEl.nodeType === Node.TEXT_NODE) blockEl = blockEl.parentElement!;
 
-    // Walk up to find [data-block-index]
     while (blockEl && !blockEl.dataset?.blockIndex && blockEl !== container) {
       blockEl = blockEl.parentElement!;
     }
@@ -81,25 +120,24 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
 
     const blockIndex = parseInt(blockEl.dataset.blockIndex, 10);
 
-    // Calculate offsets relative to the block's text content
-    const blockText = blockEl.textContent || "";
     const rangeStart = getTextOffset(blockEl, range.startContainer, range.startOffset);
     const rangeEnd = getTextOffset(blockEl, range.endContainer, range.endOffset);
 
     if (rangeStart === rangeEnd) return;
 
-    // Get position for the popup
     const rect = range.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
     setPopup({
-      x: rect.left + rect.width / 2 - containerRect.left,
+      x: clampX(rect.left + rect.width / 2 - containerRect.left, POPUP_WIDTH),
       y: rect.top - containerRect.top - 10,
       text,
       blockIndex,
       startOffset: Math.min(rangeStart, rangeEnd),
       endOffset: Math.max(rangeStart, rangeEnd),
     });
+    setActiveHighlight(null);
+    setActiveHlPos(null);
   }, [isEnrolled]);
 
   // ── Close popups on outside click ────────────────────────────────────────
@@ -107,14 +145,30 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
       if (!target.closest("[data-highlight-popup]") && !target.closest("[data-highlight-tooltip]")) {
-        setPopup(null);
-        setActiveHighlight(null);
-        setActiveHlPos(null);
+        closeAllPopups();
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  // ── Close popups on Escape ───────────────────────────────────────────────
+  useEffect(() => {
+    function handleKey(e: KeyboardEvent) {
+      if (e.key === "Escape") closeAllPopups();
+    }
+    document.addEventListener("keydown", handleKey);
+    return () => document.removeEventListener("keydown", handleKey);
+  }, []);
+
+  function closeAllPopups() {
+    setPopup(null);
+    setActiveHighlight(null);
+    setActiveHlPos(null);
+    setNoteEditing(false);
+    setNoteDraft("");
+    setCopied(false);
+  }
 
   // ── Save a highlight ─────────────────────────────────────────────────────
   async function saveHighlight() {
@@ -139,7 +193,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
 
       const { highlight } = await res.json();
       setHighlights((prev) => [...prev, highlight]);
-      toast.success("Text highlighted!");
+      toast.success("Text highlighted");
       setPopup(null);
       window.getSelection()?.removeAllRanges();
     } catch {
@@ -149,34 +203,92 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     }
   }
 
+  // ── Update a highlight (color or note) ───────────────────────────────────
+  async function updateHighlight(id: string, patch: { color?: string; note?: string | null }) {
+    // Optimistic update
+    setHighlights((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
+    setActiveHighlight((prev) => (prev && prev.id === id ? { ...prev, ...patch } : prev));
+
+    try {
+      const res = await fetch(`/api/highlights/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(patch),
+      });
+      if (!res.ok) throw new Error();
+      const { highlight } = await res.json();
+      setHighlights((prev) => prev.map((h) => (h.id === id ? highlight : h)));
+      setActiveHighlight((prev) => (prev && prev.id === id ? highlight : prev));
+    } catch {
+      toast.error("Failed to update highlight");
+    }
+  }
+
   // ── Remove a highlight ───────────────────────────────────────────────────
   async function removeHighlight(id: string) {
     try {
       const res = await fetch(`/api/highlights/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error();
       setHighlights((prev) => prev.filter((h) => h.id !== id));
-      setActiveHighlight(null);
-      setActiveHlPos(null);
+      closeAllPopups();
       toast.success("Highlight removed");
     } catch {
       toast.error("Failed to remove highlight");
     }
   }
 
+  async function copyHighlightText(text: string) {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error("Failed to copy");
+    }
+  }
+
+  async function saveNote() {
+    if (!activeHighlight || noteSaving) return;
+    setNoteSaving(true);
+    const next = noteDraft.trim() ? noteDraft.trim() : null;
+    await updateHighlight(activeHighlight.id, { note: next });
+    setNoteSaving(false);
+    setNoteEditing(false);
+    toast.success(next ? "Note saved" : "Note removed");
+  }
+
   // ── Handle highlight click ───────────────────────────────────────────────
-  function handleHighlightClick(e: React.MouseEvent, highlight: HighlightData) {
+  // Use a ref so HighlightedContent doesn't re-render/rebuild marks on every parent render.
+  const handleHighlightClickRef = useRef<(e: MouseEvent, hl: HighlightData) => void>(() => {});
+  handleHighlightClickRef.current = (e: MouseEvent, highlight: HighlightData) => {
     e.stopPropagation();
     const container = containerRef.current;
     if (!container) return;
     const rect = (e.target as HTMLElement).getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
-    setActiveHighlight(highlight);
+
+    // Refresh highlight reference from the latest list in case it was updated
+    const fresh = highlights.find((h) => h.id === highlight.id) || highlight;
+    setActiveHighlight(fresh);
+    setNoteDraft(fresh.note || "");
+    setNoteEditing(false);
+    setCopied(false);
     setActiveHlPos({
-      x: rect.left + rect.width / 2 - containerRect.left,
+      x: clampX(rect.left + rect.width / 2 - containerRect.left, TOOLTIP_WIDTH),
       y: rect.top - containerRect.top - 10,
     });
     setPopup(null);
-  }
+  };
+
+  const stableOnHighlightClick = useCallback((e: MouseEvent, hl: HighlightData) => {
+    handleHighlightClickRef.current(e, hl);
+  }, []);
+
+  const activeColor = activeHighlight?.color || COLORS[0].value;
+  const activeHasNote = useMemo(
+    () => !!(activeHighlight?.note && activeHighlight.note.trim().length > 0),
+    [activeHighlight]
+  );
 
   if (!isEnrolled) {
     return <>{children}</>;
@@ -184,8 +296,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
 
   return (
     <div ref={containerRef} className="relative" onMouseUp={handleMouseUp}>
-      {/* Render children with highlights applied */}
-      <HighlightedContent highlights={highlights} onHighlightClick={handleHighlightClick}>
+      <HighlightedContent highlights={highlights} onHighlightClick={stableOnHighlightClick}>
         {children}
       </HighlightedContent>
 
@@ -194,9 +305,9 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
         {popup && (
           <motion.div
             data-highlight-popup
-            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.9 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             className="absolute z-50 flex flex-col items-center"
             style={{
@@ -205,10 +316,9 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-[#1a1a2e] border border-border rounded-md shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2">
-              {/* Color picker */}
+            <div className="bg-popover border border-border rounded-lg shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2 min-w-[220px]">
               <div className="flex items-center gap-1.5 px-1">
-                <Palette className="w-3 h-3 text-white/30" />
+                <Palette className="w-3.5 h-3.5 text-muted-foreground" />
                 {COLORS.map((c) => (
                   <button
                     key={c.value}
@@ -216,26 +326,26 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                     className={cn(
                       "w-5 h-5 rounded-full transition-all",
                       c.bg,
-                      selectedColor === c.value ? `ring-2 ${c.ring} ring-offset-1 ring-offset-[#1a1a2e] scale-110` : "opacity-60 hover:opacity-100"
+                      selectedColor === c.value
+                        ? `ring-2 ${c.ring} ring-offset-1 ring-offset-popover scale-110`
+                        : "opacity-60 hover:opacity-100"
                     )}
                     title={c.label}
+                    aria-label={`${c.label} highlight color`}
                   />
                 ))}
               </div>
 
-              {/* Highlight button */}
               <button
                 onClick={saveHighlight}
                 disabled={saving}
-                className="flex items-center gap-2 text-sm px-3 py-1.5 rounded-lg bg-secondary border border-border text-white/80 hover:text-white hover:bg-white/15 transition-all font-medium disabled:opacity-50"
+                className="flex items-center justify-center gap-2 text-sm px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground/80 hover:text-foreground hover:bg-accent transition-all font-medium disabled:opacity-50"
               >
                 <Highlighter className="w-3.5 h-3.5" />
                 {saving ? "Saving..." : "Highlight"}
               </button>
             </div>
-
-            {/* Arrow */}
-            <div className="w-2.5 h-2.5 bg-[#1a1a2e] border-r border-b border-border rotate-45 -mt-[5px]" />
+            <div className="w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -245,9 +355,9 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
         {activeHighlight && activeHlPos && (
           <motion.div
             data-highlight-tooltip
-            initial={{ opacity: 0, y: 8, scale: 0.9 }}
+            initial={{ opacity: 0, y: 8, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 8, scale: 0.9 }}
+            exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.15 }}
             className="absolute z-50 flex flex-col items-center"
             style={{
@@ -255,26 +365,142 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               top: `${activeHlPos.y}px`,
               transform: "translate(-50%, -100%)",
             }}
+            onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="bg-[#1a1a2e] border border-border rounded-md shadow-2xl shadow-black/50 px-2.5 py-2 flex items-center gap-1.5">
-              <button
-                onClick={() => removeHighlight(activeHighlight.id)}
-                className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-red-500/15 border border-red-400/20 text-red-400 hover:bg-red-500/25 transition-all font-medium"
-              >
-                <Trash2 className="w-3 h-3" />
-                Remove
-              </button>
-              <button
-                onClick={() => {
-                  setActiveHighlight(null);
-                  setActiveHlPos(null);
-                }}
-                className="p-1.5 rounded-lg text-white/30 hover:text-muted-foreground hover:bg-secondary transition-all"
-              >
-                <X className="w-3 h-3" />
-              </button>
+            <div className="bg-popover border border-border rounded-lg shadow-2xl shadow-black/50 p-2.5 flex flex-col gap-2 w-[280px]">
+              {/* Color switcher */}
+              <div className="flex items-center gap-1.5 px-1">
+                <Palette className="w-3.5 h-3.5 text-muted-foreground" />
+                {COLORS.map((c) => (
+                  <button
+                    key={c.value}
+                    onClick={() => updateHighlight(activeHighlight.id, { color: c.value })}
+                    className={cn(
+                      "w-5 h-5 rounded-full transition-all",
+                      c.bg,
+                      activeColor === c.value
+                        ? `ring-2 ${c.ring} ring-offset-1 ring-offset-popover scale-110`
+                        : "opacity-60 hover:opacity-100"
+                    )}
+                    title={c.label}
+                    aria-label={`Change to ${c.label}`}
+                  />
+                ))}
+              </div>
+
+              {/* Action row */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => {
+                    setNoteEditing((v) => !v);
+                    setNoteDraft(activeHighlight.note || "");
+                  }}
+                  className={cn(
+                    "flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition-all font-medium flex-1 justify-center",
+                    activeHasNote
+                      ? "bg-primary/15 border-primary/30 text-primary hover:bg-primary/25"
+                      : "bg-secondary border-border text-foreground/80 hover:text-foreground hover:bg-accent"
+                  )}
+                  title={activeHasNote ? "Edit note" : "Add note"}
+                >
+                  <StickyNote className="w-3 h-3" />
+                  {activeHasNote ? "Note" : "Add note"}
+                </button>
+                <button
+                  onClick={() => copyHighlightText(activeHighlight.text)}
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-secondary border border-border text-foreground/80 hover:text-foreground hover:bg-accent transition-all font-medium"
+                  title="Copy text"
+                >
+                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                </button>
+                <button
+                  onClick={() => removeHighlight(activeHighlight.id)}
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-destructive/15 border border-destructive/30 text-destructive hover:bg-destructive/25 transition-all font-medium"
+                  title="Remove highlight"
+                >
+                  <Trash2 className="w-3 h-3" />
+                </button>
+                <button
+                  onClick={closeAllPopups}
+                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  title="Close"
+                  aria-label="Close"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+
+              {/* Note editor / preview */}
+              <AnimatePresence initial={false} mode="wait">
+                {noteEditing ? (
+                  <motion.div
+                    key="editor"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="flex flex-col gap-2 pt-1 border-t border-border">
+                      <textarea
+                        value={noteDraft}
+                        onChange={(e) => setNoteDraft(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) {
+                            e.preventDefault();
+                            saveNote();
+                          }
+                        }}
+                        autoFocus
+                        placeholder="Write a note…"
+                        className="w-full text-xs bg-input border border-border rounded-md p-2 text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:ring-2 focus:ring-primary/40 resize-none"
+                        rows={3}
+                        maxLength={500}
+                      />
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-[10px] text-muted-foreground">
+                          {noteDraft.length}/500 · ⌘↵ to save
+                        </span>
+                        <div className="flex items-center gap-1.5">
+                          <button
+                            onClick={() => {
+                              setNoteEditing(false);
+                              setNoteDraft(activeHighlight.note || "");
+                            }}
+                            className="text-xs px-2.5 py-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={saveNote}
+                            disabled={noteSaving}
+                            className="text-xs px-2.5 py-1 rounded-md bg-primary text-primary-foreground hover:bg-primary/90 transition-all font-medium disabled:opacity-50"
+                          >
+                            {noteSaving ? "Saving…" : "Save"}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                ) : activeHasNote ? (
+                  <motion.div
+                    key="preview"
+                    initial={{ opacity: 0, height: 0 }}
+                    animate={{ opacity: 1, height: "auto" }}
+                    exit={{ opacity: 0, height: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className="overflow-hidden"
+                  >
+                    <div className="pt-1 border-t border-border">
+                      <p className="text-xs text-foreground/80 whitespace-pre-wrap break-words px-1 py-1">
+                        {activeHighlight.note}
+                      </p>
+                    </div>
+                  </motion.div>
+                ) : null}
+              </AnimatePresence>
             </div>
-            <div className="w-2.5 h-2.5 bg-[#1a1a2e] border-r border-b border-border rotate-45 -mt-[5px]" />
+            <div className="w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -293,7 +519,7 @@ function getTextOffset(container: Node, targetNode: Node, targetOffset: number):
     if (node === targetNode) {
       return offset + targetOffset;
     }
-    offset += (node.textContent?.length || 0);
+    offset += node.textContent?.length || 0;
   }
 
   return offset;
@@ -303,40 +529,34 @@ function getTextOffset(container: Node, targetNode: Node, targetOffset: number):
 
 interface HighlightedContentProps {
   highlights: HighlightData[];
-  onHighlightClick: (e: React.MouseEvent, highlight: HighlightData) => void;
+  onHighlightClick: (e: MouseEvent, highlight: HighlightData) => void;
   children: React.ReactNode;
 }
 
 function HighlightedContent({ highlights, onHighlightClick, children }: HighlightedContentProps) {
-  // We use a MutationObserver-free approach: apply highlights via DOM after render
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!contentRef.current) return;
 
-    // Clear all existing highlights first
+    // Clear all existing highlight wrappers first
     contentRef.current.querySelectorAll("[data-highlight-id]").forEach((el) => {
       const parent = el.parentNode;
       if (parent) {
-        parent.replaceChild(document.createTextNode(el.textContent || ""), el);
+        while (el.firstChild) parent.insertBefore(el.firstChild, el);
+        parent.removeChild(el);
         parent.normalize();
       }
     });
 
-    // Apply each highlight
     highlights.forEach((hl) => {
       const blockEl = contentRef.current?.querySelector(`[data-block-index="${hl.blockIndex}"]`);
       if (!blockEl) return;
-
       applyHighlightToBlock(blockEl, hl, onHighlightClick);
     });
   }, [highlights, onHighlightClick]);
 
-  return (
-    <div ref={contentRef}>
-      {children}
-    </div>
-  );
+  return <div ref={contentRef}>{children}</div>;
 }
 
 // ── Apply a highlight to a specific block element ──────────────────────────
@@ -344,7 +564,7 @@ function HighlightedContent({ highlights, onHighlightClick, children }: Highligh
 function applyHighlightToBlock(
   blockEl: Element,
   hl: HighlightData,
-  onClick: (e: React.MouseEvent, highlight: HighlightData) => void
+  onClick: (e: MouseEvent, highlight: HighlightData) => void
 ) {
   const walker = document.createTreeWalker(blockEl, NodeFilter.SHOW_TEXT);
   let currentOffset = 0;
@@ -381,26 +601,40 @@ function applyHighlightToBlock(
 
     const mark = document.createElement("mark");
     mark.dataset.highlightId = hl.id;
-    mark.style.backgroundColor = `${hl.color}30`;
-    mark.style.borderBottom = `2px solid ${hl.color}60`;
+    mark.style.backgroundColor = `${hl.color}33`;
+    mark.style.borderBottom = `2px solid ${hl.color}99`;
     mark.style.borderRadius = "2px";
     mark.style.padding = "1px 0";
     mark.style.cursor = "pointer";
-    mark.style.transition = "background-color 0.2s";
+    mark.style.color = "inherit";
+    mark.style.transition = "background-color 0.15s ease, box-shadow 0.15s ease";
+    mark.style.position = "relative";
+
+    const hasNote = !!(hl.note && hl.note.trim().length > 0);
+    if (hasNote) {
+      // Subtle left accent + title so the note is discoverable without
+      // adding any extra DOM children (range.surroundContents requires a
+      // single element with no pre-existing children).
+      mark.style.boxShadow = `inset 3px 0 0 0 ${hl.color}`;
+      mark.style.paddingLeft = "4px";
+      mark.title = hl.note!.trim();
+    } else {
+      mark.title = "Click to edit highlight";
+    }
 
     mark.addEventListener("mouseenter", () => {
-      mark.style.backgroundColor = `${hl.color}50`;
+      mark.style.backgroundColor = `${hl.color}55`;
     });
     mark.addEventListener("mouseleave", () => {
-      mark.style.backgroundColor = `${hl.color}30`;
+      mark.style.backgroundColor = `${hl.color}33`;
     });
     mark.addEventListener("click", (e) => {
-      onClick(e as unknown as React.MouseEvent, hl);
+      onClick(e, hl);
     });
 
     range.surroundContents(mark);
   } catch {
-    // surroundContents can fail if the range crosses element boundaries
-    // In that case, we skip this highlight silently
+    // surroundContents fails when the range crosses element boundaries;
+    // skip silently so one bad range doesn't break all highlights.
   }
 }

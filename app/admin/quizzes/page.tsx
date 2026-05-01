@@ -52,7 +52,7 @@ export default async function AdminQuizzesPage() {
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
         {[
           { label: "Total Quizzes", value: quizzes.length, icon: HelpCircle, color: "text-blue-400" },
-          { label: "Total Attempts", value: totalAttempts, icon: Users, color: "text-orange-400" },
+          { label: "Total Attempts", value: totalAttempts, icon: Users, color: "text-[#d97757]" },
           { label: "Avg Pass Rate", value: `${avgPassRate}%`, icon: BarChart3, color: "text-emerald-400" },
         ].map((stat) => {
           const Icon = stat.icon;
@@ -100,7 +100,7 @@ export default async function AdminQuizzesPage() {
           <div className="text-center py-12 text-muted-foreground/70">
             <HelpCircle className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
             <p className="mb-4">No quizzes created yet.</p>
-            <Link href="/admin/quizzes/new" className="text-orange-400 hover:text-orange-300">
+            <Link href="/admin/quizzes/new" className="text-[#d97757] hover:text-orange-300">
               Create your first quiz
             </Link>
           </div>

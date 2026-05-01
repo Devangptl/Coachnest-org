@@ -255,8 +255,8 @@ export default function SearchModal({ open, onClose }: Props) {
                 <div className="relative flex items-center gap-3 px-4 py-3.5">
                   <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                     {loading
-                      ? <Loader2 className="w-3.5 h-3.5 text-orange-400 animate-spin" />
-                      : <Search className="w-3.5 h-3.5 text-orange-400" />}
+                      ? <Loader2 className="w-3.5 h-3.5 text-[#d97757] animate-spin" />
+                      : <Search className="w-3.5 h-3.5 text-[#d97757]" />}
                   </div>
                   <input
                     ref={inputRef}
@@ -285,7 +285,7 @@ export default function SearchModal({ open, onClose }: Props) {
                       className={cn(
                         "px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border flex-shrink-0",
                         level === l.value
-                          ? "bg-orange-500/15 text-orange-400 border-orange-400/30"
+                          ? "bg-orange-500/15 text-[#d97757] border-[#d97757]/30"
                           : "bg-white/[0.03] text-muted-foreground/50 border-white/[0.06] hover:bg-white/[0.06] hover:text-muted-foreground"
                       )}>
                       {l.label}
@@ -300,7 +300,7 @@ export default function SearchModal({ open, onClose }: Props) {
                       className={cn(
                         "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border flex-shrink-0",
                         sort === o.value
-                          ? "bg-orange-500/15 text-orange-400 border-orange-400/30"
+                          ? "bg-orange-500/15 text-[#d97757] border-[#d97757]/30"
                           : "bg-white/[0.03] text-muted-foreground/50 border-white/[0.06] hover:bg-white/[0.06] hover:text-muted-foreground"
                       )}>
                       <o.icon className="w-2.5 h-2.5" />
@@ -359,7 +359,7 @@ export default function SearchModal({ open, onClose }: Props) {
                         <div className="flex flex-wrap gap-1 px-2">
                           {TRENDING.slice(0, recent.length > 0 ? 5 : 10).map((t) => (
                             <button key={t} onClick={() => pickSuggestion(t)}
-                              className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.03] hover:bg-orange-500/10 border border-white/[0.06] hover:border-orange-400/20 text-[11px] text-muted-foreground/50 hover:text-orange-400 transition-all">
+                              className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.03] hover:bg-orange-500/10 border border-white/[0.06] hover:border-[#d97757]/20 text-[11px] text-muted-foreground/50 hover:text-[#d97757] transition-all">
                               <Hash className="w-2.5 h-2.5" />
                               {t}
                             </button>
@@ -384,7 +384,7 @@ export default function SearchModal({ open, onClose }: Props) {
                       </span>
                       {total > 8 && (
                         <button onClick={goFullSearch}
-                          className="text-[10px] text-orange-400/60 hover:text-orange-400 transition-colors flex items-center gap-0.5">
+                          className="text-[10px] text-[#d97757]/60 hover:text-[#d97757] transition-colors flex items-center gap-0.5">
                           View all <ChevronRight className="w-2.5 h-2.5" />
                         </button>
                       )}
@@ -407,7 +407,7 @@ export default function SearchModal({ open, onClose }: Props) {
                             className={cn(
                               "flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all group border",
                               focused === i
-                                ? "bg-orange-500/[0.07] border-orange-400/[0.15]"
+                                ? "bg-orange-500/[0.07] border-[#d97757]/[0.15]"
                                 : "border-transparent hover:bg-white/[0.035] hover:border-white/[0.07]"
                             )}
                           >
@@ -460,7 +460,7 @@ export default function SearchModal({ open, onClose }: Props) {
                               <PriceChip isFree={c.isFree} price={c.price} discountPrice={c.discountPrice} />
                               <ChevronRight className={cn(
                                 "w-3.5 h-3.5 transition-all",
-                                focused === i ? "text-orange-400/70 translate-x-0.5" : "text-white/[0.08]"
+                                focused === i ? "text-[#d97757]/70 translate-x-0.5" : "text-white/[0.08]"
                               )} />
                             </div>
                           </Link>
@@ -503,7 +503,7 @@ export default function SearchModal({ open, onClose }: Props) {
                     </span>
                   </div>
                   <button onClick={goFullSearch}
-                    className="flex items-center gap-1 text-[11px] text-muted-foreground/30 hover:text-orange-400 transition-colors group">
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground/30 hover:text-[#d97757] transition-colors group">
                     Advanced search
                     <ArrowUpRight className="w-3 h-3 group-hover:translate-x-px group-hover:-translate-y-px transition-transform" />
                   </button>

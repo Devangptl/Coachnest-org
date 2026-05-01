@@ -116,7 +116,7 @@ export default function SignupPage() {
             {/* ── Headline ── */}
             <div className="mb-7">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border
-                               border-orange-500/25 bg-orange-500/10 text-orange-400
+                               border-orange-500/25 bg-orange-500/10 text-[#d97757]
                                text-[11px] font-semibold tracking-wide uppercase mb-5">
                 <Star className="w-3 h-3 fill-current" />
                 {role === "INSTRUCTOR" ? "Join 2,000+ instructors" : "Join 12,000+ learners"}
@@ -313,9 +313,9 @@ export default function SignupPage() {
 
             <p className="text-[0.78rem] text-muted-foreground leading-relaxed">
               By creating an account you agree to our{" "}
-              <span className="text-orange-500 hover:text-orange-400 cursor-pointer transition-colors">Terms</span>
+              <span className="text-orange-500 hover:text-[#d97757] cursor-pointer transition-colors">Terms</span>
               {" "}and{" "}
-              <span className="text-orange-500 hover:text-orange-400 cursor-pointer transition-colors">Privacy Policy</span>.
+              <span className="text-orange-500 hover:text-[#d97757] cursor-pointer transition-colors">Privacy Policy</span>.
             </p>
 
             <button type="submit" disabled={loading} className="btn-primary w-full group">
@@ -334,7 +334,7 @@ export default function SignupPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             Already have an account?{" "}
-            <Link href="/login" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+            <Link href="/login" className="text-orange-500 hover:text-[#d97757] font-medium transition-colors">
               Sign in
             </Link>
           </p>

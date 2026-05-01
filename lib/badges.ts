@@ -103,7 +103,7 @@ export const LEVELS = [
   { level: 3, minXp: 1500,  label: "Explorer", color: "text-cyan-400" },
   { level: 4, minXp: 3500,  label: "Scholar",  color: "text-emerald-400" },
   { level: 5, minXp: 7500,  label: "Expert",   color: "text-yellow-400" },
-  { level: 6, minXp: 15000, label: "Master",   color: "text-orange-400" },
+  { level: 6, minXp: 15000, label: "Master",   color: "text-[#d97757]" },
   { level: 7, minXp: 30000, label: "Legend",   color: "text-purple-400" },
 ];
 

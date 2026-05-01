@@ -420,7 +420,7 @@ export async function getInstructorRefundImpact(instructorId: string) {
     .findMany({ where: { createdById: instructorId }, select: { id: true } })
     .then((rows) => rows.map((r) => r.id));
 
-  if (courseIds.length === 0) return { refunds: [], summary: { count: 0, totalLoss: 0 } };
+  if (courseIds.length === 0) return { refunds: [], byCourse: [], summary: { count: 0, totalLoss: 0 } };
 
   const refunds = await prisma.refundRequest.findMany({
     where:   { courseId: { in: courseIds }, status: "PROCESSED" },

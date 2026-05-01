@@ -47,7 +47,7 @@ const FEATURE_META: Record<string, {
 
 const DEFAULT_META = {
   icon:     Package,
-  color:    "text-orange-400",
+  color:    "text-[#d97757]",
   bg:       "bg-orange-500/15",
   tagline:  "Unlock this platform feature with a one-time purchase.",
   includes: [],
@@ -179,7 +179,7 @@ export default function FeaturePurchasePage() {
           <ul className="space-y-2.5">
             {meta.includes.map((item) => (
               <li key={item} className="flex items-center gap-2.5 text-sm text-muted-foreground">
-                <CheckCircle2 className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                <CheckCircle2 className="w-4 h-4 text-[#d97757] flex-shrink-0" />
                 {item}
               </li>
             ))}
@@ -206,7 +206,7 @@ export default function FeaturePurchasePage() {
             ) : (
               <button
                 onClick={handleBuy}
-                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-orange-400 text-white font-semibold transition-colors"
+                className="flex items-center gap-2 px-6 py-3 rounded-lg bg-orange-500 hover:bg-[#d97757] text-white font-semibold transition-colors"
               >
                 <ShoppingCart className="w-4 h-4" /> Buy Now
               </button>

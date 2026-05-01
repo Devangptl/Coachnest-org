@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3,
-  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown,
+  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ const navItems = [
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
   { label: "Refunds",       href: "/instructor/refunds",      icon: TrendingDown },
   { label: "Payouts",       href: "/instructor/payouts",      icon: Wallet },
+  { label: "My Profile",    href: "/instructor/profile",      icon: UserCircle },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -63,8 +64,8 @@ export default function InstructorSidebar() {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20">
-        <div className="bg-card border border-border rounded-lg p-3 shadow-glass">
+      <aside className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20 pt-6">
+        <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Instructor Panel
           </p>

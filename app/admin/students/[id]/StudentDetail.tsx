@@ -12,6 +12,7 @@ import {
   HelpCircle, Trash2, Shield, Send, IndianRupee, Zap, Flame,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Select } from "@/components/ui/Select";
 import XpProgressBar from "@/components/XpProgressBar";
 import StreakCounter from "@/components/StreakCounter";
 import SendNotificationModal from "../SendNotificationModal";
@@ -164,7 +165,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
               {student.avatar ? (
                 <Image src={student.avatar} alt={student.name} width={80} height={80} className="w-20 h-20 object-cover" />
               ) : (
-                <span className="text-3xl font-bold text-orange-400/60">
+                <span className="text-3xl font-bold text-[#d97757]/60">
                   {student.name.charAt(0).toUpperCase()}
                 </span>
               )}
@@ -187,15 +188,15 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
             <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
               <span className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-orange-400/70" /> {student.email}
+                <Mail className="w-3.5 h-3.5 text-[#d97757]/70" /> {student.email}
               </span>
               <span className="flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5 text-orange-400/70" /> Joined {formatDate(student.createdAt)}
+                <Calendar className="w-3.5 h-3.5 text-[#d97757]/70" /> Joined {formatDate(student.createdAt)}
               </span>
               {student.website && (
                 <a href={student.website} target="_blank" rel="noopener noreferrer"
                   className="flex items-center gap-1.5 hover:text-foreground transition-colors">
-                  <Globe className="w-3.5 h-3.5 text-orange-400/70" /> Website
+                  <Globe className="w-3.5 h-3.5 text-[#d97757]/70" /> Website
                 </a>
               )}
             </div>
@@ -206,14 +207,14 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
             {/* Inline gamification pills */}
             <div className="flex items-center gap-2 mt-3 flex-wrap">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-[#d97757]">
                 <Zap className="w-3 h-3" /> {student.gamification.xp.toLocaleString()} XP
               </span>
               <span className={cn("inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-secondary border border-border text-xs font-semibold", student.gamification.levelColor)}>
                 Lv.{student.gamification.level} {student.gamification.levelLabel}
               </span>
               {student.gamification.streak > 0 && (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-orange-400">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500/10 border border-orange-500/20 text-xs font-semibold text-[#d97757]">
                   🔥 {student.gamification.streak}-day streak
                 </span>
               )}
@@ -230,7 +231,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
         {[
           { label: "Enrolled",   value: student.counts.enrollments,  icon: BookOpen,     color: "text-blue-400",    bg: "bg-blue-500/10" },
           { label: "Certs",      value: student.counts.certificates,  icon: Award,        color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Orders",     value: student.counts.orders,        icon: ShoppingCart, color: "text-orange-400",  bg: "bg-orange-500/10" },
+          { label: "Orders",     value: student.counts.orders,        icon: ShoppingCart, color: "text-[#d97757]",  bg: "bg-orange-500/10" },
           { label: "Spent",      value: `₹${student.totalSpent.toLocaleString()}`, icon: IndianRupee, color: "text-yellow-400", bg: "bg-yellow-500/10" },
           { label: "Reviews",    value: student.counts.reviews,       icon: Star,         color: "text-amber-400",   bg: "bg-amber-500/10" },
         ].map((s) => {
@@ -258,16 +259,17 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
           <div className="flex items-center gap-2 border-l border-border pl-3 ml-1">
             <Shield className="w-3.5 h-3.5 text-muted-foreground/50" />
-            <select
+            <Select
               value={currentRole}
-              onChange={(e) => handleRoleChange(e.target.value)}
+              onValueChange={handleRoleChange}
               disabled={roleLoading}
-              className="bg-secondary border border-border rounded-lg px-2.5 py-1.5 text-foreground text-xs focus:outline-none focus:border-orange-400/30 transition-all"
-            >
-              <option value="STUDENT">Student</option>
-              <option value="INSTRUCTOR">Instructor</option>
-              <option value="ADMIN">Admin</option>
-            </select>
+              options={[
+                { value: "STUDENT",    label: "Student"    },
+                { value: "INSTRUCTOR", label: "Instructor" },
+                { value: "ADMIN",      label: "Admin"      },
+              ]}
+              className="w-auto"
+            />
           </div>
 
           <div className="ml-auto">
@@ -307,7 +309,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary border-transparent"
               )}
             >
-              <Icon className={cn("w-3.5 h-3.5", isActive ? "text-orange-400" : "text-muted-foreground/50")} />
+              <Icon className={cn("w-3.5 h-3.5", isActive ? "text-[#d97757]" : "text-muted-foreground/50")} />
               {tab.label}
               <span className={cn("text-[10px] px-1.5 py-0.5 rounded-md font-semibold",
                 isActive ? "bg-orange-500/20 text-orange-300" : "bg-secondary text-muted-foreground/50"
@@ -354,7 +356,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                       {badge.name}
                     </p>
                     {badge.earned && badge.earnedAt && (
-                      <span className="text-[9px] text-orange-400/50 leading-none">
+                      <span className="text-[9px] text-[#d97757]/50 leading-none">
                         {new Date(badge.earnedAt).toLocaleDateString()}
                       </span>
                     )}
@@ -381,7 +383,7 @@ export default function StudentDetail({ student }: { student: StudentData }) {
                         <span className="text-[11px] text-muted-foreground/40">
                           {new Date(e.createdAt).toLocaleDateString()}
                         </span>
-                        <span className="text-xs font-bold text-orange-400 w-16 text-right">+{e.xp} XP</span>
+                        <span className="text-xs font-bold text-[#d97757] w-16 text-right">+{e.xp} XP</span>
                       </div>
                     </div>
                   ))}
