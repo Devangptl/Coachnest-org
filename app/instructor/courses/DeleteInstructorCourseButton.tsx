@@ -4,13 +4,15 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Trash2, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 export default function DeleteInstructorCourseButton({ courseId }: { courseId: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const confirm = useConfirm();
 
   async function handleDelete() {
-    if (!confirm("Delete this course? This action cannot be undone.")) return;
+    if (!await confirm("Delete this course? This action cannot be undone.", { title: "Delete Course", confirmText: "Delete" })) return;
     setLoading(true);
     try {
       const res = await fetch(`/api/instructor/courses/${courseId}`, { method: "DELETE" });

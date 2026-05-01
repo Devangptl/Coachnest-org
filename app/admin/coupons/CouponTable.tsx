@@ -7,9 +7,11 @@ import { Copy, Eye, Trash2, Pencil } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 export default function CouponTable({ coupons }: { coupons: any[] }) {
   const [loading, setLoading] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const getStatusVariant = (status: string) => {
     switch (status) {
@@ -32,7 +34,7 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this coupon?")) return;
+    if (!await confirm("Are you sure you want to delete this coupon?", { title: "Delete Coupon", confirmText: "Delete" })) return;
 
     setLoading(id);
     try {
@@ -102,9 +104,11 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
 
           {/* Actions */}
           <div className="col-span-3 flex items-center justify-end gap-2">
-            <Button size="icon" variant="ghost" title="View usage">
-              <Eye className="w-4 h-4" />
-            </Button>
+            <Link href={`/admin/coupons/${coupon.id}`}>
+              <Button size="icon" variant="ghost" title="View usage">
+                <Eye className="w-4 h-4" />
+              </Button>
+            </Link>
             <Link href={`/admin/coupons/${coupon.id}/edit`}>
               <Button size="icon" variant="ghost" title="Edit">
                 <Pencil className="w-4 h-4" />

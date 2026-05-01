@@ -3,13 +3,15 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Loader2, Trash2 } from "lucide-react";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 export default function DeleteBlogButton({ blogId }: { blogId: string }) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const confirm = useConfirm();
 
   async function handleDelete() {
-    if (!confirm("Delete this blog post? This cannot be undone.")) return;
+    if (!await confirm("Delete this blog post? This cannot be undone.", { title: "Delete Blog Post", confirmText: "Delete" })) return;
     setLoading(true);
 
     try {
