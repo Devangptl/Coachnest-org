@@ -182,9 +182,9 @@ export default function NavbarClient({ session }: Props) {
                 >
                   {/* Avatar */}
                   {session.avatar ? (
-                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-lg object-cover shadow-md" />
+                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover shadow-md" />
                   ) : (
-                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-[#d97757] to-[#d97757] flex items-center justify-center text-white text-xs font-bold shadow-md">
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-primary to-primary flex items-center justify-center text-white text-xs font-bold shadow-md">
                       {initials}
                     </div>
                   )}
