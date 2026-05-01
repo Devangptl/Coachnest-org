@@ -131,9 +131,11 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }, [code]);
+  
+  const isDark = document.documentElement.classList.contains("dark");
 
   return (
-    <div className="rounded-md overflow-hidden border border-white/[0.08] shadow-lg my-4 sm:my-5">
+    <div className="rounded-md overflow-hidden border border-white/[0.08] my-4 sm:my-5">
       {/* Header */}
       <div className="flex items-center justify-between px-3 sm:px-4 py-1.5 sm:py-2 bg-white/[0.03] border-b border-white/[0.06]">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -168,7 +170,9 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
           fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
         }}
         lineNumberStyle={{
-          color: "rgba(255,255,255,0.15)",
+          color: isDark
+                  ? "rgba(255,255,255,0.25)"
+                    : "rgba(0,0,0,0.35)",
           minWidth: "2.25em",
           paddingRight: "1em",
           userSelect: "none",
