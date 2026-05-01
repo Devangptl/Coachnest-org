@@ -182,7 +182,7 @@ export default function PayoutsPage() {
       {/* Wallet summary */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: "Available Balance",  value: wallet?.balance        ?? 0, color: "text-orange-400"  },
+          { label: "Available Balance",  value: wallet?.balance        ?? 0, color: "text-[#d97757]"  },
           { label: "Total Earned",       value: wallet?.totalEarned    ?? 0, color: "text-emerald-400" },
           { label: "Total Withdrawn",    value: wallet?.totalWithdrawn ?? 0, color: "text-blue-400"    },
         ].map(({ label, value, color }) => (
@@ -212,7 +212,7 @@ export default function PayoutsPage() {
           {/* Request form */}
           <GlassCard>
             <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
-              <ArrowDownToLine className="w-4 h-4 text-orange-400" /> Request Payout
+              <ArrowDownToLine className="w-4 h-4 text-[#d97757]" /> Request Payout
             </h2>
 
             {hasPending && (
@@ -388,7 +388,7 @@ export default function PayoutsPage() {
                       <div className="text-xs text-muted-foreground">Sales</div>
                     </div>
                     <div>
-                      <div className="text-base font-bold text-orange-400">{l.conversionRate}%</div>
+                      <div className="text-base font-bold text-[#d97757]">{l.conversionRate}%</div>
                       <div className="text-xs text-muted-foreground">CVR</div>
                     </div>
                     {l.isActive && (

@@ -135,7 +135,7 @@ export default function InstructorEarningsPage() {
       {/* ── Wallet cards ──────────────────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         {[
-          { label: "Available Balance", value: wallet.balance,        icon: Wallet,        color: "text-orange-400",  bg: "bg-orange-500/10"  },
+          { label: "Available Balance", value: wallet.balance,        icon: Wallet,        color: "text-[#d97757]",  bg: "bg-orange-500/10"  },
           { label: "Total Earned",      value: wallet.totalEarned,    icon: TrendingUp,    color: "text-emerald-400", bg: "bg-emerald-500/10" },
           { label: "Total Withdrawn",   value: wallet.totalWithdrawn, icon: ArrowDownToLine,color:"text-blue-400",    bg: "bg-blue-500/10"    },
           { label: "Total Sales",       value: summary.totalOrders,   icon: ShoppingBag,   color: "text-violet-400",  bg: "bg-violet-500/10", isCount: true },
@@ -291,7 +291,7 @@ export default function InstructorEarningsPage() {
                     <td className="py-2.5 text-right text-emerald-400 font-semibold">₹{c.earnings.toLocaleString()}</td>
                     <td className="py-2.5 text-right text-muted-foreground">₹{c.platformCut.toLocaleString()}</td>
                     <td className="py-2.5 text-right">
-                      <span className="text-xs bg-orange-500/10 text-orange-400 px-2 py-0.5 rounded-full">
+                      <span className="text-xs bg-orange-500/10 text-[#d97757] px-2 py-0.5 rounded-full">
                         {c.revenuePercent}%
                       </span>
                     </td>

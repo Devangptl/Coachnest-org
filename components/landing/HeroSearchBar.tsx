@@ -65,7 +65,7 @@ export default function HeroSearchBar({ categories }: { categories: Category[] }
     <form onSubmit={handleSearch} className="mb-5">
 
       {/* Desktop: unified single-row bar */}
-      <div className="hidden sm:flex items-center backdrop-blur-lg bg-secondary border border-border rounded-md overflow-hidden transition-all focus-within:border-orange-400/25 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.07)] hover:border-orange-400/15">
+      <div className="hidden sm:flex items-center backdrop-blur-lg bg-secondary border border-border rounded-md overflow-hidden transition-all focus-within:border-[#d97757]/25 focus-within:shadow-[0_0_0_3px_rgba(249,115,22,0.07)] hover:border-[#d97757]/15">
 
         <Search className="w-4 h-4 text-muted-foreground/70 flex-shrink-0 ml-3.5 mr-0.5" />
 
@@ -147,7 +147,7 @@ export default function HeroSearchBar({ categories }: { categories: Category[] }
               value={keyword}
               onChange={(e) => setKeyword(e.target.value)}
               placeholder="Search courses…"
-              className="w-full bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 pl-9 pr-3 py-3 rounded-md focus:outline-none focus:border-orange-400/25 transition-colors"
+              className="w-full bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground/50 pl-9 pr-3 py-3 rounded-md focus:outline-none focus:border-[#d97757]/25 transition-colors"
             />
           </div>
           <button

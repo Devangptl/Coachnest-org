@@ -44,7 +44,7 @@ export default function InstructorSearch({
           <input
             type="text"
             placeholder="Search by name or email..."
-            className="w-full bg-secondary border border-border rounded-md pl-10 pr-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all"
+            className="w-full bg-secondary border border-border rounded-md pl-10 pr-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 transition-all"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && apply()}

@@ -37,7 +37,7 @@ const QUICK_LINKS = [
   { icon: MessageSquare, title: "Discussion Forums", desc: "Ask questions, get answers, share knowledge.", href: "/community/forums", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20", proWrite: true },
   { icon: Users, title: "Study Groups", desc: "Form groups, track progress together, earn group XP.", href: "/community/groups", color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20", proWrite: true },
   { icon: ClipboardCheck, title: "Peer Review", desc: "Submit work, give & receive structured feedback.", href: "/community/peer-review", color: "text-purple-400", bg: "bg-purple-500/10 border-purple-500/20", proWrite: true },
-  { icon: Activity, title: "Activity Feed", desc: "See badges earned, milestones, and community wins.", href: "/community/feed", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-500/20", proWrite: false },
+  { icon: Activity, title: "Activity Feed", desc: "See badges earned, milestones, and community wins.", href: "/community/feed", color: "text-[#d97757]", bg: "bg-orange-500/10 border-orange-500/20", proWrite: false },
 ];
 
 interface CommunityHubClientProps {
@@ -122,7 +122,7 @@ export default function CommunityHubClient({
         <div className="rounded-md border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <div className="w-9 h-9 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
-              <Users className="w-4 h-4 text-orange-400" />
+              <Users className="w-4 h-4 text-[#d97757]" />
             </div>
             <div>
               <p className="text-foreground font-semibold text-sm">Unlock the full community experience</p>
@@ -133,7 +133,7 @@ export default function CommunityHubClient({
           </div>
           <Link
             href="/features/community"
-            className="flex items-center gap-2 bg-orange-500 hover:bg-orange-400 text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0"
+            className="flex items-center gap-2 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0"
           >
             <ShoppingCart className="w-3.5 h-3.5" /> Buy Access — ₹499
           </Link>
@@ -228,7 +228,7 @@ export default function CommunityHubClient({
       <section>
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-            <Flame className="w-4 h-4 text-orange-400" />
+            <Flame className="w-4 h-4 text-[#d97757]" />
             Recent Activity
           </h2>
           <Link href="/community/feed" className="text-xs text-muted-foreground hover:text-foreground transition-colors">

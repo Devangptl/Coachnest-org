@@ -51,7 +51,7 @@ const CALLOUT_CONFIG = {
   note:      { icon: Info,          border: "border-blue-400/30",    bg: "bg-blue-500/[0.08]",    title: "text-blue-400",    body: "text-blue-200/80",   label: "Note"      },
   tip:       { icon: Lightbulb,     border: "border-emerald-400/30", bg: "bg-emerald-500/[0.08]", title: "text-emerald-400", body: "text-emerald-200/80",label: "Tip"       },
   warning:   { icon: AlertTriangle, border: "border-yellow-400/30",  bg: "bg-yellow-500/[0.08]",  title: "text-yellow-400",  body: "text-yellow-200/80", label: "Warning"   },
-  important: { icon: AlertCircle,   border: "border-orange-400/30",  bg: "bg-orange-500/[0.08]",  title: "text-orange-400",  body: "text-orange-200/80", label: "Important" },
+  important: { icon: AlertCircle,   border: "border-[#d97757]/30",  bg: "bg-orange-500/[0.08]",  title: "text-[#d97757]",  body: "text-orange-200/80", label: "Important" },
   caution:   { icon: Flame,         border: "border-red-400/30",     bg: "bg-red-500/[0.08]",     title: "text-red-400",     body: "text-red-200/80",    label: "Caution"   },
 } as const;
 
@@ -385,12 +385,12 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     // ── Headings ────────────────────────────────────────────────────────────────
     h1: ({ children }) => (
       <h1 data-block-index={blockIdx++} className={cn("text-xl sm:text-2xl font-bold text-foreground mt-6 sm:mt-8 mb-3 sm:mb-4 flex items-center gap-2.5 sm:gap-3 first:mt-0", compact && "text-lg sm:text-xl mt-4 sm:mt-5 mb-2")}>
-        <span className="text-orange-400 font-black text-base sm:text-lg select-none">#</span>
+        <span className="text-[#d97757] font-black text-base sm:text-lg select-none">#</span>
         {children}
       </h1>
     ),
     h2: ({ children }) => (
-      <h2 data-block-index={blockIdx++} className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-orange-400/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
+      <h2 data-block-index={blockIdx++} className={cn("text-base sm:text-[1.15rem] font-bold text-foreground mt-5 sm:mt-7 mb-2 sm:mb-3 border-l-[3px] border-[#d97757]/50 pl-3 first:mt-0", compact && "text-sm sm:text-base mt-3 sm:mt-4 mb-1.5 sm:mb-2")}>
         {children}
       </h2>
     ),
@@ -439,7 +439,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
       // Inline code — no className → no language
       if (!cls) {
         return (
-          <code className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-orange-400/25">
+          <code className="px-1.5 py-0.5 rounded-md bg-orange-500/15 text-primary text-[0.85em] font-mono border border-[#d97757]/25">
             {children}
           </code>
         );
@@ -465,7 +465,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
           href={href}
           target={isExternal ? "_blank" : undefined}
           rel={isExternal ? "noopener noreferrer" : undefined}
-          className="text-orange-400 hover:text-orange-300 underline underline-offset-4 decoration-orange-400/40 hover:decoration-orange-300/60 transition-colors inline-flex items-center gap-1"
+          className="text-[#d97757] hover:text-orange-300 underline underline-offset-4 decoration-[#d97757]/40 hover:decoration-orange-300/60 transition-colors inline-flex items-center gap-1"
         >
           {children}
           {isExternal && <ExternalLink className="w-3 h-3 opacity-50 flex-shrink-0" />}

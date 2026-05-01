@@ -130,7 +130,7 @@ export default async function AdminBlogsPage() {
                   </Link>
                   <Link
                     href={`/blog/${blog.slug}`}
-                    className="inline-flex items-center gap-1 text-xs text-orange-400 hover:text-orange-300 transition-colors px-2 py-1 rounded-lg hover:bg-orange-500/10"
+                    className="inline-flex items-center gap-1 text-xs text-[#d97757] hover:text-orange-300 transition-colors px-2 py-1 rounded-lg hover:bg-orange-500/10"
                   >
                     <Eye className="w-3 h-3" />
                     <span className="hidden md:inline">View</span>

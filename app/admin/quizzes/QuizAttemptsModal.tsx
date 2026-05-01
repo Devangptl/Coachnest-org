@@ -65,7 +65,7 @@ export default function QuizAttemptsModal({
         <div className="p-6">
           {loading ? (
             <div className="flex items-center justify-center py-12">
-              <Loader2 className="w-6 h-6 text-orange-400 animate-spin" />
+              <Loader2 className="w-6 h-6 text-[#d97757] animate-spin" />
             </div>
           ) : attempts.length === 0 ? (
             <div className="text-center py-12 text-muted-foreground/70">

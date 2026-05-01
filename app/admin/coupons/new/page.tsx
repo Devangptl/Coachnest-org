@@ -130,7 +130,7 @@ export default function NewCouponPage() {
                     onClick={() => setForm({ ...form, discountType: type })}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all border ${
                       form.discountType === type
-                        ? "bg-orange-500/20 border-orange-400/25 text-foreground"
+                        ? "bg-orange-500/20 border-[#d97757]/25 text-foreground"
                         : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                     }`}
                   >

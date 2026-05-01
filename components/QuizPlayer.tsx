@@ -332,7 +332,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
           <h3 className="text-white font-semibold text-sm">{quiz.title}</h3>
           <p className="text-muted-foreground/70 text-xs">
             Question {currentIdx + 1} of {quiz.questions.length}
-            {q.points > 1 && <span className="ml-2 text-orange-400">({q.points} pts)</span>}
+            {q.points > 1 && <span className="ml-2 text-[#d97757]">({q.points} pts)</span>}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -377,7 +377,7 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                 className={cn(
                   "w-8 h-8 rounded-lg text-xs font-semibold border transition-all relative",
                   isActive
-                    ? "bg-orange-500/20 border-orange-400/25 text-white ring-1 ring-orange-400/30"
+                    ? "bg-orange-500/20 border-[#d97757]/25 text-white ring-1 ring-[#d97757]/30"
                     : isAnswered
                     ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
                     : "bg-secondary border-border text-muted-foreground/70 hover:bg-secondary hover:border-border"
@@ -416,21 +416,21 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
                     className={cn(
                       "w-full text-left px-4 py-3.5 rounded-md border text-sm transition-all flex items-center gap-3 group",
                       isSelected
-                        ? "bg-orange-500/15 border-orange-400/25 text-white"
+                        ? "bg-orange-500/15 border-[#d97757]/25 text-white"
                         : "bg-white/[0.03] border-border text-muted-foreground hover:bg-white/[0.06] hover:border-border"
                     )}
                   >
                     <span className={cn(
                       "w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 border transition-all",
                       isSelected
-                        ? "bg-orange-500 border-orange-400 text-white"
+                        ? "bg-orange-500 border-[#d97757] text-white"
                         : "bg-secondary border-border text-muted-foreground group-hover:border-white/30"
                     )}>
                       {label}
                     </span>
                     <span className="flex-1">{opt.text}</span>
                     {isSelected && (
-                      <CheckCircle className="w-4 h-4 text-orange-400 flex-shrink-0" />
+                      <CheckCircle className="w-4 h-4 text-[#d97757] flex-shrink-0" />
                     )}
                   </button>
                 );

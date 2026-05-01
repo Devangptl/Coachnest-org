@@ -35,10 +35,10 @@ export default function CertificateDownloadBtn({ courseId, userId }: Props) {
     <button
       onClick={download}
       disabled={loading}
-      className="flex items-center gap-1.5 text-orange-400 hover:text-orange-300 text-xs font-medium transition-colors disabled:opacity-50"
+      className="flex items-center gap-1.5 text-[#d97757] hover:text-orange-300 text-xs font-medium transition-colors disabled:opacity-50"
     >
       {loading ? (
-        <div className="w-3.5 h-3.5 border-2 border-orange-400/25 border-t-orange-400 rounded-full animate-spin" />
+        <div className="w-3.5 h-3.5 border-2 border-[#d97757]/25 border-t-[#d97757] rounded-full animate-spin" />
       ) : (
         <Download className="w-3.5 h-3.5" />
       )}

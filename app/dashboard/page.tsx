@@ -166,7 +166,7 @@ export default async function DashboardPage() {
       <div className="mb-10 animate-fade-in">
         <h1 className="text-2xl sm:text-4xl font-bold text-foreground">
           Welcome back,{" "}
-          <span className="text-orange-400">{session.name.split(" ")[0]}</span>
+          <span className="text-[#d97757]">{session.name.split(" ")[0]}</span>
         </h1>
         <p className="text-muted-foreground mt-2">
           Keep up the great work. You&apos;re doing amazing!
@@ -180,7 +180,7 @@ export default async function DashboardPage() {
             label: "Enrolled",
             value: enrollments.length,
             icon: BookOpen,
-            color: "text-orange-400",
+            color: "text-[#d97757]",
           },
           {
             label: "In Progress",
@@ -222,7 +222,7 @@ export default async function DashboardPage() {
         <GlassCard className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="w-11 h-11 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
-              <ShoppingBag className="w-5 h-5 text-orange-400" />
+              <ShoppingBag className="w-5 h-5 text-[#d97757]" />
             </div>
             <div>
               <p className="text-foreground font-semibold text-sm">
@@ -231,7 +231,7 @@ export default async function DashboardPage() {
               <p className="text-muted-foreground text-xs">Lifetime access, no expiry</p>
             </div>
           </div>
-          <Link href="/courses" className="text-orange-400 hover:text-orange-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
+          <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-xs font-medium flex items-center gap-1 flex-shrink-0">
             Browse <ArrowRight className="w-3 h-3" />
           </Link>
         </GlassCard>
@@ -294,7 +294,7 @@ export default async function DashboardPage() {
       <section className="mb-10">
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2">
-            <GraduationCap className="w-5 h-5 text-orange-400" />
+            <GraduationCap className="w-5 h-5 text-[#d97757]" />
             <h2 className="text-xl font-semibold text-foreground">
               From Instructors You Follow
             </h2>
@@ -302,7 +302,7 @@ export default async function DashboardPage() {
           {followedCourses.length > 0 && (
             <Link
               href="/courses"
-              className="text-orange-400 hover:text-orange-300 text-sm font-medium
+              className="text-[#d97757] hover:text-orange-300 text-sm font-medium
                          flex items-center gap-1 transition-colors"
             >
               View all <ArrowRight className="w-3.5 h-3.5" />
@@ -333,7 +333,7 @@ export default async function DashboardPage() {
           <GlassCard className="flex flex-col sm:flex-row items-center gap-5 py-8 px-6">
             <div className="w-12 h-12 rounded-full bg-orange-500/10 border border-orange-500/20
                             flex items-center justify-center flex-shrink-0">
-              <GraduationCap className="w-6 h-6 text-orange-400" />
+              <GraduationCap className="w-6 h-6 text-[#d97757]" />
             </div>
             <div className="flex-1 text-center sm:text-left">
               <p className="font-semibold text-foreground text-sm">

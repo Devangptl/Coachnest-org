@@ -21,7 +21,7 @@ export default function TestimonialCard({ name, role, comment, rating, avatar, d
       transition={{ duration: 0.5, delay }}
       className="backdrop-blur-lg bg-secondary/20 border border-border rounded-lg p-6 hover:bg-secondary/30 hover:border-primary/30 transition-all duration-300 group"
     >
-      <Quote className="w-8 h-8 text-orange-400/30 mb-4" />
+      <Quote className="w-8 h-8 text-[#d97757]/30 mb-4" />
       <p className="text-muted-foreground text-sm leading-relaxed mb-6">{comment}</p>
       <div className="flex items-center gap-1 mb-4">
         {Array.from({ length: 5 }).map((_, i) => (
@@ -34,7 +34,7 @@ export default function TestimonialCard({ name, role, comment, rating, avatar, d
         ))}
       </div>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
           {avatar}
         </div>
         <div>

@@ -57,7 +57,7 @@ export default function PasswordForm() {
   return (
     <GlassCard>
       <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-        <Lock className="w-4 h-4 text-orange-400" /> Change Password
+        <Lock className="w-4 h-4 text-[#d97757]" /> Change Password
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -72,7 +72,7 @@ export default function PasswordForm() {
               required
               value={currentPassword}
               onChange={(e) => { setCurrentPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
               placeholder="Enter current password"
             />
             <button
@@ -96,7 +96,7 @@ export default function PasswordForm() {
               required
               value={newPassword}
               onChange={(e) => { setNewPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
               placeholder="At least 6 characters"
             />
             <button
@@ -119,7 +119,7 @@ export default function PasswordForm() {
             required
             value={confirmPassword}
             onChange={(e) => { setConfirmPassword(e.target.value); setMessage(null); }}
-            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 focus:bg-secondary transition-all"
+            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
             placeholder="Re-enter new password"
           />
         </div>

@@ -169,8 +169,8 @@ export default function ImageUpload({
         onClick={() => inputRef.current?.click()}
         className={`relative flex flex-col items-center justify-center gap-2 rounded-lg border-2 border-dashed px-4 py-8 cursor-pointer transition-colors ${
           dragOver
-            ? "border-orange-400 bg-orange-500/5"
-            : "border-border bg-secondary/50 hover:border-orange-400/50 hover:bg-secondary"
+            ? "border-[#d97757] bg-orange-500/5"
+            : "border-border bg-secondary/50 hover:border-[#d97757]/50 hover:bg-secondary"
         }`}
       >
         <input
@@ -214,7 +214,7 @@ export default function ImageUpload({
                   className={`group relative aspect-video rounded-md overflow-hidden border-2 transition-all ${
                     isPrimary
                       ? "border-orange-500 ring-2 ring-orange-500/30"
-                      : "border-border hover:border-orange-400/50"
+                      : "border-border hover:border-[#d97757]/50"
                   }`}
                 >
                   {/* Using a plain img here (not next/image) because the URL host
@@ -387,7 +387,7 @@ export function AvatarUpload({
                 className={`relative w-14 h-14 rounded-full overflow-hidden border-2 transition-all ${
                   isPrimary
                     ? "border-orange-500 ring-2 ring-orange-500/30"
-                    : "border-border hover:border-orange-400/50"
+                    : "border-border hover:border-[#d97757]/50"
                 }`}
                 title={isPrimary ? "Primary avatar" : "Click to set as primary"}
               >

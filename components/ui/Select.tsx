@@ -32,7 +32,7 @@ const itemCls = cn(
   "text-muted-foreground transition-colors",
   "hover:text-foreground hover:bg-secondary",
   "data-[highlighted]:text-foreground data-[highlighted]:bg-secondary",
-  "data-[state=checked]:text-orange-400 data-[state=checked]:bg-orange-500/10",
+  "data-[state=checked]:text-[#d97757] data-[state=checked]:bg-orange-500/10",
 );
 
 function Item({ value, label }: SelectOption) {
@@ -40,7 +40,7 @@ function Item({ value, label }: SelectOption) {
     <SelectPrimitive.Item value={value} className={itemCls}>
       <SelectPrimitive.ItemText>{label}</SelectPrimitive.ItemText>
       <SelectPrimitive.ItemIndicator className="ml-auto flex-shrink-0">
-        <Check className="w-3.5 h-3.5 text-orange-400" />
+        <Check className="w-3.5 h-3.5 text-[#d97757]" />
       </SelectPrimitive.ItemIndicator>
     </SelectPrimitive.Item>
   );
@@ -68,7 +68,7 @@ export function Select({
           "bg-secondary border border-border text-foreground",
           "hover:bg-secondary/70 hover:border-border/80",
           "focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/40",
-          "data-[state=open]:border-orange-400/40 data-[state=open]:bg-orange-500/5",
+          "data-[state=open]:border-[#d97757]/40 data-[state=open]:bg-orange-500/5",
           "disabled:opacity-50 disabled:cursor-not-allowed",
           "transition-all select-none",
           className,
@@ -102,10 +102,10 @@ export function Select({
                 role="option"
                 aria-selected={value === ""}
                 onClick={() => onValueChange("")}
-                className={itemCls + (value === "" ? " text-orange-400 bg-orange-500/10" : "")}
+                className={itemCls + (value === "" ? " text-[#d97757] bg-orange-500/10" : "")}
               >
                 <span className="flex-1">{placeholder}</span>
-                {value === "" && <Check className="ml-auto w-3.5 h-3.5 text-orange-400 flex-shrink-0" />}
+                {value === "" && <Check className="ml-auto w-3.5 h-3.5 text-[#d97757] flex-shrink-0" />}
               </div>
             )}
 

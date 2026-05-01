@@ -52,7 +52,7 @@ export default function FeaturedCourseCard({
           />
         ) : (
           <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-orange-900/20 to-black/40">
-            <BookOpen className="w-5 h-5 text-white/20 group-hover:text-orange-400/50 transition-colors" />
+            <BookOpen className="w-5 h-5 text-white/20 group-hover:text-[#d97757]/50 transition-colors" />
           </div>
         )}
         
@@ -65,7 +65,7 @@ export default function FeaturedCourseCard({
 
       {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col justify-center h-full py-0.5">
-        <h3 className="text-white/90 font-medium text-[13px] sm:text-[14px] leading-snug line-clamp-2 group-hover:text-orange-400 transition-colors mb-1">
+        <h3 className="text-white/90 font-medium text-[13px] sm:text-[14px] leading-snug line-clamp-2 group-hover:text-[#d97757] transition-colors mb-1">
           {title}
         </h3>
         
@@ -104,7 +104,7 @@ export default function FeaturedCourseCard({
           <span className="text-emerald-400 text-[13px] font-bold">Free</span>
         ) : price != null ? (
           <div className="flex flex-col items-end leading-none">
-            <span className="text-orange-400 font-bold text-[14px]">
+            <span className="text-[#d97757] font-bold text-[14px]">
               ₹{displayPrice?.toLocaleString("en-IN")}
             </span>
             {hasDiscount && (

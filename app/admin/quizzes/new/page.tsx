@@ -333,7 +333,7 @@ export default function NewQuizPage() {
                   <button
                     type="button"
                     onClick={() => addOption(qIdx)}
-                    className="text-orange-400 text-xs hover:text-orange-300 transition-colors"
+                    className="text-[#d97757] text-xs hover:text-orange-300 transition-colors"
                   >
                     + Add option
                   </button>

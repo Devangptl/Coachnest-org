@@ -52,7 +52,7 @@ export default async function AdminOrdersPage() {
             label: "Paid Orders",
             value: stats.paidOrders,
             icon: ShoppingCart,
-            color: "text-orange-400",
+            color: "text-[#d97757]",
           },
           {
             label: "Refund Rate",

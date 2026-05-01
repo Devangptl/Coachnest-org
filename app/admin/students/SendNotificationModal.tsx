@@ -84,7 +84,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <input
               type="text"
               placeholder="Notification title"
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 transition-all"
               value={title}
               onChange={(e) => { setTitle(e.target.value); setResult(null); }}
             />
@@ -95,7 +95,7 @@ export default function SendNotificationModal({ studentId, studentName, onClose 
             <textarea
               rows={3}
               placeholder="Your message to the student..."
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-orange-400/25 transition-all resize-none"
+              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 transition-all resize-none"
               value={message}
               onChange={(e) => { setMessage(e.target.value); setResult(null); }}
             />

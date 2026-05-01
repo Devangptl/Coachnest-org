@@ -109,8 +109,8 @@ export default function BlogGrid({ initialBlogs, initialCursor }: Props) {
         if (el) {
           el.scrollIntoView({ block: "center", behavior: "instant" });
           // Brief highlight effect
-          el.classList.add("ring-2", "ring-orange-400/30");
-          setTimeout(() => el.classList.remove("ring-2", "ring-orange-400/30"), 1500);
+          el.classList.add("ring-2", "ring-[#d97757]/30");
+          setTimeout(() => el.classList.remove("ring-2", "ring-[#d97757]/30"), 1500);
         }
         sessionStorage.removeItem(LAST_SLUG_KEY);
       });

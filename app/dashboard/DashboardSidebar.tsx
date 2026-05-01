@@ -48,14 +48,14 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             className={cn(
               "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
               isActive
-                ? "bg-orange-500/10 text-foreground border border-orange-400/20"
+                ? "bg-orange-500/10 text-foreground border border-[#d97757]/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
             )}
           >
             <Icon
               className={cn(
                 "w-4 h-4",
-                isActive ? "text-orange-400" : "text-muted-foreground"
+                isActive ? "text-[#d97757]" : "text-muted-foreground"
               )}
             />
             {item.label}

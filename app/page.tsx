@@ -290,14 +290,14 @@ export default async function HomePage() {
               <FadeInSection delay={0}>
                 <Link
                   href="/courses"
-                  className="group inline-flex items-center gap-2.5 bg-orange-500/[0.08] hover:bg-orange-500/[0.14] border border-orange-500/25 hover:border-orange-500/40 text-orange-400 text-[13px] font-medium rounded-full pl-1.5 pr-4 py-1 mb-7 transition-all duration-300 backdrop-blur-sm"
+                  className="group inline-flex items-center gap-2.5 bg-orange-500/[0.08] hover:bg-orange-500/[0.14] border border-orange-500/25 hover:border-orange-500/40 text-[#d97757] text-[13px] font-medium rounded-full pl-1.5 pr-4 py-1 mb-7 transition-all duration-300 backdrop-blur-sm"
                 >
-                  <span className="hero-badge-pulse flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
+                  <span className="hero-badge-pulse flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-[#d97757] text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
                     <Sparkles className="w-3 h-3" />
                     v2.0
                   </span>
                   <span>Spring drop — 40+ new lessons live</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-orange-400/70 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="w-3.5 h-3.5 text-[#d97757]/70 group-hover:text-[#d97757] group-hover:translate-x-0.5 transition-all" />
                 </Link>
               </FadeInSection>
 
@@ -312,13 +312,13 @@ export default async function HomePage() {
                   <br className="hidden sm:block" />
                   <span className="text-foreground">Build the </span>
                   <span className="relative inline-block">
-                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-orange-500 via-orange-400 to-amber-400 bg-clip-text text-transparent">
+                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-[#bd4925] via-[#d97757] to-[#e27c5b] bg-clip-text text-transparent">
                       career
                     </span>
                     <svg
                       aria-hidden="true"
                       viewBox="0 0 200 12"
-                      className="absolute left-0 -bottom-1 w-full h-2.5 text-orange-500/70"
+                      className="absolute left-0 -bottom-1 w-full h-2.5 text-[#d97757]/70"
                       preserveAspectRatio="none"
                     >
                       <path
@@ -373,7 +373,7 @@ export default async function HomePage() {
                   <div className="flex items-center gap-3">
                     <div className="flex -space-x-2.5">
                       {[
-                        "from-orange-400 to-amber-500",
+                        "from-[#d97757] to-amber-500",
                         "from-pink-400 to-rose-500",
                         "from-blue-400 to-cyan-500",
                         "from-emerald-400 to-teal-500",
@@ -456,12 +456,12 @@ export default async function HomePage() {
         <div className="mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+              <span className="inline-block text-[#d97757] text-sm font-semibold uppercase tracking-widest mb-3">
                 Why CoachNest
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Everything you need to{" "}
-                <span className="text-orange-400">level up</span>
+                <span className="text-[#d97757]">level up</span>
               </h2>
               <p className="text-muted-foreground/70 max-w-2xl mx-auto">
                 A platform built from the ground up with features that make learning effective, engaging, and enjoyable.
@@ -475,7 +475,7 @@ export default async function HomePage() {
                 icon: BookOpen,
                 title: "Expert-Crafted Content",
                 desc: "Every course is reviewed, structured, and optimized for clarity. Learn from industry professionals who practice what they teach.",
-                color: "text-orange-400",
+                color: "text-[#d97757]",
                 bg: "bg-orange-500/10",
               },
               {
@@ -503,7 +503,7 @@ export default async function HomePage() {
                 icon: TrendingUp,
                 title: "Progress Tracking",
                 desc: "Visual dashboards show your learning journey. Pick up exactly where you left off with automatic progress saving.",
-                color: "text-orange-400",
+                color: "text-[#d97757]",
                 bg: "bg-orange-500/10",
               },
               {
@@ -541,12 +541,12 @@ export default async function HomePage() {
         <div className="mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-20">
-              <span className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+              <span className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 text-[#d97757] text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
                 How It Works
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Start learning in{" "}
-                <span className="text-orange-400">4 simple steps</span>
+                <span className="text-[#d97757]">4 simple steps</span>
               </h2>
               <p className="text-white/40 max-w-xl mx-auto text-lg">
                 From sign-up to certificate — your learning journey made simple.
@@ -599,7 +599,7 @@ export default async function HomePage() {
                           {item.step}
                         </span>
                         <div className="w-12 h-12 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center justify-center group-hover:bg-orange-500/20 group-hover:border-orange-500/40 transition-all duration-300">
-                          <Icon className="w-5 h-5 text-orange-400" />
+                          <Icon className="w-5 h-5 text-[#d97757]" />
                         </div>
                       </div>
 
@@ -638,11 +638,11 @@ export default async function HomePage() {
             <FadeInSection>
               <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-5">
                 <div>
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-500/5 border border-orange-500/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-orange-400 mb-4 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-                    <Sparkles className="w-3.5 h-3.5 text-orange-400 animate-pulse" /> Trending Now
+                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-500/5 border border-orange-500/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-[#d97757] mb-4 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+                    <Sparkles className="w-3.5 h-3.5 text-[#d97757] animate-pulse" /> Trending Now
                   </div>
                   <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                    Featured <span className="text-orange-400">Courses</span>
+                    Featured <span className="text-[#d97757]">Courses</span>
                   </h2>
                   <p className="text-muted-foreground mt-3 text-[15px] sm:text-lg max-w-xl">
                     Hand-picked by our instructors — start with the best and accelerate your career today.
@@ -687,7 +687,7 @@ export default async function HomePage() {
             {courses.length >= 6 && (
               <FadeInSection>
                 <div className="text-center mt-10">
-                  <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-orange-400/25 text-orange-300 hover:text-white hover:border-orange-400/25 hover:from-orange-600/25 hover:to-orange-500/15 font-medium text-sm px-7 py-2.5 rounded-md transition-all hover:-translate-y-0.5">
+                  <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-[#d97757]/25 text-orange-300 hover:text-white hover:border-[#d97757]/25 hover:from-orange-600/25 hover:to-orange-500/15 font-medium text-sm px-7 py-2.5 rounded-md transition-all hover:-translate-y-0.5">
                     Browse All Courses <ArrowRight className="w-4 h-4" />
                   </Link>
                 </div>
@@ -705,7 +705,7 @@ export default async function HomePage() {
           <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
               {[
-                { end: Math.max(stats.courseCount, 20), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-orange-400" },
+                { end: Math.max(stats.courseCount, 20), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-[#d97757]" },
                 { end: Math.max(stats.studentCount, 99), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
                 { end: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Total Enrollments", icon: TrendingUp, color: "text-emerald-400" },
                 { end: Math.max(stats.reviewCount, 399), suffix: "+", label: "5-Star Reviews", icon: Star, color: "text-yellow-400" },
@@ -735,12 +735,12 @@ export default async function HomePage() {
         <div className="mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
-              <span className="inline-flex items-center gap-1.5 bg-orange-500/[0.07] border border-orange-500/20 text-orange-400 text-xs font-medium uppercase tracking-widest px-3 py-1 rounded-full mb-4 mx-auto">
+              <span className="inline-flex items-center gap-1.5 bg-orange-500/[0.07] border border-orange-500/20 text-[#d97757] text-xs font-medium uppercase tracking-widest px-3 py-1 rounded-full mb-4 mx-auto">
                 <Sparkles className="w-3 h-3" />
                 Learning Experience
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
-                A learning experience <span className="text-orange-400">designed for you</span>
+                A learning experience <span className="text-[#d97757]">designed for you</span>
               </h2>
               <p className="text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg leading-relaxed">
                 Our platform adapts to your learning style. Whether you prefer video lessons,
@@ -750,7 +750,7 @@ export default async function HomePage() {
           </FadeInSection>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
-              { title: "Video Lessons", text: "HD video lessons with code-along exercises to master practical skills.", icon: Play, color: "text-orange-400", bg: "bg-orange-500/10" },
+              { title: "Video Lessons", text: "HD video lessons with code-along exercises to master practical skills.", icon: Play, color: "text-[#d97757]", bg: "bg-orange-500/10" },
               { title: "Syntax Highlighting", text: "Rich text lessons with syntax-highlighted code for better readability.", icon: Code, color: "text-blue-400", bg: "bg-blue-500/10" },
               { title: "Adaptive Quizzes", text: "Interactive quizzes to reinforce concepts and test your knowledge.", icon: Target, color: "text-emerald-400", bg: "bg-emerald-500/10" },
               { title: "Certifications", text: "Downloadable certificates of completion to showcase your achievements.", icon: Award, color: "text-yellow-400", bg: "bg-yellow-500/10" },
@@ -792,12 +792,12 @@ export default async function HomePage() {
         <div className="mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-16">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+              <span className="inline-block text-[#d97757] text-sm font-semibold uppercase tracking-widest mb-3">
                 Testimonials
               </span>
               <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">
                 What our students{" "}
-                <span className="text-orange-400">say</span>
+                <span className="text-[#d97757]">say</span>
               </h2>
               <p className="text-muted-foreground/70 max-w-xl mx-auto text-lg">
                 Join thousands of satisfied learners who have transformed their careers.
@@ -887,12 +887,12 @@ export default async function HomePage() {
             </FadeInSection>
 
             <FadeInSection direction="left">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+              <span className="inline-block text-[#d97757] text-sm font-semibold uppercase tracking-widest mb-3">
                 Teach on CoachNest
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
                 Share your knowledge,{" "}
-                <span className="text-orange-400">earn income</span>
+                <span className="text-[#d97757]">earn income</span>
               </h2>
               <p className="text-white/45 text-lg leading-relaxed mb-6">
                 Create and publish courses on our platform. Reach thousands of eager learners
@@ -933,12 +933,12 @@ export default async function HomePage() {
         <div className="max-w-3xl mx-auto relative">
           <FadeInSection>
             <div className="text-center mb-12">
-              <span className="inline-block text-orange-400 text-sm font-semibold uppercase tracking-widest mb-3">
+              <span className="inline-block text-[#d97757] text-sm font-semibold uppercase tracking-widest mb-3">
                 FAQ
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Frequently asked{" "}
-                <span className="text-orange-400">questions</span>
+                <span className="text-[#d97757]">questions</span>
               </h2>
               <p className="text-muted-foreground/70 text-lg">
                 Everything you need to know about CoachNest.
@@ -987,7 +987,7 @@ export default async function HomePage() {
             <div className="text-center mt-8">
               <p className="text-white/30 text-sm">
                 Still have questions?{" "}
-                <Link href="/contact" className="text-orange-400 hover:text-orange-300 transition-colors underline underline-offset-2">
+                <Link href="/contact" className="text-[#d97757] hover:text-orange-300 transition-colors underline underline-offset-2">
                   Contact our support team
                 </Link>
               </p>

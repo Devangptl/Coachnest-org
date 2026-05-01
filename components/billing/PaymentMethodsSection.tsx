@@ -139,7 +139,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
                 className={cn(
                   "flex items-center gap-4 rounded-md border p-4 transition-colors",
                   m.isDefault
-                    ? "border-orange-400/30 bg-orange-500/5"
+                    ? "border-[#d97757]/30 bg-orange-500/5"
                     : "border-border bg-secondary/20 hover:bg-secondary/30"
                 )}
               >
@@ -181,7 +181,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
                       onClick={() => handleSetDefault(m.id)}
                       disabled={settingId === m.id}
                       title="Set as default"
-                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-orange-400 border border-border hover:border-orange-400/30 rounded-lg px-2.5 py-1 transition-all disabled:opacity-50"
+                      className="flex items-center gap-1 text-xs text-muted-foreground hover:text-[#d97757] border border-border hover:border-[#d97757]/30 rounded-lg px-2.5 py-1 transition-all disabled:opacity-50"
                     >
                       {settingId === m.id
                         ? <Loader2 className="w-3 h-3 animate-spin" />
@@ -221,7 +221,7 @@ export function PaymentMethodsSection({ onUpdate }: Props) {
         {/* Add card button */}
         <button
           onClick={() => setShowAdd(true)}
-          className="w-full flex items-center justify-center gap-2 rounded-md border border-dashed border-border hover:border-orange-400/40 hover:bg-orange-500/5 py-3 text-sm font-medium text-muted-foreground hover:text-orange-400 transition-all"
+          className="w-full flex items-center justify-center gap-2 rounded-md border border-dashed border-border hover:border-[#d97757]/40 hover:bg-orange-500/5 py-3 text-sm font-medium text-muted-foreground hover:text-[#d97757] transition-all"
         >
           <Plus className="w-4 h-4" />
           Add new card

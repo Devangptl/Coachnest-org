@@ -112,7 +112,7 @@ export default function OnboardingClient({
           <div className="text-center animate-fade-in">
             <div className="inline-flex w-16 h-16 rounded-md bg-orange-500/10 border border-orange-500/20
                             items-center justify-center mb-6">
-              <Sparkles className="w-8 h-8 text-orange-400" />
+              <Sparkles className="w-8 h-8 text-[#d97757]" />
             </div>
 
             <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
@@ -216,7 +216,7 @@ export default function OnboardingClient({
             <div className="mb-7">
               <div className="inline-flex w-10 h-10 rounded-md bg-orange-500/10 border border-orange-500/20
                               items-center justify-center mb-4">
-                <GraduationCap className="w-5 h-5 text-orange-400" />
+                <GraduationCap className="w-5 h-5 text-[#d97757]" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">
                 Follow instructors

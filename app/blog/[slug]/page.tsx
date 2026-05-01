@@ -184,7 +184,7 @@ export default async function BlogDetailPage({ params }: Props) {
           {tagList.map((tag) => (
             <span
               key={tag}
-              className="inline-flex items-center gap-1 text-xs font-medium text-orange-300 bg-orange-500/15 px-2.5 py-1 rounded-full border border-orange-400/20"
+              className="inline-flex items-center gap-1 text-xs font-medium text-orange-300 bg-orange-500/15 px-2.5 py-1 rounded-full border border-[#d97757]/20"
             >
               <Tag className="w-3 h-3" />
               {tag}
@@ -218,7 +218,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
       {/* Excerpt — styled callout */}
       {blog.excerpt && (
-        <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-8 italic border-l-4 border-orange-400/30 pl-4 py-1 bg-orange-500/[0.04] rounded-r-lg">
+        <p className="text-muted-foreground text-base sm:text-lg leading-relaxed mb-8 italic border-l-4 border-[#d97757]/30 pl-4 py-1 bg-orange-500/[0.04] rounded-r-lg">
           {blog.excerpt}
         </p>
       )}
@@ -235,7 +235,7 @@ export default async function BlogDetailPage({ params }: Props) {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             {related.map((post) => (
               <Link key={post.id} href={`/blog/${post.slug}`}>
-                <GlassCard className="h-full hover:border-orange-400/25 transition-colors">
+                <GlassCard className="h-full hover:border-[#d97757]/25 transition-colors">
                   <h3 className="text-white font-semibold text-sm mb-2 line-clamp-2 leading-snug">
                     {post.title}
                   </h3>

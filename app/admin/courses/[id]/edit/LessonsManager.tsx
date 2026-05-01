@@ -77,7 +77,7 @@ const lessonTypeIcons = {
 };
 
 const lessonTypeColors = {
-  VIDEO: "text-orange-400",
+  VIDEO: "text-[#d97757]",
   TEXT: "text-blue-400",
   QUIZ: "text-amber-400",
 };
@@ -698,7 +698,7 @@ export default function LessonsManager({ courseId, lessons: initial }: Props) {
                   {/* Edit header */}
                   <div className="flex items-center justify-between gap-2">
                     <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
-                      <Pencil className="w-3.5 h-3.5 text-orange-400" />
+                      <Pencil className="w-3.5 h-3.5 text-[#d97757]" />
                       Edit Lesson
                     </h3>
                     <div className="flex items-center gap-3">
@@ -878,7 +878,7 @@ function LessonFormFields({
                   form.type === t
                     ? t === "QUIZ"
                       ? "bg-amber-500/20 border-amber-400/40 text-foreground"
-                      : "bg-orange-500/15 border-orange-400/25 text-foreground"
+                      : "bg-orange-500/15 border-[#d97757]/25 text-foreground"
                     : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary"
                 }`}
               >
@@ -980,7 +980,7 @@ function QuizBuilderInline({
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <Loader2 className="w-5 h-5 text-orange-400 animate-spin" />
+        <Loader2 className="w-5 h-5 text-[#d97757] animate-spin" />
         <span className="text-muted-foreground/70 text-sm ml-2">Loading quiz data...</span>
       </div>
     );
@@ -1116,7 +1116,7 @@ function QuizBuilderInline({
               <button
                 type="button"
                 onClick={() => helpers.addOption(setQuizForm, qIdx)}
-                className="text-orange-400 text-xs hover:text-orange-300 transition-colors"
+                className="text-[#d97757] text-xs hover:text-orange-300 transition-colors"
               >
                 + Add option
               </button>
@@ -1238,7 +1238,7 @@ function DraggableLessonRow({
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
           <button
             onClick={onEdit}
-            className="text-orange-400/60 hover:text-orange-400 transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
+            className="text-[#d97757]/60 hover:text-[#d97757] transition-colors p-1.5 rounded-lg hover:bg-orange-500/10 flex-shrink-0"
             title="Edit lesson"
           >
             <Pencil className="w-3.5 h-3.5" />

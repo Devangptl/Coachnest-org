@@ -47,7 +47,7 @@ export default async function AdminCouponsPage() {
         {[
           { label: "Total Coupons", value: coupons.length, icon: Ticket, color: "text-blue-400" },
           { label: "Active", value: activeCoupons, icon: TrendingUp, color: "text-emerald-400" },
-          { label: "Total Discount", value: `₹${totalDiscount.toLocaleString("en-IN")}`, icon: Ticket, color: "text-orange-400" },
+          { label: "Total Discount", value: `₹${totalDiscount.toLocaleString("en-IN")}`, icon: Ticket, color: "text-[#d97757]" },
         ].map((stat) => {
           const Icon = stat.icon;
           return (
@@ -76,7 +76,7 @@ export default async function AdminCouponsPage() {
         {coupons.length === 0 && (
           <div className="text-center py-12 text-muted-foreground/70">
             <p className="mb-4">No coupons created yet.</p>
-            <Link href="/admin/coupons/new" className="text-orange-400 hover:text-orange-300">
+            <Link href="/admin/coupons/new" className="text-[#d97757] hover:text-orange-300">
               Create your first coupon
             </Link>
           </div>

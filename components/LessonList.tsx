@@ -41,7 +41,7 @@ export default function LessonList({
             className={cn(
               "flex items-center gap-3 p-3 rounded-md text-left transition-all w-full",
               isActive
-                ? "bg-gradient-to-r from-orange-600/25 to-orange-500/15 border border-orange-400/25"
+                ? "bg-gradient-to-r from-orange-600/25 to-orange-500/15 border border-[#d97757]/25"
                 : "hover:bg-secondary border border-transparent"
             )}
           >
@@ -53,7 +53,7 @@ export default function LessonList({
                 <Circle
                   className={cn(
                     "w-5 h-5",
-                    isActive ? "text-orange-400" : "text-white/30"
+                    isActive ? "text-[#d97757]" : "text-white/30"
                   )}
                 />
               )}
@@ -78,7 +78,7 @@ export default function LessonList({
                 <Icon
                   className={cn(
                     "w-3 h-3",
-                    isActive ? "text-orange-400" : "text-white/30"
+                    isActive ? "text-[#d97757]" : "text-white/30"
                   )}
                 />
                 <span className="text-muted-foreground/70 text-xs">
@@ -92,7 +92,7 @@ export default function LessonList({
             </div>
 
             {isActive && (
-              <ChevronRight className="w-4 h-4 text-orange-400 flex-shrink-0" />
+              <ChevronRight className="w-4 h-4 text-[#d97757] flex-shrink-0" />
             )}
           </button>
         );

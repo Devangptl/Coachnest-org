@@ -73,7 +73,7 @@ export default function EnrollmentFiltersBar() {
 
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-orange-400 text-sm hover:text-orange-300 transition-colors"
+          className="text-[#d97757] text-sm hover:text-orange-300 transition-colors"
         >
           {expanded ? "Hide filters" : "More filters"}
         </button>

@@ -107,7 +107,7 @@ export default function Footer() {
                   key={label}
                   href={href}
                   aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/30 hover:text-orange-400 hover:bg-orange-500/10 hover:border-orange-400/25 transition-all"
+                  className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/30 hover:text-[#d97757] hover:bg-orange-500/10 hover:border-[#d97757]/25 transition-all"
                 >
                   <Icon className="w-3.5 h-3.5" />
                 </Link>

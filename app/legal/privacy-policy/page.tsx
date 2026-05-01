@@ -38,7 +38,7 @@ export default function PrivacyPolicyPage() {
           <div className="mb-12">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-                <Shield className="w-5 h-5 text-orange-400/70" />
+                <Shield className="w-5 h-5 text-[#d97757]/70" />
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Privacy Policy</h1>
@@ -114,7 +114,7 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               <Section id="cookies" title="4. Cookies & Tracking">
-                <p>We use cookies and similar technologies to operate the platform and understand how you use it. You can manage your cookie preferences at any time via our <Link href="/legal/cookie-policy" className="text-orange-400/80 hover:text-orange-400 transition-colors underline underline-offset-2">Cookie Policy</Link>.</p>
+                <p>We use cookies and similar technologies to operate the platform and understand how you use it. You can manage your cookie preferences at any time via our <Link href="/legal/cookie-policy" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors underline underline-offset-2">Cookie Policy</Link>.</p>
                 <SubHeading>Types of cookies we use</SubHeading>
                 <ul>
                   <li><strong className="text-white/70">Strictly Necessary</strong> — required for authentication, session management, and core functionality.</li>
@@ -143,7 +143,7 @@ export default function PrivacyPolicyPage() {
                   <li><strong className="text-white/70">Objection</strong> — object to processing based on legitimate interests.</li>
                   <li><strong className="text-white/70">Withdraw Consent</strong> — opt out of marketing emails via the unsubscribe link in any email or through your account settings.</li>
                 </ul>
-                <p>To exercise any of these rights, please contact us at <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 transition-colors">our contact page</Link>.</p>
+                <p>To exercise any of these rights, please contact us at <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">our contact page</Link>.</p>
               </Section>
 
               <Section id="security" title="7. Security">
@@ -169,7 +169,7 @@ export default function PrivacyPolicyPage() {
                 <p>If you have questions, concerns, or requests related to this Privacy Policy, please reach out:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
                   <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Privacy Team</p>
-                  <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 text-sm transition-colors">
+                  <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a request via our Contact page →
                   </Link>
                 </div>

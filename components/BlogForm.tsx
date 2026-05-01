@@ -306,7 +306,7 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
               {tags.map((tag) => (
                 <span
                   key={tag}
-                  className="inline-flex items-center gap-1 rounded-md bg-orange-500/15 border border-orange-400/25 text-orange-300 text-xs font-medium px-2 py-0.5"
+                  className="inline-flex items-center gap-1 rounded-md bg-orange-500/15 border border-[#d97757]/25 text-orange-300 text-xs font-medium px-2 py-0.5"
                 >
                   <Hash className="w-3 h-3 opacity-70" />
                   {tag}

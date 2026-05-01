@@ -66,7 +66,7 @@ function FilterContent({
                 "w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all",
                 isMobile && "text-center",
                 level === l
-                  ? "bg-orange-500/15 text-orange-400 border border-orange-400/25"
+                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
@@ -91,7 +91,7 @@ function FilterContent({
               className={cn(
                 "w-full text-left px-3 py-2 rounded-lg text-sm transition-all",
                 category === ""
-                  ? "bg-orange-500/15 text-orange-400 border border-orange-400/25"
+                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
@@ -104,7 +104,7 @@ function FilterContent({
                 className={cn(
                   "w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2",
                   category === cat.slug
-                    ? "bg-orange-500/15 text-orange-400 border border-orange-400/25"
+                    ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
                     : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                 )}
               >
@@ -289,7 +289,7 @@ export default function SearchPageClient() {
           onClick={() => setSideOpen((o) => !o)}
           className={cn(
             "flex-shrink-0",
-            sideOpen && "border-orange-400/40 bg-orange-500/10 text-orange-400"
+            sideOpen && "border-[#d97757]/40 bg-orange-500/10 text-[#d97757]"
           )}
         >
           <SlidersHorizontal className="w-4 h-4" />
@@ -331,7 +331,7 @@ export default function SearchPageClient() {
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
                 onClick={() => setLevel("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-orange-400 border border-orange-400/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
+                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
               >
                 <span className="capitalize">{level}</span>
                 <X className="w-3 h-3" />
@@ -341,7 +341,7 @@ export default function SearchPageClient() {
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
                 onClick={() => setCategory("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-orange-400 border border-orange-400/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
+                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
               >
                 <span>{categories.find((c) => c.slug === category)?.name ?? category}</span>
                 <X className="w-3 h-3" />

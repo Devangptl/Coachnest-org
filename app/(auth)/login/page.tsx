@@ -83,7 +83,7 @@ export default function LoginPage() {
             {/* ── Headline ── */}
             <div className="mb-7">
               <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border
-                               border-orange-500/25 bg-orange-500/10 text-orange-400
+                               border-orange-500/25 bg-orange-500/10 text-[#d97757]
                                text-[11px] font-semibold tracking-wide uppercase mb-5">
                 <Star className="w-3 h-3 fill-current" />
                 Trusted learning platform
@@ -138,7 +138,7 @@ export default function LoginPage() {
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-xs text-muted-foreground">Progress</span>
-                    <span className="text-xs font-bold text-orange-400">68%</span>
+                    <span className="text-xs font-bold text-[#d97757]">68%</span>
                   </div>
                   <div className="h-2 rounded-full bg-secondary overflow-hidden">
                     <div className="h-full w-[68%] rounded-full
@@ -154,7 +154,7 @@ export default function LoginPage() {
                       className={cn(
                         "flex-1 h-1.5 rounded-full transition-all",
                         state === true     ? "bg-orange-500" :
-                        state === "active" ? "bg-orange-400/50 ring-1 ring-orange-400/60" :
+                        state === "active" ? "bg-[#d97757]/50 ring-1 ring-[#d97757]/60" :
                                              "bg-border",
                       )}
                     />
@@ -164,8 +164,8 @@ export default function LoginPage() {
                 {/* Next lesson */}
                 <div className="mt-4 flex items-center gap-2 rounded-lg px-3 py-2 text-xs
                                 bg-orange-500/8 border border-orange-500/15">
-                  <span className="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0 animate-pulse" />
-                  <span className="font-medium text-orange-400">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#d97757] flex-shrink-0 animate-pulse" />
+                  <span className="font-medium text-[#d97757]">
                     Next: Hooks &amp; State Management
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export default function LoginPage() {
                             overflow-hidden bg-card mb-7">
               {STATS.map(({ icon: Icon, value, label }) => (
                 <div key={label} className="flex flex-col items-center py-4 px-2">
-                  <Icon className="w-4 h-4 text-orange-400 mb-1.5 opacity-80" />
+                  <Icon className="w-4 h-4 text-[#d97757] mb-1.5 opacity-80" />
                   <span className="text-xl font-bold leading-none mb-0.5 text-foreground">{value}</span>
                   <span className="text-[11px] text-muted-foreground">{label}</span>
                 </div>
@@ -258,7 +258,7 @@ export default function LoginPage() {
               <div className="flex items-center justify-between mb-1.5">
                 <label className="label !mb-0" htmlFor="password">Password</label>
                 <Link href="/forgot-password"
-                  className="text-xs text-orange-500 hover:text-orange-400 transition-colors">
+                  className="text-xs text-orange-500 hover:text-[#d97757] transition-colors">
                   Forgot password?
                 </Link>
               </div>
@@ -293,7 +293,7 @@ export default function LoginPage() {
 
           <p className="text-center text-sm text-muted-foreground">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+            <Link href="/signup" className="text-orange-500 hover:text-[#d97757] font-medium transition-colors">
               Create one free
             </Link>
           </p>

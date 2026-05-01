@@ -12,7 +12,7 @@ const buttonVariants = cva(
         secondary:   "bg-secondary border border-border text-foreground hover:bg-secondary/70",
         ghost:       "text-muted-foreground hover:text-foreground hover:bg-secondary border border-transparent hover:border-border",
         danger:      "bg-red-500/15 border border-red-400/25 text-red-400 hover:bg-red-500/25",
-        outline:     "border border-orange-400/40 text-orange-400 hover:bg-orange-500/10",
+        outline:     "border border-[#d97757]/40 text-[#d97757] hover:bg-orange-500/10",
         success:     "bg-emerald-500/15 border border-emerald-400/25 text-emerald-400 hover:bg-emerald-500/25",
       },
       size: {

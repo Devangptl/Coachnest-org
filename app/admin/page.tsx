@@ -44,7 +44,7 @@ export default async function AdminOverviewPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         {[
-          { label: "Total Courses", value: totalCourses, icon: BookOpen, color: "text-orange-400" },
+          { label: "Total Courses", value: totalCourses, icon: BookOpen, color: "text-[#d97757]" },
           { label: "Students", value: totalStudents, icon: Users, color: "text-blue-400" },
           { label: "Enrollments", value: totalEnrollments, icon: GraduationCap, color: "text-emerald-400" },
           { label: "Certificates", value: totalCertificates, icon: Award, color: "text-amber-400" },
@@ -78,10 +78,10 @@ export default async function AdminOverviewPage() {
       <GlassCard padding="sm">
         <div className="flex items-center justify-between px-4 py-3 border-b border-border">
           <h2 className="text-foreground font-semibold flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-orange-400" />
+            <TrendingUp className="w-4 h-4 text-[#d97757]" />
             Recent Courses
           </h2>
-          <Link href="/admin/courses" className="text-orange-400 text-sm hover:text-orange-300">
+          <Link href="/admin/courses" className="text-[#d97757] text-sm hover:text-orange-300">
             View all
           </Link>
         </div>
@@ -126,7 +126,7 @@ export default async function AdminOverviewPage() {
           {recentCourses.length === 0 && (
             <div className="text-center py-8 text-muted-foreground/70">
               No courses yet.{" "}
-              <Link href="/admin/courses/new" className="text-orange-400 hover:text-orange-300">
+              <Link href="/admin/courses/new" className="text-[#d97757] hover:text-orange-300">
                 Create one
               </Link>
             </div>

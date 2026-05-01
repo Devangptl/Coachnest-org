@@ -42,7 +42,7 @@ interface StatusCounts {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  UNREAD: "bg-orange-500/15 text-orange-300 border-orange-400/25",
+  UNREAD: "bg-orange-500/15 text-orange-300 border-[#d97757]/25",
   READ: "bg-blue-500/15 text-blue-300 border-blue-400/25",
   REPLIED: "bg-green-500/15 text-green-400 border-green-400/25",
 };
@@ -119,14 +119,14 @@ export default function AdminMessagesPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
-            <div className="w-10 h-10 rounded-md bg-orange-500/15 border border-orange-400/25 flex items-center justify-center">
-              <MessageSquare className="w-5 h-5 text-orange-400" />
+            <div className="w-10 h-10 rounded-md bg-orange-500/15 border border-[#d97757]/25 flex items-center justify-center">
+              <MessageSquare className="w-5 h-5 text-[#d97757]" />
             </div>
             Messages
           </h1>
           <p className="text-muted-foreground text-sm mt-1.5">
             {counts.UNREAD > 0 && (
-              <span className="text-orange-400 font-semibold">{counts.UNREAD} unread · </span>
+              <span className="text-[#d97757] font-semibold">{counts.UNREAD} unread · </span>
             )}
             {counts.ALL} total message{counts.ALL !== 1 ? "s" : ""}
           </p>
@@ -144,7 +144,7 @@ export default function AdminMessagesPage() {
               className={cn(
                 "px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5",
                 activeTab === tab
-                  ? "bg-orange-500/15 text-orange-400 border border-orange-400/20"
+                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/20"
                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
             >
@@ -174,7 +174,7 @@ export default function AdminMessagesPage() {
       {/* Messages List */}
       {loading ? (
         <div className="glass p-12 flex items-center justify-center">
-          <Loader2 className="w-6 h-6 animate-spin text-orange-400" />
+          <Loader2 className="w-6 h-6 animate-spin text-[#d97757]" />
           <span className="ml-3 text-muted-foreground text-sm">Loading messages...</span>
         </div>
       ) : messages.length === 0 ? (

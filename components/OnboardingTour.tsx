@@ -52,7 +52,7 @@ function CustomTooltip({
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
                   i === index
-                    ? "w-6 bg-gradient-to-r from-orange-500 to-orange-400 shadow-[0_0_10px_rgba(249,115,22,0.4)]"
+                    ? "w-6 bg-gradient-to-r from-orange-500 to-[#d97757] shadow-[0_0_10px_rgba(249,115,22,0.4)]"
                     : "w-1.5 bg-border/80"
                 }`}
               />

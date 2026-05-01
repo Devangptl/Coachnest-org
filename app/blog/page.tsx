@@ -97,8 +97,8 @@ export default async function BlogPage() {
     <div className="mx-auto px-4 sm:px-6 py-12">
       {/* Header */}
       <div className="text-center mb-12">
-        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-orange-400/20 rounded-full px-4 py-1.5 mb-4">
-          <FileText className="w-4 h-4 text-orange-400" />
+        <div className="inline-flex items-center gap-2 bg-orange-500/10 border border-[#d97757]/20 rounded-full px-4 py-1.5 mb-4">
+          <FileText className="w-4 h-4 text-[#d97757]" />
           <span className="text-orange-300 text-sm font-medium">Our Blog</span>
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-white mb-4">
@@ -115,7 +115,7 @@ export default async function BlogPage() {
           {tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs text-muted-foreground bg-white/[0.06] border border-border px-3 py-1.5 rounded-full hover:bg-orange-500/15 hover:text-orange-300 hover:border-orange-400/20 transition-colors cursor-default"
+              className="text-xs text-muted-foreground bg-white/[0.06] border border-border px-3 py-1.5 rounded-full hover:bg-orange-500/15 hover:text-orange-300 hover:border-[#d97757]/20 transition-colors cursor-default"
             >
               {tag}
             </span>

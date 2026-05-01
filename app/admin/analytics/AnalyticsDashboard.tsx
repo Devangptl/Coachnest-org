@@ -21,7 +21,7 @@ interface Props {
 
 const STAT_CARDS = (stats: Props["stats"]) => [
   { label: "Total Users",       value: stats.totalUsers.toLocaleString(),           icon: Users,       color: "bg-blue-500/20   text-blue-400"    },
-  { label: "Published Courses", value: stats.totalCourses.toLocaleString(),         icon: BookOpen,    color: "bg-orange-500/15 text-orange-400"  },
+  { label: "Published Courses", value: stats.totalCourses.toLocaleString(),         icon: BookOpen,    color: "bg-orange-500/15 text-[#d97757]"  },
   { label: "Total Enrollments", value: stats.totalEnrollments.toLocaleString(),     icon: TrendingUp,  color: "bg-emerald-500/20 text-emerald-400" },
   { label: "Total Revenue",     value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`, icon: DollarSign, color: "bg-amber-500/20  text-amber-400"   },
 ];

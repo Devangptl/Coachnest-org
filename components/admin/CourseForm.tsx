@@ -306,7 +306,7 @@ export default function CourseForm({
                       key={t}
                       type="button"
                       onClick={() => addTag(t)}
-                      className="px-2 py-0.5 text-xs rounded border border-border bg-secondary text-muted-foreground hover:text-foreground hover:border-orange-400/40"
+                      className="px-2 py-0.5 text-xs rounded border border-border bg-secondary text-muted-foreground hover:text-foreground hover:border-[#d97757]/40"
                     >
                       + {t}
                     </button>

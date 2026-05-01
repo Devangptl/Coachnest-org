@@ -24,7 +24,7 @@ export default async function ImportCoursePage() {
       <div className="mb-10">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-11 h-11 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
-            <FileUp className="w-5 h-5 text-orange-400" />
+            <FileUp className="w-5 h-5 text-[#d97757]" />
           </div>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Import Course from PDF</h1>
@@ -42,12 +42,12 @@ export default async function ImportCoursePage() {
           {/* How it works */}
           <div className="bg-card border border-border rounded-xl p-5">
             <h2 className="text-sm font-semibold text-foreground mb-4 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-orange-400" /> How it works
+              <Zap className="w-4 h-4 text-[#d97757]" /> How it works
             </h2>
             <ol className="space-y-4">
               {STEPS.map((step, i) => (
                 <li key={i} className="flex gap-3">
-                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-[11px] font-bold text-orange-400 mt-0.5">
+                  <div className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-[11px] font-bold text-[#d97757] mt-0.5">
                     {i + 1}
                   </div>
                   <div>

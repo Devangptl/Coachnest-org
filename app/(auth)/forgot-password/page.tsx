@@ -64,7 +64,7 @@ export default function ForgotPasswordPage() {
               Didn&apos;t receive it? Check your spam folder, or{" "}
               <button
                 onClick={() => { setSent(false); }}
-                className="text-orange-500 hover:text-orange-400 transition-colors font-medium"
+                className="text-orange-500 hover:text-[#d97757] transition-colors font-medium"
               >
                 try again
               </button>
@@ -141,7 +141,7 @@ export default function ForgotPasswordPage() {
 
         <p className="text-center text-sm text-muted-foreground mt-6">
           Remember your password?{" "}
-          <Link href="/login" className="text-orange-500 hover:text-orange-400 font-medium transition-colors">
+          <Link href="/login" className="text-orange-500 hover:text-[#d97757] font-medium transition-colors">
             Sign in
           </Link>
         </p>

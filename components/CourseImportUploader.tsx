@@ -136,7 +136,7 @@ export default function CourseImportUploader() {
               </div>
               <div className="bg-card border border-border rounded-lg px-3 py-3 text-center">
                 <div className="flex items-center justify-center gap-1.5 mb-0.5">
-                  <BookOpen className="w-4 h-4 text-orange-400" />
+                  <BookOpen className="w-4 h-4 text-[#d97757]" />
                   <p className="text-sm font-semibold text-foreground">Ready to edit</p>
                 </div>
                 <p className="text-xs text-muted-foreground">Add thumbnail &amp; publish</p>
@@ -178,7 +178,7 @@ export default function CourseImportUploader() {
       <div className="p-6 space-y-5">
         {/* Step A — Download */}
         <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-secondary/20">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-sm font-bold text-orange-400 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-sm font-bold text-[#d97757] shrink-0">
             A
           </div>
           <div className="flex-1 min-w-0">
@@ -189,7 +189,7 @@ export default function CourseImportUploader() {
             <a
               href="/api/instructor/courses/template"
               download="learnhub-course-template.pdf"
-              className="inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-lg bg-orange-500/10 border border-orange-500/25 text-orange-400 hover:bg-orange-500/20 transition-colors"
+              className="inline-flex items-center gap-2 text-xs font-semibold px-3.5 py-2 rounded-lg bg-orange-500/10 border border-orange-500/25 text-[#d97757] hover:bg-orange-500/20 transition-colors"
             >
               <Download className="w-3.5 h-3.5" />
               Download Template PDF
@@ -199,7 +199,7 @@ export default function CourseImportUploader() {
 
         {/* Step B — Upload */}
         <div className="flex items-start gap-4 p-4 rounded-xl border border-border bg-secondary/20">
-          <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-sm font-bold text-orange-400 shrink-0">
+          <div className="w-8 h-8 rounded-full bg-orange-500/10 border border-orange-500/25 flex items-center justify-center text-sm font-bold text-[#d97757] shrink-0">
             B
           </div>
           <div className="flex-1 min-w-0">
@@ -216,10 +216,10 @@ export default function CourseImportUploader() {
               onClick={() => !file && inputRef.current?.click()}
               className={`relative rounded-xl border-2 border-dashed transition-all duration-200 ${
                 dragging
-                  ? "border-orange-400 bg-orange-500/5 scale-[1.01]"
+                  ? "border-[#d97757] bg-orange-500/5 scale-[1.01]"
                   : file
                   ? "border-emerald-500/50 bg-emerald-500/5 cursor-default"
-                  : "border-border hover:border-orange-400/50 hover:bg-secondary/40 cursor-pointer"
+                  : "border-border hover:border-[#d97757]/50 hover:bg-secondary/40 cursor-pointer"
               }`}
             >
               <input
@@ -255,7 +255,7 @@ export default function CourseImportUploader() {
                   </div>
                   <p className="text-sm font-medium text-foreground mb-1">
                     Drop your PDF here or{" "}
-                    <span className="text-orange-400 font-semibold">browse</span>
+                    <span className="text-[#d97757] font-semibold">browse</span>
                   </p>
                   <p className="text-xs text-muted-foreground">PDF only · max 10 MB · must contain selectable text</p>
                 </div>

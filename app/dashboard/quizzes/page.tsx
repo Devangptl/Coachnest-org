@@ -124,7 +124,7 @@ export default async function QuizHistoryPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           { label: "Quizzes Taken", value: quizHistory.length, icon: HelpCircle, color: "text-blue-400" },
-          { label: "Total Attempts", value: totalAttempts, icon: Target, color: "text-orange-400" },
+          { label: "Total Attempts", value: totalAttempts, icon: Target, color: "text-[#d97757]" },
           { label: "Passed", value: passedQuizzes, icon: Trophy, color: "text-emerald-400" },
           { label: "Avg Best Score", value: `${avgBestScore}%`, icon: BarChart3, color: "text-amber-400" },
         ].map((stat) => {
@@ -182,7 +182,7 @@ export default async function QuizHistoryPage() {
                   </Badge>
                   <Link
                     href={`/courses/${quiz.courseId}`}
-                    className="text-orange-400 hover:text-orange-300 transition-colors"
+                    className="text-[#d97757] hover:text-orange-300 transition-colors"
                   >
                     <ArrowRight className="w-4 h-4" />
                   </Link>
@@ -240,7 +240,7 @@ export default async function QuizHistoryPage() {
             <p className="text-muted-foreground/50 text-sm">
               Start a course and take quizzes to see your history here.
             </p>
-            <Link href="/courses" className="text-orange-400 hover:text-orange-300 text-sm mt-3 inline-block">
+            <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm mt-3 inline-block">
               Browse Courses
             </Link>
           </div>

@@ -30,18 +30,18 @@ export default function AdminAccountInfo({
 
       <div className="grid sm:grid-cols-2 gap-4 mb-5">
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
-          <Mail className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <Mail className="w-4 h-4 text-[#d97757] flex-shrink-0" />
           <span>{email}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
-          <Calendar className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <Calendar className="w-4 h-4 text-[#d97757] flex-shrink-0" />
           <span>Joined {joinDate}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Students", value: stats.students, icon: Users, color: "text-orange-400" },
+          { label: "Students", value: stats.students, icon: Users, color: "text-[#d97757]" },
           { label: "Instructors", value: stats.instructors, icon: UserCog, color: "text-emerald-400" },
           { label: "Courses", value: stats.courses, icon: BookOpen, color: "text-blue-400" },
         ].map((stat) => {

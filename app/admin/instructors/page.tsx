@@ -70,7 +70,7 @@ export default async function AdminInstructorsPage({
             label: "Total Earned",
             value: formatMoney(stats.totalEarned),
             icon: Wallet,
-            color: "text-orange-400",
+            color: "text-[#d97757]",
           },
           {
             label: "Pending Payouts",

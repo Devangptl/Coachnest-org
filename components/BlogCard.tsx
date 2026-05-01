@@ -50,7 +50,7 @@ export default function BlogCard({
         ) : (
           <div className="h-36 shrink-0 bg-gradient-to-br from-orange-600/20 to-orange-500/20 flex items-center justify-center">
             <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-              <span className="text-2xl font-bold text-orange-400">{title.charAt(0)}</span>
+              <span className="text-2xl font-bold text-[#d97757]">{title.charAt(0)}</span>
             </div>
           </div>
         )}
@@ -62,7 +62,7 @@ export default function BlogCard({
             {tagList.slice(0, 2).map((tag) => (
               <span
                 key={tag}
-                className="text-[10px] font-medium text-orange-300 bg-orange-500/15 px-1.5 py-px rounded-full border border-orange-400/20"
+                className="text-[10px] font-medium text-orange-300 bg-orange-500/15 px-1.5 py-px rounded-full border border-[#d97757]/20"
               >
                 {tag}
               </span>
@@ -97,7 +97,7 @@ export default function BlogCard({
                 {formatDate(typeof createdAt === "string" ? new Date(createdAt) : createdAt)}
               </span>
             </div>
-            <ArrowRight className="w-3.5 h-3.5 text-orange-400 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
+            <ArrowRight className="w-3.5 h-3.5 text-[#d97757] opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all" />
           </div>
         </div>
       </Link>

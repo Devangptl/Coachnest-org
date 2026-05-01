@@ -44,7 +44,7 @@ export default async function AdminEnrollmentsPage() {
         {[
           { label: "Total Enrollments", value: stats.totalEnrollments, icon: Users, color: "text-blue-400" },
           { label: "Active", value: stats.activeEnrollments, icon: TrendingUp, color: "text-emerald-400" },
-          { label: "Completed", value: stats.completedEnrollments, icon: GraduationCap, color: "text-orange-400" },
+          { label: "Completed", value: stats.completedEnrollments, icon: GraduationCap, color: "text-[#d97757]" },
           { label: "Inactive (30d+)", value: stats.droppedEnrollments, icon: Users, color: "text-amber-400" },
         ].map((stat) => {
           const Icon = stat.icon;
@@ -79,7 +79,7 @@ export default async function AdminEnrollmentsPage() {
         {enrollments.length === 0 && (
           <div className="text-center py-12 text-muted-foreground/70">
             <p className="mb-4">No enrollments found.</p>
-            <Link href="/admin/courses" className="text-orange-400 hover:text-orange-300">
+            <Link href="/admin/courses" className="text-[#d97757] hover:text-orange-300">
               View Courses
             </Link>
           </div>

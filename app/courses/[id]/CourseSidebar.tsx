@@ -95,7 +95,7 @@ function IncludeItem({ icon: Icon, text, muted = false }: {
 }) {
   return (
     <div className={`flex items-center gap-2 text-xs ${muted ? "text-muted-foreground/40" : "text-muted-foreground"}`}>
-      <Icon className="w-3.5 h-3.5 text-orange-400 flex-shrink-0" />
+      <Icon className="w-3.5 h-3.5 text-[#d97757] flex-shrink-0" />
       <span className="truncate">{text}</span>
     </div>
   );

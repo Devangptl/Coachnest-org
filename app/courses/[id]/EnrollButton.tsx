@@ -129,7 +129,7 @@ export default function EnrollButton({
 
   if (verifying) {
     return (
-      <div className="flex items-center gap-2 bg-orange-500/15 border border-orange-400/25 rounded-md px-4 py-3 text-orange-300 text-sm font-medium justify-center">
+      <div className="flex items-center gap-2 bg-orange-500/15 border border-[#d97757]/25 rounded-md px-4 py-3 text-orange-300 text-sm font-medium justify-center">
         <Loader2 className="w-4 h-4 animate-spin" />
         Verifying payment…
       </div>
@@ -168,7 +168,7 @@ export default function EnrollButton({
         <button
           onClick={handleEnroll}
           disabled={loading}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-orange-400/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-[#d97757]/30 bg-orange-500/10 hover:bg-orange-500/20 text-orange-300 text-sm font-medium transition-colors disabled:opacity-50"
         >
           {loading
             ? <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>

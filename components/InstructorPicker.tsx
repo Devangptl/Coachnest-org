@@ -74,7 +74,7 @@ export default function InstructorPicker({
           placeholder="Search instructors…"
           className="w-full bg-secondary border border-border rounded-lg px-4 py-2.5 pl-10
                      text-sm text-foreground placeholder:text-muted-foreground/50
-                     focus:outline-none focus:border-orange-400/40 transition-colors"
+                     focus:outline-none focus:border-[#d97757]/40 transition-colors"
         />
         {loading && (
           <Loader2 className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 animate-spin" />
@@ -162,7 +162,7 @@ function InstructorCard({
       <div className="flex-1 min-w-0">
         <p className={cn(
           "font-semibold text-sm truncate",
-          selected ? "text-orange-400" : "text-foreground"
+          selected ? "text-[#d97757]" : "text-foreground"
         )}>
           {instructor.name}
         </p>
@@ -190,8 +190,8 @@ function InstructorCard({
         className={cn(
           "flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all",
           selected
-            ? "bg-orange-500 text-white hover:bg-orange-400"
-            : "bg-background border border-border text-muted-foreground hover:border-orange-400/40 hover:text-foreground"
+            ? "bg-orange-500 text-white hover:bg-[#d97757]"
+            : "bg-background border border-border text-muted-foreground hover:border-[#d97757]/40 hover:text-foreground"
         )}
       >
         {selected && <Check className="w-3 h-3" strokeWidth={3} />}

@@ -95,7 +95,7 @@ export default function CourseContent({
             {/* About this course */}
             <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
               <h2 className="text-lg sm:text-xl font-bold text-foreground mb-3 sm:mb-4 flex items-center gap-2">
-                <Target className="w-5 h-5 text-orange-400" />
+                <Target className="w-5 h-5 text-[#d97757]" />
                 About This Course
               </h2>
               <div className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
@@ -120,7 +120,7 @@ export default function CourseContent({
                   </div>
                 ))}
                 {lessons.length > 8 && (
-                  <div className="flex items-center gap-2 text-orange-400 text-sm">
+                  <div className="flex items-center gap-2 text-[#d97757] text-sm">
                     <Zap className="w-4 h-4" />
                     And {lessons.length - 8} more topics...
                   </div>
@@ -242,7 +242,7 @@ function CurriculumPreview({ lessons, courseId, isEnrolled }: { lessons: Lesson[
       {lessons.length > 5 && (
         <button
           onClick={() => setExpanded((e) => !e)}
-          className="flex items-center gap-2 text-orange-400 hover:text-orange-300 text-sm px-3 py-2 transition-colors w-full"
+          className="flex items-center gap-2 text-[#d97757] hover:text-orange-300 text-sm px-3 py-2 transition-colors w-full"
         >
           <ChevronDown className={cn("w-4 h-4 transition-transform", expanded && "rotate-180")} />
           {expanded ? "Show less" : `Show all ${lessons.length} lessons`}

@@ -56,7 +56,7 @@ export default function RecommendedCourses() {
     <section className="mb-10">
       <div className="flex items-center justify-between mb-5">
         <div className="flex items-center gap-2">
-          <Icon className="w-5 h-5 text-orange-400" />
+          <Icon className="w-5 h-5 text-[#d97757]" />
           <div>
             <h2 className="text-xl font-semibold text-foreground leading-none">
               {title}
@@ -70,7 +70,7 @@ export default function RecommendedCourses() {
         </div>
         <Link
           href="/courses"
-          className="text-orange-400 hover:text-orange-300 text-sm font-medium
+          className="text-[#d97757] hover:text-orange-300 text-sm font-medium
                      flex items-center gap-1 transition-colors"
         >
           View all <ArrowRight className="w-3.5 h-3.5" />

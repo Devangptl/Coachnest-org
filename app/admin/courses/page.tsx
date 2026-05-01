@@ -140,7 +140,7 @@ export default async function AdminCoursesPage() {
                   <Link
                     href={`/courses/${course.id}`}
                     title="View"
-                    className="p-2 rounded-lg text-orange-400 hover:text-orange-300 hover:bg-orange-500/10 transition-colors"
+                    className="p-2 rounded-lg text-[#d97757] hover:text-orange-300 hover:bg-orange-500/10 transition-colors"
                   >
                     <Eye className="w-4 h-4" />
                   </Link>

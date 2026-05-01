@@ -132,7 +132,7 @@ export default function CourseHero({
 
             {/* Instructor */}
             <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-md">
                 {instructorName.charAt(0).toUpperCase()}
               </div>
               <div>
@@ -175,7 +175,7 @@ export default function CourseHero({
             {/* Quick stats under thumbnail */}
             <div className="grid grid-cols-3 gap-2 mt-3">
               <div className="backdrop-blur-md bg-secondary border border-border rounded-lg px-2 py-2 text-center">
-                <BookOpen className="w-3.5 h-3.5 text-orange-400 mx-auto mb-0.5" />
+                <BookOpen className="w-3.5 h-3.5 text-[#d97757] mx-auto mb-0.5" />
                 <p className="text-foreground font-semibold text-xs">{lessonCount}</p>
                 <p className="text-muted-foreground/70 text-[9px]">Lessons</p>
               </div>

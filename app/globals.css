@@ -23,7 +23,7 @@
     --card-foreground: 0 0% 91%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 91%;
-    --primary: 20 70% 52%;
+    --primary:  #d97757;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 13%;
     --secondary-foreground: 0 0% 78%;
@@ -47,7 +47,7 @@
     --card-foreground: 20 30% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 30% 9%;
-    --primary: 20 68% 52%;             /* #d4703f — Claude signature orange */
+    --primary: #d97757;             /* #d4703f — Claude signature orange */
     --primary-foreground: 0 0% 100%;
     --secondary: 34 23% 90% / 0;           /* #ece7df — warm light panel */
     --secondary-foreground: 20 10% 18%;
@@ -110,8 +110,8 @@
   }
 
   .btn-primary {
-    background-color: #f97316ab;
-    border: 1px solid #f97316;
+    background-color: #d97757;
+    border: 1px solid #bc6346;
     color: #ffffff;
     font-weight: 500;
     padding: 0.4rem 1.25rem;
@@ -123,9 +123,9 @@
     gap: 0.5rem;
     font-size: 0.875rem;
   }
-  .btn-primary:hover {
+  /* .btn-primary:hover {
     background-color: #f97316cc;
-  }
+  } */
   .btn-primary:disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -185,8 +185,8 @@
   .badge {
     @apply inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium;
   }
-  .badge-orange { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-400/25; }
-  .badge-purple { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-400/25; }
+  .badge-orange { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-[#d97757]/25; }
+  .badge-purple { @apply badge bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-[#d97757]/25; }
   .badge-green  { @apply badge bg-green-500/15  text-green-700  dark:text-green-400  border border-green-400/25;  }
   .badge-amber  { @apply badge bg-amber-500/15  text-amber-700  dark:text-amber-300  border border-amber-400/25;  }
   .badge-red    { @apply badge bg-red-500/15    text-red-600    dark:text-red-400    border border-red-400/25;    }
@@ -457,24 +457,24 @@ html.light .text-white { color: hsl(var(--foreground)); }
 /* Restore genuine white for elements on coloured backgrounds */
 html.light .bg-orange-600.text-white,
 html.light .bg-orange-500.text-white,
-html.light .bg-orange-400.text-white,
+html.light .bg-[#d97757].text-white,
 html.light .bg-red-600.text-white,
 html.light .bg-red-500.text-white,
 html.light .bg-emerald-600.text-white,
 html.light .bg-emerald-500.text-white,
 html.light .from-orange-600.text-white,
 html.light .from-orange-500.text-white,
-html.light .from-orange-400.text-white { color: #ffffff; }
+html.light .from-[#d97757].text-white { color: #ffffff; }
 
 /* Utility-class buttons — light mode: opaque orange bg + white text */
 html.light .btn-primary {
-  background-color: #ea580c;
-  border-color: #c2410c;
+  background-color: #d97757;
+  border-color: #bc6346;
   color: #ffffff !important;
 }
-html.light .btn-primary:hover {
+/* html.light .btn-primary:hover {
   background-color: #f97316;
-}
+} */
 
 /* ── text-white/X → warm-dark equivalent ────────────────────────────────── */
 html.light .text-white\/5  { color: rgb(15 23 42 / 0.06); }
@@ -559,10 +559,10 @@ html.light .badge-red    { background-color: #fdecea; color: #b71c1c; border-col
 html.light .badge-blue   { background-color: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
 
 /* ── Coloured text — boost contrast on cream ─────────────────────────────── */
-html.light .text-orange-400\/60  { color: rgb(194 65 12 / 0.80); }
-html.light .text-orange-400\/70  { color: rgb(194 65 12 / 0.88); }
-html.light .text-orange-400\/80  { color: rgb(194 65 12 / 0.95); }
-html.light .text-orange-400      { color: #c2410c; }
+html.light .#d97757\/60  { color: rgb(194 65 12 / 0.80); }
+html.light .#d97757\/70  { color: rgb(194 65 12 / 0.88); }
+html.light .#d97757\/80  { color: rgb(194 65 12 / 0.95); }
+html.light .#d97757      { color: #c2410c; }
 html.light .text-orange-300      { color: #c2550e; }
 html.light .text-orange-500      { color: #b83d0a; }
 
@@ -709,7 +709,7 @@ html.light .hero-gradient-text {
 
 /* Ensure the form-panel link / forgot-password orange is readable on light bg */
 html.light .text-orange-500 { color: #b84800; }
-html.light .hover\:text-orange-400:hover { color: #c2550e; }
+html.light .hover\:#d97757:hover { color: #c2550e; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    QUILL RICH TEXT EDITOR — dark theme overrides

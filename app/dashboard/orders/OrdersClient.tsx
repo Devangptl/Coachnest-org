@@ -99,7 +99,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
             ) : (
               <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
                 {order.type === "feature"
-                  ? <Package  className="w-6 h-6 text-orange-400/50" />
+                  ? <Package  className="w-6 h-6 text-[#d97757]/50" />
                   : <BookOpen className="w-6 h-6 text-muted-foreground/30" />
                 }
               </div>
@@ -112,13 +112,13 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
                 <span className="text-muted-foreground/70 text-xs">{formatDate(order.createdAt)}</span>
                 <span className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                   order.type === "feature"
-                    ? "bg-orange-500/10 text-orange-400"
+                    ? "bg-orange-500/10 text-[#d97757]"
                     : "bg-blue-500/10 text-blue-400"
                 }`}>
                   {order.type === "feature" ? "Add-on" : "Course"}
                 </span>
                 {order.couponCode && (
-                  <span className="text-orange-400 text-xs">Coupon: {order.couponCode}</span>
+                  <span className="text-[#d97757] text-xs">Coupon: {order.couponCode}</span>
                 )}
                 {order.stripePaymentId && (
                   <span className="text-muted-foreground/50 text-xs font-mono">
@@ -130,7 +130,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
                   <span className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
                     order.refundStatus === "PROCESSED"  ? "bg-emerald-500/10 text-emerald-400"
                     : order.refundStatus === "REJECTED" ? "bg-red-500/10 text-red-400"
-                    : order.refundStatus === "FAILED"   ? "bg-orange-500/10 text-orange-400"
+                    : order.refundStatus === "FAILED"   ? "bg-orange-500/10 text-[#d97757]"
                     : "bg-amber-500/10 text-amber-400"
                   }`}>
                     Refund {order.refundStatus.toLowerCase()}
@@ -171,14 +171,14 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
 
               {/* Course actions */}
               {order.courseId && order.status === "PAID" && (
-                <Link href={`/courses/${order.courseId}`} className="text-orange-400 hover:text-orange-300 transition-colors" title="View course">
+                <Link href={`/courses/${order.courseId}`} className="text-[#d97757] hover:text-orange-300 transition-colors" title="View course">
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               )}
               {order.courseId && order.status === "REFUNDED" && (
                 <Link
                   href={`/courses/${order.courseId}`}
-                  className="flex items-center gap-1.5 text-xs font-medium text-orange-400 hover:text-orange-300 border border-orange-400/30 hover:border-orange-400/60 bg-orange-500/5 hover:bg-orange-500/10 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                  className="flex items-center gap-1.5 text-xs font-medium text-[#d97757] hover:text-orange-300 border border-[#d97757]/30 hover:border-[#d97757]/60 bg-orange-500/5 hover:bg-orange-500/10 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap"
                   title="Re-enroll in this course"
                 >
                   <RotateCcw className="w-3.5 h-3.5" /> Re-enroll
@@ -197,7 +197,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
               )}
 
               {order.featureSlug && order.status === "PAID" && (
-                <Link href={`/${order.featureSlug}`} className="text-orange-400 hover:text-orange-300 transition-colors" title="View feature">
+                <Link href={`/${order.featureSlug}`} className="text-[#d97757] hover:text-orange-300 transition-colors" title="View feature">
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               )}

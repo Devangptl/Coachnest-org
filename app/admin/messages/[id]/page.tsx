@@ -38,7 +38,7 @@ interface ContactMessage {
 }
 
 const STATUS_BADGE: Record<string, string> = {
-  UNREAD: "bg-orange-500/15 text-orange-300 border-orange-400/25",
+  UNREAD: "bg-orange-500/15 text-orange-300 border-[#d97757]/25",
   READ: "bg-blue-500/15 text-blue-300 border-blue-400/25",
   REPLIED: "bg-green-500/15 text-green-400 border-green-400/25",
 };
@@ -195,14 +195,14 @@ export default function AdminMessageDetailPage({
 
         {/* Sender Info */}
         <div className="flex items-start gap-4 mb-6 pb-6 border-b border-border">
-          <div className="w-12 h-12 rounded-md bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-orange-400/20 flex items-center justify-center flex-shrink-0">
-            <User className="w-6 h-6 text-orange-400" />
+          <div className="w-12 h-12 rounded-md bg-gradient-to-br from-orange-500/20 to-amber-500/20 border border-[#d97757]/20 flex items-center justify-center flex-shrink-0">
+            <User className="w-6 h-6 text-[#d97757]" />
           </div>
           <div className="min-w-0 flex-1">
             <h2 className="text-foreground text-lg font-bold">{msg.name}</h2>
             <div className="flex items-center gap-2 text-muted-foreground text-sm mt-0.5">
               <Mail className="w-3.5 h-3.5" />
-              <a href={`mailto:${msg.email}`} className="hover:text-orange-400 transition-colors">
+              <a href={`mailto:${msg.email}`} className="hover:text-[#d97757] transition-colors">
                 {msg.email}
               </a>
             </div>
@@ -250,7 +250,7 @@ export default function AdminMessageDetailPage({
         {/* Reply Form */}
         <div className="border-t border-border pt-6">
           <h3 className="text-foreground text-sm font-semibold mb-3 flex items-center gap-2">
-            <Reply className="w-4 h-4 text-orange-400" />
+            <Reply className="w-4 h-4 text-[#d97757]" />
             {msg.status === "REPLIED" ? "Update Reply" : "Send Reply"}
           </h3>
           <p className="text-muted-foreground text-xs mb-4">

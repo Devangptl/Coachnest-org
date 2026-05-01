@@ -78,7 +78,7 @@ export default async function FeaturesPage() {
                 <div className={`w-14 h-14 rounded-md flex items-center justify-center flex-shrink-0 ${
                   feature.owned ? "bg-emerald-500/15" : "bg-orange-500/10"
                 }`}>
-                  <Icon className={`w-7 h-7 ${feature.owned ? "text-emerald-400" : "text-orange-400"}`} />
+                  <Icon className={`w-7 h-7 ${feature.owned ? "text-emerald-400" : "text-[#d97757]"}`} />
                 </div>
 
                 <div className="flex-1 min-w-0">
@@ -110,7 +110,7 @@ export default async function FeaturesPage() {
                   ) : (
                     <Link
                       href={`/features/${feature.slug}`}
-                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-400 text-white text-sm font-semibold transition-colors"
+                      className="flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-lg bg-orange-500 hover:bg-[#d97757] text-white text-sm font-semibold transition-colors"
                     >
                       <ShoppingCart className="w-4 h-4" /> Buy Access
                     </Link>

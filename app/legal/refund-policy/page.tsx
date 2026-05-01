@@ -94,7 +94,7 @@ export default function RefundPolicyPage() {
 
               <Section id="overview" title="1. Overview">
                 <p>CoachNest offers a 30-day money-back guarantee on individual course purchases. We believe in the quality of our content and want every learner to feel confident in their investment. If a course is not what you expected, we will make it right.</p>
-                <p>This policy covers individual course purchases made directly on CoachNest. Subscription plans have separate terms described in the <a href="#subscriptions" className="text-orange-400/80 hover:text-orange-400 transition-colors">Subscriptions</a> section below.</p>
+                <p>This policy covers individual course purchases made directly on CoachNest. Subscription plans have separate terms described in the <a href="#subscriptions" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Subscriptions</a> section below.</p>
               </Section>
 
               <Section id="eligibility" title="2. Refund Eligibility">
@@ -115,7 +115,7 @@ export default function RefundPolicyPage() {
                   <li>Courses where more than 30% of lessons have been completed or marked as watched.</li>
                   <li>Courses purchased as part of a bundle or promotional package (unless explicitly stated otherwise).</li>
                   <li>Courses purchased with a coupon providing 100% discount (free coupon enrolments).</li>
-                  <li>Accounts that have been suspended or terminated for violating our <Link href="/legal/terms-of-service" className="text-orange-400/80 hover:text-orange-400 transition-colors">Terms of Service</Link>.</li>
+                  <li>Accounts that have been suspended or terminated for violating our <Link href="/legal/terms-of-service" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Terms of Service</Link>.</li>
                   <li>Downloadable resources, certificates, or other non-course digital goods.</li>
                 </ul>
               </Section>
@@ -136,7 +136,7 @@ export default function RefundPolicyPage() {
                     Submit the form. You will receive a confirmation email within 24 hours.
                   </li>
                 </ol>
-                <p>Alternatively, you can contact us directly via our <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 transition-colors">Contact page</Link> and our support team will assist you.</p>
+                <p>Alternatively, you can contact us directly via our <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Contact page</Link> and our support team will assist you.</p>
               </Section>
 
               <Section id="timeline" title="5. Refund Timeline">
@@ -173,7 +173,7 @@ export default function RefundPolicyPage() {
                 <p>If you have any questions about our refund policy or need help with a refund request, please get in touch:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
                   <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Support Team</p>
-                  <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 text-sm transition-colors">
+                  <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a support request →
                   </Link>
                   <p className="text-white/25 text-xs mt-2">We aim to respond within 24 hours on business days.</p>

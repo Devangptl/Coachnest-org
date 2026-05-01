@@ -26,18 +26,18 @@ export default function AccountInfo({ email, createdAt, stats }: AccountInfoProp
 
       <div className="grid sm:grid-cols-2 gap-4 mb-5">
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
-          <Mail className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <Mail className="w-4 h-4 text-[#d97757] flex-shrink-0" />
           <span>{email}</span>
         </div>
         <div className="flex items-center gap-3 text-muted-foreground text-sm">
-          <Calendar className="w-4 h-4 text-orange-400 flex-shrink-0" />
+          <Calendar className="w-4 h-4 text-[#d97757] flex-shrink-0" />
           <span>Joined {joinDate}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-3 gap-3">
         {[
-          { label: "Enrollments", value: stats.enrollments, icon: BookOpen, color: "text-orange-400" },
+          { label: "Enrollments", value: stats.enrollments, icon: BookOpen, color: "text-[#d97757]" },
           { label: "Certificates", value: stats.certificates, icon: Award, color: "text-emerald-400" },
           { label: "Reviews", value: stats.reviews, icon: Star, color: "text-yellow-400" },
         ].map((stat) => {

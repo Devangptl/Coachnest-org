@@ -173,7 +173,7 @@ export default function CookiePolicyPage() {
               <Section id="third-party" title="4. Third-Party Cookies">
                 <p>Some cookies on CoachNest are set by trusted third-party services that we use to operate the Platform:</p>
                 <ul>
-                  <li><strong className="text-white/70">Stripe</strong> — payment processing. Stripe may set cookies to detect fraud and ensure secure transactions. <Link href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-orange-400/80 hover:text-orange-400 transition-colors">Stripe Privacy Policy ↗</Link></li>
+                  <li><strong className="text-white/70">Stripe</strong> — payment processing. Stripe may set cookies to detect fraud and ensure secure transactions. <Link href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Stripe Privacy Policy ↗</Link></li>
                   <li><strong className="text-white/70">Google Analytics</strong> — anonymous usage analytics to help us understand how people use CoachNest. Data is aggregated and not linked to identifiable individuals.</li>
                   <li><strong className="text-white/70">Cloudinary / Unsplash</strong> — image delivery CDNs that may set performance-related cookies.</li>
                 </ul>
@@ -185,9 +185,9 @@ export default function CookiePolicyPage() {
                 <SubHeading>Browser Settings</SubHeading>
                 <p>Most browsers allow you to refuse or delete cookies through their settings. Note that disabling strictly necessary cookies will prevent you from using features that require authentication.</p>
                 <ul>
-                  <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-orange-400/80 hover:text-orange-400 transition-colors">Chrome cookie settings ↗</a></li>
-                  <li><a href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer" target="_blank" rel="noopener noreferrer" className="text-orange-400/80 hover:text-orange-400 transition-colors">Firefox cookie settings ↗</a></li>
-                  <li><a href="https://support.apple.com/en-us/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-orange-400/80 hover:text-orange-400 transition-colors">Safari cookie settings ↗</a></li>
+                  <li><a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Chrome cookie settings ↗</a></li>
+                  <li><a href="https://support.mozilla.org/en-US/kb/cookies-information-websites-store-on-your-computer" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Firefox cookie settings ↗</a></li>
+                  <li><a href="https://support.apple.com/en-us/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Safari cookie settings ↗</a></li>
                 </ul>
                 <SubHeading>Account Settings</SubHeading>
                 <p>You can opt out of analytics cookies from your CoachNest account settings under <strong className="text-white/70">Privacy Preferences</strong>.</p>
@@ -205,7 +205,7 @@ export default function CookiePolicyPage() {
                 <p>If you have questions about our use of cookies or this Cookie Policy, please contact us:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
                   <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Privacy Team</p>
-                  <Link href="/contact" className="text-orange-400/80 hover:text-orange-400 text-sm transition-colors">
+                  <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a request via our Contact page →
                   </Link>
                 </div>

@@ -20,7 +20,7 @@ const TYPE_CONFIG: Record<string, { icon: typeof Activity; color: string; bg: st
   GROUP_JOINED:     { icon: Users, color: "text-emerald-400", bg: "bg-emerald-500/10" },
   REVIEW_SUBMITTED: { icon: Star, color: "text-purple-400", bg: "bg-purple-500/10" },
   BADGE_EARNED:     { icon: Award, color: "text-amber-400", bg: "bg-amber-500/10" },
-  COURSE_COMPLETED: { icon: BookOpen, color: "text-orange-400", bg: "bg-orange-500/10" },
+  COURSE_COMPLETED: { icon: BookOpen, color: "text-[#d97757]", bg: "bg-orange-500/10" },
 };
 
 interface FeedClientProps {

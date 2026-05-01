@@ -33,7 +33,7 @@ interface Props {
 }
 
 const typeConfig = {
-  VIDEO: { icon: PlayCircle, color: "text-orange-400", bg: "bg-orange-500/15", border: "border-orange-400/20", label: "Video" },
+  VIDEO: { icon: PlayCircle, color: "text-[#d97757]", bg: "bg-orange-500/15", border: "border-[#d97757]/20", label: "Video" },
   TEXT:  { icon: FileText,   color: "text-blue-400",   bg: "bg-blue-500/15",   border: "border-blue-400/20",   label: "Reading" },
   QUIZ:  { icon: HelpCircle, color: "text-amber-400",  bg: "bg-amber-500/15",  border: "border-amber-400/20",  label: "Quiz" },
 };
@@ -55,7 +55,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border bg-secondary/30">
         <div className="flex items-center gap-2">
-          <LayoutList className="w-4 h-4 text-orange-400" />
+          <LayoutList className="w-4 h-4 text-[#d97757]" />
           <span className="font-semibold text-foreground text-sm">Course Lessons</span>
         </div>
         <div className="flex items-center gap-3">
@@ -68,7 +68,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled }: Props) {
                 const firstIncomplete = lessons.find((l) => !l.completed);
                 return (firstIncomplete ?? lessons[0]).id;
               })()}`}
-              className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-orange-500/10 hover:bg-orange-500/20 border border-orange-400/20 px-3 py-1.5 rounded-lg transition-colors"
+              className="flex items-center gap-1.5 text-xs font-semibold text-primary bg-orange-500/10 hover:bg-orange-500/20 border border-[#d97757]/20 px-3 py-1.5 rounded-lg transition-colors"
             >
               Continue
               <ArrowRight className="w-3.5 h-3.5" />
@@ -137,7 +137,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled }: Props) {
                 "flex-shrink-0 w-9 h-9 rounded-lg flex items-center justify-center border",
                 isDone
                   ? "bg-emerald-500/15 border-emerald-400/20"
-                  : "bg-white/[0.04] border-white/[0.06] group-hover:border-orange-400/20 group-hover:bg-orange-500/10"
+                  : "bg-white/[0.04] border-white/[0.06] group-hover:border-[#d97757]/20 group-hover:bg-orange-500/10"
               )}>
                 {isDone ? (
                   <CheckCircle2 className="w-4.5 h-4.5 text-emerald-400" />
@@ -173,7 +173,7 @@ export default function CourseViewer({ courseId, lessons, isEnrolled }: Props) {
               {/* Lesson number + arrow */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 <span className="text-[11px] text-muted-foreground/40 font-medium">{i + 1}</span>
-                <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-orange-400 group-hover:translate-x-0.5 transition-all" />
+                <ArrowRight className="w-4 h-4 text-muted-foreground/30 group-hover:text-[#d97757] group-hover:translate-x-0.5 transition-all" />
               </div>
             </Link>
           );

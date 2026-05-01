@@ -260,7 +260,7 @@ export default function NavbarClient({ session }: Props) {
                               className={cn(
                                 "flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
                                 isActive
-                                  ? "text-orange-400 bg-orange-500/10"
+                                  ? "text-[#d97757] bg-orange-500/10"
                                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                               )}
                             >

@@ -53,7 +53,7 @@ export default function AboutPage() {
 
           {/* Hero */}
           <div className="text-center mb-20">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-orange-400/80 text-xs font-medium mb-6">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-orange-500/20 bg-orange-500/5 text-[#d97757]/80 text-xs font-medium mb-6">
               Our Story
             </div>
             <h1 className="text-4xl sm:text-5xl font-bold text-white mb-6 leading-tight">
@@ -95,7 +95,7 @@ export default function AboutPage() {
               {VALUES.map(({ icon: Icon, title, desc }) => (
                 <div key={title} className="rounded-md border border-white/8 bg-white/[.02] p-6 flex gap-4">
                   <div className="w-10 h-10 rounded-md bg-orange-500/10 border border-orange-500/20 flex items-center justify-center shrink-0">
-                    <Icon className="w-5 h-5 text-orange-400/70" />
+                    <Icon className="w-5 h-5 text-[#d97757]/70" />
                   </div>
                   <div>
                     <p className="text-white/80 font-semibold text-sm mb-1">{title}</p>
@@ -112,7 +112,7 @@ export default function AboutPage() {
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {TEAM.map((member) => (
                 <div key={member.name} className="rounded-md border border-white/8 bg-white/[.02] p-5 text-center">
-                  <div className="w-14 h-14 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-400/70 font-bold text-base mx-auto mb-3">
+                  <div className="w-14 h-14 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#d97757]/70 font-bold text-base mx-auto mb-3">
                     {member.initials}
                   </div>
                   <p className="text-white/75 font-medium text-sm">{member.name}</p>

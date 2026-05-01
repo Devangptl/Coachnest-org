@@ -16,7 +16,7 @@ export default function StreakCounter({ streak, longestStreak, compact = false }
       <div className={cn(
         "flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-sm font-semibold",
         isActive
-          ? "bg-orange-500/10 border-orange-500/20 text-orange-400"
+          ? "bg-orange-500/10 border-orange-500/20 text-[#d97757]"
           : "bg-secondary border-border text-muted-foreground"
       )}>
         <span>{isActive ? "🔥" : "❄️"}</span>
