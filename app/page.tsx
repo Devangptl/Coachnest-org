@@ -367,10 +367,9 @@ export default async function HomePage() {
                 </div>
               </FadeInSection>
 
-              {/* Trust signal — avatars + rating */}
-              <FadeInSection delay={0.24}>
-                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-                  <div className="flex items-center gap-3">
+              {/* Trust signal — avatars + rating
+              
+              <div className="flex items-center gap-3">
                     <div className="flex -space-x-2.5">
                       {[
                         "from-[#d97757] to-amber-500",
@@ -399,8 +398,12 @@ export default async function HomePage() {
                       </p>
                     </div>
                   </div>
-
                   <div className="hidden sm:block w-px h-9 bg-border" />
+                  */}
+              <FadeInSection delay={0.24}>
+                <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+                  
+                  
 
                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
