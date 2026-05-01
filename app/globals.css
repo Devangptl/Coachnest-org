@@ -122,33 +122,7 @@
     justify-content: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-    transition: all 0.2s ease;
-  }
-
-  .btn-primary::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    transform: translateX(-100%);
-    background: linear-gradient(
-      120deg,
-      transparent,
-      rgba(255, 255, 255, 0.25),
-      transparent
-    );
-    transition: transform 0.7s ease;
-  }
-
-  /* Hover animation */
-  .btn-primary:hover::before {
-    transform: translateX(100%);
-  }
-  
-  /* Optional: slight lift */
-  .btn-primary:hover {
-    transform: translateY(-1px);
-  }
-  
+  } 
   /* .btn-primary:hover {
     background-color: #f97316cc;
   } */
