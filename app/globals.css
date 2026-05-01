@@ -23,7 +23,7 @@
     --card-foreground: 0 0% 91%;
     --popover: 0 0% 7%;
     --popover-foreground: 0 0% 91%;
-    --primary:  #d97757;
+    --primary:  15 63% 60%;
     --primary-foreground: 0 0% 100%;
     --secondary: 0 0% 13%;
     --secondary-foreground: 0 0% 78%;
@@ -47,7 +47,7 @@
     --card-foreground: 20 30% 9%;
     --popover: 0 0% 100%;
     --popover-foreground: 20 30% 9%;
-    --primary: #d97757;             /* #d4703f — Claude signature orange */
+    --primary: 15 63% 60%;             /* #d4703f — Claude signature orange */
     --primary-foreground: 0 0% 100%;
     --secondary: 34 23% 90% / 0;           /* #ece7df — warm light panel */
     --secondary-foreground: 20 10% 18%;
@@ -122,7 +122,7 @@
     justify-content: center;
     gap: 0.5rem;
     font-size: 0.875rem;
-  }
+  } 
   /* .btn-primary:hover {
     background-color: #f97316cc;
   } */

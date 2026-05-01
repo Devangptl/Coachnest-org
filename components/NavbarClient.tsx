@@ -182,9 +182,9 @@ export default function NavbarClient({ session }: Props) {
                 >
                   {/* Avatar */}
                   {session.avatar ? (
-                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-lg object-cover shadow-md" />
+                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
                   ) : (
-                    <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
+                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
                       {initials}
                     </div>
                   )}
@@ -220,9 +220,9 @@ export default function NavbarClient({ session }: Props) {
                       <div className="px-3 py-2.5 border-b border-border">
                         <div className="flex items-center gap-2.5">
                           {session.avatar ? (
-                            <img src={session.avatar} alt="Avatar" className="w-8 h-8 rounded-lg object-cover shadow-md" />
+                            <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
                           ) : (
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
+                            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
                               {initials}
                             </div>
                           )}
@@ -371,9 +371,9 @@ export default function NavbarClient({ session }: Props) {
                   <div className="border-t border-border my-2" />
                   <div className="px-4 py-2 flex items-center gap-3">
                     {session.avatar ? (
-                      <img src={session.avatar} alt="Avatar" className="w-8 h-8 rounded-lg object-cover" />
+                      <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
                     ) : (
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold">
+                      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
                         {initials}
                       </div>
                     )}
