@@ -44,117 +44,116 @@ export default function CourseHero({
 
   const durationLabel = totalDuration > 60
     ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`
-    : totalDuration > 0 ? `${totalDuration}m` : null;
+    : `${totalDuration}m`;
 
   return (
-    <div className="relative overflow-hidden border-b border-border">
-      <div className="relative mx-auto py-5">
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
+    <div className="relative overflow-hidden">
+      <div className="relative mx-auto pt-5 pb-6">
+
+        {/* Breadcrumb */}
+        <motion.nav
+          initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
-          className="max-w-3xl space-y-3"
+          className="flex items-center gap-2 text-xs text-muted-foreground/70 mb-4"
         >
-          {/* Row 1: Breadcrumb + badges on the same line */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            {/* Breadcrumb */}
-            <nav className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
-              <Link href="/" className="hover:text-muted-foreground transition-colors">Home</Link>
-              <ChevronRight className="w-3 h-3" />
-              <Link href="/courses" className="hover:text-muted-foreground transition-colors">Courses</Link>
-              {categoryName && (
-                <>
-                  <ChevronRight className="w-3 h-3" />
-                  <span className="text-muted-foreground truncate max-w-[120px] sm:max-w-none">{categoryName}</span>
-                </>
-              )}
-            </nav>
+          <Link href="/" className="hover:text-muted-foreground transition-colors">Home</Link>
+          <ChevronRight className="w-3.5 h-3.5" />
+          <Link href="/courses" className="hover:text-muted-foreground transition-colors">Courses</Link>
+          {categoryName && (
+            <>
+              <ChevronRight className="w-3.5 h-3.5" />
+              <span className="text-muted-foreground">{categoryName}</span>
+            </>
+          )}
+        </motion.nav>
 
-            {/* Badges */}
-            <div className="flex items-center gap-1.5 flex-wrap">
-              <Badge variant={lvl.variant} className="text-[10px] px-1.5 py-0.5">
-                <Signal className="w-2.5 h-2.5" />
-                {lvl.label}
-              </Badge>
-              {isFree && <Badge variant="green" className="text-[10px] px-1.5 py-0.5">Free</Badge>}
-              <Badge variant="gray" className="text-[10px] px-1.5 py-0.5">
-                <Globe className="w-2.5 h-2.5" />
-                {language}
-              </Badge>
-            </div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="max-w-3xl"
+        >
+          {/* Badges */}
+          <div className="flex flex-wrap gap-1.5 mb-3">
+            <Badge variant={lvl.variant}>
+              <Signal className="w-3 h-3" />
+              {lvl.label}
+            </Badge>
+            {categoryName && <Badge variant="purple">{categoryName}</Badge>}
+            {isFree && <Badge variant="green">Free</Badge>}
+            <Badge variant="gray">
+              <Globe className="w-3 h-3" />
+              {language}
+            </Badge>
           </div>
 
-          {/* Row 2: Title */}
-          <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-foreground leading-snug">
+          {/* Title */}
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground leading-tight mb-3">
             {title}
           </h1>
 
-          {/* Row 3: Description — 2-line clamp */}
-          <p className="text-muted-foreground text-sm leading-relaxed line-clamp-2">
+          {/* Description */}
+          <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-5">
             {description}
           </p>
 
-          {/* Row 4: All meta in one compact line */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-muted-foreground/70">
-            {/* Rating */}
+          {/* Rating + enrollment + quick stats */}
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 text-sm">
             {avgRating > 0 && (
-              <span className="flex items-center gap-1">
-                <span className="text-amber-400 font-semibold">{avgRating.toFixed(1)}</span>
-                <span className="flex items-center gap-px">
+              <div className="flex items-center gap-1.5">
+                <span className="text-amber-400 font-bold">{avgRating.toFixed(1)}</span>
+                <div className="flex items-center gap-0.5">
                   {Array.from({ length: 5 }, (_, i) => (
                     <Star
                       key={i}
-                      className={`w-3 h-3 ${
+                      className={`w-3.5 h-3.5 ${
                         i < Math.floor(avgRating)
                           ? "fill-amber-400 text-amber-400"
                           : i < avgRating
                           ? "fill-amber-400/50 text-amber-400"
-                          : "fill-transparent text-muted-foreground/25"
+                          : "fill-transparent text-muted-foreground/30"
                       }`}
                     />
                   ))}
-                </span>
-                <span>({reviewCount.toLocaleString()})</span>
-              </span>
+                </div>
+                <span className="text-muted-foreground/70 text-xs">({reviewCount} reviews)</span>
+              </div>
             )}
 
-            <Dot />
-            <span className="flex items-center gap-1">
-              <Users className="w-3 h-3" />
-              {enrollmentCount.toLocaleString()} students
-            </span>
+            <div className="flex items-center gap-1 text-muted-foreground/70">
+              <Users className="w-3.5 h-3.5" />
+              <span>{enrollmentCount.toLocaleString()} students</span>
+            </div>
 
-            <Dot />
-            <span className="flex items-center gap-1">
-              <BookOpen className="w-3 h-3" />
-              {lessonCount} lessons
-            </span>
+            <div className="flex items-center gap-1 text-muted-foreground/70">
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>{lessonCount} lessons</span>
+            </div>
 
-            {durationLabel && (
-              <>
-                <Dot />
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" />
-                  {durationLabel}
-                </span>
-              </>
+            {totalDuration > 0 && (
+              <div className="flex items-center gap-1 text-muted-foreground/70">
+                <Clock className="w-3.5 h-3.5" />
+                <span>{durationLabel}</span>
+              </div>
             )}
+          </div>
 
-            <Dot />
-            {/* Instructor */}
-            <span className="flex items-center gap-1.5">
-              <span className="w-5 h-5 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white text-[9px] font-bold flex-shrink-0">
-                {instructorName.charAt(0).toUpperCase()}
-              </span>
-              <span>{instructorName}</span>
-            </span>
+          {/* Instructor */}
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0">
+              {instructorName.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="text-muted-foreground/70 text-[10px]">Created by</p>
+              <p className="text-foreground font-medium text-xs">{instructorName}</p>
+            </div>
           </div>
         </motion.div>
       </div>
+
+      {/* Bottom separator */}
+      <div className="h-px bg-border" />
     </div>
   );
-}
-
-function Dot() {
-  return <span className="text-muted-foreground/30 select-none">·</span>;
 }
