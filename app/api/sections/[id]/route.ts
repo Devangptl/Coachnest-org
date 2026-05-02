@@ -1,6 +1,6 @@
 /**
- * PATCH  /api/lessons/:id  — update a lesson (admin only)
- * DELETE /api/lessons/:id  — delete a lesson (admin only)
+ * PATCH  /api/sections/:id — update title or order
+ * DELETE /api/sections/:id — delete section (lessons become ungrouped)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
@@ -16,25 +16,19 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
-    const data = await req.json();
+    const { title, order } = await req.json();
 
-    const lesson = await prisma.lesson.update({
+    const section = await prisma.section.update({
       where: { id },
       data: {
-        title: data.title,
-        type: data.type,
-        content: data.content,
-        description: data.description,
-        order: data.order,
-        duration: data.duration,
-        isFree: data.isFree,
-        ...(data.sectionId !== undefined && { sectionId: data.sectionId }),
+        ...(title !== undefined && { title: title.trim() }),
+        ...(order !== undefined && { order }),
       },
     });
 
-    return NextResponse.json({ lesson });
+    return NextResponse.json({ section });
   } catch (error) {
-    console.error("[PATCH /api/lessons/:id]", error);
+    console.error("[PATCH /api/sections/:id]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }
@@ -47,11 +41,18 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
-    await prisma.lesson.delete({ where: { id } });
 
-    return NextResponse.json({ message: "Lesson deleted." });
+    // Unassign lessons — they become ungrouped (not deleted)
+    await prisma.lesson.updateMany({
+      where: { sectionId: id },
+      data: { sectionId: null },
+    });
+
+    await prisma.section.delete({ where: { id } });
+
+    return NextResponse.json({ message: "Chapter deleted." });
   } catch (error) {
-    console.error("[DELETE /api/lessons/:id]", error);
+    console.error("[DELETE /api/sections/:id]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
   }
 }
