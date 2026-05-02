@@ -145,8 +145,8 @@ export default function QuizPlayer({ quiz, onComplete }: Props) {
   // ── Start Screen ────────────────────────────────────────────────────────────
   if (phase === "start") {
     return (
-      <div className="max-w-2xl mx-auto">
-        <div className="glass p-8 space-y-6 text-center">
+      <div className="mx-auto">
+        <div className="md:p-8 p-2 space-y-6 text-center">
           <div className="w-16 h-16 rounded-lg bg-amber-500/15 border border-amber-400/20 flex items-center justify-center mx-auto">
             <HelpCircle className="w-8 h-8 text-amber-400" />
           </div>

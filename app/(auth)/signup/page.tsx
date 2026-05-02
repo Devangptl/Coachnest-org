@@ -103,103 +103,11 @@ export default function SignupPage() {
       {/* ══════════════════════════════════════════════════════════════════
           LEFT — brand panel (no background — inherits app bg)
       ══════════════════════════════════════════════════════════════════ */}
-      <aside className="hidden lg:flex lg:w-[45%] xl:w-[44%] flex-col overflow-hidden
-                        border-r border-border">
+      <aside className="hidden lg:flex lg:w-[30%] xl:w-[33%] flex-col overflow-hidden">
 
-        <div className="flex flex-col h-full px-10 py-9">
-
+        <div className="flex flex-col items-center justify-center h-full px-10 py-9">
           {/* Logo */}
           <Link href="/"><img src="/logo.png" alt="CoachNest" className="h-7 w-auto object-contain self-start" /></Link>
-
-          <div className="flex-1 flex flex-col justify-center gap-0 mt-6">
-
-            {/* ── Headline ── */}
-            <div className="mb-7">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border
-                               border-orange-500/25 bg-orange-500/10 text-[#d97757]
-                               text-[11px] font-semibold tracking-wide uppercase mb-5">
-                <Star className="w-3 h-3 fill-current" />
-                {role === "INSTRUCTOR" ? "Join 2,000+ instructors" : "Join 12,000+ learners"}
-              </span>
-
-              <h2 className="text-[2rem] xl:text-[2.3rem] font-bold leading-[1.12] mb-3 text-foreground">
-                {role === "INSTRUCTOR" ? (
-                  <>Share your expertise,<br /><span className="hero-gradient-text">grow your impact</span></>
-                ) : (
-                  <>Unlock your potential,<br /><span className="hero-gradient-text">learn anything</span></>
-                )}
-              </h2>
-              <p className="text-sm leading-relaxed max-w-[260px] text-muted-foreground">
-                {role === "INSTRUCTOR"
-                  ? "Create courses, reach a global audience, and earn doing what you love."
-                  : "Explore hundreds of expert courses and level up your career today."}
-              </p>
-            </div>
-
-            {/* ── Perks ── */}
-            <div className="rounded-md border border-border divide-y divide-border bg-card mb-6">
-              {perks.map(({ icon: Icon, text, sub }) => (
-                <div key={text} className="flex items-center gap-3.5 px-4 py-3.5">
-                  <span className="w-8 h-8 rounded-lg border border-orange-500/20 bg-orange-500/10
-                                   flex items-center justify-center flex-shrink-0">
-                    <Icon className="w-4 h-4 text-orange-500" />
-                  </span>
-                  <div className="min-w-0">
-                    <div className="text-sm font-semibold leading-none mb-0.5 text-foreground">{text}</div>
-                    <div className="text-[11px] text-muted-foreground">{sub}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* ── Social proof ── */}
-            <div className="rounded-md border border-border bg-card shadow-card p-4">
-              <div className="flex items-center justify-between">
-                {/* Avatar stack + rating */}
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2">
-                    {AVATARS.map(({ initials, color }, i) => (
-                      <div
-                        key={initials}
-                        style={{ zIndex: AVATARS.length - i }}
-                        className={cn(
-                          "w-8 h-8 rounded-full border-2 border-background bg-gradient-to-br",
-                          "flex items-center justify-center text-white text-[10px] font-bold",
-                          color,
-                        )}
-                      >
-                        {initials}
-                      </div>
-                    ))}
-                    <div style={{ zIndex: 0 }}
-                      className="w-8 h-8 rounded-full border-2 border-background bg-secondary
-                                 flex items-center justify-center">
-                      <Users className="w-3.5 h-3.5 text-muted-foreground" />
-                    </div>
-                  </div>
-                  <div>
-                    <div className="flex gap-0.5 mb-0.5">
-                      {[...Array(5)].map((_, i) => (
-                        <Star key={i} className="w-3 h-3 text-amber-400 fill-current" />
-                      ))}
-                    </div>
-                    <span className="text-[11px] text-muted-foreground">
-                      <span className="font-semibold text-foreground">4.9</span> / 5 · 3,200+ reviews
-                    </span>
-                  </div>
-                </div>
-
-                {/* Stat */}
-                <div className="flex flex-col items-end border-l border-border pl-4">
-                  <span className="text-xl font-bold leading-none text-foreground">{stat.value}</span>
-                  <span className="text-[10px] text-right mt-0.5 max-w-[80px] leading-tight text-muted-foreground">
-                    {stat.label}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-          </div>
         </div>
       </aside>
 
@@ -313,9 +221,9 @@ export default function SignupPage() {
 
             <p className="text-[0.78rem] text-muted-foreground leading-relaxed">
               By creating an account you agree to our{" "}
-              <span className="text-orange-500 hover:text-[#d97757] cursor-pointer transition-colors">Terms</span>
+              <Link href="/legal/terms-of-service" className="text-orange-500 hover:text-[#d97757] cursor-pointer transition-colors">Terms</Link>
               {" "}and{" "}
-              <span className="text-orange-500 hover:text-[#d97757] cursor-pointer transition-colors">Privacy Policy</span>.
+              <Link href="/legal/privacy-policy" className="text-orange-500 hover:text-[#d97757] cursor-pointer transition-colors">Privacy Policy</Link>.
             </p>
 
             <button type="submit" disabled={loading} className="btn-primary w-full group">
