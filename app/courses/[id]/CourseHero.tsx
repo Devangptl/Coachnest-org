@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Clock, Users, Star, Signal, Globe, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import FollowInstructorButton from "@/components/FollowInstructorButton";
 
 interface Props {
   title: string;
@@ -12,12 +13,16 @@ interface Props {
   language: string;
   categoryName: string | null;
   instructorName: string;
+  instructorId: string;
   lessonCount: number;
   totalDuration: number;
   enrollmentCount: number;
   reviewCount: number;
   avgRating: number;
   isFree: boolean;
+  isFollowingInstructor: boolean;
+  instructorFollowerCount: number;
+  isLoggedIn: boolean;
 }
 
 const levelConfig: Record<string, { variant: "green" | "amber" | "red"; label: string }> = {
@@ -33,12 +38,16 @@ export default function CourseHero({
   language,
   categoryName,
   instructorName,
+  instructorId,
   lessonCount,
   totalDuration,
   enrollmentCount,
   reviewCount,
   avgRating,
   isFree,
+  isFollowingInstructor,
+  instructorFollowerCount,
+  isLoggedIn,
 }: Props) {
   const lvl = levelConfig[level] ?? levelConfig.beginner;
 
@@ -140,14 +149,23 @@ export default function CourseHero({
           </div>
 
           {/* Instructor */}
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0">
-              {instructorName.charAt(0).toUpperCase()}
+          <div className="flex items-center gap-3 flex-wrap">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white text-xs font-bold shadow-md flex-shrink-0">
+                {instructorName.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <p className="text-muted-foreground/70 text-[10px]">Created by</p>
+                <p className="text-foreground font-medium text-xs">{instructorName}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-muted-foreground/70 text-[10px]">Created by</p>
-              <p className="text-foreground font-medium text-xs">{instructorName}</p>
-            </div>
+            <FollowInstructorButton
+              instructorId={instructorId}
+              initialIsFollowing={isFollowingInstructor}
+              initialCount={instructorFollowerCount}
+              isLoggedIn={isLoggedIn}
+              showCount
+            />
           </div>
         </motion.div>
       </div>
