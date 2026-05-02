@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const { courseId, title, type, content, description, order, duration, isFree } =
+    const { courseId, sectionId, title, type, content, description, order, duration, isFree } =
       await req.json();
 
     if (!courseId || !title) {
@@ -73,6 +73,7 @@ export async function POST(req: NextRequest) {
     const lesson = await prisma.lesson.create({
       data: {
         courseId,
+        sectionId: sectionId ?? null,
         title,
         type: type ?? "TEXT",
         content: content ?? null,

@@ -7,7 +7,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2, Lock, PlayCircle, FileText, HelpCircle,
   ChevronLeft, ChevronRight, Clock, Sparkles, Eye,
-  Award, Download, Headphones, ArrowLeft,
+  Award, Download, Headphones, ArrowLeft, BookOpen,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import QuizPlayer from "@/components/QuizPlayer";
@@ -26,17 +26,21 @@ interface LessonData {
   content?:  string | null;
   duration?: number | null;
   isFree?:   boolean;
+  section?:  { id: string; title: string; order: number } | null;
 }
 
 interface NavItem { id: string; title: string }
 
 interface Props {
-  courseId:     string;
-  lesson:       LessonData;
-  lessonIndex:  number;
-  totalLessons: number;
-  prev:         NavItem | null;
-  next:         NavItem | null;
+  courseId:      string;
+  lesson:        LessonData;
+  lessonIndex:   number;
+  totalLessons:  number;
+  chapterTitle?:  string;
+  chapterIndex?:  number;
+  totalChapters?: number;
+  prev:          NavItem | null;
+  next:          NavItem | null;
 }
 
 const typeConfig = {
@@ -45,7 +49,7 @@ const typeConfig = {
   QUIZ:  { icon: HelpCircle, color: "text-amber-400",  bg: "bg-amber-500/15",  border: "border-amber-400/20",  label: "Quiz" },
 };
 
-export default function LessonContentClient({ courseId, lesson, lessonIndex, totalLessons, prev, next }: Props) {
+export default function LessonContentClient({ courseId, lesson, lessonIndex, totalLessons, chapterTitle, chapterIndex, totalChapters, prev, next }: Props) {
   const router = useRouter();
   const { isEnrolled, loading, isCompleted, markComplete } = useLessonContext();
   const [showAudioPlayer,  setShowAudioPlayer]  = useState(false);
@@ -136,6 +140,19 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             <TypeIcon className={cn("w-4 h-4 sm:w-5 sm:h-5", config.color)} />
           </div>
           <div className="flex-1 min-w-0">
+            {/* Chapter breadcrumb */}
+            {chapterTitle && (
+              <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/50 font-medium mb-1.5">
+                <BookOpen className="w-3 h-3 flex-shrink-0" />
+                <span>
+                  {totalChapters && chapterIndex
+                    ? `Chapter ${chapterIndex} of ${totalChapters}`
+                    : `Chapter ${chapterIndex ?? ""}`}
+                </span>
+                <span className="text-muted-foreground/25">·</span>
+                <span className="text-[#d97757]/70 truncate">{chapterTitle}</span>
+              </div>
+            )}
             <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap mb-1">
               <span className="text-[10px] sm:text-[11px] text-muted-foreground/60 font-medium uppercase tracking-wide">
                 Lesson {lessonIndex + 1} of {totalLessons}
