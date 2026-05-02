@@ -311,7 +311,7 @@ export default async function DashboardPage() {
         </div>
 
         {followedCourses.length > 0 ? (
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {followedCourses.map((c) => (
               <CourseCard
                 key={c.id}
@@ -326,6 +326,7 @@ export default async function DashboardPage() {
                 level={c.level}
                 totalLessons={c._count.lessons}
                 enrollmentCount={c._count.enrollments}
+                compact
               />
             ))}
           </div>
@@ -362,10 +363,15 @@ export default async function DashboardPage() {
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
-            <Clock className="w-5 h-5 text-blue-400" /> Continue Learning
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <Clock className="w-5 h-5 text-blue-400" /> Continue Learning
+            </h2>
+            <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {inProgress.map((e) => (
               <CourseCard
                 key={e.courseId}
@@ -375,6 +381,7 @@ export default async function DashboardPage() {
                 thumbnail={e.course.thumbnail}
                 totalLessons={e.course._count.lessons}
                 progress={e.progress}
+                compact
               />
             ))}
           </div>
@@ -384,10 +391,13 @@ export default async function DashboardPage() {
       {/* ─── Not Started ─────────────────────────────────────────────────── */}
       {notStarted.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-foreground mb-5">
-            Not Started Yet
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-semibold text-foreground">Not Started Yet</h2>
+            <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {notStarted.map((e) => (
               <CourseCard
                 key={e.courseId}
@@ -397,6 +407,7 @@ export default async function DashboardPage() {
                 thumbnail={e.course.thumbnail}
                 totalLessons={e.course._count.lessons}
                 progress={0}
+                compact
               />
             ))}
           </div>
@@ -406,10 +417,15 @@ export default async function DashboardPage() {
       {/* ─── Completed ───────────────────────────────────────────────────── */}
       {completed.length > 0 && (
         <section className="mb-10">
-          <h2 className="text-xl font-semibold text-foreground mb-5 flex items-center gap-2">
-            <Trophy className="w-5 h-5 text-emerald-400" /> Completed Courses
-          </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+              <Trophy className="w-5 h-5 text-emerald-400" /> Completed Courses
+            </h2>
+            <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
+              View all <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
             {completed.map((e) => (
               <CourseCard
                 key={e.courseId}
@@ -419,6 +435,7 @@ export default async function DashboardPage() {
                 thumbnail={e.course.thumbnail}
                 totalLessons={e.course._count.lessons}
                 progress={100}
+                compact
               />
             ))}
           </div>

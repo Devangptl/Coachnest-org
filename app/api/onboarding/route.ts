@@ -60,12 +60,12 @@ export async function PUT(req: NextRequest) {
     const {
       professionIds  = [],
       customNames    = [],
-      instructorIds  = [],
+      instructorIds,          // undefined = not provided → don't touch follows
       complete       = false,
     }: {
       professionIds?:  string[];
       customNames?:    string[];
-      instructorIds?:  string[];
+      instructorIds?:  string[];  // only present during onboarding step that sets follows
       complete?:       boolean;
     } = await req.json();
 
@@ -114,17 +114,20 @@ export async function PUT(req: NextRequest) {
         });
       }
 
-      // Save instructor follows (replace existing)
-      await tx.userInstructorFollow.deleteMany({ where: { userId: session.userId } });
-
-      if (instructorIds.length > 0) {
-        await tx.userInstructorFollow.createMany({
-          data: instructorIds.map((instructorId) => ({
-            userId: session.userId,
-            instructorId,
-          })),
-          skipDuplicates: true,
-        });
+      // Only update instructor follows when the caller explicitly provides the list
+      // (i.e. the onboarding follow-instructor step). Omitting instructorIds leaves
+      // existing follows untouched so re-saving professions never wipes follows.
+      if (Array.isArray(instructorIds)) {
+        await tx.userInstructorFollow.deleteMany({ where: { userId: session.userId } });
+        if (instructorIds.length > 0) {
+          await tx.userInstructorFollow.createMany({
+            data: instructorIds.map((instructorId) => ({
+              userId: session.userId,
+              instructorId,
+            })),
+            skipDuplicates: true,
+          });
+        }
       }
 
       // Mark onboarding complete if requested
