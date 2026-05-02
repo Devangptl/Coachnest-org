@@ -235,7 +235,6 @@ export default async function CourseDetailPage({ params }: Props) {
       <CourseHero
         title={course.title}
         description={course.description}
-        thumbnail={course.thumbnail}
         level={course.level}
         language={course.language}
         categoryName={course.category?.name ?? null}
@@ -269,6 +268,8 @@ export default async function CourseDetailPage({ params }: Props) {
             firstLessonId={firstLessonId}
             completedCount={completedCount}
             nextLessonTitle={nextLessonTitle}
+            thumbnail={course.thumbnail}
+            title={course.title}
           />
         }
       >
