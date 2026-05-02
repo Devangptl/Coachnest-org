@@ -19,9 +19,21 @@ const getCourseWithLessons = unstable_cache(
       select: {
         id: true,
         status: true,
+        sections: {
+          orderBy: { order: "asc" },
+          select: { id: true },
+        },
         lessons: {
           orderBy: { order: "asc" },
-          select: { id: true, title: true, type: true, content: true, duration: true, isFree: true },
+          select: {
+            id: true,
+            title: true,
+            type: true,
+            content: true,
+            duration: true,
+            isFree: true,
+            section: { select: { id: true, title: true, order: true } },
+          },
         },
       },
     });
@@ -61,12 +73,20 @@ export default async function LessonPage({ params }: Props) {
   const prev = course.lessons[lessonIndex - 1] ?? null;
   const next = course.lessons[lessonIndex + 1] ?? null;
 
+  // Chapter context: find which numbered chapter this lesson belongs to
+  const chapterIndex = lesson.section
+    ? course.sections.findIndex((s) => s.id === lesson.section!.id) + 1
+    : undefined;
+
   return (
     <LessonContentClient
       courseId={courseId}
       lesson={lesson}
       lessonIndex={lessonIndex}
       totalLessons={course.lessons.length}
+      chapterTitle={lesson.section?.title}
+      chapterIndex={chapterIndex}
+      totalChapters={course.sections.length > 0 ? course.sections.length : undefined}
       prev={prev ? { id: prev.id, title: prev.title } : null}
       next={next ? { id: next.id, title: next.title } : null}
     />
