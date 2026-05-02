@@ -25,7 +25,13 @@ const getCourseById = unstable_cache(
       where: { id },
       include: {
         lessons: { orderBy: { order: "asc" } },
-        createdBy: { select: { name: true } },
+        createdBy: {
+          select: {
+            id:     true,
+            name:   true,
+            _count: { select: { followers: true } },
+          },
+        },
         category: { select: { name: true } },
         reviews: { select: { rating: true } },
         _count: { select: { enrollments: true, reviews: true } },
@@ -48,45 +54,51 @@ const getCourseById = unstable_cache(
 async function getUserCourseData(
   courseId: string,
   lessonIds: string[],
+  instructorId: string,
   userId?: string
 ) {
   const empty = {
-    isEnrolled:                  false,
-    isRefunded:                  false,
-    completedLessonIds:          [] as string[],
-    isWishlisted:                false,
-    planAccess:                  null as Awaited<ReturnType<typeof getPlanAccess>> | null,
+    isEnrolled:              false,
+    isRefunded:              false,
+    completedLessonIds:      [] as string[],
+    isWishlisted:            false,
+    planAccess:              null as Awaited<ReturnType<typeof getPlanAccess>> | null,
+    isFollowingInstructor:   false,
   };
   if (!userId) return empty;
 
-  const [enrollment, completedRows, wishlisted, planAccess, refundedOrder] = await Promise.all([
-    prisma.enrollment.findUnique({
-      where: { userId_courseId: { userId, courseId } },
-    }),
-    prisma.lessonProgress.findMany({
-      where: { userId, lessonId: { in: lessonIds }, completed: true },
-      select: { lessonId: true },
-    }),
-    prisma.wishlist.findUnique({
-      where: { userId_courseId: { userId, courseId } },
-    }),
-    getPlanAccess(userId),
-    prisma.order.findFirst({
-      where:  { userId, courseId, status: "REFUNDED" },
-      select: { id: true },
-    }),
-  ]);
+  const [enrollment, completedRows, wishlisted, planAccess, refundedOrder, instructorFollow] =
+    await Promise.all([
+      prisma.enrollment.findUnique({
+        where: { userId_courseId: { userId, courseId } },
+      }),
+      prisma.lessonProgress.findMany({
+        where: { userId, lessonId: { in: lessonIds }, completed: true },
+        select: { lessonId: true },
+      }),
+      prisma.wishlist.findUnique({
+        where: { userId_courseId: { userId, courseId } },
+      }),
+      getPlanAccess(userId),
+      prisma.order.findFirst({
+        where:  { userId, courseId, status: "REFUNDED" },
+        select: { id: true },
+      }),
+      prisma.userInstructorFollow.findUnique({
+        where: { userId_instructorId: { userId, instructorId } },
+        select: { id: true },
+      }),
+    ]);
 
-  // Access rules simplified: if you have an enrollment record, you have access.
-  // Subscription-based gating for previously enrolled courses is removed.
   const isEnrolled = Boolean(enrollment);
 
   return {
     isEnrolled,
-    isRefunded:         Boolean(refundedOrder),
-    completedLessonIds: completedRows.map((p) => p.lessonId),
-    isWishlisted:       Boolean(wishlisted),
+    isRefunded:            Boolean(refundedOrder),
+    completedLessonIds:    completedRows.map((p) => p.lessonId),
+    isWishlisted:          Boolean(wishlisted),
     planAccess,
+    isFollowingInstructor: Boolean(instructorFollow),
   };
 }
 
@@ -140,9 +152,11 @@ export default async function CourseDetailPage({ params }: Props) {
   const session = await getSession();
   const {
     isEnrolled, isRefunded, completedLessonIds, isWishlisted, planAccess,
+    isFollowingInstructor,
   } = await getUserCourseData(
     id,
     course.lessons.map((l: { id: string }) => l.id),
+    course.createdBy.id,
     session?.userId
   );
 
@@ -235,17 +249,20 @@ export default async function CourseDetailPage({ params }: Props) {
       <CourseHero
         title={course.title}
         description={course.description}
-        thumbnail={course.thumbnail}
         level={course.level}
         language={course.language}
         categoryName={course.category?.name ?? null}
         instructorName={course.createdBy.name}
+        instructorId={course.createdBy.id}
         lessonCount={course.lessons.length}
         totalDuration={totalDuration}
         enrollmentCount={course._count.enrollments}
         reviewCount={course._count.reviews}
         avgRating={avgRating}
         isFree={course.isFree}
+        isFollowingInstructor={isFollowingInstructor}
+        instructorFollowerCount={course.createdBy._count.followers}
+        isLoggedIn={Boolean(session)}
       />
 
       {/* ── Main content: two-column layout with toggleable sidebar ── */}
@@ -269,6 +286,8 @@ export default async function CourseDetailPage({ params }: Props) {
             firstLessonId={firstLessonId}
             completedCount={completedCount}
             nextLessonTitle={nextLessonTitle}
+            thumbnail={course.thumbnail}
+            title={course.title}
           />
         }
       >

@@ -181,18 +181,18 @@ export default function EnrollButton({
 
   // Standard enroll (free or paid)
   return (
-    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+    <div className="flex flex-col gap-2.5 w-full">
       {/* Coupon input — only for paid courses */}
       {!isFree && price && (
-        <div className="w-full sm:w-auto flex-shrink-0">
+        <>
           {appliedCoupon ? (
-            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-md px-3.5 shadow-inner h-[46px]">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/20 rounded-md px-3.5 shadow-inner h-[42px]">
+              <div className="flex items-center gap-2 min-w-0">
                 <Tag className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                <span className="text-emerald-400 text-sm font-semibold tracking-wide">
+                <span className="text-emerald-400 text-sm font-semibold tracking-wide truncate">
                   {appliedCoupon.code}
                 </span>
-                <span className="text-emerald-400/80 text-[11px] font-medium bg-emerald-500/20 px-1.5 py-0.5 rounded-md">
+                <span className="text-emerald-400/80 text-[11px] font-medium bg-emerald-500/20 px-1.5 py-0.5 rounded-md flex-shrink-0">
                   -{appliedCoupon.discountType === "PERCENTAGE" ? `${appliedCoupon.discount}%` : `₹${appliedCoupon.discount}`}
                 </span>
               </div>
@@ -204,14 +204,14 @@ export default function EnrollButton({
               </button>
             </div>
           ) : (
-            <div className="flex items-center gap-1.5 bg-black/20 border border-white/[0.08] hover:border-white/[0.15] focus-within:border-orange-500/40 focus-within:bg-black/40 rounded-md p-1 transition-all shadow-inner w-full sm:w-[220px] h-[46px]">
+            <div className="flex items-center gap-1.5 bg-black/20 border border-white/[0.08] hover:border-white/[0.15] focus-within:border-orange-500/40 focus-within:bg-black/40 rounded-md p-1 transition-all shadow-inner h-[42px]">
               <input
                 type="text"
                 value={couponCode}
                 onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
                 onKeyDown={(e) => e.key === "Enter" && handleApplyCoupon()}
                 placeholder="Enter coupon code"
-                className="flex-1 min-w-0 bg-transparent px-3 text-sm text-foreground w-full placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0"
+                className="flex-1 min-w-0 bg-transparent px-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-0"
               />
               <button
                 onClick={handleApplyCoupon}
@@ -222,44 +222,33 @@ export default function EnrollButton({
               </button>
             </div>
           )}
-        </div>
-      )}
 
-      {/* Price breakdown - Desktop inline */}
-      {!isFree && price && appliedCoupon && (
-        <div className="hidden sm:flex flex-col justify-center px-4 h-[46px] bg-black/20 border border-white/[0.06] rounded-md shadow-inner flex-shrink-0 min-w-max">
-          <div className="flex items-center gap-2">
-            <span className="text-muted-foreground text-[11px] line-through">₹{originalPrice.toLocaleString("en-IN")}</span>
-            <span className="text-emerald-400 text-[11px] font-medium">-₹{discountAmount.toLocaleString("en-IN")}</span>
-          </div>
-          <span className="text-foreground font-bold text-[13px] leading-tight mt-0.5">Total: ₹{finalPrice.toLocaleString("en-IN")}</span>
-        </div>
-      )}
-
-      {/* Price breakdown - Mobile Only */}
-      {!isFree && price && appliedCoupon && (
-        <div className="sm:hidden bg-black/20 border border-white/[0.06] rounded-md p-3 space-y-1.5 w-full shadow-inner">
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-muted-foreground">Price</span>
-            <span className="text-muted-foreground font-medium">₹{originalPrice.toLocaleString("en-IN")}</span>
-          </div>
-          <div className="flex justify-between items-center text-sm">
-            <span className="text-emerald-400">Discount</span>
-            <span className="text-emerald-400 font-medium">-₹{discountAmount.toLocaleString("en-IN")}</span>
-          </div>
-          <div className="h-px w-full bg-white/[0.06] my-1" />
-          <div className="flex justify-between items-center">
-            <span className="text-foreground font-medium">Total</span>
-            <span className="text-foreground font-bold text-lg">₹{finalPrice.toLocaleString("en-IN")}</span>
-          </div>
-        </div>
+          {/* Price breakdown — shown when coupon applied */}
+          {appliedCoupon && (
+            <div className="bg-black/20 border border-white/[0.06] rounded-md px-3 py-2.5 space-y-1 shadow-inner">
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-muted-foreground">Original price</span>
+                <span className="text-muted-foreground line-through">₹{originalPrice.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="flex justify-between items-center text-xs">
+                <span className="text-emerald-400">Discount</span>
+                <span className="text-emerald-400 font-medium">-₹{discountAmount.toLocaleString("en-IN")}</span>
+              </div>
+              <div className="h-px w-full bg-white/[0.06]" />
+              <div className="flex justify-between items-center">
+                <span className="text-foreground text-sm font-medium">Total</span>
+                <span className="text-foreground font-bold">₹{finalPrice.toLocaleString("en-IN")}</span>
+              </div>
+            </div>
+          )}
+        </>
       )}
 
       {/* Enroll button */}
       <button
         onClick={handleEnroll}
         disabled={loading}
-        className="w-full sm:w-auto h-[46px] relative overflow-hidden btn-primary px-6 font-semibold disabled:opacity-70 disabled:cursor-not-allowed group active:scale-[0.98] flex-shrink-0"
+        className="w-full h-[46px] relative overflow-hidden btn-primary px-6 font-semibold disabled:opacity-70 disabled:cursor-not-allowed group active:scale-[0.98]"
       >
         <span className="relative flex items-center justify-center gap-2 z-10 w-full whitespace-nowrap">
           {loading ? (
