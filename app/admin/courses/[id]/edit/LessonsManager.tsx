@@ -260,7 +260,7 @@ export default function LessonsManager({
     setQF((p) => ({ ...p, questions: p.questions.filter((_, i) => i !== idx) }));
   }
   function updateQuestion(setQF: typeof setQuizForm, idx: number, field: string, value: unknown) {
-    setQF((p) => { const qs = [...p.questions]; (qs[idx] as Record<string,unknown>)[field] = value; return { ...p, questions: qs }; });
+    setQF((p) => { const qs = [...p.questions]; qs[idx] = { ...qs[idx], [field]: value }; return { ...p, questions: qs }; });
   }
   function addOption(setQF: typeof setQuizForm, qi: number) {
     setQF((p) => { const qs = [...p.questions]; qs[qi] = { ...qs[qi], options: [...qs[qi].options, { text: "", correct: false }] }; return { ...p, questions: qs }; });
@@ -636,9 +636,9 @@ export default function LessonsManager({
           key={lesson.id}
           lesson={lesson}
           deletingId={deletingId}
-          onEdit={() => startEditing(lesson)}
-          onDelete={() => handleDelete(lesson.id)}
-          onDragEnd={() => handleReorderEnd(sectionId)}
+          onEdit={() => { void startEditing(lesson); }}
+          onDelete={() => { void handleDelete(lesson.id); }}
+          onDragEnd={() => { void handleReorderEnd(sectionId); }}
         />
       );
     });
@@ -874,7 +874,7 @@ interface SectionBlockProps {
   onCancelEditTitle: () => void;
   onDelete: () => void;
   onLessonsReorder: (lessons: Lesson[]) => void;
-  children: React.ReactNode;
+  children?: React.ReactNode;
 }
 
 function SectionBlock({
