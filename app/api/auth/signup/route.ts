@@ -44,6 +44,7 @@ export async function POST(req: NextRequest) {
       password,
       options: {
         data: { name, avatar: null }, // stored in user_metadata
+        emailRedirectTo: `${process.env.NEXT_PUBLIC_APP_URL}/auth/callback`,
       },
     });
 
