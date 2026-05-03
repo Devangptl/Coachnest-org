@@ -24,7 +24,14 @@ const getCourseById = unstable_cache(
     const course = await prisma.course.findUnique({
       where: { id },
       include: {
-        lessons: { orderBy: { order: "asc" } },
+        sections: {
+          orderBy: { order: "asc" },
+          include: { lessons: { orderBy: { order: "asc" } } },
+        },
+        lessons: {
+          where: { sectionId: null },
+          orderBy: { order: "asc" },
+        },
         createdBy: {
           select: {
             id:     true,
@@ -150,12 +157,22 @@ export default async function CourseDetailPage({ params }: Props) {
 
   // User-specific data (parallel fetch, uncached)
   const session = await getSession();
+
+  // Flatten all lessons (section lessons + ungrouped) for stats / user-data queries
+  type SectionLesson = (typeof course.sections)[number]["lessons"][number];
+  type UngroupedLesson = (typeof course.lessons)[number];
+  type AnyLesson = SectionLesson | UngroupedLesson;
+  const allFlatLessons: AnyLesson[] = [
+    ...course.sections.flatMap((s) => s.lessons),
+    ...course.lessons,
+  ];
+
   const {
     isEnrolled, isRefunded, completedLessonIds, isWishlisted, planAccess,
     isFollowingInstructor,
   } = await getUserCourseData(
     id,
-    course.lessons.map((l: { id: string }) => l.id),
+    allFlatLessons.map((l) => l.id),
     course.createdBy.id,
     session?.userId
   );
@@ -165,16 +182,29 @@ export default async function CourseDetailPage({ params }: Props) {
   const hasContentAccess =
     isEnrolled || session?.role === "ADMIN" || session?.role === "INSTRUCTOR";
 
-  const totalDuration = course.lessons.reduce((sum: number, l: { duration?: number | null }) => sum + (l.duration ?? 0), 0);
+  const totalDuration = allFlatLessons.reduce((sum, l) => sum + (l.duration ?? 0), 0);
 
-  const lessonsWithCompletion = course.lessons.map((l: (typeof course.lessons)[number]) => ({
+  // Sections with per-lesson completion (for chapter-grouped views)
+  const sectionsWithCompletion = course.sections.map((s) => ({
+    ...s,
+    lessons: s.lessons.map((l) => ({ ...l, completed: completedLessonIds.includes(l.id) })),
+  }));
+
+  // Ungrouped lessons with completion
+  const ungroupedWithCompletion = course.lessons.map((l) => ({
     ...l,
     completed: completedLessonIds.includes(l.id),
   }));
 
+  // All lessons flat with completion (used for "What You'll Learn", completedMap init, etc.)
+  const allLessonsWithCompletion = [
+    ...sectionsWithCompletion.flatMap((s) => s.lessons),
+    ...ungroupedWithCompletion,
+  ];
+
   // First incomplete lesson (or first lesson) for the "Continue Learning" link
   const nextLesson =
-    lessonsWithCompletion.find((l) => !l.completed) ?? lessonsWithCompletion[0];
+    allLessonsWithCompletion.find((l) => !l.completed) ?? allLessonsWithCompletion[0];
   const firstLessonId = nextLesson?.id;
   const nextLessonTitle = nextLesson?.title;
   const completedCount = completedLessonIds.length;
@@ -254,7 +284,7 @@ export default async function CourseDetailPage({ params }: Props) {
         categoryName={course.category?.name ?? null}
         instructorName={course.createdBy.name}
         instructorId={course.createdBy.id}
-        lessonCount={course.lessons.length}
+        lessonCount={allFlatLessons.length}
         totalDuration={totalDuration}
         enrollmentCount={course._count.enrollments}
         reviewCount={course._count.reviews}
@@ -279,7 +309,7 @@ export default async function CourseDetailPage({ params }: Props) {
             isWishlisted={isWishlisted}
             isLoggedIn={Boolean(session)}
             userRole={session?.role ?? null}
-            lessonCount={course.lessons.length}
+            lessonCount={allFlatLessons.length}
             totalDuration={totalDuration}
             language={course.language}
             level={course.level}
@@ -294,7 +324,9 @@ export default async function CourseDetailPage({ params }: Props) {
         <CourseContent
           courseId={course.id}
           description={course.description}
-          lessons={lessonsWithCompletion}
+          lessons={allLessonsWithCompletion}
+          sections={sectionsWithCompletion}
+          ungroupedLessons={ungroupedWithCompletion}
           isEnrolled={hasContentAccess}
           isLoggedIn={Boolean(session)}
           reviewCount={course._count.reviews}
