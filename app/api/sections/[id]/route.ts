@@ -3,6 +3,7 @@
  * DELETE /api/sections/:id — delete section (lessons become ungrouped)
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
@@ -26,6 +27,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       },
     });
 
+    revalidateTag("course-lessons");
+
     return NextResponse.json({ section });
   } catch (error) {
     console.error("[PATCH /api/sections/:id]", error);
@@ -47,6 +50,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       where: { sectionId: id },
       data: { sectionId: null },
     });
+
+    revalidateTag("course-lessons");
 
     await prisma.section.delete({ where: { id } });
 

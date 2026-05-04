@@ -3,6 +3,7 @@
  * DELETE /api/lessons/:id  — delete a lesson (admin only)
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
@@ -32,6 +33,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       },
     });
 
+    revalidateTag("course-lessons");
+
     return NextResponse.json({ lesson });
   } catch (error) {
     console.error("[PATCH /api/lessons/:id]", error);
@@ -48,6 +51,8 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
 
     const { id } = await params;
     await prisma.lesson.delete({ where: { id } });
+
+    revalidateTag("course-lessons");
 
     return NextResponse.json({ message: "Lesson deleted." });
   } catch (error) {
