@@ -264,7 +264,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
 
         ) : lesson.content ? (
           // TEXT: markdown content — scroll + time tracked by useReadingProgress
-          <div className="px-3 sm:px-6 lg:px-8 py-5 sm:py-8">
+          <div className="px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-hidden">
             <TextHighlighter lessonId={lesson.id} isEnrolled={isEnrolled}>
               <MarkdownRenderer content={lesson.content} />
             </TextHighlighter>
