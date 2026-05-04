@@ -44,6 +44,23 @@ function parseInline(text: string): Span[] {
   return spans.length > 0 ? spans : [{ text }];
 }
 
+function stripMarkdown(text: string): string {
+  return text
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/^#{1,6}\s+/gm, "")
+    .replace(/\*\*([\s\S]+?)\*\*/g, "$1")
+    .replace(/\*([\s\S]+?)\*/g, "$1")
+    .replace(/_([\s\S]+?)_/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/^>\s?/gm, "")
+    .replace(/^[\s]*[-*+]\s+/gm, "")
+    .replace(/^\d+[\.\)]\s+/gm, "")
+    .replace(/^(-{3,}|\*{3,}|_{3,})$/gm, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function parseContent(raw: string): Block[] {
   const lines = raw.split("\n");
   const blocks: Block[] = [];
@@ -290,9 +307,10 @@ async function generateCoursePDF(course: any) {
   cover.drawRectangle({ x: margin + 12, y: coverY, width: 72, height: 3, color: orange });
   coverY -= 26;
 
-  // Description
+  // Description (strip markdown for clean cover display)
   if (course.description) {
-    const descLines = wrapText(course.description, usableW - 12, font, 11);
+    const plainDesc = sanitize(stripMarkdown(course.description));
+    const descLines = wrapText(plainDesc, usableW - 12, font, 11);
     for (const line of descLines.slice(0, 6)) {
       cover.drawText(line, { x: margin + 12, y: coverY, size: 11, font, color: textMid });
       coverY -= 17;
@@ -450,6 +468,106 @@ async function generateCoursePDF(course: any) {
     }
     if (lineToks.length > 0) flushLine();
   };
+
+  // ── Course Overview (markdown-rendered description) ──────────────────────
+  if (course.description) {
+    ensureSpace(60);
+
+    // Section header
+    page.drawRectangle({ x: margin, y: y - 34 + 4, width: usableW, height: 34 - 4, color: rgb(0.97, 0.97, 0.99) });
+    page.drawRectangle({ x: margin, y: y - 34 + 4, width: 3, height: 34 - 4, color: orange });
+    page.drawRectangle({ x: margin, y: y - 34 + 3, width: usableW, height: 0.5, color: divider });
+    page.drawText("COURSE OVERVIEW", { x: margin + 10, y: y - 15, size: 10, font: fontBold, color: orange });
+    y -= 34;
+    page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
+    y -= SP.afterLessonHeader;
+
+    const descBlocks = parseContent(course.description);
+    for (const block of descBlocks) {
+      switch (block.type) {
+        case "h1":
+          y -= SP.beforeH1; ensureSpace(28);
+          drawRichSpans(parseInline(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
+          y -= SP.afterHeading;
+          break;
+        case "h2":
+          y -= SP.beforeH2; ensureSpace(24);
+          drawRichSpans(parseInline(block.text), fontBold, 13, textDark);
+          y -= SP.afterHeading;
+          break;
+        case "h3":
+          y -= SP.beforeH3; ensureSpace(20);
+          drawRichSpans(parseInline(block.text), fontBold, 11, textMid);
+          y -= SP.afterHeading;
+          break;
+        case "paragraph":
+          drawRichSpans(parseInline(block.text), font, 10.5, textDark);
+          y -= SP.afterPara;
+          break;
+        case "blockquote": {
+          y -= SP.beforeQuote; ensureSpace(24);
+          const quoteIndent = 18;
+          const startY = y + 4;
+          drawRichSpans(parseInline(block.text), fontOblique, 10.5, textMid, quoteIndent);
+          const endY = y + 4;
+          page.drawRectangle({ x: margin + 4, y: endY, width: 2, height: Math.max(startY - endY, 12), color: orange, opacity: 0.7 });
+          y -= SP.afterQuote;
+          break;
+        }
+        case "hr":
+          y -= SP.hrAbove; ensureSpace(12);
+          page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
+          y -= SP.hrBelow;
+          break;
+        case "code": {
+          y -= SP.beforeCode;
+          const codeLines = block.code.split("\n");
+          const hasLabel = block.lang && block.lang !== "code";
+          const langH = hasLabel ? 14 : 0;
+          const blockH = 10 + langH + codeLines.length * 12 + 10;
+          const pageH = contentTop - contentBot;
+          if (blockH <= pageH && y - blockH < contentBot) newPage();
+          if (y - blockH >= contentBot) {
+            page.drawRectangle({ x: margin, y: y - blockH, width: usableW, height: blockH, color: codeBg });
+            page.drawRectangle({ x: margin, y: y - blockH, width: 3, height: blockH, color: orange, opacity: 0.65 });
+          }
+          y -= 10;
+          if (hasLabel) {
+            if (y < contentBot) newPage();
+            page.drawText(block.lang.toUpperCase(), { x: margin + 10, y, size: 7.5, font: fontBold, color: orange });
+            y -= 14;
+          }
+          for (const codeLine of codeLines) {
+            if (y - 12 < contentBot) newPage();
+            page.drawText(codeLine || " ", { x: margin + 10, y, size: 9.5, font: fontMono, color: codeText });
+            y -= 12;
+          }
+          y -= SP.afterCode;
+          break;
+        }
+        case "list":
+          for (const item of block.items) {
+            ensureSpace(20);
+            page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
+            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            y -= SP.listItemGap;
+          }
+          y -= SP.afterList - SP.listItemGap;
+          break;
+        case "numlist":
+          block.items.forEach((item, idx) => {
+            ensureSpace(20);
+            page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
+            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            y -= SP.listItemGap;
+          });
+          y -= SP.afterList - SP.listItemGap;
+          break;
+      }
+    }
+
+    y -= SP.lessonGap;
+  }
 
   // ── Lessons ──────────────────────────────────────────────────────────────
   const headerH = 38;
