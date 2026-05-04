@@ -6,6 +6,7 @@ import CourseTabs from "./CourseTabs";
 import CourseViewer from "./CourseViewer";
 import ReviewsSection from "./ReviewsSection";
 import Link from "next/link";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import {
   CheckCircle2,
   Circle,
@@ -118,9 +119,7 @@ export default function CourseContent({
                 <Target className="w-5 h-5 text-[#d97757]" />
                 About This Course
               </h2>
-              <div className="text-muted-foreground text-sm leading-relaxed whitespace-pre-line">
-                {description}
-              </div>
+              <MarkdownRenderer content={description} compact />
             </div>
 
             {/* What you'll learn */}
