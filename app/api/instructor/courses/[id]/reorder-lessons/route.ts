@@ -7,6 +7,7 @@
  * Admins can reorder any course; instructors only their own.
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -50,6 +51,8 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       }),
     ),
   );
+
+  revalidateTag("course-lessons");
 
   return NextResponse.json({ ok: true });
 }

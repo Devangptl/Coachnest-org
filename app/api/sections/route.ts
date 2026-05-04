@@ -2,6 +2,7 @@
  * POST /api/sections — create a section (chapter) for a course
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
@@ -25,6 +26,8 @@ export async function POST(req: NextRequest) {
     const section = await prisma.section.create({
       data: { courseId, title: title.trim(), order: count + 1 },
     });
+
+    revalidateTag("course-lessons");
 
     return NextResponse.json({ section }, { status: 201 });
   } catch (error) {

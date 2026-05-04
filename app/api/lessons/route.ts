@@ -3,6 +3,7 @@
  * POST /api/lessons  — create a lesson inside a course (admin only)
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
@@ -83,6 +84,8 @@ export async function POST(req: NextRequest) {
         isFree: isFree ?? false,
       },
     });
+
+    revalidateTag("course-lessons");
 
     return NextResponse.json({ lesson }, { status: 201 });
   } catch (error) {

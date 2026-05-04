@@ -21,10 +21,12 @@ const getCourseWithLessons = unstable_cache(
         status: true,
         sections: {
           orderBy: { order: "asc" },
-          select: { id: true },
+          select: { id: true, order: true },
         },
         lessons: {
-          orderBy: { order: "asc" },
+          // Order by section.order first (nulls = ungrouped, sorted last),
+          // then by lesson order within each section / the ungrouped group.
+          orderBy: [{ section: { order: "asc" } }, { order: "asc" }],
           select: {
             id: true,
             title: true,
