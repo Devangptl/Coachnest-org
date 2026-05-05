@@ -33,7 +33,7 @@ const TOOLBAR = [
   [{ indent: "-1" }, { indent: "+1" }],
   [{ align: [] }],
   [{ direction: "rtl" }],
-  ["link", "image", "video"],
+  ["link", "image", "video", "table"],
   ["clean"],
 ];
 
@@ -191,6 +191,40 @@ export default function QuillEditor({
         quill.setSelection(range.index + 1, 0);
       }
 
+      type TableQuill = EditorQuill & {
+        getLength: () => number;
+        clipboard: { dangerouslyPasteHTML: (i: number, html: string, s: string) => void };
+      };
+
+      function buildTableHTML(rows: number, cols: number) {
+        let html = '<table class="lh-table"><tbody>';
+        for (let r = 0; r < rows; r++) {
+          html += "<tr>";
+          for (let c = 0; c < cols; c++) {
+            html += r === 0
+              ? '<th><br></th>'
+              : '<td><br></td>';
+          }
+          html += "</tr>";
+        }
+        html += "</tbody></table><p><br></p>";
+        return html;
+      }
+
+      function insertTable(q: TableQuill, rows: number, cols: number) {
+        const range = q.getSelection() ?? { index: q.getLength() };
+        q.clipboard.dangerouslyPasteHTML(range.index, buildTableHTML(rows, cols), "user");
+        q.setSelection(range.index + 1, 0);
+      }
+
+      const tableHandler = function (this: { quill: TableQuill }) {
+        // Toolbar handler is intentionally a no-op — the picker popover (set up
+        // after Quill mounts) drives insertion. Falling back to a 3×3 prompt
+        // ensures the button always works even before the popover binds.
+        const rows = 3, cols = 3;
+        insertTable(this.quill, rows, cols);
+      };
+
       const imageHandler = async function (this: { quill: EditorQuill }) {
         const customPick = onPickImageRef.current;
         if (customPick) {
@@ -215,13 +249,99 @@ export default function QuillEditor({
         modules: {
           toolbar: {
             container: TOOLBAR,
-            handlers: { image: imageHandler },
+            handlers: { image: imageHandler, table: tableHandler },
           },
           keyboard: { bindings: MARKDOWN_BINDINGS },
         },
       });
 
       quillRef.current = quill;
+
+      // ── Table button: replace plain icon + open hover-grid picker ──────────
+      const root = containerRef.current!.parentElement;
+      const tableBtn = root?.querySelector(".ql-table") as HTMLButtonElement | null;
+      if (tableBtn) {
+        tableBtn.title = "Insert table";
+        tableBtn.innerHTML = `
+          <svg viewBox="0 0 18 18" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2.5" y="3.5" width="13" height="11" rx="1.5"/>
+            <path d="M2.5 7.5h13M2.5 11h13M6 3.5v11M11 3.5v11"/>
+          </svg>`;
+
+        const ROWS = 8, COLS = 10;
+        const pop = document.createElement("div");
+        pop.className = "ql-table-picker";
+        pop.style.display = "none";
+
+        const grid = document.createElement("div");
+        grid.className = "ql-table-picker-grid";
+        grid.style.gridTemplateColumns = `repeat(${COLS}, 18px)`;
+
+        const label = document.createElement("div");
+        label.className = "ql-table-picker-label";
+        label.textContent = "Pick size";
+
+        const cells: HTMLElement[][] = [];
+        for (let r = 0; r < ROWS; r++) {
+          const row: HTMLElement[] = [];
+          for (let c = 0; c < COLS; c++) {
+            const cell = document.createElement("div");
+            cell.className = "ql-table-picker-cell";
+            cell.addEventListener("mouseenter", () => {
+              for (let rr = 0; rr < ROWS; rr++)
+                for (let cc = 0; cc < COLS; cc++)
+                  cells[rr][cc].classList.toggle("active", rr <= r && cc <= c);
+              label.textContent = `${r + 1} × ${c + 1}`;
+            });
+            cell.addEventListener("click", () => {
+              insertTable(quill as unknown as TableQuill, r + 1, c + 1);
+              hide();
+            });
+            grid.appendChild(cell);
+            row.push(cell);
+          }
+          cells.push(row);
+        }
+        pop.appendChild(grid);
+        pop.appendChild(label);
+        document.body.appendChild(pop);
+
+        const reset = () => {
+          for (const row of cells) for (const c of row) c.classList.remove("active");
+          label.textContent = "Pick size";
+        };
+        const show = () => {
+          const rect = tableBtn.getBoundingClientRect();
+          pop.style.display = "block";
+          pop.style.position = "fixed";
+          pop.style.top = `${rect.bottom + 6}px`;
+          pop.style.left = `${rect.left}px`;
+          pop.style.zIndex = "9999";
+        };
+        const hide = () => {
+          pop.style.display = "none";
+          reset();
+        };
+
+        tableBtn.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          if (pop.style.display === "none") show(); else hide();
+        });
+        document.addEventListener("click", (e) => {
+          if (pop.style.display === "none") return;
+          if (!pop.contains(e.target as Node) && e.target !== tableBtn && !tableBtn.contains(e.target as Node)) hide();
+        });
+
+        // Cleanup popover when component unmounts
+        const observer = new MutationObserver(() => {
+          if (!document.body.contains(tableBtn)) {
+            pop.remove();
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
 
       // Drag-and-drop + paste image upload — works regardless of toolbar use.
       const editorEl = quill.root as HTMLElement;
