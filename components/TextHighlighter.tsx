@@ -338,7 +338,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-popover/60 backdrop-blur-md border border-border/60 rounded-xl shadow-2xl shadow-black/40 p-3 flex flex-col gap-2.5 min-w-[240px] max-w-[300px]">
+            <div className="bg-popover/60 backdrop-blur-md border border-border/60 rounded-xl p-3 flex flex-col gap-2.5 min-w-[240px] max-w-[300px]">
               {/* Selected text preview */}
               <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed line-clamp-2 border-b border-border/60 pb-2.5 select-none">
                 &ldquo;{popup.text.length > 90 ? popup.text.slice(0, 90) + "…" : popup.text}&rdquo;
@@ -404,7 +404,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
             }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="bg-popover/60 backdrop-blur-md border border-border/60 rounded-xl shadow-2xl shadow-black/40 p-3 flex flex-col gap-2.5 w-[300px]">
+            <div className="bg-popover/60 backdrop-blur-md border border-border/60 rounded-xl p-3 flex flex-col gap-2.5 w-[300px]">
               {/* Highlighted text snippet */}
               <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed line-clamp-2 border-b border-border/60 pb-2.5 select-none">
                 &ldquo;{activeHighlight.text.length > 90
