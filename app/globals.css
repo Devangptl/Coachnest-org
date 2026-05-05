@@ -866,7 +866,6 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   color: hsl(var(--foreground));
   overflow-wrap: break-word;
   word-break: normal;
-  hyphens: auto;
 }
 .quill-content-compact { font-size: 0.85rem; line-height: 1.6; }
 
