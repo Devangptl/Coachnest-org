@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import toast from "react-hot-toast";
 import { cn } from "@/lib/utils";
 import "quill/dist/quill.snow.css";
 
@@ -12,28 +13,31 @@ interface QuillEditorProps {
   minHeight?: number;
   className?: string;
   /**
-   * Called when the toolbar image button is pressed. Return the image URL to
-   * insert (or null/undefined to cancel). When omitted, Quill falls back to
-   * its built-in OS file picker + base64 embed.
+   * Optional override for image insertion. Return a URL to embed (or null to
+   * cancel). When omitted, the editor uploads the picked file to /api/upload
+   * directly so authors don't have to deal with URLs.
    */
   onPickImage?: () => Promise<string | null | undefined>;
+  /** Folder for direct uploads via the default image handler. */
+  uploadFolder?: "courses" | "blogs" | "misc";
 }
 
 const TOOLBAR = [
-  [{ header: [1, 2, 3, false] }],
+  [{ header: [1, 2, 3, 4, false] }],
+  [{ size: ["small", false, "large", "huge"] }],
   ["bold", "italic", "underline", "strike"],
+  [{ color: [] }, { background: [] }],
+  [{ script: "sub" }, { script: "super" }],
   ["blockquote", "code-block"],
   [{ list: "ordered" }, { list: "bullet" }, { list: "check" }],
   [{ indent: "-1" }, { indent: "+1" }],
-  ["link", "image"],
+  [{ align: [] }],
+  [{ direction: "rtl" }],
+  ["link", "image", "video"],
   ["clean"],
 ];
 
 // Markdown shortcut keyboard bindings.
-// Quill binds each handler with `this` = the keyboard module, which exposes
-// `this.quill` — so handlers don't need to capture the quill instance at all,
-// avoiding the temporal-dead-zone issue of referencing `quill` inside its own
-// constructor call.
 type KbCtx = { quill: { formatLine: Function; deleteText: Function } };
 
 const MARKDOWN_BINDINGS = {
@@ -102,6 +106,51 @@ const MARKDOWN_BINDINGS = {
   },
 };
 
+const IMAGE_MAX_BYTES = 1 * 1024 * 1024; // matches /api/upload limit
+
+async function uploadImageFile(file: File, folder: string): Promise<string | null> {
+  if (!file.type.startsWith("image/")) {
+    toast.error("Only image files are supported.");
+    return null;
+  }
+  if (file.size > IMAGE_MAX_BYTES) {
+    toast.error("Image exceeds the 1 MB limit.");
+    return null;
+  }
+  const fd = new FormData();
+  fd.append("file", file);
+  fd.append("folder", folder);
+  try {
+    const res = await fetch("/api/upload", { method: "POST", body: fd });
+    const data = await res.json();
+    if (!res.ok) {
+      toast.error(data.error ?? "Image upload failed.");
+      return null;
+    }
+    return data.url as string;
+  } catch {
+    toast.error("Network error while uploading image.");
+    return null;
+  }
+}
+
+function pickImageFile(): Promise<File | null> {
+  return new Promise((resolve) => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = () => resolve(input.files?.[0] ?? null);
+    // If the dialog is dismissed without selecting, no event fires; resolve null
+    // when focus returns to the window.
+    const onFocus = () => {
+      window.removeEventListener("focus", onFocus);
+      setTimeout(() => resolve(input.files?.[0] ?? null), 300);
+    };
+    window.addEventListener("focus", onFocus);
+    input.click();
+  });
+}
+
 export default function QuillEditor({
   value,
   onChange,
@@ -109,16 +158,19 @@ export default function QuillEditor({
   minHeight = 280,
   className,
   onPickImage,
+  uploadFolder = "courses",
 }: QuillEditorProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const quillRef = useRef<any>(null);
   const onChangeRef = useRef(onChange);
   const onPickImageRef = useRef(onPickImage);
+  const uploadFolderRef = useRef(uploadFolder);
   const isInternalChange = useRef(false);
 
   onChangeRef.current = onChange;
   onPickImageRef.current = onPickImage;
+  uploadFolderRef.current = uploadFolder;
 
   useEffect(() => {
     if (quillRef.current || !containerRef.current) return;
@@ -126,24 +178,35 @@ export default function QuillEditor({
     (async () => {
       const { default: Quill } = await import("quill");
 
-      const imageHandler = async function (this: { quill: { getSelection: () => { index: number } | null; insertEmbed: (i: number, t: string, v: unknown, s: string) => void; setSelection: (i: number, l?: number) => void } }) {
-        const pick = onPickImageRef.current;
-        if (!pick) {
-          // No custom picker — let Quill run its default handler. Because we
-          // registered our own handler, we need to emulate the default (file
-          // picker + base64 insert). Simplest: prompt for URL.
-          const url = window.prompt("Image URL");
-          if (!url) return;
-          const range = this.quill.getSelection() || { index: this.quill.getSelection()?.index ?? 0 };
-          this.quill.insertEmbed(range.index, "image", url, "user");
-          this.quill.setSelection(range.index + 1, 0);
+      type EditorQuill = {
+        getSelection: () => { index: number } | null;
+        insertEmbed: (i: number, t: string, v: unknown, s: string) => void;
+        setSelection: (i: number, l?: number) => void;
+        root: HTMLElement;
+      };
+
+      function insertImage(quill: EditorQuill, url: string) {
+        const range = quill.getSelection() ?? { index: 0 };
+        quill.insertEmbed(range.index, "image", url, "user");
+        quill.setSelection(range.index + 1, 0);
+      }
+
+      const imageHandler = async function (this: { quill: EditorQuill }) {
+        const customPick = onPickImageRef.current;
+        if (customPick) {
+          const url = await customPick();
+          if (url) insertImage(this.quill, url);
           return;
         }
-        const url = await pick();
-        if (!url) return;
-        const range = this.quill.getSelection() || { index: 0 };
-        this.quill.insertEmbed(range.index, "image", url, "user");
-        this.quill.setSelection(range.index + 1, 0);
+        const file = await pickImageFile();
+        if (!file) return;
+        const t = toast.loading("Uploading image…");
+        const url = await uploadImageFile(file, uploadFolderRef.current);
+        toast.dismiss(t);
+        if (url) {
+          insertImage(this.quill, url);
+          toast.success("Image inserted");
+        }
       };
 
       const quill = new Quill(containerRef.current!, {
@@ -159,6 +222,45 @@ export default function QuillEditor({
       });
 
       quillRef.current = quill;
+
+      // Drag-and-drop + paste image upload — works regardless of toolbar use.
+      const editorEl = quill.root as HTMLElement;
+      editorEl.addEventListener("drop", (e: DragEvent) => {
+        const file = e.dataTransfer?.files?.[0];
+        if (!file || !file.type.startsWith("image/")) return;
+        e.preventDefault();
+        e.stopPropagation();
+        (async () => {
+          const t = toast.loading("Uploading image…");
+          const url = await uploadImageFile(file, uploadFolderRef.current);
+          toast.dismiss(t);
+          if (url) {
+            insertImage(quill as unknown as EditorQuill, url);
+            toast.success("Image inserted");
+          }
+        })();
+      });
+      editorEl.addEventListener("paste", (e: ClipboardEvent) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const it of Array.from(items)) {
+          if (it.kind === "file" && it.type.startsWith("image/")) {
+            const file = it.getAsFile();
+            if (!file) continue;
+            e.preventDefault();
+            (async () => {
+              const t = toast.loading("Uploading image…");
+              const url = await uploadImageFile(file, uploadFolderRef.current);
+              toast.dismiss(t);
+              if (url) {
+                insertImage(quill as unknown as EditorQuill, url);
+                toast.success("Image inserted");
+              }
+            })();
+            return;
+          }
+        }
+      });
 
       if (value) {
         quill.clipboard.dangerouslyPasteHTML(value);

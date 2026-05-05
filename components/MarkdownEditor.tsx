@@ -10,9 +10,18 @@ interface Props {
   rows?: number;
   /** Optional image picker — called when user clicks the toolbar image button. */
   onPickImage?: () => Promise<string | null | undefined>;
+  /** Folder used for direct image uploads when no custom picker is set. */
+  uploadFolder?: "courses" | "blogs" | "misc";
 }
 
-export default function MarkdownEditor({ value, onChange, placeholder, rows = 16, onPickImage }: Props) {
+export default function MarkdownEditor({
+  value,
+  onChange,
+  placeholder,
+  rows = 16,
+  onPickImage,
+  uploadFolder,
+}: Props) {
   return (
     <QuillEditor
       value={value}
@@ -20,6 +29,7 @@ export default function MarkdownEditor({ value, onChange, placeholder, rows = 16
       placeholder={placeholder}
       minHeight={rows * 24}
       onPickImage={onPickImage}
+      uploadFolder={uploadFolder}
     />
   );
 }
