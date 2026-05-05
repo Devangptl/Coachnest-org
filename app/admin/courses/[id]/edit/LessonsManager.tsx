@@ -13,7 +13,7 @@ import MarkdownEditor from "@/components/MarkdownEditor";
 import {
   PlusCircle, Trash2, PlayCircle, FileText, HelpCircle,
   Loader2, GripVertical, Pencil, X, Save, Check,
-  ChevronDown, CloudUpload, CloudOff, BookOpen,
+  ChevronDown, CloudUpload, CloudOff, BookOpen, FileUp,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
@@ -1010,7 +1010,24 @@ function LessonFormFields({
 
       {form.type !== "QUIZ" && (
         <div>
-          <label className="label">{form.type === "VIDEO" ? "Video URL (embed)" : "Content"}</label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="label mb-0">{form.type === "VIDEO" ? "Video URL (embed)" : "Content"}</label>
+            {form.type === "TEXT" && (
+              <PdfImportButton
+                hasContent={!!form.content.trim()}
+                hasTitle={!!form.title.trim()}
+                onImported={({ content, title }) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    title: prev.title.trim() ? prev.title : (title ?? prev.title),
+                    content: prev.content.trim()
+                      ? `${prev.content.trim()}\n\n${content}`
+                      : content,
+                  }))
+                }
+              />
+            )}
+          </div>
           {form.type === "VIDEO" ? (
             <input type="url" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} className="input-glass" placeholder="https://www.youtube.com/embed/..." />
           ) : (
@@ -1163,6 +1180,98 @@ function AutosaveIndicator({ status }: { status: "idle" | "pending" | "saving" |
   if (status === "saving")  return <span className="flex items-center gap-1.5 text-muted-foreground text-xs"><Loader2 className="w-3 h-3 animate-spin" />Saving…</span>;
   if (status === "saved")   return <span className="flex items-center gap-1.5 text-emerald-400 text-xs"><CloudUpload className="w-3 h-3" />Saved</span>;
   return <span className="flex items-center gap-1.5 text-red-400 text-xs"><CloudOff className="w-3 h-3" />Failed</span>;
+}
+
+// ── PdfImportButton ───────────────────────────────────────────────────────────
+//
+// Lets the instructor upload a PDF whose extracted text is auto-appended to
+// the lesson content. If the title is still blank, the PDF filename is used.
+
+function PdfImportButton({
+  onImported,
+  hasContent,
+  hasTitle,
+}: {
+  onImported: (data: { content: string; title: string | null }) => void;
+  hasContent: boolean;
+  hasTitle: boolean;
+}) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+  const confirm = useConfirm();
+
+  async function handleFile(file: File) {
+    if (file.type !== "application/pdf") {
+      toast.error("Only PDF files are supported.");
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("PDF must be under 10 MB.");
+      return;
+    }
+
+    if (hasContent) {
+      const ok = await confirm(
+        "Existing content will be kept and the PDF text appended below it.",
+        { title: "Import PDF?", confirmText: "Import & append" }
+      );
+      if (!ok) return;
+    }
+
+    setBusy(true);
+    const fd = new FormData();
+    fd.append("file", file);
+    try {
+      const res = await fetch("/api/instructor/lessons/extract-pdf", {
+        method: "POST",
+        body: fd,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Failed to import PDF.");
+        return;
+      }
+      onImported({
+        content: data.content as string,
+        title: hasTitle ? null : (data.title as string | null),
+      });
+      toast.success(`Imported ${data.chars.toLocaleString()} characters from PDF`);
+    } catch {
+      toast.error("Network error while importing PDF.");
+    } finally {
+      setBusy(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <>
+      <input
+        ref={inputRef}
+        type="file"
+        accept="application/pdf"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) void handleFile(f);
+        }}
+      />
+      <button
+        type="button"
+        onClick={() => inputRef.current?.click()}
+        disabled={busy}
+        title="Import content from PDF"
+        className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md border border-[#d97757]/25 bg-orange-500/10 text-[#d97757] hover:bg-orange-500/20 hover:border-[#d97757]/40 transition-colors disabled:opacity-60"
+      >
+        {busy ? (
+          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+        ) : (
+          <FileUp className="w-3.5 h-3.5" />
+        )}
+        {busy ? "Importing…" : "Import PDF"}
+      </button>
+    </>
+  );
 }
 
 // ── DraggableLessonRow ────────────────────────────────────────────────────────
