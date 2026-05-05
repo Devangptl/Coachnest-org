@@ -383,7 +383,6 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                 1–5 to pick color · Enter to apply
               </p>
             </div>
-            <div className="w-2.5 h-2.5 bg-popover/60 backdrop-blur-md border-r border-b border-border/60 rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -549,7 +548,6 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                 ) : null}
               </AnimatePresence>
             </div>
-            <div className="w-2.5 h-2.5 bg-popover/60 backdrop-blur-md border-r border-b border-border/60 rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
