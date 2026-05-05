@@ -420,7 +420,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
       const idx = blockIdx++;
       return (
         <p data-block-index={idx} className={cn(
-          "text-muted-foreground leading-[1.85] tracking-wide mb-4 last:mb-0 break-normal",
+          "text-muted-foreground leading-[1.85] tracking-wide mb-4 last:mb-0 break-words",
           compact ? "text-sm mb-2" : "text-[15px]",
         )}>
           {children}
@@ -548,7 +548,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
   };
 
   return (
-    <div className={cn("markdown-body break-normal", className)}>
+    <div className={cn("markdown-body break-words", className)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {processed}
       </ReactMarkdown>
