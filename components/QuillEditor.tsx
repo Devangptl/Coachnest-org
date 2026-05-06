@@ -261,6 +261,29 @@ export default function QuillEditor({
 
       quillRef.current = quill;
 
+      // ── Strip non-semantic formatting on paste ─────────────────────────────
+      // Keeps bold/italic/underline/strike/link/heading/list/code/blockquote.
+      // Drops colors, backgrounds, font families, font sizes, and alignment so
+      // pasted content from websites/docs matches the editor theme.
+      const KEEP_ATTRS = new Set([
+        "bold", "italic", "underline", "strike",
+        "link", "header", "list", "indent",
+        "code-block", "blockquote", "script",
+      ]);
+      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (_node: Node, delta: { ops: Array<{ insert?: unknown; attributes?: Record<string, unknown> }> }) => {
+        delta.ops = delta.ops.map((op) => {
+          if (op.attributes) {
+            const clean: Record<string, unknown> = {};
+            for (const key of Object.keys(op.attributes)) {
+              if (KEEP_ATTRS.has(key)) clean[key] = op.attributes[key];
+            }
+            op.attributes = clean;
+          }
+          return op;
+        });
+        return delta;
+      });
+
       // ── Table button: replace plain icon + open hover-grid picker ──────────
       const root = containerRef.current!.parentElement;
       const tableBtn = root?.querySelector(".ql-table") as HTMLButtonElement | null;
