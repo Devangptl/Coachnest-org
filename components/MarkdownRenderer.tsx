@@ -132,7 +132,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setTimeout(() => setCopied(false), 2000);
   }, [code]);
   
-  const isDark = document.documentElement.classList.contains("dark");
+  const isDark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
 
   return (
     <div className="rounded-md overflow-hidden border border-white/[0.08] my-4 sm:my-5">
