@@ -37,20 +37,23 @@ const ITALIC_RE = /italic|oblique/i;
 const BULLET_RE = /^[•‣◦●○▪▫·⁃∙\-*]\s+(.*)$/;
 const NUMBER_RE = /^(\d{1,3})[.)]\s+(.*)$/;
 
-function styleWrap(text: string, bold: boolean, italic: boolean): string {
-  if (!bold && !italic) return text;
-  const m = text.match(/^(\s*)([\s\S]*?)(\s*)$/);
-  if (!m || !m[2]) return text;
-  const [, lead, mid, trail] = m;
-  let core = mid;
-  if (bold && italic) core = `***${core}***`;
-  else if (bold)      core = `**${core}**`;
-  else if (italic)    core = `*${core}*`;
-  return `${lead}${core}${trail}`;
+function htmlEscape(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-function renderLine(spans: Span[]): string {
-  // Merge adjacent spans with identical styles
+function styleWrapHtml(text: string, bold: boolean, italic: boolean): string {
+  let core = text;
+  if (italic) core = `<em>${core}</em>`;
+  if (bold)   core = `<strong>${core}</strong>`;
+  return core;
+}
+
+function renderLineHtml(spans: Span[]): string {
+  // Merge adjacent spans with identical styles for cleaner HTML
   const merged: Span[] = [];
   for (const s of spans) {
     const last = merged[merged.length - 1];
@@ -60,10 +63,12 @@ function renderLine(spans: Span[]): string {
       merged.push({ ...s });
     }
   }
-  return merged.map((s) => styleWrap(s.text, s.bold, s.italic)).join("");
+  return merged
+    .map((s) => styleWrapHtml(htmlEscape(s.text), s.bold, s.italic))
+    .join("");
 }
 
-async function extractMarkdown(buffer: Buffer): Promise<string> {
+async function extractHtml(buffer: Buffer): Promise<string> {
   const pdfjs = await loadPdfjs();
   const data  = new Uint8Array(buffer);
   const doc   = await pdfjs.getDocument({ data, disableFontFace: true, useSystemFonts: false }).promise;
@@ -81,7 +86,6 @@ async function extractMarkdown(buffer: Buffer): Promise<string> {
       const item = it as { str?: string; transform?: number[]; fontName?: string; hasEOL?: boolean };
       if (typeof item.str !== "string" || !item.transform) continue;
 
-      // EOL marker with no text → flush current line
       if (item.str === "" && item.hasEOL) {
         if (current) { lines.push(current); current = null; }
         continue;
@@ -96,7 +100,6 @@ async function extractMarkdown(buffer: Buffer): Promise<string> {
       const bold   = BOLD_RE.test(tag);
       const italic = ITALIC_RE.test(tag);
 
-      // New line if Y jumped (tolerant for sub-pixel drift)
       if (!current || Math.abs(current.y - y) > 1.5) {
         if (current) lines.push(current);
         current = { y, maxSize: size, spans: [] };
@@ -112,52 +115,74 @@ async function extractMarkdown(buffer: Buffer): Promise<string> {
     lines.push({ y: 0, maxSize: 0, spans: [] });
   }
 
-  // ── Determine body font size (median of non-empty lines) ───────────────────
   const sizes = lines.filter((l) => l.spans.length).map((l) => l.maxSize).sort((a, b) => a - b);
   const body  = sizes.length ? sizes[Math.floor(sizes.length / 2)] : 12;
 
-  // ── Emit Markdown ──────────────────────────────────────────────────────────
   const out: string[] = [];
-  const pushBlank = () => { if (out.length && out[out.length - 1] !== "") out.push(""); };
+  let listMode: "ul" | "ol" | null = null;
+  const closeList = () => { if (listMode) { out.push(`</${listMode}>`); listMode = null; } };
 
   for (const line of lines) {
-    if (!line.spans.length) { pushBlank(); continue; }
+    if (!line.spans.length) { closeList(); continue; }
 
-    const rendered = renderLine(line.spans).replace(/\s+/g, " ").trim();
-    if (!rendered) { pushBlank(); continue; }
+    const rendered = renderLineHtml(line.spans).replace(/\s+/g, " ").trim();
+    if (!rendered) { closeList(); continue; }
 
-    // Headings (font noticeably larger than body)
-    let prefix = "";
-    if      (line.maxSize >= body * 1.6)  prefix = "# ";
-    else if (line.maxSize >= body * 1.35) prefix = "## ";
-    else if (line.maxSize >= body * 1.15) prefix = "### ";
+    // Heading detection (font noticeably larger than body)
+    let level = 0;
+    if      (line.maxSize >= body * 1.6)  level = 1;
+    else if (line.maxSize >= body * 1.35) level = 2;
+    else if (line.maxSize >= body * 1.15) level = 3;
 
-    // Lists (only when not a heading)
-    if (!prefix) {
-      const bullet = rendered.match(BULLET_RE);
-      if (bullet) { out.push(`- ${bullet[1].trim()}`); continue; }
-      const numbered = rendered.match(NUMBER_RE);
-      if (numbered) { out.push(`${numbered[1]}. ${numbered[2].trim()}`); continue; }
+    if (level > 0) {
+      closeList();
+      out.push(`<h${level}>${rendered}</h${level}>`);
+      continue;
     }
 
-    if (prefix) pushBlank();
-    out.push(prefix + rendered);
-    if (prefix) out.push("");
-  }
+    // List detection — work on the un-styled trimmed plain text for matching,
+    // then keep the styled HTML for the visible content.
+    const plain = line.spans.map((s) => s.text).join("").trim();
+    const bullet = plain.match(BULLET_RE);
+    const numbered = plain.match(NUMBER_RE);
 
-  return out.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    if (bullet) {
+      if (listMode !== "ul") { closeList(); out.push("<ul>"); listMode = "ul"; }
+      const stripped = rendered.replace(/^([•‣◦●○▪▫·⁃∙\-*]\s+)/, "");
+      out.push(`<li>${stripped}</li>`);
+      continue;
+    }
+    if (numbered) {
+      if (listMode !== "ol") { closeList(); out.push("<ol>"); listMode = "ol"; }
+      const stripped = rendered.replace(/^(\d{1,3}[.)]\s+)/, "");
+      out.push(`<li>${stripped}</li>`);
+      continue;
+    }
+
+    closeList();
+    out.push(`<p>${rendered}</p>`);
+  }
+  closeList();
+
+  return out.join("\n").trim();
 }
 
-async function extractPlainText(buffer: Buffer): Promise<string> {
+async function extractPlainHtml(buffer: Buffer): Promise<string> {
   await loadPdfjs();
   const { PDFParse } = await import("pdf-parse");
   const result = await new PDFParse({ data: buffer }).getText();
-  return result.text
+  const cleaned = result.text
     .replace(/\r\n/g, "\n")
     .replace(/\r/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .replace(/[ \t]+\n/g, "\n")
     .trim();
+
+  // Wrap plain paragraphs in <p>; treat blank lines as breaks between them.
+  return cleaned
+    .split(/\n{2,}/)
+    .map((p) => `<p>${htmlEscape(p).replace(/\n/g, "<br>")}</p>`)
+    .join("\n");
 }
 
 export async function POST(req: NextRequest) {
@@ -180,16 +205,17 @@ export async function POST(req: NextRequest) {
 
   const buffer = Buffer.from(await file.arrayBuffer());
 
-  // Prefer style-aware Markdown extraction; fall back to plain text on error.
+  // Prefer style-aware HTML extraction; fall back to a plain-text → HTML
+  // wrap if anything goes wrong so the import still succeeds.
   let content = "";
   try {
-    content = await extractMarkdown(buffer);
+    content = await extractHtml(buffer);
   } catch (err) {
-    console.warn("[extract-pdf] markdown extraction failed, falling back:", err);
+    console.warn("[extract-pdf] structured extraction failed, falling back:", err);
   }
   if (!content) {
     try {
-      content = await extractPlainText(buffer);
+      content = await extractPlainHtml(buffer);
     } catch (err) {
       console.error("[extract-pdf] plain-text extraction failed:", err);
       return NextResponse.json(

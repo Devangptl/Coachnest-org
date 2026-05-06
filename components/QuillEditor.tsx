@@ -167,6 +167,10 @@ export default function QuillEditor({
   const onPickImageRef = useRef(onPickImage);
   const uploadFolderRef = useRef(uploadFolder);
   const isInternalChange = useRef(false);
+  // Tracks the last HTML the editor itself reported, so the value-sync effect
+  // can distinguish editor-driven changes from external prop updates (e.g.
+  // PDF import populating form.content from outside).
+  const lastReportedValue = useRef<string>(value);
 
   onChangeRef.current = onChange;
   onPickImageRef.current = onPickImage;
@@ -384,26 +388,38 @@ export default function QuillEditor({
 
       if (value) {
         quill.clipboard.dangerouslyPasteHTML(value);
+        lastReportedValue.current = value;
         quill.history.clear();
       }
 
       quill.on("text-change", (_delta: unknown, _old: unknown, source: string) => {
         if (source !== "user") return;
         isInternalChange.current = true;
-        onChangeRef.current(quill.getSemanticHTML());
+        const html = quill.getSemanticHTML();
+        lastReportedValue.current = html;
+        onChangeRef.current(html);
         isInternalChange.current = false;
       });
     })();
   }, []); // intentional: initialize once on mount
 
-  // Sync external resets (e.g. form cleared after submit)
+  // Sync external value changes (form reset, PDF import, etc.). Skips when the
+  // change originated from the editor itself, preventing an update loop.
   useEffect(() => {
     const quill = quillRef.current;
     if (!quill || isInternalChange.current) return;
-    if (value === "" && quill.getLength() > 1) {
+    if (value === lastReportedValue.current) return;
+
+    isInternalChange.current = true;
+    if (value) {
       quill.setContents([{ insert: "\n" }]);
-      quill.history.clear();
+      quill.clipboard.dangerouslyPasteHTML(value);
+    } else if (quill.getLength() > 1) {
+      quill.setContents([{ insert: "\n" }]);
     }
+    lastReportedValue.current = value;
+    quill.history.clear();
+    isInternalChange.current = false;
   }, [value]);
 
   return (
