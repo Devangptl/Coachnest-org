@@ -435,7 +435,8 @@ export default function QuillEditor({
       quill.on("text-change", (_delta: unknown, _old: unknown, source: string) => {
         if (source !== "user") return;
         isInternalChange.current = true;
-        const html = quill.getSemanticHTML();
+        // Replace &nbsp; that Quill injects for spaces so saved content wraps normally.
+        const html = quill.getSemanticHTML().replace(/&nbsp;/g, " ").replace(/ /g, " ");
         lastReportedValue.current = html;
         onChangeRef.current(html);
         isInternalChange.current = false;
