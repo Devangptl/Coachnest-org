@@ -261,6 +261,21 @@ export default function QuillEditor({
 
       quillRef.current = quill;
 
+      // ── Normalise non-breaking spaces on paste ─────────────────────────────
+      // Pasting from websites/docs replaces regular spaces with &nbsp; (U+00A0).
+      // These are unbreakable so long paragraphs overflow their container.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      quill.clipboard.addMatcher(Node.TEXT_NODE, (_node: Node, delta: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delta.ops = delta.ops.map((op: any) => {
+          if (typeof op.insert === "string") {
+            op.insert = op.insert.replace(/ /g, " ");
+          }
+          return op;
+        });
+        return delta;
+      });
+
       // ── Strip non-semantic formatting on paste ─────────────────────────────
       // Keeps bold/italic/underline/strike/link/heading/list/code/blockquote.
       // Drops colors, backgrounds, font families, font sizes, and alignment so

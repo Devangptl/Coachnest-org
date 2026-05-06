@@ -373,10 +373,13 @@ function MarkdownListItem({
 const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = false, className }: Props) {
   // Quill outputs semantic HTML — render it directly with scoped styles
   if (isHtml(content)) {
+    // Replace &nbsp; entities and U+00A0 non-breaking spaces with regular spaces
+    // so browsers can wrap long paragraphs that Quill produced from pasted text.
+    const normalized = content.replace(/&nbsp;/g, " ").replace(/ /g, " ");
     return (
       <div
         className={cn("quill-content", compact && "quill-content-compact", className)}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: normalized }}
       />
     );
   }
