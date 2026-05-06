@@ -270,8 +270,10 @@ export default function QuillEditor({
         "link", "header", "list", "indent",
         "code-block", "blockquote", "script",
       ]);
-      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (_node: Node, delta: { ops: Array<{ insert?: unknown; attributes?: Record<string, unknown> }> }) => {
-        delta.ops = delta.ops.map((op) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (_node: Node, delta: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delta.ops = delta.ops.map((op: any) => {
           if (op.attributes) {
             const clean: Record<string, unknown> = {};
             for (const key of Object.keys(op.attributes)) {
