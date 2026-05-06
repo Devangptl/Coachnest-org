@@ -261,6 +261,46 @@ export default function QuillEditor({
 
       quillRef.current = quill;
 
+      // ── Normalise non-breaking spaces on paste ─────────────────────────────
+      // Pasting from websites/docs replaces regular spaces with &nbsp; (U+00A0).
+      // These are unbreakable so long paragraphs overflow their container.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      quill.clipboard.addMatcher(Node.TEXT_NODE, (_node: Node, delta: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delta.ops = delta.ops.map((op: any) => {
+          if (typeof op.insert === "string") {
+            op.insert = op.insert.replace(/ /g, " ");
+          }
+          return op;
+        });
+        return delta;
+      });
+
+      // ── Strip non-semantic formatting on paste ─────────────────────────────
+      // Keeps bold/italic/underline/strike/link/heading/list/code/blockquote.
+      // Drops colors, backgrounds, font families, font sizes, and alignment so
+      // pasted content from websites/docs matches the editor theme.
+      const KEEP_ATTRS = new Set([
+        "bold", "italic", "underline", "strike",
+        "link", "header", "list", "indent",
+        "code-block", "blockquote", "script",
+      ]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (_node: Node, delta: any) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        delta.ops = delta.ops.map((op: any) => {
+          if (op.attributes) {
+            const clean: Record<string, unknown> = {};
+            for (const key of Object.keys(op.attributes)) {
+              if (KEEP_ATTRS.has(key)) clean[key] = op.attributes[key];
+            }
+            op.attributes = clean;
+          }
+          return op;
+        });
+        return delta;
+      });
+
       // ── Table button: replace plain icon + open hover-grid picker ──────────
       const root = containerRef.current!.parentElement;
       const tableBtn = root?.querySelector(".ql-table") as HTMLButtonElement | null;
@@ -395,7 +435,8 @@ export default function QuillEditor({
       quill.on("text-change", (_delta: unknown, _old: unknown, source: string) => {
         if (source !== "user") return;
         isInternalChange.current = true;
-        const html = quill.getSemanticHTML();
+        // Replace &nbsp; that Quill injects for spaces so saved content wraps normally.
+        const html = quill.getSemanticHTML().replace(/&nbsp;/g, " ").replace(/ /g, " ");
         lastReportedValue.current = html;
         onChangeRef.current(html);
         isInternalChange.current = false;

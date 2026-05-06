@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 import slugify from "slugify";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -72,6 +73,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
     if (published !== undefined) data.status = published ? "PUBLISHED" : "DRAFT";
 
     const blog = await prisma.blog.update({ where: { id }, data });
+    revalidateTag("blogs");
     return NextResponse.json({ blog });
   } catch (error) {
     console.error("[PATCH /api/blogs/[id]]", error);
@@ -88,6 +90,7 @@ export async function DELETE(_req: NextRequest, ctx: Ctx) {
 
     const { id } = await ctx.params;
     await prisma.blog.delete({ where: { id } });
+    revalidateTag("blogs");
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("[DELETE /api/blogs/[id]]", error);

@@ -15,7 +15,7 @@
  *   - Bold, italic, strikethrough, inline code, links
  */
 
-import { useState, useCallback, memo, ReactNode, useContext, createContext, Children, isValidElement, cloneElement } from "react";
+import { useState, useCallback, memo, ReactNode, ReactElement, useContext, createContext, Children, isValidElement, cloneElement } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
@@ -132,7 +132,7 @@ function CodeBlock({ lang, code }: { lang: string; code: string }) {
     setTimeout(() => setCopied(false), 2000);
   }, [code]);
   
-  const isDark = document.documentElement.classList.contains("dark");
+  const isDark = typeof document !== "undefined" && document.documentElement.classList.contains("dark");
 
   return (
     <div className="rounded-md overflow-hidden border border-white/[0.08] my-4 sm:my-5">
@@ -373,10 +373,13 @@ function MarkdownListItem({
 const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = false, className }: Props) {
   // Quill outputs semantic HTML — render it directly with scoped styles
   if (isHtml(content)) {
+    // Replace &nbsp; entities and U+00A0 non-breaking spaces with regular spaces
+    // so browsers can wrap long paragraphs that Quill produced from pasted text.
+    const normalized = content.replace(/&nbsp;/g, " ").replace(/ /g, " ");
     return (
       <div
         className={cn("quill-content", compact && "quill-content-compact", className)}
-        dangerouslySetInnerHTML={{ __html: content }}
+        dangerouslySetInnerHTML={{ __html: normalized }}
       />
     );
   }
@@ -491,11 +494,11 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
       const numbered = Children.map(children, (child) => {
         if (!isValidElement(child)) return child;
         // Only number actual li elements (not whitespace text nodes)
-        if ((child as React.ReactElement<{ className?: string }>).props?.className?.includes("task-list-item")) {
+        if ((child as ReactElement<{ className?: string }>).props?.className?.includes("task-list-item")) {
           return child; // task list items already have checkboxes
         }
         counter++;
-        return cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+        return cloneElement(child as ReactElement<Record<string, unknown>>, {
           "data-li-index": counter,
         });
       });
@@ -548,7 +551,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
   };
 
   return (
-    <div className={cn("markdown-body whitespace-normal", className)}>
+    <div className={cn("markdown-body whitespace-normal [overflow-wrap:break-word] [word-break:break-word]", className)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {processed}
       </ReactMarkdown>
