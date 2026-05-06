@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { revalidateTag } from "next/cache";
 import slugify from "slugify";
 
 export async function GET(req: NextRequest) {
@@ -84,6 +85,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
+    revalidateTag("blogs");
     return NextResponse.json({ blog }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/blogs]", error);
