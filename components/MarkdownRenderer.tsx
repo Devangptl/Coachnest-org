@@ -375,7 +375,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
   if (isHtml(content)) {
     return (
       <div
-        className={cn("quill-content break-words overflow-hidden", compact && "quill-content-compact", className)}
+        className={cn("quill-content overflow-hidden", compact && "quill-content-compact", className)}
         dangerouslySetInnerHTML={{ __html: content }}
       />
     );
@@ -548,7 +548,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
   };
 
   return (
-    <div className={cn("markdown-body whitespace-normal break-words overflow-hidden", className)}>
+    <div className={cn("markdown-body whitespace-normal overflow-hidden", className)}>
       <ReactMarkdown remarkPlugins={[remarkGfm]} components={components}>
         {processed}
       </ReactMarkdown>
