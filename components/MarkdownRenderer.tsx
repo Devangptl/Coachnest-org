@@ -15,7 +15,7 @@
  *   - Bold, italic, strikethrough, inline code, links
  */
 
-import { useState, useCallback, memo, ReactNode, useContext, createContext, Children, isValidElement, cloneElement } from "react";
+import { useState, useCallback, memo, ReactNode, ReactElement, useContext, createContext, Children, isValidElement, cloneElement } from "react";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import ReactMarkdown from "react-markdown";
@@ -491,11 +491,11 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
       const numbered = Children.map(children, (child) => {
         if (!isValidElement(child)) return child;
         // Only number actual li elements (not whitespace text nodes)
-        if ((child as React.ReactElement<{ className?: string }>).props?.className?.includes("task-list-item")) {
+        if ((child as ReactElement<{ className?: string }>).props?.className?.includes("task-list-item")) {
           return child; // task list items already have checkboxes
         }
         counter++;
-        return cloneElement(child as React.ReactElement<Record<string, unknown>>, {
+        return cloneElement(child as ReactElement<Record<string, unknown>>, {
           "data-li-index": counter,
         });
       });
