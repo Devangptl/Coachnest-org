@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { BookOpen, Clock, Users, Star, Signal, Globe, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import FollowInstructorButton from "@/components/FollowInstructorButton";
 
 interface Props {
@@ -103,9 +104,9 @@ export default function CourseHero({
           </h1>
 
           {/* Description */}
-          <p className="text-muted-foreground text-sm sm:text-base leading-relaxed mb-5">
-            {description}
-          </p>
+          <div className="text-sm sm:text-base mb-5">
+            <MarkdownRenderer content={description} compact />
+          </div>
 
           {/* Rating + enrollment + quick stats */}
           <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-4 text-sm">

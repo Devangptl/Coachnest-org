@@ -3,6 +3,7 @@
  * POST /api/lessons  — create a lesson inside a course (admin only)
  */
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 
@@ -55,7 +56,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const { courseId, title, type, content, description, order, duration, isFree } =
+    const { courseId, sectionId, title, type, content, description, order, duration, isFree } =
       await req.json();
 
     if (!courseId || !title) {
@@ -73,6 +74,7 @@ export async function POST(req: NextRequest) {
     const lesson = await prisma.lesson.create({
       data: {
         courseId,
+        sectionId: sectionId ?? null,
         title,
         type: type ?? "TEXT",
         content: content ?? null,
@@ -82,6 +84,8 @@ export async function POST(req: NextRequest) {
         isFree: isFree ?? false,
       },
     });
+
+    revalidateTag("course-lessons");
 
     return NextResponse.json({ lesson }, { status: 201 });
   } catch (error) {

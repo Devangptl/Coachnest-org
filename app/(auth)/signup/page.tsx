@@ -87,8 +87,8 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Signup failed."); return; }
-      // Students go through onboarding to select professions; instructors skip it.
-      router.push(role === "INSTRUCTOR" ? "/instructor" : "/onboarding");
+      // Send user to the email confirmation screen before accessing the platform.
+      router.push(`/confirm-email?email=${encodeURIComponent(email)}`);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");

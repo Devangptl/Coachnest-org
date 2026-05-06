@@ -1,10 +1,6 @@
 /**
- * PATCH /api/instructor/courses/[id]/reorder-lessons
- *
+ * PATCH /api/instructor/courses/[id]/reorder-sections
  * Body: { order: Array<{ id: string; order: number }> }
- *
- * Updates the `order` field for each lesson in bulk.
- * Admins can reorder any course; instructors only their own.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
@@ -21,7 +17,6 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   const { id: courseId } = await params;
 
-  // Verify course access
   const course = await prisma.course.findFirst({
     where:
       session.role === "ADMIN"
@@ -45,11 +40,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 
   await prisma.$transaction(
     items.map(({ id, order }) =>
-      prisma.lesson.updateMany({
+      prisma.section.updateMany({
         where: { id, courseId },
-        data:  { order },
-      }),
-    ),
+        data: { order },
+      })
+    )
   );
 
   revalidateTag("course-lessons");

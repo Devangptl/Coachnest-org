@@ -864,6 +864,7 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   font-size: 0.9rem;
   line-height: 1.8;
   color: hsl(var(--foreground));
+  white-space: normal;
 }
 .quill-content-compact { font-size: 0.85rem; line-height: 1.6; }
 
@@ -915,3 +916,96 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 .quill-content li { margin-bottom: 0.3rem; }
 
 .quill-content img { max-width: 100%; border-radius: var(--radius); margin: 8px 0; }
+
+/* ── Alignment (editor + rendered output) ────────────────────────────────── */
+.ql-editor .ql-align-center, .quill-content .ql-align-center { text-align: center; }
+.ql-editor .ql-align-right,  .quill-content .ql-align-right  { text-align: right; }
+.ql-editor .ql-align-justify, .quill-content .ql-align-justify { text-align: justify; }
+
+/* ── Sub / Super script ──────────────────────────────────────────────────── */
+.ql-editor sub, .quill-content sub { font-size: 0.75em; vertical-align: sub; }
+.ql-editor sup, .quill-content sup { font-size: 0.75em; vertical-align: super; }
+
+/* ── Headers level 4 ─────────────────────────────────────────────────────── */
+.ql-editor h4    { font-size: 1rem;  font-weight: 600; margin: 0.75rem 0 0.3rem; color: hsl(var(--foreground)); }
+.quill-content h4 { font-size: 1rem; font-weight: 600; margin: 0.9rem 0 0.35rem; color: hsl(var(--foreground)); }
+
+/* ── Quill size whitelist (small / large / huge) ─────────────────────────── */
+.ql-editor .ql-size-small, .quill-content .ql-size-small { font-size: 0.75em; }
+.ql-editor .ql-size-large, .quill-content .ql-size-large { font-size: 1.5em;  }
+.ql-editor .ql-size-huge,  .quill-content .ql-size-huge  { font-size: 2.25em; line-height: 1.2; }
+
+/* ── Embedded video (Quill ql-video → iframe) ────────────────────────────── */
+.ql-editor iframe.ql-video, .quill-content iframe.ql-video {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius);
+  margin: 12px 0;
+  background: hsl(var(--secondary));
+}
+
+/* ── RTL direction ───────────────────────────────────────────────────────── */
+.ql-editor [dir="rtl"], .quill-content [dir="rtl"] { text-align: right; }
+
+/* ── Tables (editor + rendered output) ───────────────────────────────────── */
+.ql-editor table, .quill-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 12px 0;
+  font-size: 0.9em;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.ql-editor table th, .quill-content table th,
+.ql-editor table td, .quill-content table td {
+  border: 1px solid hsl(var(--border));
+  padding: 8px 12px;
+  vertical-align: top;
+  min-width: 60px;
+}
+.ql-editor table th, .quill-content table th {
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  text-align: left;
+}
+.ql-editor table tr:nth-child(even) td,
+.quill-content table tr:nth-child(even) td {
+  background: hsl(var(--secondary) / 0.35);
+}
+
+/* ── Table picker popover (toolbar) ──────────────────────────────────────── */
+.ql-table-picker {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  box-shadow: 0 12px 30px rgba(0,0,0,0.45);
+  padding: 8px;
+}
+.ql-table-picker-grid {
+  display: grid;
+  gap: 2px;
+}
+.ql-table-picker-cell {
+  width: 18px;
+  height: 18px;
+  background: hsl(var(--secondary));
+  border: 1px solid hsl(var(--border));
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 0.08s, border-color 0.08s;
+}
+.ql-table-picker-cell.active {
+  background: hsl(var(--primary) / 0.35);
+  border-color: hsl(var(--primary));
+}
+.ql-table-picker-label {
+  margin-top: 6px;
+  text-align: center;
+  font-size: 11px;
+  color: hsl(var(--muted-foreground));
+}

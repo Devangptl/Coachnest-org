@@ -26,35 +26,32 @@ interface TextHighlighterProps {
 
 const COLORS = [
   { value: "#a855f7", label: "Purple", bg: "bg-purple-500", ring: "ring-purple-400" },
-  { value: "#f59e0b", label: "Amber", bg: "bg-amber-500", ring: "ring-amber-400" },
-  { value: "#10b981", label: "Emerald", bg: "bg-emerald-500", ring: "ring-emerald-400" },
-  { value: "#3b82f6", label: "Blue", bg: "bg-blue-500", ring: "ring-blue-400" },
-  { value: "#ef4444", label: "Red", bg: "bg-red-500", ring: "ring-red-400" },
+  { value: "#f59e0b", label: "Amber",  bg: "bg-amber-500",  ring: "ring-amber-400"  },
+  { value: "#10b981", label: "Emerald",bg: "bg-emerald-500",ring: "ring-emerald-400"},
+  { value: "#3b82f6", label: "Blue",   bg: "bg-blue-500",   ring: "ring-blue-400"   },
+  { value: "#ef4444", label: "Red",    bg: "bg-red-500",    ring: "ring-red-400"    },
 ];
 
-const POPUP_WIDTH = 260;   // approximate — used for viewport clamping
-const TOOLTIP_WIDTH = 300; // approximate — used for viewport clamping
+const POPUP_WIDTH   = 260;
+const TOOLTIP_WIDTH = 310;
 
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function TextHighlighter({ lessonId, isEnrolled, children }: TextHighlighterProps) {
   const [highlights, setHighlights] = useState<HighlightData[]>([]);
   const [popup, setPopup] = useState<{
-    x: number;
-    y: number;
-    text: string;
-    blockIndex: number;
-    startOffset: number;
-    endOffset: number;
+    x: number; y: number;
+    text: string; blockIndex: number;
+    startOffset: number; endOffset: number;
   } | null>(null);
   const [selectedColor, setSelectedColor] = useState(COLORS[0].value);
   const [saving, setSaving] = useState(false);
   const [activeHighlight, setActiveHighlight] = useState<HighlightData | null>(null);
-  const [activeHlPos, setActiveHlPos] = useState<{ x: number; y: number } | null>(null);
-  const [noteEditing, setNoteEditing] = useState(false);
-  const [noteDraft, setNoteDraft] = useState("");
-  const [noteSaving, setNoteSaving] = useState(false);
-  const [copied, setCopied] = useState(false);
+  const [activeHlPos, setActiveHlPos]   = useState<{ x: number; y: number } | null>(null);
+  const [noteEditing, setNoteEditing]   = useState(false);
+  const [noteDraft, setNoteDraft]       = useState("");
+  const [noteSaving, setNoteSaving]     = useState(false);
+  const [copied, setCopied]             = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ── Fetch existing highlights ────────────────────────────────────────────
@@ -63,23 +60,19 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     let cancelled = false;
     fetch(`/api/highlights?lessonId=${lessonId}`)
       .then((r) => (r.ok ? r.json() : Promise.reject()))
-      .then((data) => {
-        if (!cancelled) setHighlights(data.highlights || []);
-      })
+      .then((data) => { if (!cancelled) setHighlights(data.highlights || []); })
       .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [lessonId, isEnrolled]);
 
-  // ── Clamp a point to the container's visible width ───────────────────────
+  // ── Clamp x to container's visible width ─────────────────────────────────
   function clampX(containerRelativeX: number, width: number) {
     const container = containerRef.current;
     if (!container) return containerRelativeX;
     const rect = container.getBoundingClientRect();
     const half = width / 2;
-    const min = half + 8;
-    const max = rect.width - half - 8;
+    const min  = half + 8;
+    const max  = rect.width - half - 8;
     if (max <= min) return rect.width / 2;
     return Math.max(min, Math.min(max, containerRelativeX));
   }
@@ -94,38 +87,34 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     const text = selection.toString().trim();
     if (!text || text.length < 2) return;
 
-    const range = selection.getRangeAt(0);
+    const range     = selection.getRangeAt(0);
     const container = containerRef.current;
     if (!container || !container.contains(range.commonAncestorContainer)) return;
 
-    // Don't trigger when the selection is entirely inside an existing highlight
+    // Don't trigger when selection is entirely inside an existing highlight
     let probe: Node | null = range.commonAncestorContainer;
     while (probe && probe !== container) {
       if (probe.nodeType === Node.ELEMENT_NODE) {
         const el = probe as HTMLElement;
-        if (el.dataset && el.dataset.highlightId) return;
+        if (el.dataset?.highlightId) return;
       }
       probe = probe.parentNode;
     }
 
-    // Find the block element
+    // Find the nearest block element with data-block-index
     let blockEl = range.startContainer as HTMLElement;
     if (blockEl.nodeType === Node.TEXT_NODE) blockEl = blockEl.parentElement!;
-
     while (blockEl && !blockEl.dataset?.blockIndex && blockEl !== container) {
       blockEl = blockEl.parentElement!;
     }
-
     if (!blockEl || !blockEl.dataset?.blockIndex) return;
 
     const blockIndex = parseInt(blockEl.dataset.blockIndex, 10);
-
     const rangeStart = getTextOffset(blockEl, range.startContainer, range.startOffset);
-    const rangeEnd = getTextOffset(blockEl, range.endContainer, range.endOffset);
-
+    const rangeEnd   = getTextOffset(blockEl, range.endContainer,   range.endOffset);
     if (rangeStart === rangeEnd) return;
 
-    const rect = range.getBoundingClientRect();
+    const rect          = range.getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
     setPopup({
@@ -134,7 +123,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
       text,
       blockIndex,
       startOffset: Math.min(rangeStart, rangeEnd),
-      endOffset: Math.max(rangeStart, rangeEnd),
+      endOffset:   Math.max(rangeStart, rangeEnd),
     });
     setActiveHighlight(null);
     setActiveHlPos(null);
@@ -144,7 +133,10 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       const target = e.target as HTMLElement;
-      if (!target.closest("[data-highlight-popup]") && !target.closest("[data-highlight-tooltip]")) {
+      if (
+        !target.closest("[data-highlight-popup]") &&
+        !target.closest("[data-highlight-tooltip]")
+      ) {
         closeAllPopups();
       }
     }
@@ -174,23 +166,20 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
   async function saveHighlight() {
     if (!popup || saving) return;
     setSaving(true);
-
     try {
       const res = await fetch("/api/highlights", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           lessonId,
-          text: popup.text,
-          blockIndex: popup.blockIndex,
+          text:        popup.text,
+          blockIndex:  popup.blockIndex,
           startOffset: popup.startOffset,
-          endOffset: popup.endOffset,
-          color: selectedColor,
+          endOffset:   popup.endOffset,
+          color:       selectedColor,
         }),
       });
-
       if (!res.ok) throw new Error("Failed to save");
-
       const { highlight } = await res.json();
       setHighlights((prev) => [...prev, highlight]);
       toast.success("Text highlighted");
@@ -203,22 +192,46 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     }
   }
 
+  // Ref so the keyboard handler always calls the latest saveHighlight
+  const saveHighlightRef = useRef(saveHighlight);
+  saveHighlightRef.current = saveHighlight;
+
+  // ── Keyboard shortcuts when selection popup is open ──────────────────────
+  // Press 1–5 to pick a color; Enter to apply the highlight.
+  useEffect(() => {
+    if (!popup) return;
+    function onPopupKey(e: KeyboardEvent) {
+      if (e.key === "Escape") return; // handled by the existing listener
+      const idx = parseInt(e.key) - 1;
+      if (idx >= 0 && idx < COLORS.length) {
+        e.preventDefault();
+        setSelectedColor(COLORS[idx].value);
+      }
+      if (e.key === "Enter") {
+        e.preventDefault();
+        saveHighlightRef.current();
+      }
+    }
+    document.addEventListener("keydown", onPopupKey);
+    return () => document.removeEventListener("keydown", onPopupKey);
+  }, [popup]);
+
   // ── Update a highlight (color or note) ───────────────────────────────────
   async function updateHighlight(id: string, patch: { color?: string; note?: string | null }) {
     // Optimistic update
     setHighlights((prev) => prev.map((h) => (h.id === id ? { ...h, ...patch } : h)));
-    setActiveHighlight((prev) => (prev && prev.id === id ? { ...prev, ...patch } : prev));
+    setActiveHighlight((prev) => (prev?.id === id ? { ...prev, ...patch } : prev));
 
     try {
       const res = await fetch(`/api/highlights/${id}`, {
-        method: "PATCH",
+        method:  "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(patch),
+        body:    JSON.stringify(patch),
       });
       if (!res.ok) throw new Error();
       const { highlight } = await res.json();
       setHighlights((prev) => prev.map((h) => (h.id === id ? highlight : h)));
-      setActiveHighlight((prev) => (prev && prev.id === id ? highlight : prev));
+      setActiveHighlight((prev) => (prev?.id === id ? highlight : prev));
     } catch {
       toast.error("Failed to update highlight");
     }
@@ -258,16 +271,15 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
   }
 
   // ── Handle highlight click ───────────────────────────────────────────────
-  // Use a ref so HighlightedContent doesn't re-render/rebuild marks on every parent render.
+  // Ref so HighlightedContent doesn't re-render/rebuild marks on every parent render.
   const handleHighlightClickRef = useRef<(e: MouseEvent, hl: HighlightData) => void>(() => {});
   handleHighlightClickRef.current = (e: MouseEvent, highlight: HighlightData) => {
     e.stopPropagation();
     const container = containerRef.current;
     if (!container) return;
-    const rect = (e.target as HTMLElement).getBoundingClientRect();
+    const rect          = (e.target as HTMLElement).getBoundingClientRect();
     const containerRect = container.getBoundingClientRect();
 
-    // Refresh highlight reference from the latest list in case it was updated
     const fresh = highlights.find((h) => h.id === highlight.id) || highlight;
     setActiveHighlight(fresh);
     setNoteDraft(fresh.note || "");
@@ -284,9 +296,9 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
     handleHighlightClickRef.current(e, hl);
   }, []);
 
-  const activeColor = activeHighlight?.color || COLORS[0].value;
+  const activeColor  = activeHighlight?.color || COLORS[0].value;
   const activeHasNote = useMemo(
-    () => !!(activeHighlight?.note && activeHighlight.note.trim().length > 0),
+    () => !!(activeHighlight?.note?.trim()),
     [activeHighlight]
   );
 
@@ -295,12 +307,22 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
   }
 
   return (
-    <div ref={containerRef} className="relative" onMouseUp={handleMouseUp}>
+    <div ref={containerRef} className="relative select-text" onMouseUp={handleMouseUp}>
       <HighlightedContent highlights={highlights} onHighlightClick={stableOnHighlightClick}>
         {children}
       </HighlightedContent>
 
-      {/* ── Selection popup ────────────────────────────────────────────────── */}
+      {/* ── Highlight count footer ──────────────────────────────────────── */}
+      {highlights.length > 0 && (
+        <div className="mt-6 flex items-center gap-1.5 text-xs text-muted-foreground/40 select-none pointer-events-none border-t border-border/30 pt-3">
+          <Highlighter className="w-3 h-3" />
+          <span>
+            {highlights.length} {highlights.length === 1 ? "highlight" : "highlights"} saved in this lesson
+          </span>
+        </div>
+      )}
+
+      {/* ── Selection popup ─────────────────────────────────────────────── */}
       <AnimatePresence>
         {popup && (
           <motion.div
@@ -311,46 +333,61 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
             transition={{ duration: 0.15 }}
             className="absolute z-50 flex flex-col items-center"
             style={{
-              left: `${popup.x}px`,
-              top: `${popup.y}px`,
+              left:      `${popup.x}px`,
+              top:       `${popup.y}px`,
               transform: "translate(-50%, -100%)",
             }}
           >
-            <div className="bg-popover border border-border rounded-lg shadow-2xl shadow-black/50 px-3 py-2.5 flex flex-col gap-2 min-w-[220px]">
-              <div className="flex items-center gap-1.5 px-1">
-                <Palette className="w-3.5 h-3.5 text-muted-foreground" />
-                {COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    onClick={() => setSelectedColor(c.value)}
-                    className={cn(
-                      "w-5 h-5 rounded-full transition-all",
-                      c.bg,
-                      selectedColor === c.value
-                        ? `ring-2 ${c.ring} ring-offset-1 ring-offset-popover scale-110`
-                        : "opacity-60 hover:opacity-100"
-                    )}
-                    title={c.label}
-                    aria-label={`${c.label} highlight color`}
-                  />
-                ))}
+            <div className="bg-popover/60 backdrop-blur-md border border-border/60 rounded-xl p-3 flex flex-col gap-2.5 min-w-[240px] max-w-[300px]">
+              {/* Selected text preview */}
+              <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed line-clamp-2 border-b border-border/60 pb-2.5 select-none">
+                &ldquo;{popup.text.length > 90 ? popup.text.slice(0, 90) + "…" : popup.text}&rdquo;
+              </p>
+
+              {/* Color palette with keyboard number hints */}
+              <div className="flex items-center gap-2 px-0.5">
+                <Palette className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+                <div className="flex items-center gap-2.5">
+                  {COLORS.map((c, i) => (
+                    <div key={c.value} className="flex flex-col items-center gap-1">
+                      <button
+                        onClick={() => setSelectedColor(c.value)}
+                        className={cn(
+                          "w-5 h-5 rounded-full transition-all",
+                          c.bg,
+                          selectedColor === c.value
+                            ? `ring-2 ${c.ring} ring-offset-1 ring-offset-popover scale-110`
+                            : "opacity-55 hover:opacity-90 hover:scale-105"
+                        )}
+                        title={`${c.label} (${i + 1})`}
+                        aria-label={`${c.label} highlight color`}
+                      />
+                      <span className="text-[9px] text-muted-foreground/30 leading-none select-none">{i + 1}</span>
+                    </div>
+                  ))}
+                </div>
               </div>
 
+              {/* Highlight button */}
               <button
                 onClick={saveHighlight}
                 disabled={saving}
-                className="flex items-center justify-center gap-2 text-sm px-3 py-1.5 rounded-md bg-secondary border border-border text-foreground/80 hover:text-foreground hover:bg-accent transition-all font-medium disabled:opacity-50"
+                className="flex items-center justify-center gap-2 text-sm px-3 py-2 rounded-lg bg-primary/15 border border-primary/30 text-primary hover:bg-primary/25 hover:border-primary/50 transition-all font-semibold disabled:opacity-50"
               >
                 <Highlighter className="w-3.5 h-3.5" />
-                {saving ? "Saving..." : "Highlight"}
+                {saving ? "Saving…" : "Highlight"}
               </button>
+
+              {/* Keyboard hint */}
+              <p className="text-[10px] text-muted-foreground/30 text-center -mt-0.5 select-none">
+                1–5 to pick color · Enter to apply
+              </p>
             </div>
-            <div className="w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── Active highlight tooltip ───────────────────────────────────────── */}
+      {/* ── Active highlight tooltip ─────────────────────────────────────── */}
       <AnimatePresence>
         {activeHighlight && activeHlPos && (
           <motion.div
@@ -361,31 +398,40 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
             transition={{ duration: 0.15 }}
             className="absolute z-50 flex flex-col items-center"
             style={{
-              left: `${activeHlPos.x}px`,
-              top: `${activeHlPos.y}px`,
+              left:      `${activeHlPos.x}px`,
+              top:       `${activeHlPos.y}px`,
               transform: "translate(-50%, -100%)",
             }}
             onMouseDown={(e) => e.stopPropagation()}
           >
-            <div className="bg-popover border border-border rounded-lg shadow-2xl shadow-black/50 p-2.5 flex flex-col gap-2 w-[280px]">
+            <div className="bg-popover/60 backdrop-blur-md border border-border/60 rounded-xl p-3 flex flex-col gap-2.5 w-[300px]">
+              {/* Highlighted text snippet */}
+              <p className="text-[11px] text-muted-foreground/60 italic leading-relaxed line-clamp-2 border-b border-border/60 pb-2.5 select-none">
+                &ldquo;{activeHighlight.text.length > 90
+                  ? activeHighlight.text.slice(0, 90) + "…"
+                  : activeHighlight.text}&rdquo;
+              </p>
+
               {/* Color switcher */}
-              <div className="flex items-center gap-1.5 px-1">
-                <Palette className="w-3.5 h-3.5 text-muted-foreground" />
-                {COLORS.map((c) => (
-                  <button
-                    key={c.value}
-                    onClick={() => updateHighlight(activeHighlight.id, { color: c.value })}
-                    className={cn(
-                      "w-5 h-5 rounded-full transition-all",
-                      c.bg,
-                      activeColor === c.value
-                        ? `ring-2 ${c.ring} ring-offset-1 ring-offset-popover scale-110`
-                        : "opacity-60 hover:opacity-100"
-                    )}
-                    title={c.label}
-                    aria-label={`Change to ${c.label}`}
-                  />
-                ))}
+              <div className="flex items-center gap-2 px-0.5">
+                <Palette className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
+                <div className="flex items-center gap-2.5">
+                  {COLORS.map((c) => (
+                    <button
+                      key={c.value}
+                      onClick={() => updateHighlight(activeHighlight.id, { color: c.value })}
+                      className={cn(
+                        "w-5 h-5 rounded-full transition-all",
+                        c.bg,
+                        activeColor === c.value
+                          ? `ring-2 ${c.ring} ring-offset-1 ring-offset-popover scale-110`
+                          : "opacity-55 hover:opacity-90 hover:scale-105"
+                      )}
+                      title={c.label}
+                      aria-label={`Change to ${c.label}`}
+                    />
+                  ))}
+                </div>
               </div>
 
               {/* Action row */}
@@ -396,10 +442,10 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                     setNoteDraft(activeHighlight.note || "");
                   }}
                   className={cn(
-                    "flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md border transition-all font-medium flex-1 justify-center",
+                    "flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg border transition-all font-medium flex-1 justify-center",
                     activeHasNote
                       ? "bg-primary/15 border-primary/30 text-primary hover:bg-primary/25"
-                      : "bg-secondary border-border text-foreground/80 hover:text-foreground hover:bg-accent"
+                      : "bg-secondary border-border text-foreground/70 hover:text-foreground hover:bg-accent"
                   )}
                   title={activeHasNote ? "Edit note" : "Add note"}
                 >
@@ -408,21 +454,23 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                 </button>
                 <button
                   onClick={() => copyHighlightText(activeHighlight.text)}
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-secondary border border-border text-foreground/80 hover:text-foreground hover:bg-accent transition-all font-medium"
-                  title="Copy text"
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-secondary border border-border text-foreground/70 hover:text-foreground hover:bg-accent transition-all font-medium"
+                  title="Copy highlighted text"
                 >
-                  {copied ? <Check className="w-3 h-3 text-emerald-400" /> : <Copy className="w-3 h-3" />}
+                  {copied
+                    ? <Check className="w-3 h-3 text-emerald-400" />
+                    : <Copy className="w-3 h-3" />}
                 </button>
                 <button
                   onClick={() => removeHighlight(activeHighlight.id)}
-                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-md bg-destructive/15 border border-destructive/30 text-destructive hover:bg-destructive/25 transition-all font-medium"
+                  className="flex items-center gap-1.5 text-xs px-2.5 py-1.5 rounded-lg bg-destructive/15 border border-destructive/30 text-destructive hover:bg-destructive/25 transition-all font-medium"
                   title="Remove highlight"
                 >
                   <Trash2 className="w-3 h-3" />
                 </button>
                 <button
                   onClick={closeAllPopups}
-                  className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
                   title="Close"
                   aria-label="Close"
                 >
@@ -458,7 +506,7 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                         maxLength={500}
                       />
                       <div className="flex items-center justify-between gap-2">
-                        <span className="text-[10px] text-muted-foreground">
+                        <span className="text-[10px] text-muted-foreground/50">
                           {noteDraft.length}/500 · ⌘↵ to save
                         </span>
                         <div className="flex items-center gap-1.5">
@@ -500,7 +548,6 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
                 ) : null}
               </AnimatePresence>
             </div>
-            <div className="w-2.5 h-2.5 bg-popover border-r border-b border-border rotate-45 -mt-[5px]" />
           </motion.div>
         )}
       </AnimatePresence>
@@ -508,24 +555,20 @@ export default function TextHighlighter({ lessonId, isEnrolled, children }: Text
   );
 }
 
-// ── Utility: get text offset within a container ────────────────────────────
+// ── Utility: character offset within a block element ──────────────────────────
 
 function getTextOffset(container: Node, targetNode: Node, targetOffset: number): number {
   let offset = 0;
   const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT);
   let node: Node | null;
-
   while ((node = walker.nextNode())) {
-    if (node === targetNode) {
-      return offset + targetOffset;
-    }
+    if (node === targetNode) return offset + targetOffset;
     offset += node.textContent?.length || 0;
   }
-
   return offset;
 }
 
-// ── Highlighted content renderer ──────────────────────────────────────────
+// ── Highlighted content renderer ──────────────────────────────────────────────
 
 interface HighlightedContentProps {
   highlights: HighlightData[];
@@ -539,7 +582,7 @@ function HighlightedContent({ highlights, onHighlightClick, children }: Highligh
   useEffect(() => {
     if (!contentRef.current) return;
 
-    // Clear all existing highlight wrappers first
+    // Clear existing highlight wrappers
     contentRef.current.querySelectorAll("[data-highlight-id]").forEach((el) => {
       const parent = el.parentNode;
       if (parent) {
@@ -559,7 +602,7 @@ function HighlightedContent({ highlights, onHighlightClick, children }: Highligh
   return <div ref={contentRef}>{children}</div>;
 }
 
-// ── Apply a highlight to a specific block element ──────────────────────────
+// ── Apply a single highlight to a block element ───────────────────────────────
 
 function applyHighlightToBlock(
   blockEl: Element,
@@ -567,28 +610,26 @@ function applyHighlightToBlock(
   onClick: (e: MouseEvent, highlight: HighlightData) => void
 ) {
   const walker = document.createTreeWalker(blockEl, NodeFilter.SHOW_TEXT);
-  let currentOffset = 0;
+  let currentOffset   = 0;
   let startNode: Text | null = null;
-  let endNode: Text | null = null;
+  let endNode:   Text | null = null;
   let startOffsetInNode = 0;
-  let endOffsetInNode = 0;
+  let endOffsetInNode   = 0;
 
   let node: Node | null;
   while ((node = walker.nextNode())) {
     const textNode = node as Text;
-    const nodeLen = textNode.length;
+    const nodeLen  = textNode.length;
 
     if (!startNode && currentOffset + nodeLen > hl.startOffset) {
-      startNode = textNode;
+      startNode         = textNode;
       startOffsetInNode = hl.startOffset - currentOffset;
     }
-
     if (!endNode && currentOffset + nodeLen >= hl.endOffset) {
-      endNode = textNode;
+      endNode         = textNode;
       endOffsetInNode = hl.endOffset - currentOffset;
       break;
     }
-
     currentOffset += nodeLen;
   }
 
@@ -601,40 +642,37 @@ function applyHighlightToBlock(
 
     const mark = document.createElement("mark");
     mark.dataset.highlightId = hl.id;
-    mark.style.backgroundColor = `${hl.color}33`;
-    mark.style.borderBottom = `2px solid ${hl.color}99`;
-    mark.style.borderRadius = "2px";
-    mark.style.padding = "1px 0";
-    mark.style.cursor = "pointer";
-    mark.style.color = "inherit";
-    mark.style.transition = "background-color 0.15s ease, box-shadow 0.15s ease";
-    mark.style.position = "relative";
 
-    const hasNote = !!(hl.note && hl.note.trim().length > 0);
-    if (hasNote) {
-      // Subtle left accent + title so the note is discoverable without
-      // adding any extra DOM children (range.surroundContents requires a
-      // single element with no pre-existing children).
-      mark.style.boxShadow = `inset 3px 0 0 0 ${hl.color}`;
-      mark.style.paddingLeft = "4px";
-      mark.title = hl.note!.trim();
-    } else {
-      mark.title = "Click to edit highlight";
-    }
+    const hasNote = !!(hl.note?.trim());
+
+    Object.assign(mark.style, {
+      backgroundColor: `${hl.color}30`,
+      borderBottom:    `2px solid ${hl.color}bb`,
+      borderRadius:    "3px",
+      padding:         "1px 1px",
+      cursor:          "pointer",
+      color:           "inherit",
+      transition:      "background-color 0.15s ease, box-shadow 0.15s ease",
+      position:        "relative",
+      boxShadow:       hasNote ? `inset 3px 0 0 0 ${hl.color}` : "",
+      paddingLeft:     hasNote ? "4px" : "1px",
+    });
+    mark.title = hasNote ? hl.note!.trim() : "Click to edit highlight";
 
     mark.addEventListener("mouseenter", () => {
       mark.style.backgroundColor = `${hl.color}55`;
+      mark.style.boxShadow = hasNote
+        ? `inset 3px 0 0 0 ${hl.color}, 0 1px 5px ${hl.color}44`
+        : `0 1px 5px ${hl.color}44`;
     });
     mark.addEventListener("mouseleave", () => {
-      mark.style.backgroundColor = `${hl.color}33`;
+      mark.style.backgroundColor = `${hl.color}30`;
+      mark.style.boxShadow = hasNote ? `inset 3px 0 0 0 ${hl.color}` : "";
     });
-    mark.addEventListener("click", (e) => {
-      onClick(e, hl);
-    });
+    mark.addEventListener("click", (e) => onClick(e, hl));
 
     range.surroundContents(mark);
   } catch {
-    // surroundContents fails when the range crosses element boundaries;
-    // skip silently so one bad range doesn't break all highlights.
+    // surroundContents fails when the range crosses element boundaries; skip silently.
   }
 }

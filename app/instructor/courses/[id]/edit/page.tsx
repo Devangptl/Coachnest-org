@@ -24,7 +24,14 @@ export default async function InstructorEditCoursePage({ params }: Props) {
     prisma.course.findFirst({
       where: { id, createdById: session.userId },
       include: {
-        lessons: { orderBy: { order: "asc" } },
+        sections: {
+          orderBy: { order: "asc" },
+          include: { lessons: { orderBy: { order: "asc" } } },
+        },
+        lessons: {
+          where: { sectionId: null },
+          orderBy: { order: "asc" },
+        },
         tags: { include: { tag: { select: { name: true } } } },
       },
     }),
@@ -100,8 +107,12 @@ export default async function InstructorEditCoursePage({ params }: Props) {
       />
 
       <div className="mt-10">
-        <h2 className="text-lg font-semibold text-foreground mb-5">Course Lessons</h2>
-        <LessonsManager courseId={course.id} lessons={course.lessons} />
+        <h2 className="text-lg font-semibold text-foreground mb-5">Course Content</h2>
+        <LessonsManager
+          courseId={course.id}
+          sections={course.sections}
+          ungroupedLessons={course.lessons}
+        />
       </div>
     </div>
   );

@@ -16,7 +16,20 @@ const getCourseWithLessons = unstable_cache(
         id: true,
         title: true,
         status: true,
+        sections: {
+          orderBy: { order: "asc" },
+          select: {
+            id: true,
+            title: true,
+            order: true,
+            lessons: {
+              orderBy: { order: "asc" },
+              select: { id: true, title: true, type: true, duration: true, isFree: true },
+            },
+          },
+        },
         lessons: {
+          where: { sectionId: null },
           orderBy: { order: "asc" },
           select: { id: true, title: true, type: true, duration: true, isFree: true },
         },
@@ -46,7 +59,8 @@ export default async function LessonLayout({
         <LessonSidebar
           courseId={courseId}
           courseTitle={course.title}
-          lessons={course.lessons}
+          sections={course.sections}
+          ungroupedLessons={course.lessons}
         />
 
         {/* Main content — offset on mobile to clear the fixed top bar (~52px) */}
