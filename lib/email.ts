@@ -18,9 +18,9 @@ const APP    = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
 const DEV_EMAIL_OVERRIDE = process.env.DEV_EMAIL_OVERRIDE;
 
 function resolveRecipient(to: string): string {
-  if (DEV_EMAIL_OVERRIDE && FROM.includes("resend.dev")) {
-    console.log(`[email] dev-redirect: ${to} → ${DEV_EMAIL_OVERRIDE}`);
-    return DEV_EMAIL_OVERRIDE;
+  if (DEV_EMAIL_OVERRIDE && process.env.NODE_ENV !== "production") {
+    console.log(`[email] dev-redirect: ${to} → ${DEV_EMAIL_OVERRIDE.trim()}`);
+    return DEV_EMAIL_OVERRIDE.trim();
   }
   return to;
 }
