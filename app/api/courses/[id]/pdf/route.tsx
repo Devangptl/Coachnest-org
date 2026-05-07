@@ -396,7 +396,30 @@ async function generateCoursePDF(course: any) {
       title:   sanitize(l.title),
       content: l.content == null ? l.content : sanitize(l.content),
     })),
+    sections: (course.sections || []).map((s: any) => ({
+      ...s,
+      title: sanitize(s.title),
+    })),
   };
+
+  // ── Build chapter list from sections ──────────────────────────────────────
+  // Each chapter = one Section with its member lessons, ordered correctly.
+  // Lessons without a sectionId are grouped under a trailing chapter.
+  type Chapter = { title: string | null; lessons: (typeof course.lessons)[number][] };
+  const chapters: Chapter[] = [];
+
+  if (course.sections.length > 0) {
+    for (const section of course.sections) {
+      const sectionLessons = course.lessons.filter((l: any) => l.sectionId === section.id);
+      if (sectionLessons.length > 0) chapters.push({ title: section.title, lessons: sectionLessons });
+    }
+    const unsectioned = course.lessons.filter((l: any) => !l.sectionId);
+    if (unsectioned.length > 0) chapters.push({ title: "Other Lessons", lessons: unsectioned });
+  } else {
+    // No sections defined — flat list (backward compatible)
+    chapters.push({ title: null, lessons: course.lessons });
+  }
+  const totalLessons = course.lessons.length;
 
   const doc = await PDFDocument.create();
 
@@ -495,7 +518,7 @@ async function generateCoursePDF(course: any) {
   }
 
   // Meta chips
-  const metaParts: string[] = [`${course.lessons.length} Lessons`];
+  const metaParts: string[] = [`${totalLessons} Lesson${totalLessons !== 1 ? "s" : ""}${chapters.length > 1 && course.sections.length > 0 ? ` · ${chapters.length} Chapters` : ""}`];
   if (course.level)    metaParts.push(course.level.charAt(0).toUpperCase() + course.level.slice(1) + " Level");
   if (course.language) metaParts.push(course.language);
   cover.drawText(metaParts.join("  ·  "), { x: margin + 12, y: coverY, size: 9.5, font, color: textMid });
@@ -526,7 +549,6 @@ async function generateCoursePDF(course: any) {
   cover.drawText(`Generated ${genDate}`, { x: margin + 12, y: 50, size: 8, font, color: textMid });
 
   // ─── CONTENT PAGES ────────────────────────────────────────────────────────
-  const lessonPageIndices: number[] = [];
 
   let page = doc.addPage([pageWidth, pageHeight]);
   let y = contentTop;
@@ -745,27 +767,58 @@ async function generateCoursePDF(course: any) {
     y -= SP.lessonGap;
   }
 
-  // ── Lessons ──────────────────────────────────────────────────────────────
-  const headerH = 38;
-  for (let i = 0; i < course.lessons.length; i++) {
-    const lesson = course.lessons[i];
+  // ── Chapters + Lessons ───────────────────────────────────────────────────
+  const headerH  = 38;
+  const chapterH = 48; // height of a chapter banner
+  let globalLessonIdx = 0; // running 1-based lesson number across all chapters
 
-    // Reserve a comfortable amount of room so a lesson header doesn't strand
-    // alone at the bottom of a page.
-    ensureSpace(headerH + SP.afterLessonHeader + 60);
-    lessonPageIndices.push(doc.getPageCount() - 1);
+  // Flat records for the TOC (filled as we render)
+  type TocEntry =
+    | { kind: "chapter"; title: string; pageIdx: number }
+    | { kind: "lesson";  title: string; pageIdx: number; num: number };
+  const tocEntries: TocEntry[] = [];
 
-    if (lessonPageIndices[i] !== doc.getPageCount() - 1) {
-      lessonPageIndices[i] = doc.getPageCount() - 1;
+  for (let ci = 0; ci < chapters.length; ci++) {
+    const chapter = chapters[ci];
+
+    // ── Chapter banner ───────────────────────────────────────────────────
+    if (chapter.title) {
+      ensureSpace(chapterH + 60);
+      tocEntries.push({ kind: "chapter", title: chapter.title, pageIdx: doc.getPageCount() - 1 });
+
+      // Full-width dark orange band
+      page.drawRectangle({ x: margin - 4, y: y - chapterH + 4, width: usableW + 8, height: chapterH - 4, color: rgb(0.14, 0.09, 0.04) });
+      page.drawRectangle({ x: margin - 4, y: y - chapterH + 4, width: 4, height: chapterH - 4, color: orange });
+      // "CHAPTER N" label
+      const chLabel = `CHAPTER ${ci + 1}`;
+      page.drawText(chLabel, { x: margin + 8, y: y - 11, size: 7, font: fontBold, color: orange });
+      // Chapter title
+      const chTitleLines = wrapText(chapter.title, usableW - 16, fontBold, 13);
+      let chTY = y - 22;
+      for (const line of chTitleLines) {
+        page.drawText(line, { x: margin + 8, y: chTY, size: 13, font: fontBold, color: white });
+        chTY -= 17;
+      }
+      y -= chapterH;
+      page.drawRectangle({ x: margin - 4, y, width: usableW + 8, height: 0.5, color: orange });
+      y -= SP.afterLessonHeader + 4;
     }
+
+    // ── Lessons in this chapter ──────────────────────────────────────────
+    for (let li = 0; li < chapter.lessons.length; li++) {
+      const lesson = chapter.lessons[li];
+      globalLessonIdx++;
+
+      ensureSpace(headerH + SP.afterLessonHeader + 60);
+      tocEntries.push({ kind: "lesson", title: lesson.title, pageIdx: doc.getPageCount() - 1, num: globalLessonIdx });
 
     // Light accent background for lesson header
     page.drawRectangle({ x: margin, y: y - headerH + 4, width: usableW, height: headerH - 4, color: rgb(0.97, 0.97, 0.99) });
     page.drawRectangle({ x: margin, y: y - headerH + 4, width: 3, height: headerH - 4, color: orange });
     page.drawRectangle({ x: margin, y: y - headerH + 3, width: usableW, height: 0.5, color: divider });
 
-    // Lesson number badge
-    const numStr = String(i + 1).padStart(2, "0");
+      // Lesson number badge
+      const numStr = String(globalLessonIdx).padStart(2, "0");
     page.drawText(numStr, { x: margin + 10, y: y - 11, size: 10, font: fontBold, color: orange });
 
     // Lesson title
@@ -888,13 +941,12 @@ async function generateCoursePDF(course: any) {
       }
     }
 
-    y -= SP.lessonGap;
-  }
+      y -= SP.lessonGap;
+    } // end lesson loop
+  } // end chapter loop
 
   // ─── TABLE OF CONTENTS (inserted at page index 1) ─────────────────────────
-  // Content pages are currently: cover=0, content=1+
-  // After inserting TOC at 1: cover=0, toc=1, content=2+
-  // So lessonPageIndices[i] + 2 = 1-based page number for TOC display.
+  // cover=0, toc=1 (inserted), content=2+  →  displayed page = pageIdx + 2.
 
   const tocPage = doc.insertPage(1, [pageWidth, pageHeight]);
 
@@ -914,42 +966,57 @@ async function generateCoursePDF(course: any) {
     });
   }
 
-  // TOC rows
-  let tocY    = pageHeight - 84;
-  const rowH  = 25;
-  const tocBt = FOOTER_H + 18;
+  // TOC rows — chapter banners + indented lessons
+  let tocY       = pageHeight - 84;
+  const lessonRowH  = 22;
+  const chapterRowH = 28;
+  const tocBt    = FOOTER_H + 18;
+  const pgNumX   = pageWidth - margin - 26;
 
-  course.lessons.forEach((lesson: any, i: number) => {
-    if (tocY < tocBt) return;
-
-    if (i % 2 === 0) {
-      tocPage.drawRectangle({ x: margin - 8, y: tocY - 8, width: usableW + 16, height: rowH, color: rgb(0.975, 0.975, 0.985) });
-    }
-
-    // Lesson number
-    tocPage.drawText(String(i + 1).padStart(2, "0"), { x: margin, y: tocY + 5, size: 9, font: fontBold, color: orange });
-
-    // Lesson title
-    const maxTitleW  = usableW - 60;
-    const truncTitle = lesson.title.length > 68 ? lesson.title.slice(0, 65) + "…" : lesson.title;
-    tocPage.drawText(truncTitle, { x: margin + 28, y: tocY + 5, size: 9.5, font, color: textDark });
-
-    // Dot leaders
-    const titleEndX = margin + 28 + font.widthOfTextAtSize(truncTitle, 9.5);
-    const pgNumX    = pageWidth - margin - 26;
-    let dotX = titleEndX + 6;
+  const drawDots = (fromX: number, atY: number) => {
+    let dotX = fromX + 6;
     while (dotX + 5 < pgNumX - 8) {
-      tocPage.drawText(".", { x: dotX, y: tocY + 5, size: 9, font, color: rgb(0.76, 0.76, 0.80) });
+      tocPage.drawText(".", { x: dotX, y: atY, size: 9, font, color: rgb(0.76, 0.76, 0.80) });
       dotX += 5.5;
     }
+  };
 
-    // Page number
-    const pgNum  = String(lessonPageIndices[i] + 2);
-    const pgNumW = fontBold.widthOfTextAtSize(pgNum, 9);
-    tocPage.drawText(pgNum, { x: pageWidth - margin - pgNumW, y: tocY + 5, size: 9, font: fontBold, color: textDark });
+  const drawPageNum = (pageIdx: number, atY: number, f = font) => {
+    const pgNum  = String(pageIdx + 2); // +2: cover + TOC inserted before
+    const pgNumW = f.widthOfTextAtSize(pgNum, 9);
+    tocPage.drawText(pgNum, { x: pageWidth - margin - pgNumW, y: atY, size: 9, font: f, color: textDark });
+  };
 
-    tocY -= rowH;
-  });
+  let tocRowIdx = 0;
+  for (const entry of tocEntries) {
+    if (tocY < tocBt) break;
+
+    if (entry.kind === "chapter") {
+      // Chapter row — full-width dark band
+      tocPage.drawRectangle({ x: margin - 8, y: tocY - 6, width: usableW + 16, height: chapterRowH, color: rgb(0.14, 0.09, 0.04) });
+      tocPage.drawRectangle({ x: margin - 8, y: tocY - 6, width: 3, height: chapterRowH, color: orange });
+      const chTrunc = entry.title.length > 62 ? entry.title.slice(0, 59) + "…" : entry.title;
+      tocPage.drawText(chTrunc, { x: margin + 4, y: tocY + 7, size: 10, font: fontBold, color: white });
+      drawDots(margin + 4 + fontBold.widthOfTextAtSize(chTrunc, 10), tocY + 7);
+      drawPageNum(entry.pageIdx, tocY + 7, fontBold);
+      tocY -= chapterRowH + 2;
+    } else {
+      // Lesson row — indented
+      const indent = chapters.length > 1 && course.sections.length > 0 ? 18 : 0;
+      if (tocRowIdx % 2 === 0) {
+        tocPage.drawRectangle({ x: margin - 8, y: tocY - 4, width: usableW + 16, height: lessonRowH, color: rgb(0.975, 0.975, 0.985) });
+      }
+      tocPage.drawText(String(entry.num).padStart(2, "0"), { x: margin + indent, y: tocY + 4, size: 8.5, font: fontBold, color: orange });
+      const maxW    = usableW - indent - 60;
+      const maxChars = Math.floor(maxW / 5.5);
+      const trunc   = entry.title.length > maxChars ? entry.title.slice(0, maxChars - 3) + "…" : entry.title;
+      tocPage.drawText(trunc, { x: margin + indent + 22, y: tocY + 4, size: 9, font, color: textDark });
+      drawDots(margin + indent + 22 + font.widthOfTextAtSize(trunc, 9), tocY + 4);
+      drawPageNum(entry.pageIdx, tocY + 4);
+      tocY -= lessonRowH + 2;
+      tocRowIdx++;
+    }
+  }
 
   // ─── WATERMARK + HEADERS + FOOTERS (all pages) ────────────────────────────
   // Use the site logo as a faint diagonal watermark to match the website
@@ -1023,6 +1090,7 @@ export async function GET(
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
+        sections:  { orderBy: { order: "asc" } },
         lessons:   { orderBy: { order: "asc" } },
         createdBy: { select: { name: true } },
       },
