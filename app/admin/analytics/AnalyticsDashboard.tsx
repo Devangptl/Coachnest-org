@@ -72,14 +72,16 @@ export default function AnalyticsDashboard({
       color: isLight ? "#181310" : "#fff",
       fontSize: 13,
     },
-    labelStyle: { color: isLight ? "#c2410c" : "#a78bfa", fontWeight: 600 },
+    labelStyle: { color: isLight ? "#c2410c" : "#d97757", fontWeight: 600 },
   };
 
-  const tickColor = isLight ? "#685e55" : "#a78bfa";
-  const gridColor = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
-  const primaryColor = isLight ? "#c2410c" : "#7c3aed";
-  const secondaryColor = isLight ? "#0369a1" : "#0ea5e9";
-  const emeraldColor = "#10b981";
+  const tickColor   = isLight ? "#685e55" : "#94a3b8";
+  const gridColor   = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
+  const primary     = isLight ? "#c2410c" : "#d97757";
+  const blue        = isLight ? "#2563eb" : "#60a5fa";
+  const emerald     = isLight ? "#059669" : "#34d399";
+  const amber       = isLight ? "#d97706" : "#fbbf24";
+  const mutedFill   = isLight ? "#d1d5db" : "#334155";
 
   const statCards = [
     {
@@ -208,8 +210,8 @@ export default function AnalyticsDashboard({
               <AreaChart data={revenue}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={primaryColor} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={primaryColor} stopOpacity={0} />
+                    <stop offset="5%" stopColor={primary} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={primary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -224,7 +226,7 @@ export default function AnalyticsDashboard({
                   {...tooltipStyle}
                   formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "Revenue"]}
                 />
-                <Area dataKey="revenue" stroke={primaryColor} strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 3, fill: primaryColor }} />
+                <Area dataKey="revenue" stroke={primary} strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 3, fill: primary }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -237,12 +239,6 @@ export default function AnalyticsDashboard({
             <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={combinedTrend}>
-                <defs>
-                  <linearGradient id="enrollGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={secondaryColor} stopOpacity={0.3} />
-                    <stop offset="95%" stopColor={secondaryColor} stopOpacity={0} />
-                  </linearGradient>
-                </defs>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
                 <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
                 <YAxis
@@ -274,18 +270,18 @@ export default function AnalyticsDashboard({
                 <Line
                   yAxisId="left"
                   dataKey="enrollments"
-                  stroke={secondaryColor}
+                  stroke={blue}
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: secondaryColor }}
+                  dot={{ r: 3, fill: blue }}
                   activeDot={{ r: 5 }}
                 />
                 <Line
                   yAxisId="right"
                   dataKey="revenue"
-                  stroke={primaryColor}
+                  stroke={primary}
                   strokeWidth={2.5}
                   strokeDasharray="5 3"
-                  dot={{ r: 3, fill: primaryColor }}
+                  dot={{ r: 3, fill: primary }}
                   activeDot={{ r: 5 }}
                 />
               </LineChart>
@@ -306,7 +302,7 @@ export default function AnalyticsDashboard({
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [v, "New Users"]} />
                 <Bar dataKey="users" radius={[6, 6, 0, 0]}>
                   {userGrowth.map((_, i) => (
-                    <Cell key={i} fill={primaryColor} opacity={0.5 + (i / userGrowth.length) * 0.5} />
+                    <Cell key={i} fill={primary} opacity={0.5 + (i / userGrowth.length) * 0.5} />
                   ))}
                 </Bar>
               </BarChart>
@@ -348,9 +344,7 @@ export default function AnalyticsDashboard({
                   {courseCompletionStats.map((c, i) => (
                     <Cell
                       key={i}
-                      fill={
-                        c.rate >= 70 ? emeraldColor : c.rate >= 40 ? secondaryColor : primaryColor
-                      }
+                      fill={c.rate >= 70 ? emerald : c.rate >= 40 ? amber : primary}
                       opacity={0.85}
                     />
                   ))}

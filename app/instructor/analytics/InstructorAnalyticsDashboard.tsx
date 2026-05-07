@@ -66,15 +66,17 @@ export default function InstructorAnalyticsDashboard({
       color: isLight ? "#181310" : "#fff",
       fontSize: 13,
     },
-    labelStyle: { color: isLight ? "#b45309" : "#fbbf24", fontWeight: 600 },
+    labelStyle: { color: isLight ? "#c2410c" : "#d97757", fontWeight: 600 },
   };
 
   const tickColor = isLight ? "#685e55" : "#94a3b8";
   const gridColor = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
-  const amber = "#f59e0b";
-  const emerald = "#10b981";
-  const blue = "#3b82f6";
-  const orange = "#f97316";
+  const primary   = isLight ? "#c2410c" : "#d97757";
+  const amber     = isLight ? "#d97706" : "#fbbf24";
+  const emerald   = isLight ? "#059669" : "#34d399";
+  const blue      = isLight ? "#2563eb" : "#60a5fa";
+  const orange    = isLight ? "#ea580c" : "#fb923c";
+  const mutedFill = isLight ? "#d1d5db" : "#334155";
 
   const summaryCards = [
     {
@@ -153,8 +155,8 @@ export default function InstructorAnalyticsDashboard({
               <AreaChart data={monthlyEnrollments}>
                 <defs>
                   <linearGradient id="enrollGradInstructor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={amber} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={amber} stopOpacity={0} />
+                    <stop offset="5%" stopColor={primary} stopOpacity={0.35} />
+                    <stop offset="95%" stopColor={primary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -163,10 +165,10 @@ export default function InstructorAnalyticsDashboard({
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [v, "Enrollments"]} />
                 <Area
                   dataKey="enrollments"
-                  stroke={amber}
+                  stroke={primary}
                   strokeWidth={2.5}
                   fill="url(#enrollGradInstructor)"
-                  dot={{ r: 3, fill: amber }}
+                  dot={{ r: 3, fill: primary }}
                   activeDot={{ r: 5 }}
                 />
               </AreaChart>
@@ -231,7 +233,7 @@ export default function InstructorAnalyticsDashboard({
                       return labels[v] ?? v;
                     }}
                   />
-                  <Bar dataKey="notStarted" stackId="a" fill={isLight ? "#d1d5db" : "#334155"} radius={[0, 0, 0, 0]} />
+                  <Bar dataKey="notStarted" stackId="a" fill={mutedFill} radius={[0, 0, 0, 0]} />
                   <Bar dataKey="inProgress" stackId="a" fill={blue} opacity={0.8} />
                   <Bar dataKey="nearDone"   stackId="a" fill={amber} opacity={0.8} />
                   <Bar dataKey="completed"  stackId="a" fill={emerald} opacity={0.9} radius={[0, 4, 4, 0]} />

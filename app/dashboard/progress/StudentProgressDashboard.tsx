@@ -69,10 +69,10 @@ export default function StudentProgressDashboard({
       color: isLight ? "#181310" : "#fff",
       fontSize: 13,
     },
-    labelStyle: { color: isLight ? "#c2410c" : "#a78bfa", fontWeight: 600 },
+    labelStyle: { color: isLight ? "#c2410c" : "#d97757", fontWeight: 600 },
   };
 
-  const tickColor = isLight ? "#685e55" : "#a78bfa";
+  const tickColor = isLight ? "#685e55" : "#94a3b8";
   const gridColor = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
   const primaryColor = isLight ? "#c2410c" : "#d97757";
   const xpColor = isLight ? "#7c3aed" : "#a78bfa";
