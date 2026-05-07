@@ -61,8 +61,8 @@ export default function AnalyticsDashboard({
   courseCompletionStats,
   recentOrders,
 }: Props) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const tooltipStyle = {
     contentStyle: {

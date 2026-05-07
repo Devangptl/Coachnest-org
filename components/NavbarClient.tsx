@@ -23,12 +23,22 @@ import {
   GraduationCap,
   Map,
   BookOpen,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
 import ThemeToggle from "./ThemeToggle";
+import { useTheme, type Theme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
+
+const THEME_OPTIONS: { value: Theme; icon: React.ElementType; label: string }[] = [
+  { value: "system", icon: Monitor, label: "System" },
+  { value: "light",  icon: Sun,     label: "Light"  },
+  { value: "dark",   icon: Moon,    label: "Dark"   },
+];
 
 interface Props {
   session: SessionPayload | null;
@@ -66,6 +76,7 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 export default function NavbarClient({ session }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme: currentTheme, setTheme } = useTheme();
   const [scrolled,     setScrolled]     = useState(false);
   const [mobileOpen,   setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -158,10 +169,12 @@ export default function NavbarClient({ session }: Props) {
             </kbd>
           </button>
 
-          {/* Theme toggle — desktop */}
-          <div className="hidden lg:block">
-            <ThemeToggle />
-          </div>
+          {/* Theme toggle — desktop, only when NOT logged in */}
+          {!session && (
+            <div className="hidden lg:block">
+              <ThemeToggle />
+            </div>
+          )}
 
           {session ? (
             <>
@@ -269,6 +282,31 @@ export default function NavbarClient({ session }: Props) {
                             </Link>
                           );
                         })}
+                      </div>
+
+                      {/* Theme switcher */}
+                      <div className="border-t border-border px-3 py-2.5">
+                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mb-2">
+                          Theme
+                        </p>
+                        <div className="flex gap-1.5">
+                          {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+                            <button
+                              key={value}
+                              onClick={() => setTheme(value)}
+                              className={cn(
+                                "flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs font-medium transition-all border",
+                                currentTheme === value
+                                  ? "bg-orange-500/10 border-[#d97757]/30 text-[#d97757]"
+                                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                              )}
+                              aria-label={label}
+                            >
+                              <Icon className="w-4 h-4" />
+                              {label}
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Restart Tour */}
@@ -407,6 +445,31 @@ export default function NavbarClient({ session }: Props) {
                     );
                   })}
                   <div className="border-t border-border my-2" />
+                  {/* Theme switcher — mobile */}
+                  <div className="px-2 py-1">
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 px-2 mb-2">
+                      Theme
+                    </p>
+                    <div className="flex gap-1.5">
+                      {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+                        <button
+                          key={value}
+                          onClick={() => setTheme(value)}
+                          className={cn(
+                            "flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs font-medium transition-all border",
+                            currentTheme === value
+                              ? "bg-orange-500/10 border-[#d97757]/30 text-[#d97757]"
+                              : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
+                          )}
+                          aria-label={label}
+                        >
+                          <Icon className="w-4 h-4" />
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t border-border my-2" />
                   <button
                     onClick={() => {
                       setMobileOpen(false);
@@ -433,9 +496,6 @@ export default function NavbarClient({ session }: Props) {
                     <Map className="w-4 h-4" />
                     Restart Tour
                   </button>
-                  <div className="px-2 py-1">
-                    <ThemeToggle />
-                  </div>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"

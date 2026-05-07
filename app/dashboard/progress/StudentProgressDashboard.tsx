@@ -58,8 +58,8 @@ export default function StudentProgressDashboard({
   totalLessonsCompleted,
   totalWatchedSeconds,
 }: Props) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const tooltipStyle = {
     contentStyle: {

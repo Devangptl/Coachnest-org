@@ -55,8 +55,8 @@ export default function InstructorAnalyticsDashboard({
   courseProgressStats,
   quizStats,
 }: Props) {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const tooltipStyle = {
     contentStyle: {
