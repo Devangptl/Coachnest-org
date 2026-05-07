@@ -26,10 +26,10 @@ export default async function DashboardLayout({
   return (
     <>
       <OnboardingTour initialRun={!hasSeenTour} />
-      <div className="pb-8">
-        <div className="flex flex-col lg:flex-row lg:gap-6 lg:min-h-[calc(100vh-4rem)]">
+      <div className="pb-4">
+        <div className="flex flex-col lg:flex-row lg:gap-4 lg:min-h-[calc(100vh-4rem)]">
           <DashboardSidebar />
-          <div className="flex-1 min-w-0 animate-fade-in pt-4">{children}</div>
+          <div className="flex-1 min-w-0 animate-fade-in pt-3">{children}</div>
         </div>
       </div>
     </>

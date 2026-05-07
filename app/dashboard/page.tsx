@@ -163,8 +163,8 @@ export default async function DashboardPage() {
       {!onboardingState?.hasCompletedOnboarding && <OnboardingBanner />}
 
       {/* Header */}
-      <div className="mb-10 animate-fade-in">
-        <h1 className="text-2xl sm:text-4xl font-bold text-foreground">
+      <div className="mb-6 animate-fade-in">
+        <h1 className="text-xl sm:text-3xl font-bold text-foreground">
           Welcome back,{" "}
           <span className="text-[#d97757]">{session.name.split(" ")[0]}</span>
         </h1>
@@ -174,7 +174,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* Stats row */}
-      <div id="tour-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+      <div id="tour-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
         {[
           {
             label: "Enrolled",
@@ -208,7 +208,7 @@ export default async function DashboardPage() {
                 <Icon className={`w-5 h-5 ${stat.color}`} />
               </div>
               <div>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-xl font-bold text-foreground">{stat.value}</div>
                 <div className="text-muted-foreground text-xs">{stat.label}</div>
               </div>
             </GlassCard>
@@ -217,7 +217,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Access Panel: Purchases & Feature Add-ons ───────────────────── */}
-      <div className="grid sm:grid-cols-2 gap-4 mb-8">
+      <div className="grid sm:grid-cols-2 gap-3 mb-3">
         {/* Courses owned */}
         <GlassCard className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-3">
@@ -274,7 +274,7 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Gamification Panel ──────────────────────────────────────────── */}
-      <div id="tour-gamification" className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+      <div id="tour-gamification" className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
         <div className="">
           <XpProgressBar
             xp={gameData.xp}
@@ -291,11 +291,11 @@ export default async function DashboardPage() {
       <RecommendedCourses />
 
       {/* ─── From Followed Instructors ───────────────────────────────────── */}
-      <section className="mb-10">
-        <div className="flex items-center justify-between mb-5">
+      <section className="mb-6">
+        <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
             <GraduationCap className="w-5 h-5 text-[#d97757]" />
-            <h2 className="text-xl font-semibold text-foreground">
+            <h2 className="text-base font-semibold text-foreground">
               From Instructors You Follow
             </h2>
           </div>
@@ -362,9 +362,9 @@ export default async function DashboardPage() {
 
       {/* ─── In Progress ─────────────────────────────────────────────────── */}
       {inProgress.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+        <section className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               <Clock className="w-5 h-5 text-blue-400" /> Continue Learning
             </h2>
             <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
@@ -390,9 +390,9 @@ export default async function DashboardPage() {
 
       {/* ─── Not Started ─────────────────────────────────────────────────── */}
       {notStarted.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-semibold text-foreground">Not Started Yet</h2>
+        <section className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-foreground">Not Started Yet</h2>
             <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
               View all <ArrowRight className="w-3.5 h-3.5" />
             </Link>
@@ -416,9 +416,9 @@ export default async function DashboardPage() {
 
       {/* ─── Completed ───────────────────────────────────────────────────── */}
       {completed.length > 0 && (
-        <section className="mb-10">
-          <div className="flex items-center justify-between mb-5">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+        <section className="mb-6">
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
               <Trophy className="w-5 h-5 text-emerald-400" /> Completed Courses
             </h2>
             <Link href="/courses" className="text-[#d97757] hover:text-orange-300 text-sm font-medium flex items-center gap-1 transition-colors">
@@ -446,7 +446,7 @@ export default async function DashboardPage() {
       {enrollments.length === 0 && (
         <GlassCard className="text-center py-16">
           <BookOpen className="w-16 h-16 text-muted-foreground/25 mx-auto mb-4" />
-          <h3 className="text-foreground text-xl font-semibold mb-2">
+          <h3 className="text-foreground text-base font-semibold mb-2">
             No courses yet
           </h3>
           <p className="text-muted-foreground mb-6">
