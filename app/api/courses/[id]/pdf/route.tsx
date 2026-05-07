@@ -363,8 +363,14 @@ function parseHtml(raw: string): Block[] {
 }
 
 // Route to the correct inline parser based on content type.
+// isHtmlContent() only checks the first character, so also detect HTML tags
+// or entities anywhere in the string (e.g. Quill inner HTML like
+// "When&nbsp;higher..." or "Some <strong>bold</strong> text").
 function getSpans(text: string): Span[] {
-  return isHtmlContent(text) ? parseHtmlInline(text) : parseInline(text);
+  if (/<[a-z]/i.test(text) || /&(?:[a-z]+|#\d+);/.test(text)) {
+    return parseHtmlInline(text);
+  }
+  return parseInline(text);
 }
 
 // Unified block parser — dispatches to HTML or Markdown pipeline.
