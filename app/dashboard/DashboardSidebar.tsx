@@ -10,12 +10,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle,
-  UserCircle, Trophy, Menu, X, Users2, Package, CreditCard,
+  UserCircle, Trophy, Menu, X, Users2, Package, CreditCard, BarChart2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { label: "My Courses",    href: "/dashboard",                    icon: LayoutDashboard },
+  { label: "My Progress",   href: "/dashboard/progress",           icon: BarChart2 },
   { label: "Wishlist",      href: "/dashboard/wishlist",           icon: Heart },
   { label: "Certificates",  href: "/dashboard/certificates",       icon: Award },
   { label: "Achievements",  href: "/dashboard/achievements",       icon: Trophy },
