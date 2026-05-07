@@ -167,6 +167,203 @@ export async function getCourseCompletionRate(courseId: string) {
   return total === 0 ? 0 : Math.round((completed / total) * 100);
 }
 
+/** Monthly enrollment counts for an instructor's courses (last N months). */
+export async function getInstructorMonthlyEnrollments(instructorId: string, months = 6) {
+  const since = subMonths(startOfMonth(new Date()), months - 1);
+  const courseIds = (
+    await prisma.course.findMany({
+      where: { createdById: instructorId },
+      select: { id: true },
+    })
+  ).map((c) => c.id);
+
+  const enrollments = await prisma.enrollment.findMany({
+    where: { courseId: { in: courseIds }, enrolledAt: { gte: since } },
+    select: { enrolledAt: true },
+  });
+
+  const map: Record<string, number> = {};
+  for (let i = 0; i < months; i++) {
+    const key = format(subMonths(new Date(), months - 1 - i), "MMM yyyy");
+    map[key] = 0;
+  }
+  for (const e of enrollments) {
+    const key = format(e.enrolledAt, "MMM yyyy");
+    if (key in map) map[key]++;
+  }
+  return Object.entries(map).map(([month, enrollments]) => ({ month, enrollments }));
+}
+
+/**
+ * Per-course student progress distribution for an instructor.
+ * Returns for each course: title, enrolled count, and buckets (0%, 1-49%, 50-99%, 100%).
+ */
+export async function getInstructorCourseProgressStats(instructorId: string) {
+  const courses = await prisma.course.findMany({
+    where: { createdById: instructorId, status: "PUBLISHED" },
+    select: {
+      id: true,
+      title: true,
+      lessons: { select: { id: true } },
+      enrollments: { select: { userId: true, completedAt: true } },
+    },
+  });
+
+  if (courses.length === 0) return [];
+
+  // Fetch all lesson-completion counts grouped by (userId, courseId) efficiently
+  const allCourseIds = courses.map((c) => c.id);
+  const progressRows = await prisma.lessonProgress.groupBy({
+    by: ["userId"],
+    where: {
+      lesson: { courseId: { in: allCourseIds } },
+      completed: true,
+    },
+    _count: { id: true },
+  });
+
+  // Build a map userId → completedCount per course
+  const perCourseUserProgress: Record<string, Record<string, number>> = {};
+  for (const cid of allCourseIds) perCourseUserProgress[cid] = {};
+
+  // We need per-course per-user counts, so do it per-course
+  const perCourseRows = await Promise.all(
+    courses.map((c) =>
+      prisma.lessonProgress.groupBy({
+        by: ["userId"],
+        where: { lesson: { courseId: c.id }, completed: true },
+        _count: { id: true },
+      }).then((rows) => ({ courseId: c.id, rows }))
+    )
+  );
+
+  for (const { courseId, rows } of perCourseRows) {
+    for (const r of rows) {
+      perCourseUserProgress[courseId][r.userId] = r._count.id;
+    }
+  }
+
+  return courses.map((c) => {
+    const total = c.lessons.length;
+    let notStarted = 0, inProgress = 0, nearDone = 0, completed = 0;
+    for (const e of c.enrollments) {
+      const done = perCourseUserProgress[c.id][e.userId] ?? 0;
+      const pct = total === 0 ? 0 : (done / total) * 100;
+      if (pct === 0) notStarted++;
+      else if (pct < 50) inProgress++;
+      else if (pct < 100) nearDone++;
+      else completed++;
+    }
+    const enrolled = c.enrollments.length;
+    const completionRate = enrolled === 0 ? 0 : Math.round((completed / enrolled) * 100);
+    return {
+      title: c.title.length > 20 ? c.title.slice(0, 20) + "…" : c.title,
+      enrolled,
+      notStarted,
+      inProgress,
+      nearDone,
+      completed,
+      completionRate,
+    };
+  });
+}
+
+/**
+ * Quiz pass-rate per course for an instructor.
+ */
+export async function getInstructorQuizStats(instructorId: string) {
+  const courses = await prisma.course.findMany({
+    where: { createdById: instructorId, status: "PUBLISHED" },
+    select: {
+      id: true,
+      title: true,
+      lessons: {
+        where: { type: "QUIZ" },
+        select: {
+          quiz: {
+            select: {
+              attempts: { select: { passed: true, score: true } },
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return courses
+    .map((c) => {
+      const attempts = c.lessons.flatMap((l) => l.quiz?.attempts ?? []);
+      if (attempts.length === 0) return null;
+      const passed = attempts.filter((a) => a.passed).length;
+      const avgScore = Math.round(
+        attempts.reduce((s, a) => s + a.score, 0) / attempts.length
+      );
+      return {
+        title: c.title.length > 20 ? c.title.slice(0, 20) + "…" : c.title,
+        attempts: attempts.length,
+        passRate: Math.round((passed / attempts.length) * 100),
+        avgScore,
+      };
+    })
+    .filter(Boolean) as { title: string; attempts: number; passRate: number; avgScore: number }[];
+}
+
+/**
+ * Students enrolled in the instructor's courses with per-course progress.
+ */
+export async function getInstructorStudentsWithProgress(instructorId: string) {
+  const enrollments = await prisma.enrollment.findMany({
+    where: { course: { createdById: instructorId } },
+    include: {
+      user: { select: { id: true, name: true, email: true, avatar: true } },
+      course: {
+        select: {
+          id: true,
+          title: true,
+          lessons: { select: { id: true } },
+          _count: { select: { lessons: true } },
+        },
+      },
+    },
+    orderBy: { enrolledAt: "desc" },
+  });
+
+  if (enrollments.length === 0) return [];
+
+  // Batch-fetch completed lesson counts per (userId, courseId)
+  const allLessonIds = enrollments.flatMap((e) => e.course.lessons.map((l) => l.id));
+  const completedRows = allLessonIds.length > 0
+    ? await prisma.lessonProgress.findMany({
+        where: { userId: { in: [...new Set(enrollments.map((e) => e.userId))] }, lessonId: { in: allLessonIds }, completed: true },
+        select: { userId: true, lessonId: true },
+      })
+    : [];
+
+  // Map userId+lessonId → completed
+  const completedSet = new Set(completedRows.map((r) => `${r.userId}:${r.lessonId}`));
+
+  return enrollments.map((e) => {
+    const totalLessons = e.course._count.lessons;
+    const doneLessons = e.course.lessons.filter(
+      (l) => completedSet.has(`${e.userId}:${l.id}`)
+    ).length;
+    const progress = totalLessons === 0 ? 0 : Math.round((doneLessons / totalLessons) * 100);
+    return {
+      userId: e.userId,
+      userName: e.user.name,
+      userEmail: e.user.email,
+      userAvatar: e.user.avatar,
+      courseId: e.courseId,
+      courseTitle: e.course.title,
+      totalLessons,
+      doneLessons,
+      progress,
+      enrolledAt: e.enrolledAt.toISOString(),
+      completedAt: e.completedAt?.toISOString() ?? null,
+    };
+  });
+}
+
 /** Platform engagement metrics: active students, lessons completed, avg completion rate. */
 export async function getEngagementMetrics() {
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
