@@ -285,25 +285,24 @@ export default function NavbarClient({ session }: Props) {
                       </div>
 
                       {/* Theme switcher */}
-                      <div className="border-t border-border px-3 py-2.5">
-                        <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 mb-2">
+                      <div className="border-t border-border px-3 py-2 flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
                           Theme
-                        </p>
-                        <div className="flex gap-1.5">
+                        </span>
+                        <div className="flex items-center gap-0.5 bg-secondary rounded-md p-0.5">
                           {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
                             <button
                               key={value}
                               onClick={() => setTheme(value)}
-                              className={cn(
-                                "flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs font-medium transition-all border",
-                                currentTheme === value
-                                  ? "bg-orange-500/10 border-[#d97757]/30 text-[#d97757]"
-                                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                              )}
                               aria-label={label}
+                              className={cn(
+                                "w-7 h-7 flex items-center justify-center rounded transition-all",
+                                currentTheme === value
+                                  ? "bg-card text-[#d97757] shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
                             >
-                              <Icon className="w-4 h-4" />
-                              {label}
+                              <Icon className="w-3.5 h-3.5" />
                             </button>
                           ))}
                         </div>
@@ -446,25 +445,24 @@ export default function NavbarClient({ session }: Props) {
                   })}
                   <div className="border-t border-border my-2" />
                   {/* Theme switcher — mobile */}
-                  <div className="px-2 py-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50 px-2 mb-2">
+                  <div className="px-4 py-2 flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
                       Theme
-                    </p>
-                    <div className="flex gap-1.5">
+                    </span>
+                    <div className="flex items-center gap-0.5 bg-secondary rounded-md p-0.5">
                       {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
                         <button
                           key={value}
                           onClick={() => setTheme(value)}
-                          className={cn(
-                            "flex-1 flex flex-col items-center gap-1 py-2 px-1 rounded-lg text-xs font-medium transition-all border",
-                            currentTheme === value
-                              ? "bg-orange-500/10 border-[#d97757]/30 text-[#d97757]"
-                              : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary"
-                          )}
                           aria-label={label}
+                          className={cn(
+                            "w-7 h-7 flex items-center justify-center rounded transition-all",
+                            currentTheme === value
+                              ? "bg-card text-[#d97757] shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
                         >
-                          <Icon className="w-4 h-4" />
-                          {label}
+                          <Icon className="w-3.5 h-3.5" />
                         </button>
                       ))}
                     </div>
