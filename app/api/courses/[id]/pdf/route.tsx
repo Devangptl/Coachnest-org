@@ -530,20 +530,6 @@ async function generateCoursePDF(course: any) {
   cover.drawText("INSTRUCTOR", { x: margin + 12, y: 114, size: 7.5, font: fontBold, color: textMid });
   cover.drawText(instructorName, { x: margin + 12, y: 92, size: 15, font: fontBold, color: textDark });
 
-  // Site logo (replaces former "LearnHub" wordmark)
-  if (logoImage) {
-    const { width: logoW, height: logoH } = logoSize(28);
-    cover.drawImage(logoImage, {
-      x: pageWidth - margin - logoW,
-      y: 88,
-      width: logoW,
-      height: logoH,
-      opacity: 0.95,
-    });
-  }
-  const subW = font.widthOfTextAtSize("Learning Platform", 8.5);
-  cover.drawText("Learning Platform", { x: pageWidth - margin - subW, y: 75, size: 8.5, font, color: rgb(0.38, 0.38, 0.44) });
-
   // Generated date
   const genDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   cover.drawText(`Generated ${genDate}`, { x: margin + 12, y: 50, size: 8, font, color: textMid });
@@ -956,15 +942,6 @@ async function generateCoursePDF(course: any) {
   tocPage.drawRectangle({ x: 0, y: pageHeight - 62, width: pageWidth, height: 0.5, color: divider });
   tocPage.drawText("Table of Contents", { x: margin, y: pageHeight - 36, size: 19, font: fontBold, color: textDark });
   tocPage.drawText(course.title, { x: margin, y: pageHeight - 54, size: 9, font, color: textMid });
-  if (logoImage) {
-    const { width: tocLogoW, height: tocLogoH } = logoSize(18);
-    tocPage.drawImage(logoImage, {
-      x: pageWidth - margin - tocLogoW,
-      y: pageHeight - 42,
-      width: tocLogoW,
-      height: tocLogoH,
-    });
-  }
 
   // TOC rows — chapter banners + indented lessons
   let tocY       = pageHeight - 84;
@@ -1061,15 +1038,6 @@ async function generateCoursePDF(course: any) {
       p.drawRectangle({ x: 0, y: pageHeight - HEADER_H, width: 3, height: HEADER_H, color: orange });
       const hTitle = course.title.length > 60 ? course.title.slice(0, 57) + "…" : course.title;
       p.drawText(hTitle, { x: margin, y: pageHeight - HEADER_H + 13, size: 9, font, color: textMid });
-      if (logoImage) {
-        const { width: hdrLogoW, height: hdrLogoH } = logoSize(14);
-        p.drawImage(logoImage, {
-          x: pageWidth - margin - hdrLogoW,
-          y: pageHeight - HEADER_H + 11,
-          width: hdrLogoW,
-          height: hdrLogoH,
-        });
-      }
     }
   });
 
