@@ -229,13 +229,10 @@ export default function QuillEditor({
         q.setSelection(range.index + 1, 0);
       }
 
-      const tableHandler = function (this: { quill: TableQuill }) {
-        // Toolbar handler is intentionally a no-op — the picker popover (set up
-        // after Quill mounts) drives insertion. Falling back to a 3×3 prompt
-        // ensures the button always works even before the popover binds.
-        const rows = 3, cols = 3;
-        insertTable(this.quill, rows, cols);
-      };
+      // Quill calls this when the toolbar button is clicked. We do nothing here —
+      // the button's own click listener (set up below) opens the size-picker
+      // popover, which calls insertTable when the user picks a grid cell.
+      const tableHandler = function () { /* no-op */ };
 
       const imageHandler = async function (this: { quill: EditorQuill }) {
         const customPick = onPickImageRef.current;
