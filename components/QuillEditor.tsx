@@ -197,17 +197,17 @@ export default function QuillEditor({
 
       type TableQuill = EditorQuill & {
         getLength: () => number;
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        getModule: (name: string) => any;
         clipboard: { dangerouslyPasteHTML: (i: number, html: string, s: string) => void };
       };
 
       function buildTableHTML(rows: number, cols: number) {
-        let html = '<table class="lh-table"><tbody>';
+        let html = '<table><tbody>';
         for (let r = 0; r < rows; r++) {
           html += "<tr>";
           for (let c = 0; c < cols; c++) {
-            html += r === 0
-              ? '<th><br></th>'
-              : '<td><br></td>';
+            html += r === 0 ? '<th><p><br></p></th>' : '<td><p><br></p></td>';
           }
           html += "</tr>";
         }
@@ -216,6 +216,14 @@ export default function QuillEditor({
       }
 
       function insertTable(q: TableQuill, rows: number, cols: number) {
+        // Prefer Quill 2's native table module API — it correctly initialises
+        // the internal Delta representation for table cells.
+        const tableModule = q.getModule?.("table");
+        if (tableModule?.insertTable) {
+          tableModule.insertTable(rows, cols);
+          return;
+        }
+        // Fallback: paste raw HTML (works when the module isn't registered).
         const range = q.getSelection() ?? { index: q.getLength() };
         q.clipboard.dangerouslyPasteHTML(range.index, buildTableHTML(rows, cols), "user");
         q.setSelection(range.index + 1, 0);
@@ -256,6 +264,7 @@ export default function QuillEditor({
             handlers: { image: imageHandler, table: tableHandler },
           },
           keyboard: { bindings: MARKDOWN_BINDINGS },
+          table: true,
         },
       });
 
@@ -280,13 +289,19 @@ export default function QuillEditor({
       // Keeps bold/italic/underline/strike/link/heading/list/code/blockquote.
       // Drops colors, backgrounds, font families, font sizes, and alignment so
       // pasted content from websites/docs matches the editor theme.
+      // Table elements are excluded — Quill 2 uses internal Delta attributes
+      // (table-cell-line, row, cell IDs) to encode table structure; stripping
+      // those would corrupt tables on paste and on load from saved HTML.
       const KEEP_ATTRS = new Set([
         "bold", "italic", "underline", "strike",
         "link", "header", "list", "indent",
         "code-block", "blockquote", "script",
       ]);
+      const TABLE_TAGS = new Set(["TABLE", "THEAD", "TBODY", "TFOOT", "TR", "TH", "TD", "CAPTION", "COLGROUP", "COL"]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       quill.clipboard.addMatcher(Node.ELEMENT_NODE, (_node: Node, delta: any) => {
+        const tag = (_node as HTMLElement).tagName?.toUpperCase?.() ?? "";
+        if (TABLE_TAGS.has(tag)) return delta; // preserve table structure attributes
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         delta.ops = delta.ops.map((op: any) => {
           if (op.attributes) {
