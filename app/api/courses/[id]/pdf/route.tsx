@@ -61,7 +61,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-function parseContent(raw: string): Block[] {
+function parseMdContent(raw: string): Block[] {
   const lines = raw.split("\n");
   const blocks: Block[] = [];
   let i = 0;
@@ -204,6 +204,174 @@ function wrapText(text: string, maxWidth: number, font: any, fontSize: number): 
   return lines;
 }
 
+// ─── HTML content pipeline ────────────────────────────────────────────────────
+// Quill editor saves content as HTML (starts with "<"). These helpers mirror
+// the markdown pipeline so the PDF renders Quill content with identical fidelity.
+
+function isHtmlContent(s: string): boolean {
+  return typeof s === "string" && s.trimStart().startsWith("<");
+}
+
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&nbsp;/g, " ").replace(/ /g, " ")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (_: string, n: string) => String.fromCharCode(Number(n)));
+}
+
+function stripHtmlTags(html: string): string {
+  return sanitize(
+    decodeEntities(html.replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, ""))
+  ).trim();
+}
+
+// Convert inner HTML of a Quill block element → Span[] (bold / italic / code / link).
+function parseHtmlInline(html: string): Span[] {
+  const spans: Span[] = [];
+  html = html.replace(/&nbsp;/g, " ").replace(/ /g, " ");
+  const parts = html.split(/(<[^>]+?>)/g);
+  const st = { bold: false, italic: false, code: false, link: null as string | null };
+  for (const part of parts) {
+    if (!part) continue;
+    if (part.startsWith("<")) {
+      const isClose   = part.startsWith("</");
+      const nameMatch = part.match(/^<\/?([a-z][a-z0-9]*)/i);
+      if (!nameMatch) continue;
+      const tag = nameMatch[1].toLowerCase();
+      if      (tag === "strong" || tag === "b") st.bold   = !isClose;
+      else if (tag === "em"     || tag === "i") st.italic = !isClose;
+      else if (tag === "code")                  st.code   = !isClose;
+      else if (tag === "a" && !isClose) {
+        const m = part.match(/href="([^"]*)"/i) || part.match(/href='([^']*)'/i);
+        st.link = m ? m[1] : null;
+      }
+      else if (tag === "a")  st.link = null;
+      else if (tag === "br") spans.push({ text: " " });
+    } else {
+      const text = sanitize(decodeEntities(part));
+      if (!text) continue;
+      const span: Span = { text };
+      if (st.bold)   span.bold   = true;
+      if (st.italic) span.italic = true;
+      if (st.code)   span.code   = true;
+      if (st.link)   span.link   = st.link;
+      spans.push(span);
+    }
+  }
+  return spans.filter((s) => s.text);
+}
+
+// Parse Quill HTML → Block[]. block.text holds raw inner HTML so inline
+// formatting survives into the PDF via parseHtmlInline().
+function parseHtml(raw: string): Block[] {
+  const blocks: Block[] = [];
+  let i = 0;
+  const len = raw.length;
+
+  // Read inner content up to the matching close tag, updating outer i.
+  const readUntilClose = (tag: string): string => {
+    const closeTag = `</${tag}>`;
+    const openRe   = new RegExp(`<${tag}[\\s>]`, "gi");
+    let depth = 1, pos = i;
+    while (pos < len && depth > 0) {
+      const nc = raw.toLowerCase().indexOf(closeTag.toLowerCase(), pos);
+      if (nc < 0) { i = len; return ""; }
+      depth += (raw.slice(pos, nc).match(openRe) || []).length;
+      depth--;
+      if (depth === 0) { const c = raw.slice(i, nc); i = nc + closeTag.length; return c; }
+      pos = nc + closeTag.length;
+    }
+    i = len;
+    return "";
+  };
+
+  while (i < len) {
+    while (i < len && /\s/.test(raw[i])) i++;
+    if (i >= len) break;
+
+    if (raw[i] !== "<") {
+      const end  = raw.indexOf("<", i);
+      const text = sanitize(decodeEntities(raw.slice(i, end < 0 ? len : end).trim()));
+      if (text) blocks.push({ type: "paragraph", text });
+      i = end < 0 ? len : end;
+      continue;
+    }
+
+    const tagEnd    = raw.indexOf(">", i);
+    if (tagEnd < 0) break;
+    const openTag   = raw.slice(i, tagEnd + 1);
+    const nameMatch = openTag.match(/^<([a-z][a-z0-9]*)/i);
+    if (!nameMatch || openTag.startsWith("</")) { i = tagEnd + 1; continue; }
+
+    const tag = nameMatch[1].toLowerCase();
+    if (openTag.endsWith("/>") || tag === "hr" || tag === "br" || tag === "img") {
+      if (tag === "hr") blocks.push({ type: "hr" });
+      i = tagEnd + 1;
+      continue;
+    }
+
+    i = tagEnd + 1;
+    const inner = readUntilClose(tag);
+
+    switch (tag) {
+      case "h1": { const t = stripHtmlTags(inner); if (t) blocks.push({ type: "h1", text: inner.trim() }); break; }
+      case "h2": { const t = stripHtmlTags(inner); if (t) blocks.push({ type: "h2", text: inner.trim() }); break; }
+      case "h3":
+      case "h4": { const t = stripHtmlTags(inner); if (t) blocks.push({ type: "h3", text: inner.trim() }); break; }
+      case "p": {
+        if (stripHtmlTags(inner)) blocks.push({ type: "paragraph", text: inner.trim() });
+        break;
+      }
+      case "blockquote": {
+        if (stripHtmlTags(inner)) blocks.push({ type: "blockquote", text: inner.trim() });
+        break;
+      }
+      case "pre": {
+        const code = sanitize(decodeEntities(inner.replace(/<[^>]+>/g, "")));
+        if (code.trim()) blocks.push({ type: "code", lang: "code", code: code.trim() });
+        break;
+      }
+      case "ul": {
+        const items: string[] = [];
+        const liRe = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let m: RegExpExecArray | null;
+        while ((m = liRe.exec(inner)) !== null) {
+          if (stripHtmlTags(m[1])) items.push(m[1].trim());
+        }
+        if (items.length) blocks.push({ type: "list", items });
+        break;
+      }
+      case "ol": {
+        const items: string[] = [];
+        const liRe = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let m: RegExpExecArray | null;
+        while ((m = liRe.exec(inner)) !== null) {
+          if (stripHtmlTags(m[1])) items.push(m[1].trim());
+        }
+        if (items.length) blocks.push({ type: "numlist", items });
+        break;
+      }
+      default: {
+        const text = stripHtmlTags(inner);
+        if (text) blocks.push({ type: "paragraph", text });
+        break;
+      }
+    }
+  }
+  return blocks;
+}
+
+// Route to the correct inline parser based on content type.
+function getSpans(text: string): Span[] {
+  return isHtmlContent(text) ? parseHtmlInline(text) : parseInline(text);
+}
+
+// Unified block parser — dispatches to HTML or Markdown pipeline.
+function parseContent(raw: string): Block[] {
+  return isHtmlContent(raw) ? parseHtml(raw) : parseMdContent(raw);
+}
+
 async function generateCoursePDF(course: any) {
   // Normalize every user-supplied string up front so no draw call ever sees
   // a character outside WinAnsi (CP-1252). Avoids "WinAnsi cannot encode"
@@ -309,7 +477,9 @@ async function generateCoursePDF(course: any) {
 
   // Description (strip markdown for clean cover display)
   if (course.description) {
-    const plainDesc = sanitize(stripMarkdown(course.description));
+    const plainDesc = isHtmlContent(course.description)
+      ? stripHtmlTags(course.description)
+      : sanitize(stripMarkdown(course.description));
     const descLines = wrapText(plainDesc, usableW - 12, font, 11);
     for (const line of descLines.slice(0, 6)) {
       cover.drawText(line, { x: margin + 12, y: coverY, size: 11, font, color: textMid });
@@ -487,28 +657,28 @@ async function generateCoursePDF(course: any) {
       switch (block.type) {
         case "h1":
           y -= SP.beforeH1; ensureSpace(28);
-          drawRichSpans(parseInline(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
+          drawRichSpans(getSpans(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
           y -= SP.afterHeading;
           break;
         case "h2":
           y -= SP.beforeH2; ensureSpace(24);
-          drawRichSpans(parseInline(block.text), fontBold, 13, textDark);
+          drawRichSpans(getSpans(block.text), fontBold, 13, textDark);
           y -= SP.afterHeading;
           break;
         case "h3":
           y -= SP.beforeH3; ensureSpace(20);
-          drawRichSpans(parseInline(block.text), fontBold, 11, textMid);
+          drawRichSpans(getSpans(block.text), fontBold, 11, textMid);
           y -= SP.afterHeading;
           break;
         case "paragraph":
-          drawRichSpans(parseInline(block.text), font, 10.5, textDark);
+          drawRichSpans(getSpans(block.text), font, 10.5, textDark);
           y -= SP.afterPara;
           break;
         case "blockquote": {
           y -= SP.beforeQuote; ensureSpace(24);
           const quoteIndent = 18;
           const startY = y + 4;
-          drawRichSpans(parseInline(block.text), fontOblique, 10.5, textMid, quoteIndent);
+          drawRichSpans(getSpans(block.text), fontOblique, 10.5, textMid, quoteIndent);
           const endY = y + 4;
           page.drawRectangle({ x: margin + 4, y: endY, width: 2, height: Math.max(startY - endY, 12), color: orange, opacity: 0.7 });
           y -= SP.afterQuote;
@@ -549,7 +719,7 @@ async function generateCoursePDF(course: any) {
           for (const item of block.items) {
             ensureSpace(20);
             page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           }
           y -= SP.afterList - SP.listItemGap;
@@ -558,7 +728,7 @@ async function generateCoursePDF(course: any) {
           block.items.forEach((item, idx) => {
             ensureSpace(20);
             page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           });
           y -= SP.afterList - SP.listItemGap;
@@ -618,28 +788,28 @@ async function generateCoursePDF(course: any) {
       switch (block.type) {
         case "h1":
           y -= SP.beforeH1; ensureSpace(28);
-          drawRichSpans(parseInline(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
+          drawRichSpans(getSpans(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
           y -= SP.afterHeading;
           break;
         case "h2":
           y -= SP.beforeH2; ensureSpace(24);
-          drawRichSpans(parseInline(block.text), fontBold, 13, textDark);
+          drawRichSpans(getSpans(block.text), fontBold, 13, textDark);
           y -= SP.afterHeading;
           break;
         case "h3":
           y -= SP.beforeH3; ensureSpace(20);
-          drawRichSpans(parseInline(block.text), fontBold, 11, textMid);
+          drawRichSpans(getSpans(block.text), fontBold, 11, textMid);
           y -= SP.afterHeading;
           break;
         case "paragraph":
-          drawRichSpans(parseInline(block.text), font, 10.5, textDark);
+          drawRichSpans(getSpans(block.text), font, 10.5, textDark);
           y -= SP.afterPara;
           break;
         case "blockquote": {
           y -= SP.beforeQuote; ensureSpace(24);
           const quoteIndent = 18;
           const startY = y + 4;
-          drawRichSpans(parseInline(block.text), fontOblique, 10.5, textMid, quoteIndent);
+          drawRichSpans(getSpans(block.text), fontOblique, 10.5, textMid, quoteIndent);
           // Left orange bar spanning the rendered block
           const endY = y + 4;
           page.drawRectangle({
@@ -695,7 +865,7 @@ async function generateCoursePDF(course: any) {
           for (const item of block.items) {
             ensureSpace(20);
             page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           }
           y -= SP.afterList - SP.listItemGap;
@@ -704,7 +874,7 @@ async function generateCoursePDF(course: any) {
           block.items.forEach((item, idx) => {
             ensureSpace(20);
             page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           });
           y -= SP.afterList - SP.listItemGap;
