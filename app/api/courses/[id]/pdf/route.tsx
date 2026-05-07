@@ -795,27 +795,39 @@ async function generateCoursePDF(course: any) {
       const lesson = chapter.lessons[li];
       globalLessonIdx++;
 
-      ensureSpace(headerH + SP.afterLessonHeader + 60);
+      // Compute lines first so we can size the band dynamically
+      const ltLines = wrapText(lesson.title, usableW - 48, fontBold, 13);
+      const ltLineH = 17;
+      const minBandH = 34; // inner height (headerH - 4)
+      const titleBlockH = ltLines.length * ltLineH - (ltLineH - 13); // ascent of last line doesn't need full gap
+      const bandH = Math.max(minBandH, titleBlockH + 12); // 6pt padding top+bottom
+      const dynHeaderH = bandH + 4; // +4 for the top offset used below
+
+      ensureSpace(dynHeaderH + SP.afterLessonHeader + 60);
       tocEntries.push({ kind: "lesson", title: lesson.title, pageIdx: doc.getPageCount() - 1, num: globalLessonIdx });
 
-    // Light accent background for lesson header
-    page.drawRectangle({ x: margin, y: y - headerH + 4, width: usableW, height: headerH - 4, color: rgb(0.97, 0.97, 0.99) });
-    page.drawRectangle({ x: margin, y: y - headerH + 4, width: 3, height: headerH - 4, color: orange });
-    page.drawRectangle({ x: margin, y: y - headerH + 3, width: usableW, height: 0.5, color: divider });
+      // Light accent background for lesson header
+      page.drawRectangle({ x: margin, y: y - dynHeaderH + 4, width: usableW, height: bandH, color: rgb(0.97, 0.97, 0.99) });
+      page.drawRectangle({ x: margin, y: y - dynHeaderH + 4, width: 3, height: bandH, color: orange });
+      page.drawRectangle({ x: margin, y: y - dynHeaderH + 3, width: usableW, height: 0.5, color: divider });
 
-      // Lesson number badge
+      // Vertically centre content within the band
+      // Band top = y, band bottom = y - dynHeaderH + 4; centre = y - dynHeaderH/2 + 2
+      const bandCenterY = y - dynHeaderH / 2 + 2;
+
+      // Lesson number badge — centred vertically (font size 10, descend ~3pt)
       const numStr = String(globalLessonIdx).padStart(2, "0");
-    page.drawText(numStr, { x: margin + 10, y: y - 11, size: 10, font: fontBold, color: orange });
+      page.drawText(numStr, { x: margin + 10, y: bandCenterY - 5, size: 10, font: fontBold, color: orange });
 
-    // Lesson title
-    const ltLines = wrapText(lesson.title, usableW - 48, fontBold, 13);
-    let ltY = y - 8;
-    for (const ltLine of ltLines) {
-      page.drawText(ltLine, { x: margin + 36, y: ltY, size: 13, font: fontBold, color: textDark });
-      ltY -= 17;
-    }
+      // Lesson title — block centred vertically
+      const totalTitleH = (ltLines.length - 1) * ltLineH + 13; // height from top baseline to bottom of last line
+      let ltY = bandCenterY + totalTitleH / 2 - 13 * 0.75; // align top baseline
+      for (const ltLine of ltLines) {
+        page.drawText(ltLine, { x: margin + 36, y: ltY, size: 13, font: fontBold, color: textDark });
+        ltY -= ltLineH;
+      }
 
-    y -= headerH;
+      y -= dynHeaderH;
 
     // Separator + breathing room before the lesson body
     page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
