@@ -139,10 +139,10 @@ export default function NavbarClient({ session }: Props) {
     : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 lg:px-7 py-1.5">
       <div
         className={cn(
-          "mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-2 transition-all duration-300 border",
+          "mx-auto flex items-center justify-between rounded-lg px-3 sm:px-5 py-1.5 transition-all duration-300 border",
           "bg-card border-border shadow-glass"
         )}
       >

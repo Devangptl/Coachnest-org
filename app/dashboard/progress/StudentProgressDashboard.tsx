@@ -130,14 +130,14 @@ export default function StudentProgressDashboard({
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl sm:text-3xl font-bold text-foreground">My Progress</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">Your learning journey at a glance</p>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
         {summaryCards.map(({ label, value, icon: Icon, color }, i) => (
           <motion.div
             key={label}
@@ -156,11 +156,11 @@ export default function StudentProgressDashboard({
       </div>
 
       {/* Weekly activity charts */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         {/* Lessons per week */}
-        <div className="glass p-6">
+        <div className="glass p-4">
           <h3 className="text-foreground font-semibold mb-1">Weekly Lessons Completed</h3>
-          <p className="text-muted-foreground/60 text-xs mb-5">Last 8 weeks</p>
+          <p className="text-muted-foreground/60 text-xs mb-3">Last 8 weeks</p>
           <ResponsiveContainer width="100%" height={200}>
             <BarChart data={weeklyActivity}>
               <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -194,9 +194,9 @@ export default function StudentProgressDashboard({
         </div>
 
         {/* XP per week */}
-        <div className="glass p-6">
+        <div className="glass p-4">
           <h3 className="text-foreground font-semibold mb-1">Weekly XP Earned</h3>
-          <p className="text-muted-foreground/60 text-xs mb-5">Last 8 weeks</p>
+          <p className="text-muted-foreground/60 text-xs mb-3">Last 8 weeks</p>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={weeklyActivity}>
               <defs>
@@ -236,8 +236,8 @@ export default function StudentProgressDashboard({
 
       {/* Course progress */}
       {courseProgress.length > 0 && (
-        <div className="glass p-6">
-          <h3 className="text-foreground font-semibold mb-5">Course Progress</h3>
+        <div className="glass p-4">
+          <h3 className="text-foreground font-semibold mb-3">Course Progress</h3>
           <div className="space-y-4">
             {courseProgress.map((c, i) => (
               <motion.div
@@ -286,8 +286,8 @@ export default function StudentProgressDashboard({
 
       {/* Quiz history */}
       {quizHistory.length > 0 && (
-        <div className="glass p-6">
-          <div className="flex items-center justify-between mb-5">
+        <div className="glass p-4">
+          <div className="flex items-center justify-between mb-3">
             <h3 className="text-foreground font-semibold">Quiz Performance</h3>
             <div className="flex items-center gap-4 text-xs text-muted-foreground">
               <span>Avg score: <span className="text-foreground font-semibold">{avgQuizScore}%</span></span>

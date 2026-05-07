@@ -110,7 +110,7 @@ export default function RootLayout({
         {/* Prevent flash of wrong theme — runs before React hydrates */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var t=localStorage.getItem('cn-theme')||'dark';document.documentElement.classList.add(t);})();`,
+            __html: `(function(){var t=localStorage.getItem('cn-theme')||'system';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.classList.add(r);})();`,
           }}
         />
       </head>

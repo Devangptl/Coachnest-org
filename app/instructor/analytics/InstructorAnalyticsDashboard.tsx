@@ -108,14 +108,14 @@ export default function InstructorAnalyticsDashboard({
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
         <p className="text-muted-foreground text-sm mt-0.5">Performance overview of your courses</p>
       </div>
 
       {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {summaryCards.map(({ label, value, icon: Icon, color, sub }, i) => (
           <motion.div
             key={label}
@@ -146,9 +146,9 @@ export default function InstructorAnalyticsDashboard({
 
         {/* Monthly enrollment trend */}
         <TabsContent value="enrollments">
-          <div className="glass p-6">
+          <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">Monthly Enrollments</h3>
-            <p className="text-muted-foreground/60 text-xs mb-6">New students per month across all your courses</p>
+            <p className="text-muted-foreground/60 text-xs mb-4">New students per month across all your courses</p>
             <ResponsiveContainer width="100%" height={260}>
               <AreaChart data={monthlyEnrollments}>
                 <defs>
@@ -176,9 +176,9 @@ export default function InstructorAnalyticsDashboard({
 
         {/* Student progress distribution per course */}
         <TabsContent value="progress">
-          <div className="glass p-6">
+          <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">Student Progress by Course</h3>
-            <p className="text-muted-foreground/60 text-xs mb-6">
+            <p className="text-muted-foreground/60 text-xs mb-4">
               Distribution: Not Started · In Progress (1–49%) · Near Done (50–99%) · Completed
             </p>
             {courseProgressStats.length === 0 ? (
@@ -244,9 +244,9 @@ export default function InstructorAnalyticsDashboard({
         {/* Quiz pass rates */}
         {quizStats.length > 0 && (
           <TabsContent value="quizzes">
-            <div className="glass p-6">
+            <div className="glass p-4">
               <h3 className="text-foreground font-semibold mb-1">Quiz Performance</h3>
-              <p className="text-muted-foreground/60 text-xs mb-6">Pass rate and average score per course</p>
+              <p className="text-muted-foreground/60 text-xs mb-4">Pass rate and average score per course</p>
               <ResponsiveContainer width="100%" height={260}>
                 <BarChart data={quizStats} margin={{ left: 4, right: 16 }}>
                   <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -337,7 +337,7 @@ export default function InstructorAnalyticsDashboard({
 
       {/* Completion rate summary */}
       {courseProgressStats.length > 0 && (
-        <div className="glass p-6">
+        <div className="glass p-4">
           <h3 className="text-foreground font-semibold mb-5 flex items-center gap-2">
             <Target className="w-4 h-4 text-amber-400" />
             Completion Rates

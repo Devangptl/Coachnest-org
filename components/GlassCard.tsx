@@ -13,9 +13,9 @@ interface GlassCardProps extends HTMLAttributes<HTMLDivElement> {
 }
 
 const paddingMap = {
-  sm: "p-4",
-  md: "p-6",
-  lg: "p-8",
+  sm: "p-3",
+  md: "p-5",
+  lg: "p-6",
 };
 
 export default function GlassCard({

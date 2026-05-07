@@ -141,14 +141,14 @@ export default function AnalyticsDashboard({
   }));
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Analytics</h1>
+        <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">Platform-wide insights</p>
       </div>
 
       {/* Primary stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         {statCards.map(({ label, value, icon: Icon, color, sub }, i) => (
           <motion.div
             key={label}
@@ -170,7 +170,7 @@ export default function AnalyticsDashboard({
       </div>
 
       {/* Engagement cards */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3">
         {engagementCards.map(({ label, value, icon: Icon, color }, i) => (
           <motion.div
             key={label}
@@ -201,9 +201,9 @@ export default function AnalyticsDashboard({
 
         {/* Revenue trend */}
         <TabsContent value="revenue">
-          <div className="glass p-6">
+          <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">Monthly Revenue</h3>
-            <p className="text-muted-foreground/60 text-xs mb-6">Last 6 months</p>
+            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
             <ResponsiveContainer width="100%" height={280}>
               <AreaChart data={revenue}>
                 <defs>
@@ -232,9 +232,9 @@ export default function AnalyticsDashboard({
 
         {/* Enrollments trend */}
         <TabsContent value="enrollments">
-          <div className="glass p-6">
+          <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">Monthly Enrollments vs Revenue</h3>
-            <p className="text-muted-foreground/60 text-xs mb-6">Last 6 months</p>
+            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={combinedTrend}>
                 <defs>
@@ -295,9 +295,9 @@ export default function AnalyticsDashboard({
 
         {/* User growth */}
         <TabsContent value="users">
-          <div className="glass p-6">
+          <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">New User Signups</h3>
-            <p className="text-muted-foreground/60 text-xs mb-6">Last 6 months</p>
+            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
             <ResponsiveContainer width="100%" height={280}>
               <BarChart data={userGrowth}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -316,9 +316,9 @@ export default function AnalyticsDashboard({
 
         {/* Course completion rates */}
         <TabsContent value="completion">
-          <div className="glass p-6">
+          <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">Course Completion Rates</h3>
-            <p className="text-muted-foreground/60 text-xs mb-6">Top courses by enrollment</p>
+            <p className="text-muted-foreground/60 text-xs mb-4">Top courses by enrollment</p>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={courseCompletionStats} layout="vertical" margin={{ left: 12, right: 24 }}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" horizontal={false} />
@@ -361,10 +361,10 @@ export default function AnalyticsDashboard({
         </TabsContent>
       </Tabs>
 
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid lg:grid-cols-2 gap-4">
         {/* Top Courses */}
-        <div className="glass p-6">
-          <h3 className="text-foreground font-semibold mb-5">Top Courses</h3>
+        <div className="glass p-4">
+          <h3 className="text-foreground font-semibold mb-3">Top Courses</h3>
           <div className="space-y-4">
             {topCourses.map((c, i) => (
               <div key={c.id} className="flex items-center gap-3">
@@ -390,8 +390,8 @@ export default function AnalyticsDashboard({
         </div>
 
         {/* Recent Orders */}
-        <div className="glass p-6">
-          <h3 className="text-foreground font-semibold mb-5">Recent Orders</h3>
+        <div className="glass p-4">
+          <h3 className="text-foreground font-semibold mb-3">Recent Orders</h3>
           <div className="space-y-3">
             {recentOrders.map((o) => (
               <div key={o.id} className="flex items-center gap-3">

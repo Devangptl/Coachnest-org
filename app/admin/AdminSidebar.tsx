@@ -50,7 +50,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm font-medium transition-all",
               isActive
                 ? "bg-orange-500/10 text-foreground border border-[#d97757]/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -92,7 +92,7 @@ export default function AdminSidebar() {
   return (
     <>
       {/* ── Desktop sidebar (unchanged) ─────────────────────────────── */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20 mt-4">
+      <aside className="hidden lg:block w-56 flex-shrink-0 self-start sticky top-16 mt-3">
         <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Admin Panel
