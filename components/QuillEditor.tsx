@@ -108,30 +108,26 @@ const MARKDOWN_BINDINGS = {
 
 const IMAGE_MAX_BYTES = 1 * 1024 * 1024; // matches /api/upload limit
 
-async function uploadImageFile(file: File, folder: string): Promise<string | null> {
+function validateImageFile(file: File): boolean {
   if (!file.type.startsWith("image/")) {
     toast.error("Only image files are supported.");
-    return null;
+    return false;
   }
   if (file.size > IMAGE_MAX_BYTES) {
     toast.error("Image exceeds the 1 MB limit.");
-    return null;
+    return false;
   }
-  const fd = new FormData();
-  fd.append("file", file);
-  fd.append("folder", folder);
-  try {
-    const res = await fetch("/api/upload", { method: "POST", body: fd });
-    const data = await res.json();
-    if (!res.ok) {
-      toast.error(data.error ?? "Image upload failed.");
-      return null;
-    }
-    return data.url as string;
-  } catch {
-    toast.error("Network error while uploading image.");
-    return null;
-  }
+  return true;
+}
+
+/** Read a File into a base64 data URL (no network request). */
+function fileToDataUrl(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 }
 
 function pickImageFile(): Promise<File | null> {
@@ -225,6 +221,7 @@ export default function QuillEditor({
       const tableHandler = function () { /* no-op */ };
 
       const imageHandler = async function (this: { quill: EditorQuill }) {
+        // Custom picker (e.g. media-library) returns a ready URL — use it directly.
         const customPick = onPickImageRef.current;
         if (customPick) {
           const url = await customPick();
@@ -232,14 +229,11 @@ export default function QuillEditor({
           return;
         }
         const file = await pickImageFile();
-        if (!file) return;
-        const t = toast.loading("Uploading image…");
-        const url = await uploadImageFile(file, uploadFolderRef.current);
-        toast.dismiss(t);
-        if (url) {
-          insertImage(this.quill, url);
-          toast.success("Image inserted");
-        }
+        if (!file || !validateImageFile(file)) return;
+        // Embed as data URL now; actual upload happens in processContentImages()
+        // when the user saves — preventing orphaned files on discard.
+        const dataUrl = await fileToDataUrl(file);
+        insertImage(this.quill, dataUrl);
       };
 
       const quill = new Quill(containerRef.current!, {
@@ -388,21 +382,17 @@ export default function QuillEditor({
         observer.observe(document.body, { childList: true, subtree: true });
       }
 
-      // Drag-and-drop + paste image upload — works regardless of toolbar use.
+      // Drag-and-drop + paste — embed as data URL; upload happens on save.
       const editorEl = quill.root as HTMLElement;
       editorEl.addEventListener("drop", (e: DragEvent) => {
         const file = e.dataTransfer?.files?.[0];
         if (!file || !file.type.startsWith("image/")) return;
         e.preventDefault();
         e.stopPropagation();
+        if (!validateImageFile(file)) return;
         (async () => {
-          const t = toast.loading("Uploading image…");
-          const url = await uploadImageFile(file, uploadFolderRef.current);
-          toast.dismiss(t);
-          if (url) {
-            insertImage(quill as unknown as EditorQuill, url);
-            toast.success("Image inserted");
-          }
+          const dataUrl = await fileToDataUrl(file);
+          insertImage(quill as unknown as EditorQuill, dataUrl);
         })();
       });
       editorEl.addEventListener("paste", (e: ClipboardEvent) => {
@@ -414,13 +404,9 @@ export default function QuillEditor({
             if (!file) continue;
             e.preventDefault();
             (async () => {
-              const t = toast.loading("Uploading image…");
-              const url = await uploadImageFile(file, uploadFolderRef.current);
-              toast.dismiss(t);
-              if (url) {
-                insertImage(quill as unknown as EditorQuill, url);
-                toast.success("Image inserted");
-              }
+              if (!validateImageFile(file)) return;
+              const dataUrl = await fileToDataUrl(file);
+              insertImage(quill as unknown as EditorQuill, dataUrl);
             })();
             return;
           }

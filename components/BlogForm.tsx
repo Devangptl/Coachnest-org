@@ -8,6 +8,7 @@ import { ArrowLeft, X, Hash, Clock, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 
 import GlassCard from "@/components/GlassCard";
+import { processContentImages } from "@/lib/uploadImages";
 import ImagePickerField from "@/components/ImagePickerField";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import MediaLibraryModal from "@/components/MediaLibraryModal";
@@ -155,6 +156,9 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
     const method = mode === "create" ? "POST" : "PATCH";
 
     try {
+      // Upload any embedded data-URL images now that the user is saving
+      const savedContent = await processContentImages(content, "blogs");
+
       const res = await fetch(url, {
         method,
         headers: { "Content-Type": "application/json" },
@@ -162,7 +166,7 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
           title: title.trim(),
           slug: slug || undefined,
           excerpt: excerpt.trim() || undefined,
-          content,
+          content: savedContent,
           thumbnail: thumbnail || undefined,
           tags: joinTags(finalTags) || undefined,
           published,
