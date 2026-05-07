@@ -16,6 +16,7 @@ import {
   ChevronDown, CloudUpload, CloudOff, BookOpen, FileUp,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { processContentImages } from "@/lib/uploadImages";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -164,12 +165,14 @@ export default function LessonsManager({
       const snap = { ...editForm };
       setAutosaveStatus("saving");
       try {
+        const content = snap.type === "QUIZ" ? null
+          : await processContentImages(snap.content || "", "courses");
         const res = await fetch(`/api/lessons/${editingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: snap.title, type: snap.type,
-            content: snap.type === "QUIZ" ? null : snap.content,
+            content,
             duration: snap.type === "VIDEO" ? Number(snap.duration) || null : null,
             isFree: snap.isFree,
           }),
@@ -211,7 +214,8 @@ export default function LessonsManager({
       try {
         const payload = {
           title: snap.title, type: snap.type,
-          content: snap.type === "QUIZ" ? null : snap.content,
+          content: snap.type === "QUIZ" ? null
+            : await processContentImages(snap.content || "", "courses"),
           duration: snap.type === "VIDEO" ? Number(snap.duration) || null : null,
           isFree: snap.isFree,
         };
@@ -408,11 +412,12 @@ export default function LessonsManager({
       if (dirty) {
         setSubmitting(true);
         try {
+          const content = await processContentImages(form.content || "", "courses");
           const res = await fetch(`/api/lessons/${draftLessonId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              title: form.title, type: form.type, content: form.content,
+              title: form.title, type: form.type, content,
               duration: form.type === "VIDEO" ? Number(form.duration) || null : null,
               isFree: form.isFree,
             }),
@@ -435,13 +440,15 @@ export default function LessonsManager({
 
     setSubmitting(true);
     try {
+      const content = form.type === "QUIZ" ? null
+        : await processContentImages(form.content || "", "courses");
       const res = await fetch("/api/lessons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseId, sectionId: resolvedSectionId,
           title: form.title, type: form.type,
-          content: form.type === "QUIZ" ? null : form.content,
+          content,
           duration: form.type === "VIDEO" ? Number(form.duration) || null : null,
           isFree: form.isFree,
         }),
@@ -567,12 +574,14 @@ export default function LessonsManager({
     cancelAutosave();
     setSaving(true);
     try {
+      const content = editForm.type === "QUIZ" ? null
+        : await processContentImages(editForm.content || "", "courses");
       const res = await fetch(`/api/lessons/${editingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: editForm.title, type: editForm.type,
-          content: editForm.type === "QUIZ" ? null : editForm.content,
+          content,
           duration: editForm.type === "VIDEO" ? Number(editForm.duration) || null : null,
           isFree: editForm.isFree,
         }),
