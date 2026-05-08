@@ -108,6 +108,65 @@ const MARKDOWN_BINDINGS = {
 
 const IMAGE_MAX_BYTES = 1 * 1024 * 1024; // matches /api/upload limit
 
+// ── Markdown table paste helpers ───────────────────────────────────────────────
+
+/** Returns true if the text contains at least one GFM separator row (|---|---| …). */
+function hasMarkdownTable(text: string): boolean {
+  if (!text.includes("|")) return false;
+  return text.split("\n").some((l) => /^\|[\s\-:|]+\|$/.test(l.trim()));
+}
+
+function escHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Convert a block of table lines (already filtered to start with `|`) to an HTML table. */
+function buildMarkdownTableHtml(lines: string[]): string {
+  const sepIdx = lines.findIndex((l) => /^\|[\s\-:|]+\|$/.test(l));
+  if (sepIdx === -1) return lines.map((l) => `<p>${escHtml(l)}</p>`).join("");
+
+  const parseRow = (line: string) =>
+    line.split("|").slice(1, -1).map((c) => c.trim());
+
+  const headers = lines.slice(0, sepIdx);
+  const rows    = lines.slice(sepIdx + 1).filter((l) => l.startsWith("|"));
+
+  let html = '<table class="lh-table"><thead>';
+  for (const line of headers)
+    html += "<tr>" + parseRow(line).map((c) => `<th>${escHtml(c)}</th>`).join("") + "</tr>";
+  html += "</thead><tbody>";
+  for (const line of rows)
+    html += "<tr>" + parseRow(line).map((c) => `<td>${escHtml(c)}</td>`).join("") + "</tr>";
+  html += "</tbody></table>";
+  return html;
+}
+
+/**
+ * Convert pasted plain-text (possibly containing markdown tables mixed with
+ * regular paragraphs) to HTML suitable for insertion via dangerouslyPasteHTML.
+ */
+function convertMarkdownPaste(text: string): string {
+  const lines = text.split("\n");
+  let html = "";
+  let i = 0;
+  while (i < lines.length) {
+    const trimmed = lines[i].trim();
+    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
+      // Collect all consecutive table lines
+      const tableLines: string[] = [];
+      while (i < lines.length && lines[i].trim().startsWith("|")) {
+        tableLines.push(lines[i].trim());
+        i++;
+      }
+      html += buildMarkdownTableHtml(tableLines);
+      continue;
+    }
+    if (trimmed) html += `<p>${escHtml(trimmed)}</p>`;
+    i++;
+  }
+  return html || "<p><br></p>";
+}
+
 function validateImageFile(file: File): boolean {
   if (!file.type.startsWith("image/")) {
     toast.error("Only image files are supported.");
@@ -395,14 +454,24 @@ export default function QuillEditor({
           insertImage(quill as unknown as EditorQuill, dataUrl);
         })();
       });
-      editorEl.addEventListener("paste", (e: ClipboardEvent) => {
+      // ── Document-level capture paste handler ────────────────────────────────
+      // Runs in the capture phase, BEFORE Quill's own paste handler, so we can
+      // call stopPropagation() and Quill never sees the event.
+      // Handles: (1) image-file paste, (2) markdown table → HTML conversion.
+      function onDocumentPaste(e: ClipboardEvent) {
+        // Only handle pastes that target this editor instance
+        if (!editorEl.contains(e.target as Node) && e.target !== editorEl) return;
+
         const items = e.clipboardData?.items;
         if (!items) return;
+
+        // ── Image file ──────────────────────────────────────────────────────
         for (const it of Array.from(items)) {
           if (it.kind === "file" && it.type.startsWith("image/")) {
             const file = it.getAsFile();
             if (!file) continue;
             e.preventDefault();
+            e.stopPropagation();
             (async () => {
               if (!validateImageFile(file)) return;
               const dataUrl = await fileToDataUrl(file);
@@ -411,7 +480,25 @@ export default function QuillEditor({
             return;
           }
         }
-      });
+
+        // ── Markdown table ──────────────────────────────────────────────────
+        // Intercept only when the clipboard carries plain text with a GFM table
+        // but no rich HTML table (e.g. copied from a browser page that already
+        // has a <table> — let Quill's HTML clipboard handler manage that case).
+        const htmlClip = e.clipboardData?.getData("text/html") ?? "";
+        const textClip = e.clipboardData?.getData("text/plain") ?? "";
+        if ((!htmlClip || !/<table[\s>]/i.test(htmlClip)) && hasMarkdownTable(textClip)) {
+          e.preventDefault();
+          e.stopPropagation();
+          const converted = convertMarkdownPaste(textClip);
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const q = quill as any;
+          const range = q.getSelection() ?? { index: q.getLength() };
+          q.clipboard.dangerouslyPasteHTML(range.index, converted, "user");
+        }
+      }
+
+      document.addEventListener("paste", onDocumentPaste, true);
 
       if (value) {
         quill.clipboard.dangerouslyPasteHTML(value);
