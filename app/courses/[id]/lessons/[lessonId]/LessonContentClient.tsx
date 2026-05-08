@@ -212,11 +212,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                     <Clock className="w-3 h-3" /> {activeSecs}s / {TIME_THRESHOLD}s
                   </span>
                 </span>
-              ) : (
-                <span className="hidden sm:flex items-center gap-1 text-[11px] text-muted-foreground/50">
-                  <Eye className="w-3 h-3" /> Auto-completes at 80% watched
-                </span>
-              )}
+              ) : null}
             </div>
           </div>
         )}
@@ -260,6 +256,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
             url={lesson.content}
             alreadyCompleted={done}
             onComplete={handleAutoComplete}
+            onManualComplete={isEnrolled ? handleAutoComplete : undefined}
           />
 
         ) : lesson.content ? (
