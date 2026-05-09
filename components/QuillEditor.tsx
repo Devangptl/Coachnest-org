@@ -113,7 +113,8 @@ const IMAGE_MAX_BYTES = 1 * 1024 * 1024; // matches /api/upload limit
 /** Returns true if the text contains at least one GFM separator row (|---|---| …). */
 function hasMarkdownTable(text: string): boolean {
   if (!text.includes("|")) return false;
-  return text.split("\n").some((l) => /^\|[\s\-:|]+\|$/.test(l.trim()));
+  const normalized = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+  return normalized.split("\n").some((l) => /^\|[\s\-:|]+\|$/.test(l.trim()));
 }
 
 function escHtml(s: string): string {
@@ -141,13 +142,14 @@ function buildMarkdownTableHtml(lines: string[]): string {
   const headers = lines.slice(0, sepIdx);
   const rows    = lines.slice(sepIdx + 1).filter((l) => l.startsWith("|"));
 
-  let html = '<table class="lh-table"><thead>';
+  // Use <tbody> only (no <thead>) — Quill v2's dangerouslyPasteHTML requires this
+  // structure to correctly render tables; <thead> causes the table to be lost.
+  let html = '<table class="lh-table"><tbody>';
   for (const line of headers)
     html += "<tr>" + parseRow(line).map((c) => `<th>${convertCellContent(c)}</th>`).join("") + "</tr>";
-  html += "</thead><tbody>";
   for (const line of rows)
     html += "<tr>" + parseRow(line).map((c) => `<td>${convertCellContent(c)}</td>`).join("") + "</tr>";
-  html += "</tbody></table>";
+  html += "</tbody></table><p><br></p>";
   return html;
 }
 
@@ -156,7 +158,7 @@ function buildMarkdownTableHtml(lines: string[]): string {
  * regular paragraphs) to HTML suitable for insertion via dangerouslyPasteHTML.
  */
 function convertMarkdownPaste(text: string): string {
-  const lines = text.split("\n");
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   let html = "";
   let i = 0;
   while (i < lines.length) {
@@ -678,12 +680,12 @@ export default function QuillEditor({
         }
 
         // ── Markdown table ──────────────────────────────────────────────────
-        // Intercept only when the clipboard carries plain text with a GFM table
-        // but no rich HTML table (e.g. copied from a browser page that already
-        // has a <table> — let Quill's HTML clipboard handler manage that case).
-        const htmlClip = e.clipboardData?.getData("text/html") ?? "";
+        // Always prefer our GFM → HTML conversion when the plain-text clipboard
+        // contains a markdown table, even if the HTML clipboard also has a <table>
+        // (e.g. pasting from a browser-rendered markdown page). Our converter
+        // produces consistent, clean HTML that Quill v2 renders reliably.
         const textClip = e.clipboardData?.getData("text/plain") ?? "";
-        if ((!htmlClip || !/<table[\s>]/i.test(htmlClip)) && hasMarkdownTable(textClip)) {
+        if (hasMarkdownTable(textClip)) {
           e.preventDefault();
           e.stopPropagation();
           const converted = convertMarkdownPaste(textClip);
