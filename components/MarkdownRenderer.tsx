@@ -79,7 +79,8 @@ const CALLOUT_CONFIG = {
 
 type CalloutType = keyof typeof CALLOUT_CONFIG;
 const CALLOUT_LANG_PREFIX = "__callout_";
-const SPOILER_LANG_PREFIX = "__spoiler_";
+const SPOILER_LANG_PREFIX  = "__spoiler_";
+const COMPLIST_LANG_PREFIX = "__complist__";
 
 // ─── Preprocessor ──────────────────────────────────────────────────────────────
 
@@ -126,6 +127,22 @@ function preprocess(src: string): string {
   // 6 — ~subscript~ (not ~~ which is strikethrough)
   out = out.replace(/(?<!`|~)~([^~`\n]+)~(?!`|~)/g, (_m, txt: string) => `\`~${txt}~\``);
 
+  // 7 — comparison / annotation lists  (+ positive, - negative, ! warning)
+  // Consecutive lines starting with +, -, or ! followed by a space.
+  // Converted to a fenced __complist__ block before GFM treats + / - as list markers.
+  // Heuristic: only convert when the block mixes + with - OR contains a ! line.
+  out = out.replace(
+    /^([+\-!] [^\n]*(?:\n[+\-!] [^\n]*)*)/gm,
+    (block) => {
+      const lines = block.split("\n").filter(Boolean);
+      const hasWarn  = lines.some((l) => l.startsWith("! "));
+      const hasPlus  = lines.some((l) => l.startsWith("+ "));
+      const hasMinus = lines.some((l) => l.startsWith("- "));
+      if (!hasWarn && !(hasPlus && hasMinus)) return block;
+      return `\`\`\`${COMPLIST_LANG_PREFIX}\n${lines.join("\n")}\n\`\`\`\n\n`;
+    },
+  );
+
   return out;
 }
 
@@ -162,6 +179,51 @@ function toSlug(text: unknown): string {
     .replace(/[^\w\s-]/g, "")
     .trim()
     .replace(/[\s_]+/g, "-");
+}
+
+// ─── AST text extractor (used for table cell content detection) ───────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function extractNodeText(node: any): string {
+  if (!node) return "";
+  if (node.type === "text") return String(node.value ?? "");
+  if (Array.isArray(node.children)) return node.children.map(extractNodeText).join("");
+  return "";
+}
+
+// ─── ComparisonList ───────────────────────────────────────────────────────────
+
+function ComparisonList({ items }: { items: string[] }) {
+  return (
+    <div className="my-5 rounded-xl border border-border/40 overflow-hidden divide-y divide-border/30">
+      {items.map((line, i) => {
+        const isPos  = line.startsWith("+ ");
+        const isWarn = line.startsWith("! ");
+        const text   = line.length > 2 ? line.slice(2) : line;
+        return (
+          <div key={i} className={cn(
+            "flex items-center gap-3 px-4 py-2.5 text-[13px]",
+            isPos ? "bg-emerald-500/[0.06]" : isWarn ? "bg-yellow-500/[0.06]" : "bg-red-500/[0.06]",
+          )}>
+            <span className={cn(
+              "flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center text-[11px] font-black border",
+              isPos  ? "bg-emerald-500/20 border-emerald-400/40 text-emerald-300"
+              : isWarn ? "bg-yellow-400/20 border-yellow-400/40 text-yellow-300"
+              :           "bg-red-500/20   border-red-400/40   text-red-300",
+            )}>
+              {isPos ? "+" : isWarn ? "!" : "−"}
+            </span>
+            <span className={cn(
+              "flex-1 leading-relaxed",
+              isPos  ? "text-emerald-300/90" : isWarn ? "text-yellow-300/90" : "text-red-300/90",
+            )}>
+              {text}
+            </span>
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 // ─── CodeBlock ────────────────────────────────────────────────────────────────
@@ -635,6 +697,11 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
         return <SpoilerBlock title={title} content={rawStr} />;
       }
 
+      // Comparison list (+/-/! lines)
+      if (lang === COMPLIST_LANG_PREFIX) {
+        return <ComparisonList items={rawStr.split("\n").filter(Boolean)} />;
+      }
+
       // Fenced code block
       if (cls) return <CodeBlock lang={lang} code={rawStr} />;
 
@@ -730,14 +797,23 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
         {children}
       </th>
     ),
-    td:     ({ children, style })   => (
-      <td
-        style={{ textAlign: (style as React.CSSProperties)?.textAlign }}
-        className="px-4 py-2.5 text-[13px] text-muted-foreground align-top border-r border-border/20 last:border-r-0"
-      >
-        {children}
-      </td>
-    ),
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    td: ({ children, style, node }: any) => {
+      const raw    = extractNodeText(node);
+      const isPos  = raw.startsWith("+ ") || raw.startsWith("+ ");
+      const isNeg  = raw.startsWith("- ") || raw.startsWith("−");
+      return (
+        <td
+          style={{ textAlign: (style as React.CSSProperties)?.textAlign }}
+          className={cn(
+            "px-4 py-2.5 text-[13px] align-top border-r border-border/20 last:border-r-0",
+            isPos ? "text-emerald-400 font-medium" : isNeg ? "text-red-400 font-medium" : "text-muted-foreground",
+          )}
+        >
+          {children}
+        </td>
+      );
+    },
 
     // ── Inline marks ───────────────────────────────────────────────────────────
     strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
