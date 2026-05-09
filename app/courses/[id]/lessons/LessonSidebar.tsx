@@ -127,7 +127,7 @@ function LessonRow({
           ) : null}
 
           {lesson.type === "TEXT" && !isLocked && (
-            <Headphones className="w-2.5 h-2.5 text-muted-foreground/25" title="Audio available" />
+            <Headphones className="w-2.5 h-2.5 text-muted-foreground/25" />
           )}
 
           {lesson.isFree && !isEnrolled && !isLocked && (
