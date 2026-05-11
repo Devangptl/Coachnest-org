@@ -4,9 +4,10 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { BookOpen, Users, Star, PlusCircle, Eye, Edit2, CheckCircle2, AlertTriangle } from "lucide-react";
+import { BookOpen, Users, Star, PlusCircle, Eye, Edit2 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { formatDate } from "@/lib/utils";
+import InstructorAlerts from "./InstructorAlerts";
 
 async function getStats(userId: string) {
   const [courses, totalStudents, reviews, profile] = await Promise.all([
@@ -54,31 +55,12 @@ export default async function InstructorDashboard() {
 
   return (
     <div className="space-y-6">
-      {/* Alerts */}
-      {isProfileIncomplete && (
-        <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/25 rounded-xl px-5 py-4">
-          <AlertTriangle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-blue-400 font-semibold text-sm">Complete your instructor profile</p>
-            <p className="text-blue-400/70 text-xs mt-0.5">
-              Add a headline and bio to help students learn about you.{" "}
-              <Link href="/instructor/profile" className="underline hover:no-underline">Update profile →</Link>
-            </p>
-          </div>
-        </div>
-      )}
-
-      {profile?.instructorStatus === "APPROVED" && (
-        <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-5 py-4">
-          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-emerald-400 font-semibold text-sm">Account Active</p>
-            <p className="text-emerald-400/70 text-xs mt-0.5">
-              Your instructor account is approved. Start creating courses to earn revenue.
-            </p>
-          </div>
-        </div>
-      )}
+      {/* Alerts — shown once per user, dismissed via localStorage */}
+      <InstructorAlerts
+        isProfileIncomplete={isProfileIncomplete}
+        isApproved={profile?.instructorStatus === "APPROVED"}
+        userId={session!.userId}
+      />
 
       {/* Profile summary */}
       <GlassCard className="flex items-center gap-4">
