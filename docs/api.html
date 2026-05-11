@@ -1,0 +1,1403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoachNest — API Reference</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg2: #161b27;
+      --bg3: #1e2535;
+      --border: #2a3347;
+      --accent: #f97316;
+      --accent2: #fb923c;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --radius: 10px;
+      --sidebar-w: 270px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+    /* Top Nav */
+    .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 58px; background: rgba(15,17,23,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 16px; }
+    .topnav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+    .topnav-logo .dot { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .topnav-links { margin-left: auto; display: flex; gap: 20px; }
+    .topnav-links a { color: var(--text2); text-decoration: none; font-size: 13px; transition: color 0.15s; }
+    .topnav-links a:hover { color: var(--accent); }
+    .topnav-links a.active { color: var(--accent); }
+    .topnav-badge { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 12px; padding: 3px 10px; border-radius: 20px; }
+    .topnav-badge span { color: var(--green); }
+
+    /* Layout */
+    .layout { display: flex; padding-top: 58px; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: fixed; top: 58px; left: 0; bottom: 0; overflow-y: auto; padding: 24px 0 40px; border-right: 1px solid var(--border); background: var(--bg2); }
+    .sidebar-section { margin-bottom: 8px; }
+    .sidebar-label { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--text3); text-transform: uppercase; padding: 8px 20px 4px; }
+    .sidebar a { display: flex; align-items: center; gap: 8px; padding: 7px 20px; color: var(--text2); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; transition: all 0.15s; }
+    .sidebar a:hover { color: var(--text); background: var(--bg3); border-left-color: var(--border); }
+    .sidebar a.active { color: var(--accent); background: rgba(249,115,22,0.08); border-left-color: var(--accent); }
+    .sidebar a .icon { font-size: 14px; width: 18px; text-align: center; }
+
+    /* Main */
+    .main { margin-left: var(--sidebar-w); flex: 1; max-width: 900px; padding: 48px 60px 100px; }
+
+    /* Sections */
+    .doc-section { margin-bottom: 72px; scroll-margin-top: 80px; }
+
+    /* Typography */
+    h1 { font-size: 40px; font-weight: 800; background: linear-gradient(135deg, #fff 30%, var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 12px; }
+    h2 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    h2 .h2-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    h3 { font-size: 16px; font-weight: 600; color: #cbd5e1; margin: 28px 0 12px; }
+    p { color: var(--text2); margin-bottom: 14px; }
+    strong { color: var(--text); }
+    ul, ol { color: var(--text2); padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 4px; font-size: 14px; }
+
+    /* Hero */
+    .hero { text-align: center; padding: 20px 0 56px; border-bottom: 1px solid var(--border); margin-bottom: 64px; }
+    .hero-sub { font-size: 16px; color: var(--text2); max-width: 520px; margin: 0 auto 28px; }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 32px; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
+    .badge-orange { color: var(--accent); border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.1); }
+    .badge-blue   { color: var(--blue);   border-color: rgba(96,165,250,0.4);  background: rgba(96,165,250,0.1); }
+    .badge-green  { color: var(--green);  border-color: rgba(52,211,153,0.4);  background: rgba(52,211,153,0.1); }
+    .badge-purple { color: var(--purple); border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.1); }
+    .badge-pink   { color: var(--pink);   border-color: rgba(244,114,182,0.4); background: rgba(244,114,182,0.1); }
+    .badge-yellow { color: var(--yellow); border-color: rgba(251,191,36,0.4);  background: rgba(251,191,36,0.1); }
+
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+    .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+    .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin-bottom: 24px; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--bg3); }
+    th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+    td { padding: 10px 16px; font-size: 13.5px; color: var(--text2); border-bottom: 1px solid rgba(42,51,71,0.5); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 12.5px; background: var(--bg3); color: var(--accent2); padding: 2px 7px; border-radius: 5px; border: 1px solid var(--border); }
+
+    /* Method badges */
+    .method { display: inline-block; padding: 2px 8px; border-radius: 5px; font-size: 11px; font-weight: 700; letter-spacing: 0.5px; margin-right: 6px; }
+    .get    { background: rgba(52,211,153,0.15); color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+    .post   { background: rgba(96,165,250,0.15); color: var(--blue);   border: 1px solid rgba(96,165,250,0.3); }
+    .put    { background: rgba(251,191,36,0.15); color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+    .patch  { background: rgba(167,139,250,0.15);color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+    .delete { background: rgba(244,114,182,0.15);color: var(--pink);   border: 1px solid rgba(244,114,182,0.3); }
+
+    /* Code block */
+    pre { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; margin-bottom: 20px; }
+    pre code { background: none; border: none; padding: 0; color: #cbd5e1; font-size: 13px; line-height: 1.7; }
+    .kw  { color: #c084fc; }
+    .str { color: #86efac; }
+    .cmt { color: var(--text3); font-style: italic; }
+    .num { color: #fbbf24; }
+    .fn  { color: #60a5fa; }
+    .prop{ color: #f9a8d4; }
+
+    /* API Endpoint card */
+    .endpoint { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 20px; overflow: hidden; }
+    .endpoint-header { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02); flex-wrap: wrap; gap: 8px; }
+    .endpoint-path { font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 14px; color: var(--text); font-weight: 600; }
+    .endpoint-auth { margin-left: auto; font-size: 12px; padding: 2px 9px; border-radius: 20px; }
+    .auth-public  { background: rgba(52,211,153,0.1);  color: var(--green);  border: 1px solid rgba(52,211,153,0.3); }
+    .auth-any     { background: rgba(96,165,250,0.1);  color: var(--blue);   border: 1px solid rgba(96,165,250,0.3); }
+    .auth-student { background: rgba(167,139,250,0.1); color: var(--purple); border: 1px solid rgba(167,139,250,0.3); }
+    .auth-insadmin{ background: rgba(251,191,36,0.1);  color: var(--yellow); border: 1px solid rgba(251,191,36,0.3); }
+    .auth-admin   { background: rgba(244,114,182,0.1); color: var(--pink);   border: 1px solid rgba(244,114,182,0.3); }
+    .auth-instructor { background: rgba(249,115,22,0.1); color: var(--accent2); border: 1px solid rgba(249,115,22,0.3); }
+    .endpoint-body { padding: 14px 18px; }
+    .endpoint-body p { margin-bottom: 10px; font-size: 13.5px; }
+    .endpoint-body h4 { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin: 14px 0 8px; }
+    .endpoint-body pre { margin-bottom: 0; }
+    .endpoint-body .table-wrap { margin-bottom: 0; }
+
+    /* Callout */
+    .callout { border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; display: flex; gap: 12px; font-size: 14px; }
+    .callout.info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); color: #93c5fd; }
+    .callout.warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: #fcd34d; }
+    .callout.tip  { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: #6ee7b7; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Footer */
+    .doc-footer { margin-left: var(--sidebar-w); border-top: 1px solid var(--border); padding: 28px 60px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text3); }
+    .doc-footer a { color: var(--accent); text-decoration: none; }
+    .doc-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 32px 24px 80px; }
+      .doc-footer { margin-left: 0; padding: 20px 24px; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-logo">
+    <div class="dot">🎓</div>
+    CoachNest
+  </div>
+  <span style="color:var(--text3);font-size:13px;margin-left:4px;">/ API Reference</span>
+  <div class="topnav-links">
+    <a href="../docs.html">Docs</a>
+    <a href="architecture.html">Architecture</a>
+    <a href="api.html" class="active">API Reference</a>
+  </div>
+  <span class="topnav-badge">v<span>0.2.0</span></span>
+</nav>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a href="#overview" class="active"><span class="icon">📖</span> Introduction</a>
+      <a href="#errors"><span class="icon">⚠️</span> Error Codes</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Core</div>
+      <a href="#auth"><span class="icon">🔐</span> Authentication</a>
+      <a href="#courses"><span class="icon">📚</span> Courses</a>
+      <a href="#sections"><span class="icon">📑</span> Sections</a>
+      <a href="#lessons"><span class="icon">🎬</span> Lessons</a>
+      <a href="#quizzes"><span class="icon">📝</span> Quizzes</a>
+      <a href="#enrollments"><span class="icon">📋</span> Enrollments</a>
+      <a href="#progress"><span class="icon">📊</span> Progress</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Content</div>
+      <a href="#reviews"><span class="icon">⭐</span> Reviews</a>
+      <a href="#highlights"><span class="icon">🖊️</span> Highlights</a>
+      <a href="#certificates"><span class="icon">🏅</span> Certificates</a>
+      <a href="#blog"><span class="icon">✍️</span> Blog</a>
+      <a href="#search"><span class="icon">🔍</span> Search</a>
+      <a href="#recommendations"><span class="icon">💡</span> Recommendations</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Commerce</div>
+      <a href="#payments"><span class="icon">💳</span> Payments</a>
+      <a href="#billing"><span class="icon">🧾</span> Billing</a>
+      <a href="#refunds"><span class="icon">↩️</span> Refunds</a>
+      <a href="#coupons"><span class="icon">🏷️</span> Coupons</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Community</div>
+      <a href="#forums"><span class="icon">💬</span> Forums</a>
+      <a href="#groups"><span class="icon">👥</span> Study Groups</a>
+      <a href="#peerreview"><span class="icon">📋</span> Peer Review</a>
+      <a href="#feed"><span class="icon">📡</span> Activity Feed</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">User</div>
+      <a href="#gamification"><span class="icon">🏆</span> Gamification</a>
+      <a href="#profile"><span class="icon">👤</span> Profile</a>
+      <a href="#wishlist"><span class="icon">❤️</span> Wishlist</a>
+      <a href="#notifications"><span class="icon">🔔</span> Notifications</a>
+      <a href="#onboarding"><span class="icon">🚀</span> Onboarding</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Misc</div>
+      <a href="#upload"><span class="icon">📤</span> Upload & Media</a>
+      <a href="#categories"><span class="icon">🏷️</span> Categories</a>
+      <a href="#features"><span class="icon">✨</span> Features</a>
+      <a href="#waitlist"><span class="icon">📬</span> Waitlist</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Admin</div>
+      <a href="#admin-students"><span class="icon">👤</span> Students</a>
+      <a href="#admin-orders"><span class="icon">💰</span> Orders</a>
+      <a href="#admin-refunds"><span class="icon">↩️</span> Refunds</a>
+      <a href="#admin-coupons"><span class="icon">🏷️</span> Coupons</a>
+      <a href="#admin-instructors"><span class="icon">🎓</span> Instructors</a>
+      <a href="#admin-payouts"><span class="icon">💸</span> Payouts</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Instructor</div>
+      <a href="#instructor"><span class="icon">📊</span> Instructor Routes</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="overview">
+      <h1>API Reference</h1>
+      <p class="hero-sub">Complete reference for all CoachNest REST endpoints — methods, auth, request bodies, and response shapes.</p>
+      <div class="hero-badges">
+        <span class="badge badge-green">GET</span>
+        <span class="badge badge-blue">POST</span>
+        <span class="badge badge-purple">PATCH</span>
+        <span class="badge badge-yellow">PUT</span>
+        <span class="badge badge-pink">DELETE</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num">140+</div><div class="stat-lbl">Endpoints</div></div>
+        <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">Auth Roles</div></div>
+        <div class="stat-card"><div class="stat-num">JSON</div><div class="stat-lbl">Format</div></div>
+        <div class="stat-card"><div class="stat-num">REST</div><div class="stat-lbl">Style</div></div>
+      </div>
+    </div>
+
+    <div class="doc-section">
+      <p>All API routes are served under <code>/api/</code>. Requests and responses use <strong>JSON</strong> unless noted (file uploads use <code>multipart/form-data</code>, certificate downloads return a PDF stream).</p>
+
+      <h3>Auth Legend</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Badge</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><span class="endpoint-auth auth-public">Public</span></td><td>No authentication required</td></tr>
+            <tr><td><span class="endpoint-auth auth-any">Any Role</span></td><td>Requires a valid session (any role)</td></tr>
+            <tr><td><span class="endpoint-auth auth-student">Student</span></td><td>STUDENT role only</td></tr>
+            <tr><td><span class="endpoint-auth auth-insadmin">Ins / Admin</span></td><td>INSTRUCTOR or ADMIN role</td></tr>
+            <tr><td><span class="endpoint-auth auth-instructor">Instructor</span></td><td>INSTRUCTOR role only</td></tr>
+            <tr><td><span class="endpoint-auth auth-admin">Admin</span></td><td>ADMIN role only</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Error Codes -->
+    <div class="doc-section" id="errors">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">⚠️</span> Error Codes</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Status</th><th>Meaning</th></tr></thead>
+          <tbody>
+            <tr><td><code>400</code></td><td>Bad request — missing or invalid fields</td></tr>
+            <tr><td><code>401</code></td><td>Unauthorized — no valid session</td></tr>
+            <tr><td><code>402</code></td><td>Payment required — course requires purchase</td></tr>
+            <tr><td><code>403</code></td><td>Forbidden — insufficient role or not resource owner</td></tr>
+            <tr><td><code>404</code></td><td>Not found</td></tr>
+            <tr><td><code>409</code></td><td>Conflict — duplicate resource (email, slug, etc.)</td></tr>
+            <tr><td><code>413</code></td><td>Payload too large — file exceeds size limit</td></tr>
+            <tr><td><code>415</code></td><td>Unsupported media type — not an image</td></tr>
+            <tr><td><code>422</code></td><td>Unprocessable — business rule violation</td></tr>
+            <tr><td><code>500</code></td><td>Internal server error</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="doc-section" id="auth">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">🔐</span> Authentication</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/auth/signup</span>
+          <span class="endpoint-auth auth-public">Public</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Register a new user account.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"name"</span>: <span class="str">"Jane Doe"</span>, <span class="prop">"email"</span>: <span class="str">"jane@example.com"</span>, <span class="prop">"password"</span>: <span class="str">"Password123!"</span>, <span class="prop">"role"</span>: <span class="str">"STUDENT"</span> }</code></pre>
+          <p style="font-size:13px;color:var(--text3)"><code>role</code> is optional — defaults to <code>STUDENT</code>. Pass <code>"INSTRUCTOR"</code> to register as an instructor.</p>
+          <h4>Response 201</h4>
+          <pre><code>{ <span class="prop">"message"</span>: <span class="str">"Account created."</span>, <span class="prop">"userId"</span>: <span class="str">"uuid"</span> }</code></pre>
+          <h4>Errors</h4>
+          <p><code>400</code> missing fields &nbsp;·&nbsp; <code>409</code> email already exists</p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/auth/login</span>
+          <span class="endpoint-auth auth-public">Public</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Log in and set the HttpOnly session cookie.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"email"</span>: <span class="str">"jane@example.com"</span>, <span class="prop">"password"</span>: <span class="str">"Password123!"</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"message"</span>: <span class="str">"Logged in."</span>, <span class="prop">"role"</span>: <span class="str">"STUDENT"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/auth/logout</span>
+          <span class="endpoint-auth auth-public">Public</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Clear the session cookie.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"message"</span>: <span class="str">"Logged out."</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method get">GET</span>
+          <span class="endpoint-path">/api/auth/me</span>
+          <span class="endpoint-auth auth-any">Any Role</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Get the currently authenticated user.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"user"</span>: { <span class="prop">"userId"</span>: <span class="str">"uuid"</span>, <span class="prop">"email"</span>: <span class="str">"jane@example.com"</span>, <span class="prop">"name"</span>: <span class="str">"Jane Doe"</span>, <span class="prop">"role"</span>: <span class="str">"STUDENT"</span>, <span class="prop">"avatar"</span>: <span class="str">"https://..."</span> } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/auth/forgot-password</span>
+          <span class="endpoint-auth auth-public">Public</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Send a password reset email via Supabase.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"email"</span>: <span class="str">"jane@example.com"</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"message"</span>: <span class="str">"If that email exists, a reset link was sent."</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Courses -->
+    <div class="doc-section" id="courses">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">📚</span> Courses</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method get">GET</span>
+          <span class="endpoint-path">/api/courses</span>
+          <span class="endpoint-auth auth-public">Public</span>
+        </div>
+        <div class="endpoint-body">
+          <p>List all published courses with ratings and enrollment counts.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"courses"</span>: [{ <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"title"</span>: <span class="str">"Intro to Python"</span>, <span class="prop">"price"</span>: <span class="num">49.99</span>, <span class="prop">"isFree"</span>: <span class="kw">false</span>, <span class="prop">"level"</span>: <span class="str">"BEGINNER"</span>, <span class="prop">"avgRating"</span>: <span class="num">4.7</span>, <span class="prop">"createdBy"</span>: { <span class="prop">"name"</span>: <span class="str">"Alice"</span> }, <span class="prop">"_count"</span>: { <span class="prop">"enrollments"</span>: <span class="num">120</span> } }] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method post">POST</span>
+          <span class="endpoint-path">/api/courses</span>
+          <span class="endpoint-auth auth-insadmin">Ins / Admin</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Create a new course (defaults to DRAFT status).</p>
+          <h4>Request body</h4>
+          <pre><code>{
+  <span class="prop">"title"</span>: <span class="str">"Advanced React"</span>,
+  <span class="prop">"description"</span>: <span class="str">"..."</span>,
+  <span class="prop">"price"</span>: <span class="num">79.99</span>,
+  <span class="prop">"isFree"</span>: <span class="kw">false</span>,
+  <span class="prop">"level"</span>: <span class="str">"ADVANCED"</span>,
+  <span class="prop">"language"</span>: <span class="str">"English"</span>,
+  <span class="prop">"categoryId"</span>: <span class="str">"uuid"</span>,
+  <span class="prop">"instructorRevenuePercent"</span>: <span class="num">75</span>,
+  <span class="prop">"tagNames"</span>: [<span class="str">"react"</span>, <span class="str">"typescript"</span>]
+}</code></pre>
+          <h4>Response 201</h4>
+          <pre><code>{ <span class="prop">"course"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, ... } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method get">GET</span>
+          <span class="endpoint-path">/api/courses/[id]</span>
+          <span class="endpoint-auth auth-public">Public</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Get a single course with sections and lessons.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"course"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"sections"</span>: [{ <span class="prop">"lessons"</span>: [...] }], <span class="prop">"_count"</span>: { <span class="prop">"enrollments"</span>: <span class="num">120</span> } } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method patch">PATCH</span>
+          <span class="endpoint-path">/api/courses/[id]</span>
+          <span class="endpoint-auth auth-insadmin">Ins / Admin</span>
+        </div>
+        <div class="endpoint-body">
+          <p>Update a course. Only the owner or an admin can update.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"title"</span>: <span class="str">"Updated Title"</span>, <span class="prop">"price"</span>: <span class="num">59.99</span>, <span class="prop">"published"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header">
+          <span class="method delete">DELETE</span>
+          <span class="endpoint-path">/api/courses/[id]</span>
+          <span class="endpoint-auth auth-insadmin">Ins / Admin</span>
+        </div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"message"</span>: <span class="str">"Course deleted."</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sections -->
+    <div class="doc-section" id="sections">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">📑</span> Sections</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/sections</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <p>Add a chapter/section to a course.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"courseId"</span>: <span class="str">"uuid"</span>, <span class="prop">"title"</span>: <span class="str">"Module 1: Foundations"</span> }</code></pre>
+          <h4>Response 201</h4>
+          <pre><code>{ <span class="prop">"section"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"order"</span>: <span class="num">1</span> } }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/api/sections/[id]</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body"><p>Update section title or order.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/sections/[id]</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body"><p>Delete a section and all its lessons.</p></div>
+      </div>
+    </div>
+
+    <!-- Lessons -->
+    <div class="doc-section" id="lessons">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🎬</span> Lessons</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/lessons</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <p>List lessons for course editors.</p>
+          <h4>Query params</h4>
+          <div class="table-wrap"><table><thead><tr><th>Param</th><th>Description</th></tr></thead><tbody>
+            <tr><td><code>courseId</code></td><td>Filter by course</td></tr>
+            <tr><td><code>noQuiz</code></td><td>Exclude lessons that already have a quiz</td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/lessons</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <p>Create a lesson. <code>type</code> is <code>VIDEO</code>, <code>TEXT</code>, or <code>QUIZ</code>. <code>duration</code> is in seconds.</p>
+          <h4>Request body</h4>
+          <pre><code>{
+  <span class="prop">"courseId"</span>: <span class="str">"uuid"</span>, <span class="prop">"sectionId"</span>: <span class="str">"uuid"</span>,
+  <span class="prop">"title"</span>: <span class="str">"Setting up the environment"</span>,
+  <span class="prop">"type"</span>: <span class="str">"VIDEO"</span>, <span class="prop">"content"</span>: <span class="str">"https://youtube.com/..."</span>,
+  <span class="prop">"duration"</span>: <span class="num">900</span>, <span class="prop">"isFree"</span>: <span class="kw">false</span>
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/api/lessons/[id]</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body"><p>Update any lesson field.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/lessons/[id]</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body"><p>Delete a lesson and its quiz (if any).</p></div>
+      </div>
+    </div>
+
+    <!-- Quizzes -->
+    <div class="doc-section" id="quizzes">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">📝</span> Quizzes</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/quizzes?lessonId=uuid</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <p>Get a quiz for a lesson. <code>isCorrect</code> is stripped for students (only admins/instructors see correct answers).</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"quiz"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"passMark"</span>: <span class="num">70</span>, <span class="prop">"timeLimit"</span>: <span class="num">600</span>, <span class="prop">"questions"</span>: [{ <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"text"</span>: <span class="str">"..."</span>, <span class="prop">"options"</span>: [...] }] } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/quizzes</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <p>Create a quiz with questions and options for a lesson.</p>
+          <h4>Request body</h4>
+          <pre><code>{
+  <span class="prop">"lessonId"</span>: <span class="str">"uuid"</span>, <span class="prop">"title"</span>: <span class="str">"Module Quiz"</span>,
+  <span class="prop">"passMark"</span>: <span class="num">70</span>, <span class="prop">"timeLimit"</span>: <span class="num">600</span>,
+  <span class="prop">"questions"</span>: [{
+    <span class="prop">"text"</span>: <span class="str">"What does JSX stand for?"</span>, <span class="prop">"order"</span>: <span class="num">1</span>, <span class="prop">"points"</span>: <span class="num">1</span>,
+    <span class="prop">"options"</span>: [
+      { <span class="prop">"text"</span>: <span class="str">"JavaScript XML"</span>, <span class="prop">"isCorrect"</span>: <span class="kw">true</span> },
+      { <span class="prop">"text"</span>: <span class="str">"Java Syntax Extension"</span>, <span class="prop">"isCorrect"</span>: <span class="kw">false</span> }
+    ]
+  }]
+}</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/quizzes/[id]/attempt</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Submit answers for a quiz attempt. Returns score, pass/fail, and XP gained.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"answers"</span>: { <span class="prop">"questionId"</span>: <span class="str">"selectedOptionId"</span> }, <span class="prop">"timeTaken"</span>: <span class="num">245</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"score"</span>: <span class="num">85</span>, <span class="prop">"passed"</span>: <span class="kw">true</span>, <span class="prop">"passMark"</span>: <span class="num">70</span>, <span class="prop">"xpGained"</span>: <span class="num">100</span>, <span class="prop">"feedback"</span>: [{ <span class="prop">"questionId"</span>: <span class="str">"uuid"</span>, <span class="prop">"correct"</span>: <span class="kw">true</span> }] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/quiz-history</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Get the current user's quiz attempt history grouped by quiz.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"data"</span>: [{ <span class="prop">"quizId"</span>: <span class="str">"uuid"</span>, <span class="prop">"bestScore"</span>: <span class="num">85</span>, <span class="prop">"hasPassed"</span>: <span class="kw">true</span>, <span class="prop">"attemptCount"</span>: <span class="num">2</span> }] }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Enrollments -->
+    <div class="doc-section" id="enrollments">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">📋</span> Enrollments</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/enrollments</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Get the current user's enrollments with progress percentage.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"enrollments"</span>: [{ <span class="prop">"courseId"</span>: <span class="str">"uuid"</span>, <span class="prop">"progress"</span>: <span class="num">65</span>, <span class="prop">"course"</span>: { <span class="prop">"title"</span>: <span class="str">"Python Basics"</span> } }] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/enrollments</span><span class="endpoint-auth auth-student">Student</span></div>
+        <div class="endpoint-body">
+          <p>Enroll in a free course. Paid courses must go through the payment flow.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre>
+          <h4>Errors</h4>
+          <p><code>402</code> payment required &nbsp;·&nbsp; <code>409</code> already enrolled</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="doc-section" id="progress">
+      <h2><span class="h2-icon" style="background:rgba(249,115,22,0.15)">📊</span> Progress</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/progress</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Mark a lesson complete and update watched seconds. XP is awarded only on first completion.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"lessonId"</span>: <span class="str">"uuid"</span>, <span class="prop">"completed"</span>: <span class="kw">true</span>, <span class="prop">"watchedSecs"</span>: <span class="num">840</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"progress"</span>: { <span class="prop">"completed"</span>: <span class="kw">true</span>, <span class="prop">"watchedSecs"</span>: <span class="num">840</span> }, <span class="prop">"xpGained"</span>: <span class="num">50</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/me/course-access/[courseId]</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <p>Check enrollment status and completed lessons. Works unauthenticated (returns <code>isEnrolled: false</code>).</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"isEnrolled"</span>: <span class="kw">true</span>, <span class="prop">"completedLessonIds"</span>: [<span class="str">"uuid1"</span>, <span class="str">"uuid2"</span>] }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Reviews -->
+    <div class="doc-section" id="reviews">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">⭐</span> Reviews</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/reviews?courseId=uuid</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"reviews"</span>: [...], <span class="prop">"avgRating"</span>: <span class="num">4.7</span>, <span class="prop">"total"</span>: <span class="num">45</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/reviews</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Submit a course review. The user must be enrolled. One review per user per course.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"courseId"</span>: <span class="str">"uuid"</span>, <span class="prop">"rating"</span>: <span class="num">5</span>, <span class="prop">"comment"</span>: <span class="str">"Excellent course!"</span> }</code></pre>
+          <h4>Errors</h4>
+          <p><code>403</code> not enrolled &nbsp;·&nbsp; <code>409</code> already reviewed</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Highlights -->
+    <div class="doc-section" id="highlights">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🖊️</span> Highlights</h2>
+      <p>Text annotations within lesson content. Only the owner can update or delete their highlights.</p>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/highlights?lessonId=uuid</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"highlights"</span>: [{ <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"text"</span>: <span class="str">"..."</span>, <span class="prop">"blockIndex"</span>: <span class="num">2</span>, <span class="prop">"startOffset"</span>: <span class="num">14</span>, <span class="prop">"endOffset"</span>: <span class="num">40</span>, <span class="prop">"color"</span>: <span class="str">"#FFEB3B"</span>, <span class="prop">"note"</span>: <span class="str">"..."</span> }] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/highlights</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"lessonId"</span>: <span class="str">"uuid"</span>, <span class="prop">"text"</span>: <span class="str">"selected text"</span>, <span class="prop">"blockIndex"</span>: <span class="num">2</span>, <span class="prop">"startOffset"</span>: <span class="num">14</span>, <span class="prop">"endOffset"</span>: <span class="num">40</span>, <span class="prop">"color"</span>: <span class="str">"#FFEB3B"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/api/highlights/[id]</span><span class="endpoint-auth auth-any">Owner only</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"color"</span>: <span class="str">"#4CAF50"</span>, <span class="prop">"note"</span>: <span class="str">"Updated note"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/highlights/[id]</span><span class="endpoint-auth auth-any">Owner only</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"success"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Certificates -->
+    <div class="doc-section" id="certificates">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🏅</span> Certificates</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/certificates/[courseId]</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Generate and download a PDF certificate. All lessons in the course must be completed.</p>
+          <h4>Query params</h4>
+          <p><code>userId</code> — optional, Ins/Admin can generate for other users</p>
+          <h4>Response</h4>
+          <p>PDF binary stream with <code>Content-Disposition: attachment; filename="certificate.pdf"</code></p>
+          <h4>Errors</h4>
+          <p><code>403</code> course not completed &nbsp;·&nbsp; <code>404</code> enrollment not found</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payments -->
+    <div class="doc-section" id="payments">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">💳</span> Payments</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/payments/create-payment-intent</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Create a Stripe Checkout session for a course purchase.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"courseId"</span>: <span class="str">"uuid"</span>, <span class="prop">"couponCode"</span>: <span class="str">"SAVE20"</span>, <span class="prop">"referralCode"</span>: <span class="str">"REF-ABC123"</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"clientSecret"</span>: <span class="str">"cs_test_..."</span>, <span class="prop">"orderId"</span>: <span class="str">"uuid"</span>, <span class="prop">"amount"</span>: <span class="num">3999</span>, <span class="prop">"courseName"</span>: <span class="str">"Advanced React"</span> }</code></pre>
+          <p style="font-size:13px;color:var(--text3)"><code>amount</code> is in smallest currency unit (cents for USD).</p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/payments/verify</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Confirm a completed Stripe checkout and finalize enrollment.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"sessionId"</span>: <span class="str">"cs_test_..."</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"success"</span>: <span class="kw">true</span>, <span class="prop">"enrollmentId"</span>: <span class="str">"uuid"</span>, <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/payments/webhook</span><span class="endpoint-auth auth-public">Stripe Signature</span></div>
+        <div class="endpoint-body">
+          <p>Stripe webhook endpoint. Verifies <code>Stripe-Signature</code> header against <code>STRIPE_WEBHOOK_SECRET</code>. Handles async events (late payments, failures).</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"received"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Billing -->
+    <div class="doc-section" id="billing">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🧾</span> Billing</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/billing</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Get billing info. Response shape differs by role.</p>
+          <h4>Response 200 — Student</h4>
+          <pre><code>{ <span class="prop">"accessModel"</span>: <span class="str">"purchase"</span>, <span class="prop">"orders"</span>: [...], <span class="prop">"summary"</span>: { <span class="prop">"totalSpent"</span>: <span class="num">4999</span>, <span class="prop">"courseCount"</span>: <span class="num">1</span> } }</code></pre>
+          <h4>Response 200 — Instructor / Admin</h4>
+          <pre><code>{ <span class="prop">"accessModel"</span>: <span class="str">"subscription"</span>, <span class="prop">"currentPlan"</span>: <span class="str">"PRO"</span>, <span class="prop">"invoices"</span>: [...], <span class="prop">"paymentMethod"</span>: { <span class="prop">"brand"</span>: <span class="str">"visa"</span>, <span class="prop">"last4"</span>: <span class="str">"4242"</span> } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/billing/payment-methods</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><p>List saved payment methods.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/billing/payment-methods</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><p>Add a payment method via SetupIntent.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/billing/payment-methods/[id]</span><span class="endpoint-auth auth-any">Owner only</span></div>
+        <div class="endpoint-body"><p>Remove a saved payment method.</p></div>
+      </div>
+    </div>
+
+    <!-- Refunds -->
+    <div class="doc-section" id="refunds">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">↩️</span> Refunds</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/refunds/eligibility?orderId=uuid</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"data"</span>: { <span class="prop">"isEligible"</span>: <span class="kw">true</span>, <span class="prop">"refundAmount"</span>: <span class="num">3999</span>, <span class="prop">"progressPercent"</span>: <span class="num">15</span>, <span class="prop">"reason"</span>: <span class="kw">null</span> } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/refunds</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Submit a refund request. Snapshots financial data immutably at creation time.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"orderId"</span>: <span class="str">"uuid"</span>, <span class="prop">"reason"</span>: <span class="str">"Content doesn't match description"</span> }</code></pre>
+          <h4>Response 201</h4>
+          <pre><code>{ <span class="prop">"message"</span>: <span class="str">"Refund request submitted."</span>, <span class="prop">"data"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"status"</span>: <span class="str">"PENDING"</span> } }</code></pre>
+          <h4>Errors</h4>
+          <p><code>422</code> not eligible for a refund</p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/refunds</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>List the current user's refund requests. Filter by <code>?status=PENDING</code>.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Coupons -->
+    <div class="doc-section" id="coupons">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🏷️</span> Coupons</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/coupons/validate</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Validate a coupon before checkout. Checks expiry, usage limits, and course restrictions.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"code"</span>: <span class="str">"SAVE20"</span>, <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"code"</span>: <span class="str">"SAVE20"</span>, <span class="prop">"discountType"</span>: <span class="str">"PERCENTAGE"</span>, <span class="prop">"discount"</span>: <span class="num">20</span> }</code></pre>
+          <h4>Errors</h4>
+          <p><code>404</code> code not found &nbsp;·&nbsp; <code>422</code> expired or invalid for this course</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community: Forums -->
+    <div class="doc-section" id="forums">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">💬</span> Community — Forums</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/community/forums</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <h4>Query params</h4>
+          <p><code>courseId?</code> &nbsp;·&nbsp; <code>lessonId?</code> &nbsp;·&nbsp; <code>sort=recent|popular</code> &nbsp;·&nbsp; <code>page?</code></p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"threads"</span>: [...], <span class="prop">"total"</span>: <span class="num">42</span>, <span class="prop">"page"</span>: <span class="num">1</span>, <span class="prop">"totalPages"</span>: <span class="num">5</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/forums</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Create a thread. Requires Community feature access.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"title"</span>: <span class="str">"How do I handle async errors?"</span>, <span class="prop">"body"</span>: <span class="str">"..."</span>, <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/forums/[id]/replies</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Post a reply. <code>parentId</code> enables nested replies.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"body"</span>: <span class="str">"You can use try/catch..."</span>, <span class="prop">"parentId"</span>: <span class="kw">null</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/forums/[id]/vote</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Vote on a thread. <code>value</code> is <code>1</code> (up) or <code>-1</code> (down). Toggling the same value removes the vote.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"value"</span>: <span class="num">1</span> }</code></pre>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"voteScore"</span>: <span class="num">6</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Community: Groups -->
+    <div class="doc-section" id="groups">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">👥</span> Community — Study Groups</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/community/groups</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <h4>Query params</h4>
+          <p><code>courseId?</code> &nbsp;·&nbsp; <code>page?</code></p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/groups</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Create a study group. Requires Community feature access.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"name"</span>: <span class="str">"React Study Group"</span>, <span class="prop">"maxMembers"</span>: <span class="num">15</span>, <span class="prop">"isPublic"</span>: <span class="kw">true</span>, <span class="prop">"requiresApproval"</span>: <span class="kw">false</span>, <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre>
+          <h4>Response 201</h4>
+          <pre><code>{ <span class="prop">"group"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"inviteCode"</span>: <span class="str">"XYZ789"</span> } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/groups/[id]/join</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"status"</span>: <span class="str">"joined"</span> }  <span class="cmt">// or "pending_approval" if requiresApproval</span></code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/groups/[id]/leave</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"success"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Peer Review -->
+    <div class="doc-section" id="peerreview">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">📋</span> Community — Peer Review</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/community/peer-review</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Requires Community feature access.</p>
+          <h4>Query params</h4>
+          <p><code>tab=submissions|review-queue</code> &nbsp;·&nbsp; <code>page?</code></p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/peer-review</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Submit work for peer review.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"title"</span>: <span class="str">"My React project"</span>, <span class="prop">"content"</span>: <span class="str">"..."</span>, <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/community/peer-review/[id]/review</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Submit a review for another user's work.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"feedback"</span>: <span class="str">"Great work!"</span>, <span class="prop">"rating"</span>: <span class="num">4</span>, <span class="prop">"rubricScores"</span>: { <span class="prop">"clarity"</span>: <span class="num">5</span>, <span class="prop">"correctness"</span>: <span class="num">4</span> } }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Activity Feed -->
+    <div class="doc-section" id="feed">
+      <h2><span class="h2-icon" style="background:rgba(249,115,22,0.15)">📡</span> Community — Activity Feed</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/community/feed</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <p>Paginated activity feed. Cached 30s max-age, 60s stale-while-revalidate.</p>
+          <h4>Query params</h4>
+          <p><code>page?</code></p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"events"</span>: [{ <span class="prop">"type"</span>: <span class="str">"LESSON_COMPLETE"</span>, <span class="prop">"user"</span>: { <span class="prop">"name"</span>: <span class="str">"Alice"</span> }, <span class="prop">"meta"</span>: { <span class="prop">"lessonTitle"</span>: <span class="str">"..."</span> } }], <span class="prop">"total"</span>: <span class="num">150</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gamification -->
+    <div class="doc-section" id="gamification">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🏆</span> Gamification</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/gamification/profile</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"profile"</span>: { <span class="prop">"xp"</span>: <span class="num">1750</span>, <span class="prop">"level"</span>: <span class="num">3</span>, <span class="prop">"levelTitle"</span>: <span class="str">"Explorer"</span>, <span class="prop">"nextLevelXp"</span>: <span class="num">3500</span>, <span class="prop">"streak"</span>: <span class="num">5</span>, <span class="prop">"badges"</span>: [{ <span class="prop">"key"</span>: <span class="str">"first_lesson"</span> }] } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/gamification/leaderboard</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"leaderboard"</span>: [{ <span class="prop">"rank"</span>: <span class="num">1</span>, <span class="prop">"name"</span>: <span class="str">"Alice"</span>, <span class="prop">"xp"</span>: <span class="num">15200</span>, <span class="prop">"level"</span>: <span class="num">6</span> }] }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile -->
+    <div class="doc-section" id="profile">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">👤</span> Profile</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/profile</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"user"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"name"</span>: <span class="str">"Jane Doe"</span>, <span class="prop">"bio"</span>: <span class="str">"..."</span>, <span class="prop">"headline"</span>: <span class="str">"..."</span>, <span class="prop">"website"</span>: <span class="str">"..."</span>, <span class="prop">"role"</span>: <span class="str">"STUDENT"</span> } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method put">PUT</span><span class="endpoint-path">/api/profile</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p><code>website</code> must start with <code>http://</code> or <code>https://</code>.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"name"</span>: <span class="str">"Jane Smith"</span>, <span class="prop">"bio"</span>: <span class="str">"..."</span>, <span class="prop">"website"</span>: <span class="str">"https://janesmith.com"</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/profile/password</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"currentPassword"</span>: <span class="str">"Old123!"</span>, <span class="prop">"newPassword"</span>: <span class="str">"New456!"</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Wishlist -->
+    <div class="doc-section" id="wishlist">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">❤️</span> Wishlist</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/wishlist</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><h4>Response 200</h4><pre><code>{ <span class="prop">"wishlist"</span>: [{ <span class="prop">"course"</span>: { <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"title"</span>: <span class="str">"..."</span>, <span class="prop">"price"</span>: <span class="num">49.99</span> } }] }</code></pre></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/wishlist</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><h4>Request body</h4><pre><code>{ <span class="prop">"courseId"</span>: <span class="str">"uuid"</span> }</code></pre></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/wishlist?courseId=uuid</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><h4>Response 200</h4><pre><code>{ <span class="prop">"success"</span>: <span class="kw">true</span> }</code></pre></div>
+      </div>
+    </div>
+
+    <!-- Notifications -->
+    <div class="doc-section" id="notifications">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🔔</span> Notifications</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/notifications</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Query params: <code>limit?</code> (default 20, max 50)</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"notifications"</span>: [{ <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"type"</span>: <span class="str">"PURCHASE"</span>, <span class="prop">"message"</span>: <span class="str">"..."</span>, <span class="prop">"isRead"</span>: <span class="kw">false</span> }], <span class="prop">"unread"</span>: <span class="num">3</span> }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/api/notifications</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><p>Mark <strong>all</strong> notifications as read.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method patch">PATCH</span><span class="endpoint-path">/api/notifications/[id]</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><p>Mark a single notification as read.</p></div>
+      </div>
+    </div>
+
+    <!-- Onboarding -->
+    <div class="doc-section" id="onboarding">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🚀</span> Onboarding</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/onboarding</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"hasCompletedOnboarding"</span>: <span class="kw">false</span>, <span class="prop">"professions"</span>: [...] }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method put">PUT</span><span class="endpoint-path">/api/onboarding</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"professionIds"</span>: [<span class="str">"uuid"</span>], <span class="prop">"customNames"</span>: [<span class="str">"ML Engineer"</span>], <span class="prop">"instructorIds"</span>: [<span class="str">"uuid"</span>], <span class="prop">"complete"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/professions</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body"><p>List available professions for onboarding selection.</p></div>
+      </div>
+    </div>
+
+    <!-- Upload -->
+    <div class="doc-section" id="upload">
+      <h2><span class="h2-icon" style="background:rgba(249,115,22,0.15)">📤</span> Upload &amp; Media</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/upload</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <p>Upload an image to Cloudinary. <strong>Content-Type:</strong> <code>multipart/form-data</code>. Max 1 MB per file, 100 MB per user.</p>
+          <h4>Fields</h4>
+          <p><code>file</code> (required) &nbsp;·&nbsp; <code>folder</code>: <code>courses</code> | <code>blogs</code> | <code>avatars</code> | <code>misc</code></p>
+          <h4>Response 201</h4>
+          <pre><code>{ <span class="prop">"url"</span>: <span class="str">"https://res.cloudinary.com/..."</span>, <span class="prop">"publicId"</span>: <span class="str">"courses/abc"</span>, <span class="prop">"width"</span>: <span class="num">1280</span>, <span class="prop">"height"</span>: <span class="num">720</span>, <span class="prop">"format"</span>: <span class="str">"jpg"</span> }</code></pre>
+          <h4>Errors</h4>
+          <p><code>413</code> file too large &nbsp;·&nbsp; <code>415</code> not an image &nbsp;·&nbsp; <code>422</code> user storage limit exceeded</p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/upload/avatar</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><p>Upload and set a profile avatar. Max 1 MB. <strong>Content-Type:</strong> <code>multipart/form-data</code>.</p></div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/media</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <p>List uploaded media assets. Cursor-based pagination.</p>
+          <h4>Query params</h4>
+          <p><code>folder?</code> &nbsp;·&nbsp; <code>cursor?</code> &nbsp;·&nbsp; <code>limit?</code> (default 40, max 100)</p>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/media/[id]</span><span class="endpoint-auth auth-insadmin">Owner / Admin</span></div>
+        <div class="endpoint-body"><p>Delete a media asset from Cloudinary and the database.</p></div>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="doc-section" id="categories">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🏷️</span> Categories &amp; Search</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/categories</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>[{ <span class="prop">"id"</span>: <span class="str">"uuid"</span>, <span class="prop">"name"</span>: <span class="str">"Programming"</span>, <span class="prop">"slug"</span>: <span class="str">"programming"</span>, <span class="prop">"_count"</span>: { <span class="prop">"courses"</span>: <span class="num">24</span> } }]</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/search</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <p>Full-text course search with filters.</p>
+          <h4>Query params</h4>
+          <div class="table-wrap"><table><thead><tr><th>Param</th><th>Description</th></tr></thead><tbody>
+            <tr><td><code>q</code></td><td>Search query</td></tr>
+            <tr><td><code>category</code></td><td>Category slug or ID</td></tr>
+            <tr><td><code>level</code></td><td><code>BEGINNER</code> | <code>INTERMEDIATE</code> | <code>ADVANCED</code></td></tr>
+            <tr><td><code>minPrice</code> / <code>maxPrice</code></td><td>Price range</td></tr>
+            <tr><td><code>sort</code></td><td><code>popular</code> | <code>newest</code> | <code>price_asc</code> | <code>price_desc</code></td></tr>
+            <tr><td><code>page</code> / <code>limit</code></td><td>Pagination (limit max 24)</td></tr>
+          </tbody></table></div>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/recommendations</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <p>Profession-based recommendations. Falls back to top-enrolled courses.</p>
+          <h4>Query params</h4>
+          <p><code>limit?</code> (default 6, max 20)</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"courses"</span>: [...], <span class="prop">"basedOn"</span>: [<span class="str">"Python"</span>], <span class="prop">"isPersonalized"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Features -->
+    <div class="doc-section" id="features">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">✨</span> Features (Add-ons)</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/features</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <p>List platform add-on features. <code>hasAccess</code> included when authenticated.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"features"</span>: [{ <span class="prop">"slug"</span>: <span class="str">"community"</span>, <span class="prop">"price"</span>: <span class="num">999</span>, <span class="prop">"hasAccess"</span>: <span class="kw">true</span> }] }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/features/[featureId]/access</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"hasAccess"</span>: <span class="kw">true</span> }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/features/[featureId]/purchase</span><span class="endpoint-auth auth-any">Any Role</span></div>
+        <div class="endpoint-body"><p>Start a Stripe checkout to purchase a platform add-on.</p></div>
+      </div>
+    </div>
+
+    <!-- Waitlist -->
+    <div class="doc-section" id="waitlist">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">📬</span> Waitlist</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/waitlist</span><span class="endpoint-auth auth-public">Public</span></div>
+        <div class="endpoint-body">
+          <p>Join the launch waitlist (when <code>NEXT_PUBLIC_LAUNCH_MODE=true</code>).</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"email"</span>: <span class="str">"jane@example.com"</span> }</code></pre>
+          <h4>Errors</h4>
+          <p><code>409</code> already on waitlist</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin: Students -->
+    <div class="doc-section" id="admin-students">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">👤</span> Admin — Students</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/students</span><span class="endpoint-auth auth-insadmin">Ins / Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Query params</h4>
+          <p><code>search?</code> &nbsp;·&nbsp; <code>sort=newest|oldest|name</code></p>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/enrollments</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Query params</h4>
+          <p><code>courseId?</code> &nbsp;·&nbsp; <code>dateFrom?</code> &nbsp;·&nbsp; <code>dateTo?</code> &nbsp;·&nbsp; <code>search?</code></p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin: Orders -->
+    <div class="doc-section" id="admin-orders">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">💰</span> Admin — Orders &amp; Revenue</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/orders</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Query params</h4>
+          <p><code>status?</code> &nbsp;·&nbsp; <code>dateFrom?</code> &nbsp;·&nbsp; <code>dateTo?</code> &nbsp;·&nbsp; <code>minAmount?</code> &nbsp;·&nbsp; <code>maxAmount?</code> &nbsp;·&nbsp; <code>courseId?</code> &nbsp;·&nbsp; <code>search?</code></p>
+          <h4>Response 200 — order fields</h4>
+          <pre><code>{ <span class="prop">"saleSource"</span>: <span class="str">"ORGANIC"</span>, <span class="prop">"instructorRevenue"</span>: <span class="num">3499</span>, <span class="prop">"platformRevenue"</span>: <span class="num">1500</span>, <span class="prop">"status"</span>: <span class="str">"PAID"</span> }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/revenue</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <p>Revenue analytics for a date range.</p>
+          <h4>Query params</h4>
+          <p><code>from?</code> &nbsp;·&nbsp; <code>to?</code> (ISO dates)</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"summary"</span>: { <span class="prop">"totalRevenue"</span>: <span class="num">150000</span>, <span class="prop">"platformRevenue"</span>: <span class="num">37500</span>, <span class="prop">"refundCount"</span>: <span class="num">2</span> }, <span class="prop">"topCourses"</span>: [...] }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin: Refunds -->
+    <div class="doc-section" id="admin-refunds">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">↩️</span> Admin — Refunds</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/refunds</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Query params</h4>
+          <p><code>status?</code> &nbsp;·&nbsp; <code>search?</code> &nbsp;·&nbsp; <code>dateFrom?</code> &nbsp;·&nbsp; <code>dateTo?</code> &nbsp;·&nbsp; <code>courseId?</code> &nbsp;·&nbsp; <code>limit?</code> &nbsp;·&nbsp; <code>offset?</code></p>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/refunds/[id]/approve</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>Approve a refund request and trigger the Stripe refund. Reverses ledger entries and debits the instructor's wallet.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/refunds/[id]/reject</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"adminNotes"</span>: <span class="str">"Refund window has expired."</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin: Coupons -->
+    <div class="doc-section" id="admin-coupons">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🏷️</span> Admin — Coupons</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/coupons</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>List all coupons with usage stats.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/coupons</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"code"</span>: <span class="str">"LAUNCH50"</span>, <span class="prop">"discountType"</span>: <span class="str">"PERCENTAGE"</span>, <span class="prop">"discount"</span>: <span class="num">50</span>, <span class="prop">"maxUses"</span>: <span class="num">200</span>, <span class="prop">"expiresAt"</span>: <span class="str">"2024-06-30T00:00:00Z"</span> }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method put">PUT</span><span class="endpoint-path">/api/admin/coupons/[id]</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>Update a coupon's fields.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method delete">DELETE</span><span class="endpoint-path">/api/admin/coupons/[id]</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><h4>Response 200</h4><pre><code>{ <span class="prop">"message"</span>: <span class="str">"Coupon deleted."</span> }</code></pre></div>
+      </div>
+    </div>
+
+    <!-- Admin: Instructors -->
+    <div class="doc-section" id="admin-instructors">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🎓</span> Admin — Instructors &amp; Courses</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/instructors</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>List all instructors with course and student counts.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/instructors/[id]/role</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"role"</span>: <span class="str">"STUDENT"</span> }</code></pre>
+        </div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/courses/pending</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>List courses awaiting admin approval.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/courses/[id]/approve</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>Publish and approve a course.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/courses/[id]/reject</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body">
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"reason"</span>: <span class="str">"Missing prerequisites section."</span> }</code></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Admin: Payouts -->
+    <div class="doc-section" id="admin-payouts">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">💸</span> Admin — Payouts</h2>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/admin/payouts</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>List all instructor payout requests.</p></div>
+      </div>
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/admin/payouts/[id]</span><span class="endpoint-auth auth-admin">Admin</span></div>
+        <div class="endpoint-body"><p>Approve and process an instructor payout.</p></div>
+      </div>
+    </div>
+
+    <!-- Instructor -->
+    <div class="doc-section" id="instructor">
+      <h2><span class="h2-icon" style="background:rgba(249,115,22,0.15)">📊</span> Instructor Routes</h2>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/instructor/courses</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body"><p>Get all courses created by the current instructor.</p></div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/instructor/analytics</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"totalStudents"</span>: <span class="num">280</span>, <span class="prop">"totalRevenue"</span>: <span class="num">112500</span>, <span class="prop">"enrollmentsByMonth"</span>: [...], <span class="prop">"topCourses"</span>: [...] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/instructor/earnings</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"totalEarnings"</span>: <span class="num">112500</span>, <span class="prop">"pendingEarnings"</span>: <span class="num">8500</span>, <span class="prop">"availableBalance"</span>: <span class="num">104000</span>, <span class="prop">"courses"</span>: [...] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/instructor/wallet</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body">
+          <p>Wallet balance and transaction history.</p>
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"balance"</span>: <span class="num">104000</span>, <span class="prop">"totalEarned"</span>: <span class="num">112500</span>, <span class="prop">"transactions"</span>: [{ <span class="prop">"type"</span>: <span class="str">"CREDIT"</span>, <span class="prop">"amount"</span>: <span class="num">3499</span> }] }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/instructor/referrals</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body">
+          <h4>Response 200</h4>
+          <pre><code>{ <span class="prop">"links"</span>: [{ <span class="prop">"code"</span>: <span class="str">"REF-ABC123"</span>, <span class="prop">"clicks"</span>: <span class="num">45</span>, <span class="prop">"conversions"</span>: <span class="num">8</span> }], <span class="prop">"totalClicks"</span>: <span class="num">45</span> }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method post">POST</span><span class="endpoint-path">/api/instructor/payout-requests</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body">
+          <p>Request a payout from the instructor wallet.</p>
+          <h4>Request body</h4>
+          <pre><code>{ <span class="prop">"amount"</span>: <span class="num">50000</span>, <span class="prop">"bankDetails"</span>: { <span class="prop">"accountName"</span>: <span class="str">"Alice Smith"</span>, <span class="prop">"bankName"</span>: <span class="str">"Chase"</span> } }</code></pre>
+        </div>
+      </div>
+
+      <div class="endpoint">
+        <div class="endpoint-header"><span class="method get">GET</span><span class="endpoint-path">/api/instructor/students</span><span class="endpoint-auth auth-instructor">Instructor</span></div>
+        <div class="endpoint-body"><p>List students enrolled in the instructor's courses.</p></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <span>CoachNest v0.2.0 — API Reference</span>
+  <span>140+ endpoints · REST · JSON</span>
+</footer>
+
+<script>
+  const sections = document.querySelectorAll('.doc-section[id]');
+  const links = document.querySelectorAll('.sidebar a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>

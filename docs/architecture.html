@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CoachNest — Architecture</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg2: #161b27;
+      --bg3: #1e2535;
+      --border: #2a3347;
+      --accent: #f97316;
+      --accent2: #fb923c;
+      --blue: #60a5fa;
+      --green: #34d399;
+      --purple: #a78bfa;
+      --pink: #f472b6;
+      --yellow: #fbbf24;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --text3: #64748b;
+      --radius: 10px;
+      --sidebar-w: 270px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; font-size: 15px; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+    /* Top Nav */
+    .topnav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; height: 58px; background: rgba(15,17,23,0.85); backdrop-filter: blur(14px); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 24px; gap: 16px; }
+    .topnav-logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 18px; }
+    .topnav-logo .dot { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, var(--accent), var(--accent2)); display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .topnav-links { margin-left: auto; display: flex; gap: 20px; }
+    .topnav-links a { color: var(--text2); text-decoration: none; font-size: 13px; transition: color 0.15s; }
+    .topnav-links a:hover { color: var(--accent); }
+    .topnav-links a.active { color: var(--accent); }
+    .topnav-badge { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); font-size: 12px; padding: 3px 10px; border-radius: 20px; }
+    .topnav-badge span { color: var(--green); }
+
+    /* Layout */
+    .layout { display: flex; padding-top: 58px; min-height: 100vh; }
+
+    /* Sidebar */
+    .sidebar { width: var(--sidebar-w); flex-shrink: 0; position: fixed; top: 58px; left: 0; bottom: 0; overflow-y: auto; padding: 24px 0 40px; border-right: 1px solid var(--border); background: var(--bg2); }
+    .sidebar-section { margin-bottom: 8px; }
+    .sidebar-label { font-size: 10px; font-weight: 700; letter-spacing: 1.2px; color: var(--text3); text-transform: uppercase; padding: 8px 20px 4px; }
+    .sidebar a { display: flex; align-items: center; gap: 8px; padding: 7px 20px; color: var(--text2); text-decoration: none; font-size: 13.5px; border-left: 2px solid transparent; transition: all 0.15s; }
+    .sidebar a:hover { color: var(--text); background: var(--bg3); border-left-color: var(--border); }
+    .sidebar a.active { color: var(--accent); background: rgba(249,115,22,0.08); border-left-color: var(--accent); }
+    .sidebar a .icon { font-size: 14px; width: 18px; text-align: center; }
+
+    /* Main */
+    .main { margin-left: var(--sidebar-w); flex: 1; max-width: 900px; padding: 48px 60px 100px; }
+
+    /* Sections */
+    .doc-section { margin-bottom: 72px; scroll-margin-top: 80px; }
+
+    /* Typography */
+    h1 { font-size: 40px; font-weight: 800; background: linear-gradient(135deg, #fff 30%, var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; line-height: 1.2; margin-bottom: 12px; }
+    h2 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+    h2 .h2-icon { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+    h3 { font-size: 16px; font-weight: 600; color: #cbd5e1; margin: 28px 0 12px; }
+    h4 { font-size: 14px; font-weight: 600; color: var(--text2); margin: 20px 0 8px; text-transform: uppercase; letter-spacing: 0.6px; }
+    p { color: var(--text2); margin-bottom: 14px; }
+    strong { color: var(--text); }
+    ul, ol { color: var(--text2); padding-left: 20px; margin-bottom: 14px; }
+    li { margin-bottom: 4px; font-size: 14px; }
+
+    /* Hero */
+    .hero { text-align: center; padding: 20px 0 56px; border-bottom: 1px solid var(--border); margin-bottom: 64px; }
+    .hero-sub { font-size: 16px; color: var(--text2); max-width: 520px; margin: 0 auto 28px; }
+    .hero-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 32px; }
+    .badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; border: 1px solid; }
+    .badge-orange { color: var(--accent); border-color: rgba(249,115,22,0.4); background: rgba(249,115,22,0.1); }
+    .badge-blue   { color: var(--blue);   border-color: rgba(96,165,250,0.4);  background: rgba(96,165,250,0.1); }
+    .badge-green  { color: var(--green);  border-color: rgba(52,211,153,0.4);  background: rgba(52,211,153,0.1); }
+    .badge-purple { color: var(--purple); border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.1); }
+    .badge-pink   { color: var(--pink);   border-color: rgba(244,114,182,0.4); background: rgba(244,114,182,0.1); }
+    .badge-yellow { color: var(--yellow); border-color: rgba(251,191,36,0.4);  background: rgba(251,191,36,0.1); }
+
+    .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+    .stat-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; text-align: center; }
+    .stat-num { font-size: 28px; font-weight: 800; color: var(--accent); line-height: 1; }
+    .stat-lbl { font-size: 12px; color: var(--text3); margin-top: 4px; }
+
+    /* Tables */
+    .table-wrap { overflow-x: auto; margin-bottom: 24px; border-radius: var(--radius); border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; }
+    thead tr { background: var(--bg3); }
+    th { padding: 11px 16px; text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); border-bottom: 1px solid var(--border); }
+    td { padding: 10px 16px; font-size: 13.5px; color: var(--text2); border-bottom: 1px solid rgba(42,51,71,0.5); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    code { font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace; font-size: 12.5px; background: var(--bg3); color: var(--accent2); padding: 2px 7px; border-radius: 5px; border: 1px solid var(--border); }
+
+    /* Code block */
+    pre { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; overflow-x: auto; margin-bottom: 20px; }
+    pre code { background: none; border: none; padding: 0; color: #cbd5e1; font-size: 13px; line-height: 1.7; }
+    .kw  { color: #c084fc; }
+    .str { color: #86efac; }
+    .cmt { color: var(--text3); font-style: italic; }
+    .num { color: #fbbf24; }
+    .fn  { color: #60a5fa; }
+    .prop{ color: #f9a8d4; }
+
+    /* Cards */
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 24px; }
+    .card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 18px; transition: border-color 0.2s; }
+    .card:hover { border-color: var(--accent); }
+    .card-title { font-weight: 600; color: var(--text); margin-bottom: 6px; font-size: 14px; }
+    .card-desc  { font-size: 13px; color: var(--text2); }
+    .card-icon  { font-size: 22px; margin-bottom: 10px; }
+
+    /* Feature list */
+    .feature-list { list-style: none; display: grid; gap: 10px; margin-bottom: 24px; padding-left: 0; }
+    .feature-list li { display: flex; align-items: flex-start; gap: 10px; background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-size: 14px; color: var(--text2); }
+    .feature-list li .check { color: var(--green); font-size: 15px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Flow */
+    .flow { display: flex; flex-direction: column; gap: 0; position: relative; margin-bottom: 24px; }
+    .flow::before { content: ''; position: absolute; left: 19px; top: 28px; bottom: 28px; width: 2px; background: linear-gradient(to bottom, var(--accent), transparent); }
+    .flow-item { display: flex; align-items: flex-start; gap: 14px; padding: 12px 0; }
+    .flow-num { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; background: var(--bg3); border: 2px solid var(--accent); color: var(--accent); font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center; z-index: 1; }
+    .flow-content { padding-top: 7px; }
+    .flow-title { font-weight: 600; color: var(--text); font-size: 14px; margin-bottom: 2px; }
+    .flow-desc { font-size: 13px; color: var(--text2); }
+
+    /* Callout */
+    .callout { border-radius: var(--radius); padding: 14px 18px; margin-bottom: 20px; display: flex; gap: 12px; font-size: 14px; }
+    .callout.info { background: rgba(96,165,250,0.08); border: 1px solid rgba(96,165,250,0.2); color: #93c5fd; }
+    .callout.warn { background: rgba(251,191,36,0.08); border: 1px solid rgba(251,191,36,0.2); color: #fcd34d; }
+    .callout.tip  { background: rgba(52,211,153,0.08); border: 1px solid rgba(52,211,153,0.2); color: #6ee7b7; }
+    .callout-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+    /* Schema */
+    .schema-group { margin-bottom: 28px; }
+    .schema-group h3 { font-size: 13px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; color: var(--text3); margin-bottom: 10px; }
+    .model-pills { display: flex; flex-wrap: wrap; gap: 8px; }
+    .model-pill { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; font-family: 'Cascadia Code', 'Fira Code', monospace; font-size: 12.5px; color: var(--blue); }
+
+    /* Env block */
+    .env-block { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 20px; }
+    .env-block .env-header { padding: 10px 16px; background: rgba(255,255,255,0.03); border-bottom: 1px solid var(--border); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; color: var(--text3); }
+    .env-row { display: grid; grid-template-columns: 260px 1fr; border-bottom: 1px solid rgba(42,51,71,0.5); }
+    .env-row:last-child { border-bottom: none; }
+    .env-key { padding: 10px 16px; font-family: monospace; font-size: 12.5px; color: var(--accent2); border-right: 1px solid var(--border); background: rgba(249,115,22,0.04); }
+    .env-val { padding: 10px 16px; font-size: 13px; color: var(--text2); }
+
+    /* Layer box */
+    .layer-stack { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
+    .layer { border-radius: var(--radius); border: 1px solid var(--border); overflow: hidden; }
+    .layer-header { padding: 10px 16px; font-size: 13px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .layer-body { padding: 10px 16px; font-size: 13px; color: var(--text2); border-top: 1px solid var(--border); }
+    .layer-1 .layer-header { background: rgba(249,115,22,0.12); color: var(--accent2); }
+    .layer-2 .layer-header { background: rgba(96,165,250,0.12); color: var(--blue); }
+    .layer-3 .layer-header { background: rgba(52,211,153,0.12); color: var(--green); }
+    .layer-4 .layer-header { background: rgba(167,139,250,0.12); color: var(--purple); }
+    .layer-5 .layer-header { background: rgba(251,191,36,0.12); color: var(--yellow); }
+
+    /* Revenue split */
+    .split-row { display: grid; grid-template-columns: 160px 1fr 1fr; gap: 0; border-bottom: 1px solid rgba(42,51,71,0.5); }
+    .split-row:last-child { border-bottom: none; }
+    .split-label { padding: 10px 16px; font-size: 13px; color: var(--text2); border-right: 1px solid var(--border); }
+    .split-bar-wrap { padding: 10px 16px; display: flex; align-items: center; gap: 10px; }
+    .split-bar { height: 10px; border-radius: 5px; }
+    .split-instructor { background: var(--green); }
+    .split-platform { background: var(--accent); }
+    .split-pct { font-size: 12px; font-weight: 600; min-width: 30px; }
+
+    /* XP table */
+    .xp-row td:first-child { font-family: monospace; color: var(--blue); }
+    .xp-row td:last-child { color: var(--green); font-weight: 600; }
+
+    /* Level table */
+    .level-row td:first-child { color: var(--yellow); font-weight: 700; }
+
+    /* Footer */
+    .doc-footer { margin-left: var(--sidebar-w); border-top: 1px solid var(--border); padding: 28px 60px; display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--text3); }
+    .doc-footer a { color: var(--accent); text-decoration: none; }
+    .doc-footer a:hover { text-decoration: underline; }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; padding: 32px 24px 80px; }
+      .doc-footer { margin-left: 0; padding: 20px 24px; }
+      .cards { grid-template-columns: 1fr; }
+      .stat-row { grid-template-columns: 1fr 1fr; }
+      .env-row { grid-template-columns: 1fr; }
+      .env-key { border-right: none; border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<nav class="topnav">
+  <div class="topnav-logo">
+    <div class="dot">🎓</div>
+    CoachNest
+  </div>
+  <span style="color:var(--text3);font-size:13px;margin-left:4px;">/ Architecture</span>
+  <div class="topnav-links">
+    <a href="../docs.html">Docs</a>
+    <a href="architecture.html" class="active">Architecture</a>
+    <a href="api.html">API Reference</a>
+  </div>
+  <span class="topnav-badge">v<span>0.2.0</span></span>
+</nav>
+
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Overview</div>
+      <a href="#overview" class="active"><span class="icon">🏗️</span> System Overview</a>
+      <a href="#techstack"><span class="icon">⚙️</span> Tech Stack</a>
+      <a href="#directory"><span class="icon">📁</span> Directory Layout</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Layers</div>
+      <a href="#layers"><span class="icon">🔀</span> Layer Architecture</a>
+      <a href="#middleware"><span class="icon">🛡️</span> Edge Middleware</a>
+      <a href="#services"><span class="icon">⚡</span> Services</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Auth & Data</div>
+      <a href="#auth"><span class="icon">🔐</span> Authentication</a>
+      <a href="#rbac"><span class="icon">👤</span> Role-Based Access</a>
+      <a href="#database"><span class="icon">🗄️</span> Database Design</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Features</div>
+      <a href="#payments"><span class="icon">💳</span> Payment System</a>
+      <a href="#gamification"><span class="icon">🏆</span> Gamification</a>
+      <a href="#community"><span class="icon">👥</span> Community</a>
+      <a href="#email"><span class="icon">📧</span> Email System</a>
+      <a href="#uploads"><span class="icon">📤</span> File Uploads</a>
+      <a href="#realtime"><span class="icon">⚡</span> Real-Time</a>
+    </div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Deployment</div>
+      <a href="#config"><span class="icon">🔑</span> Configuration</a>
+      <a href="#deploy"><span class="icon">🚢</span> Deployment</a>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- Hero -->
+    <div class="hero" id="overview">
+      <h1>Architecture</h1>
+      <p class="hero-sub">System design, data flow, and technical decisions behind the CoachNest learning platform.</p>
+      <div class="hero-badges">
+        <span class="badge badge-orange">Next.js 15 App Router</span>
+        <span class="badge badge-blue">TypeScript 5</span>
+        <span class="badge badge-green">Supabase + Prisma</span>
+        <span class="badge badge-purple">Stripe Payments</span>
+        <span class="badge badge-pink">Gamification</span>
+        <span class="badge badge-yellow">Community</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-card"><div class="stat-num">5</div><div class="stat-lbl">Arch Layers</div></div>
+        <div class="stat-card"><div class="stat-num">25+</div><div class="stat-lbl">DB Models</div></div>
+        <div class="stat-card"><div class="stat-num">12</div><div class="stat-lbl">Services</div></div>
+        <div class="stat-card"><div class="stat-num">3</div><div class="stat-lbl">User Roles</div></div>
+      </div>
+    </div>
+
+    <!-- System Overview -->
+    <div class="doc-section">
+      <p>CoachNest is a full-stack online learning platform built on <strong>Next.js 15 App Router</strong>. It supports three distinct user roles (Student, Instructor, Admin), each with their own portal. The platform handles course creation and delivery, Stripe payments with dynamic revenue splits, a gamification engine, community tools, and blog/marketing content.</p>
+
+      <pre><code>Browser / Mobile
+      │
+      ▼
+<span class="kw">Next.js Edge Middleware</span>  ← session refresh + route protection
+      │
+      ├── <span class="fn">Server Components (RSC)</span>   ← data fetching, page rendering
+      ├── <span class="fn">Client Components</span>         ← interactivity, real-time UI
+      └── <span class="fn">Route Handlers (API)</span>      ← REST endpoints
+              │
+              ├── <span class="prop">Services Layer</span>   ← business logic
+              ├── <span class="prop">Lib Utilities</span>    ← auth, email, payments, gamification
+              └── <span class="prop">Prisma ORM</span>       ← type-safe DB access
+                        │
+                        ▼
+              <span class="str">PostgreSQL (Supabase)</span></code></pre>
+    </div>
+
+    <!-- Tech Stack -->
+    <div class="doc-section" id="techstack">
+      <h2><span class="h2-icon" style="background:rgba(249,115,22,0.15)">⚙️</span> Tech Stack</h2>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Concern</th><th>Technology</th></tr></thead>
+          <tbody>
+            <tr><td>Framework</td><td><code>Next.js 15.3</code> (App Router, RSC, Edge)</td></tr>
+            <tr><td>Language</td><td><code>TypeScript 5</code> — strict mode</td></tr>
+            <tr><td>UI Components</td><td><code>React 19</code>, Radix UI, Tailwind CSS 3.4, Framer Motion 11</td></tr>
+            <tr><td>ORM</td><td><code>Prisma 5.16</code></td></tr>
+            <tr><td>Database</td><td><code>PostgreSQL</code> via Supabase</td></tr>
+            <tr><td>Authentication</td><td>Supabase Auth (JWT, <code>@supabase/ssr</code>)</td></tr>
+            <tr><td>Payments</td><td><code>Stripe 21</code></td></tr>
+            <tr><td>Email</td><td><code>Resend 3.4</code></td></tr>
+            <tr><td>File Storage</td><td><code>Cloudinary</code></td></tr>
+            <tr><td>PDF Generation</td><td><code>@react-pdf/renderer</code> + <code>pdf-lib</code></td></tr>
+            <tr><td>Charts</td><td><code>Recharts 2.12</code></td></tr>
+            <tr><td>Validation</td><td><code>Zod 3.23</code></td></tr>
+            <tr><td>Real-time</td><td>Supabase Realtime channels</td></tr>
+            <tr><td>Onboarding tours</td><td><code>React Joyride 3</code></td></tr>
+            <tr><td>Toast notifications</td><td><code>React Hot Toast</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Directory Layout -->
+    <div class="doc-section" id="directory">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">📁</span> Directory Layout</h2>
+      <pre><code>learnhub/
+├── <span class="fn">app/</span>                   <span class="cmt"># Next.js App Router</span>
+│   ├── <span class="fn">(auth)/</span>            <span class="cmt"># Auth pages (login, signup, password reset)</span>
+│   ├── <span class="fn">api/</span>               <span class="cmt"># REST API route handlers (140+ endpoints)</span>
+│   │   ├── auth/          <span class="cmt"># signup, login, logout, me</span>
+│   │   ├── courses/       <span class="cmt"># course CRUD</span>
+│   │   ├── lessons/       <span class="cmt"># lesson CRUD</span>
+│   │   ├── enrollments/   <span class="cmt"># enrollment logic</span>
+│   │   ├── progress/      <span class="cmt"># lesson progress tracking</span>
+│   │   ├── quizzes/       <span class="cmt"># quiz management + attempts</span>
+│   │   ├── payments/      <span class="cmt"># Stripe checkout + webhook</span>
+│   │   ├── billing/       <span class="cmt"># subscription + payment methods</span>
+│   │   ├── refunds/       <span class="cmt"># refund eligibility + requests</span>
+│   │   ├── gamification/  <span class="cmt"># XP profile + leaderboard</span>
+│   │   ├── community/     <span class="cmt"># forums, groups, peer review, feed</span>
+│   │   ├── instructor/    <span class="cmt"># instructor-scoped endpoints</span>
+│   │   └── admin/         <span class="cmt"># admin-only endpoints</span>
+│   ├── <span class="fn">dashboard/</span>         <span class="cmt"># Student portal</span>
+│   ├── <span class="fn">instructor/</span>        <span class="cmt"># Instructor portal</span>
+│   ├── <span class="fn">admin/</span>             <span class="cmt"># Admin panel</span>
+│   ├── <span class="fn">community/</span>         <span class="cmt"># Community hub</span>
+│   └── <span class="fn">courses/</span>           <span class="cmt"># Public catalog + lesson player</span>
+├── <span class="prop">components/</span>            <span class="cmt"># Shared React components (50+)</span>
+├── <span class="prop">lib/</span>                   <span class="cmt"># Core utilities and singleton clients</span>
+├── <span class="prop">services/</span>              <span class="cmt"># Business logic modules (12)</span>
+├── <span class="prop">hooks/</span>                 <span class="cmt"># Custom React hooks</span>
+├── <span class="prop">types/</span>                 <span class="cmt"># Shared TypeScript types</span>
+├── <span class="prop">prisma/</span>                <span class="cmt"># Schema, migrations, seeds</span>
+└── <span class="prop">middleware.ts</span>          <span class="cmt"># Edge middleware</span></code></pre>
+    </div>
+
+    <!-- Layer Architecture -->
+    <div class="doc-section" id="layers">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🔀</span> Layer Architecture</h2>
+      <p>The codebase is split into five clear layers with a strict separation of responsibilities.</p>
+
+      <div class="layer-stack">
+        <div class="layer layer-1">
+          <div class="layer-header">🛡️ Layer 1 — Edge Middleware (<code>middleware.ts</code>)</div>
+          <div class="layer-body">Runs on every request before rendering. Refreshes Supabase JWT, reads role from <code>app_metadata</code>, blocks wrong-role routes, redirects unauthenticated users.</div>
+        </div>
+        <div class="layer layer-2">
+          <div class="layer-header">🖥️ Layer 2 — Server Components (RSC)</div>
+          <div class="layer-body">Page-level components that fetch data directly from Prisma on the server. No API round-trip. Data is rendered as HTML and streamed to the browser.</div>
+        </div>
+        <div class="layer layer-3">
+          <div class="layer-header">🌐 Layer 3 — Route Handlers (<code>app/api/</code>)</div>
+          <div class="layer-body">Thin HTTP handlers. Parse request → validate with Zod → call <code>getSession()</code> → delegate to service → return <code>NextResponse.json()</code>. No business logic lives here.</div>
+        </div>
+        <div class="layer layer-4">
+          <div class="layer-header">⚡ Layer 4 — Services (<code>services/</code>)</div>
+          <div class="layer-body">All business logic. Called from route handlers and server components. Examples: <code>payment.service.ts</code> (revenue splits), <code>refund.service.ts</code> (eligibility + Stripe refunds), <code>quiz.service.ts</code> (scoring).</div>
+        </div>
+        <div class="layer layer-5">
+          <div class="layer-header">🗄️ Layer 5 — Lib + Prisma (<code>lib/</code>)</div>
+          <div class="layer-body">Singleton clients and pure utilities: <code>lib/prisma.ts</code> (Prisma singleton), <code>lib/auth.ts</code> (<code>getSession()</code>), <code>lib/gamification.ts</code> (<code>awardXp</code>, <code>grantBadge</code>), <code>lib/email.ts</code> (Resend templates), <code>lib/stripe.ts</code>.</div>
+        </div>
+      </div>
+
+      <h3>Services Reference</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Service</th><th>Responsibility</th></tr></thead>
+          <tbody>
+            <tr><td><code>payment.service.ts</code></td><td>Stripe session creation, webhook handling, revenue split logic</td></tr>
+            <tr><td><code>order.service.ts</code></td><td>Order filtering, revenue analytics</td></tr>
+            <tr><td><code>enrollment.service.ts</code></td><td>Enrollment queries, progress aggregation</td></tr>
+            <tr><td><code>quiz.service.ts</code></td><td>Quiz management, attempt scoring, analytics</td></tr>
+            <tr><td><code>certificate.service.ts</code></td><td>Certificate generation and retrieval</td></tr>
+            <tr><td><code>coupon.service.ts</code></td><td>Coupon validation and discount calculation</td></tr>
+            <tr><td><code>recommendation.service.ts</code></td><td>Profession-based course recommendations</td></tr>
+            <tr><td><code>analytics.service.ts</code></td><td>Dashboard analytics aggregation</td></tr>
+            <tr><td><code>instructor.service.ts</code></td><td>Instructor-specific queries</td></tr>
+            <tr><td><code>feature.service.ts</code></td><td>Platform feature access logic</td></tr>
+            <tr><td><code>subscription.service.ts</code></td><td>Subscription plan management</td></tr>
+            <tr><td><code>refund.service.ts</code></td><td>Refund request processing and financial calculations</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Authentication -->
+    <div class="doc-section" id="auth">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">🔐</span> Authentication</h2>
+
+      <p>Authentication is handled by <strong>Supabase Auth</strong> using HttpOnly session cookies. User metadata is split between two Supabase fields:</p>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Supabase Field</th><th>Contents</th></tr></thead>
+          <tbody>
+            <tr><td><code>auth.users.app_metadata</code></td><td><code>{ role: "STUDENT" | "INSTRUCTOR" | "ADMIN" }</code></td></tr>
+            <tr><td><code>auth.users.user_metadata</code></td><td><code>{ name, avatar }</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Session Flow</h3>
+      <div class="flow">
+        <div class="flow-item">
+          <div class="flow-num">1</div>
+          <div class="flow-content">
+            <div class="flow-title">User signs up or logs in</div>
+            <div class="flow-desc"><code>POST /api/auth/signup</code> or <code>/api/auth/login</code> — Supabase creates the user and sets <code>app_metadata.role</code>.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">2</div>
+          <div class="flow-content">
+            <div class="flow-title">HttpOnly cookie set</div>
+            <div class="flow-desc">Supabase issues a JWT stored in an HttpOnly session cookie — never accessible to JavaScript.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">3</div>
+          <div class="flow-content">
+            <div class="flow-title">Edge middleware refreshes token</div>
+            <div class="flow-desc">On every request, middleware calls the Supabase server client to silently refresh the JWT if it's close to expiry.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">4</div>
+          <div class="flow-content">
+            <div class="flow-title">Route handlers call <code>getSession()</code></div>
+            <div class="flow-desc"><code>lib/auth.ts</code> reads the current session and returns a <code>SessionPayload</code>: <code>{ userId, email, role, name, avatar }</code>.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">5</div>
+          <div class="flow-content">
+            <div class="flow-title">Role checked before mutation</div>
+            <div class="flow-desc">Route handlers re-check the role even after middleware, as the API can be called directly.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Password Reset Flow</h3>
+      <pre><code>POST /api/auth/forgot-password  →  Supabase sends reset email
+User clicks link → /reset-password page
+POST /api/auth/reset-password   →  Supabase updates password</code></pre>
+    </div>
+
+    <!-- RBAC -->
+    <div class="doc-section" id="rbac">
+      <h2><span class="h2-icon" style="background:rgba(244,114,182,0.15)">👤</span> Role-Based Access Control</h2>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Role</th><th>Portals</th><th>Capabilities</th></tr></thead>
+          <tbody>
+            <tr><td><span class="badge badge-blue">STUDENT</span></td><td><code>/dashboard</code>, <code>/community</code></td><td>Enroll, learn, take quizzes, write reviews, community participation</td></tr>
+            <tr><td><span class="badge badge-green">INSTRUCTOR</span></td><td><code>/instructor</code>, <code>/community</code></td><td>Create &amp; publish courses, view analytics, manage earnings and payouts</td></tr>
+            <tr><td><span class="badge badge-orange">ADMIN</span></td><td><code>/admin</code>, all portals</td><td>Full platform management — approve courses, manage refunds and payouts, analytics</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout info">
+        <span class="callout-icon">ℹ️</span>
+        <span>Role checks happen at <strong>two levels</strong>: Edge Middleware (blocks wrong-role routes before rendering) and Route Handlers (<code>getSession()</code> re-checks before any data mutation).</span>
+      </div>
+    </div>
+
+    <!-- Database -->
+    <div class="doc-section" id="database">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🗄️</span> Database Design</h2>
+      <p>The Prisma schema (<code>prisma/schema.prisma</code>, 1,113 lines) is organized into six domains. PostgreSQL is provisioned via Supabase.</p>
+
+      <div class="schema-group">
+        <h3>👤 Users &amp; Organizations</h3>
+        <div class="model-pills">
+          <span class="model-pill">User</span>
+          <span class="model-pill">Organization</span>
+          <span class="model-pill">OrganizationMember</span>
+          <span class="model-pill">Subscription</span>
+          <span class="model-pill">InstructorWallet</span>
+          <span class="model-pill">WalletTransaction</span>
+          <span class="model-pill">UserGameProfile</span>
+          <span class="model-pill">UserProfession</span>
+          <span class="model-pill">Profession</span>
+        </div>
+      </div>
+
+      <div class="schema-group">
+        <h3>📚 Content</h3>
+        <div class="model-pills">
+          <span class="model-pill">Course</span>
+          <span class="model-pill">Section</span>
+          <span class="model-pill">Lesson</span>
+          <span class="model-pill">Quiz</span>
+          <span class="model-pill">Question</span>
+          <span class="model-pill">Category</span>
+          <span class="model-pill">Tag</span>
+          <span class="model-pill">CourseTag</span>
+          <span class="model-pill">Blog</span>
+          <span class="model-pill">MediaAsset</span>
+        </div>
+      </div>
+
+      <div class="schema-group">
+        <h3>🎓 Learning</h3>
+        <div class="model-pills">
+          <span class="model-pill">Enrollment</span>
+          <span class="model-pill">LessonProgress</span>
+          <span class="model-pill">QuizAttempt</span>
+          <span class="model-pill">Highlight</span>
+          <span class="model-pill">Certificate</span>
+          <span class="model-pill">Review</span>
+          <span class="model-pill">Wishlist</span>
+        </div>
+      </div>
+
+      <div class="schema-group">
+        <h3>💳 Payments</h3>
+        <div class="model-pills">
+          <span class="model-pill">Order</span>
+          <span class="model-pill">LedgerEntry</span>
+          <span class="model-pill">Coupon</span>
+          <span class="model-pill">CouponUse</span>
+          <span class="model-pill">RefundRequest</span>
+          <span class="model-pill">PayoutRequest</span>
+          <span class="model-pill">ReferralLink</span>
+        </div>
+      </div>
+
+      <div class="schema-group">
+        <h3>👥 Community</h3>
+        <div class="model-pills">
+          <span class="model-pill">ForumThread</span>
+          <span class="model-pill">ForumReply</span>
+          <span class="model-pill">ForumVote</span>
+          <span class="model-pill">StudyGroup</span>
+          <span class="model-pill">StudyGroupMember</span>
+          <span class="model-pill">GroupJoinRequest</span>
+          <span class="model-pill">GroupNote</span>
+          <span class="model-pill">PeerReviewAssignment</span>
+          <span class="model-pill">PeerReview</span>
+          <span class="model-pill">ActivityFeedEvent</span>
+        </div>
+      </div>
+
+      <div class="schema-group">
+        <h3>🏆 Gamification</h3>
+        <div class="model-pills">
+          <span class="model-pill">UserGameProfile</span>
+          <span class="model-pill">UserBadge</span>
+          <span class="model-pill">XpEvent</span>
+        </div>
+      </div>
+
+      <h3>Key Design Decisions</h3>
+      <ul class="feature-list" style="padding-left:0">
+        <li><span class="check">✦</span><div><strong>JSON fields</strong> — used for quiz question options, rubric scores, and quiz attempt answers to avoid over-normalizing.</div></li>
+        <li><span class="check">✦</span><div><strong>Full-text search</strong> — enabled on the <code>Blog</code> model via native PostgreSQL.</div></li>
+        <li><span class="check">✦</span><div><strong>Drip content</strong> — <code>Lesson.publishAt</code> allows scheduling future lesson visibility.</div></li>
+        <li><span class="check">✦</span><div><strong>Financial immutability</strong> — <code>LedgerEntry</code> rows are append-only, never updated, providing a complete audit trail.</div></li>
+        <li><span class="check">✦</span><div><strong>Immutable order snapshot</strong> — revenue split percentages and amounts are stored on each <code>Order</code> row so historical data is never affected by config changes.</div></li>
+        <li><span class="check">✦</span><div><strong>Referral attribution</strong> — <code>ReferralLink</code> + <code>Order.saleSource</code> tag every purchase with its acquisition source.</div></li>
+      </ul>
+    </div>
+
+    <!-- Payments -->
+    <div class="doc-section" id="payments">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">💳</span> Payment &amp; Revenue System</h2>
+
+      <h3>Checkout Flow</h3>
+      <div class="flow">
+        <div class="flow-item">
+          <div class="flow-num">1</div>
+          <div class="flow-content">
+            <div class="flow-title">Student initiates purchase</div>
+            <div class="flow-desc"><code>POST /api/payments/create-payment-intent</code> — validates coupon / referral code, calculates final price, creates a Stripe Checkout Session and a pending <code>Order</code> row.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">2</div>
+          <div class="flow-content">
+            <div class="flow-title">Stripe Checkout</div>
+            <div class="flow-desc">User completes payment on Stripe's hosted page. On success, redirected to <code>/checkout/success</code>.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">3</div>
+          <div class="flow-content">
+            <div class="flow-title">Payment verified</div>
+            <div class="flow-desc"><code>POST /api/payments/verify</code> — confirms the session was paid, creates the <code>Enrollment</code>, credits <code>InstructorWallet</code>, writes <code>LedgerEntry</code> rows, sends the purchase email, and awards gamification XP.</div>
+          </div>
+        </div>
+        <div class="flow-item">
+          <div class="flow-num">4</div>
+          <div class="flow-content">
+            <div class="flow-title">Stripe webhook (async)</div>
+            <div class="flow-desc"><code>POST /api/payments/webhook</code> — handles late events and edge cases. Signature is verified against <code>STRIPE_WEBHOOK_SECRET</code> before processing.</div>
+          </div>
+        </div>
+      </div>
+
+      <h3>Revenue Split by Sale Source</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Sale Source</th><th>Instructor Cut</th><th>Platform Cut</th><th>When</th></tr></thead>
+          <tbody>
+            <tr><td><code>ORGANIC</code></td><td style="color:var(--green)">70–80%</td><td style="color:var(--accent)">20–30%</td><td>Direct purchase (per-course setting)</td></tr>
+            <tr><td><code>COUPON</code></td><td style="color:var(--green)">85%</td><td style="color:var(--accent)">15%</td><td>Instructor's own coupon code used</td></tr>
+            <tr><td><code>REFERRAL</code></td><td style="color:var(--green)">90%</td><td style="color:var(--accent)">10%</td><td>Instructor's referral link converted</td></tr>
+            <tr><td><code>ADS</code></td><td style="color:var(--green)">Course base setting</td><td style="color:var(--accent)">Course base setting</td><td>Platform-paid acquisition</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Refund System</h3>
+      <pre><code>Student  →  POST /api/refunds
+  → eligibility check (progress %, time since purchase)
+  → RefundRequest created (PENDING) with snapshot of:
+       progressPercent, refundAmount, instructorLoss, platformLoss
+
+Admin    →  POST /api/admin/refunds/[id]/approve
+  → Stripe refund processed
+  → LedgerEntry reversed (REFUND_REVERSAL_*)
+  → InstructorWallet debited
+  → Status → PROCESSED</code></pre>
+    </div>
+
+    <!-- Gamification -->
+    <div class="doc-section" id="gamification">
+      <h2><span class="h2-icon" style="background:rgba(251,191,36,0.15)">🏆</span> Gamification Engine</h2>
+      <p>All gamification logic lives in <code>lib/gamification.ts</code> and <code>lib/badges.ts</code>. Each award creates an immutable <code>XpEvent</code> row and updates <code>UserGameProfile.xp</code>.</p>
+
+      <h3>XP Awards</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Action</th><th>XP Granted</th><th>Notes</th></tr></thead>
+          <tbody class="xp-row">
+            <tr class="xp-row"><td><code>LESSON_COMPLETE</code></td><td>50 XP</td><td>Awarded once per lesson (first completion only)</td></tr>
+            <tr class="xp-row"><td><code>QUIZ_PASS</code></td><td>100 XP</td><td>On any passing attempt</td></tr>
+            <tr class="xp-row"><td><code>QUIZ_PERFECT_BONUS</code></td><td>+50 XP</td><td>Added on top of QUIZ_PASS for 100% score</td></tr>
+            <tr class="xp-row"><td><code>DAILY_STREAK_BASE</code></td><td>10 + (streak × 2)</td><td>Called by <code>updateStreak()</code> daily</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Levels</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Level</th><th>Title</th><th>XP Required</th></tr></thead>
+          <tbody>
+            <tr class="level-row"><td>1</td><td>Novice</td><td>0</td></tr>
+            <tr class="level-row"><td>2</td><td>Learner</td><td>500</td></tr>
+            <tr class="level-row"><td>3</td><td>Explorer</td><td>1,500</td></tr>
+            <tr class="level-row"><td>4</td><td>Scholar</td><td>3,500</td></tr>
+            <tr class="level-row"><td>5</td><td>Expert</td><td>7,500</td></tr>
+            <tr class="level-row"><td>6</td><td>Master</td><td>15,000</td></tr>
+            <tr class="level-row"><td>7</td><td>Legend</td><td>30,000</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Badges (12 total)</h3>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Key</th><th>Trigger</th><th>Bonus XP</th></tr></thead>
+          <tbody>
+            <tr><td><code>first_lesson</code></td><td>First lesson completed</td><td>25</td></tr>
+            <tr><td><code>lessons_5</code></td><td>5 lessons completed</td><td>50</td></tr>
+            <tr><td><code>lessons_25</code></td><td>25 lessons completed</td><td>150</td></tr>
+            <tr><td><code>lessons_50</code></td><td>50 lessons completed</td><td>300</td></tr>
+            <tr><td><code>quiz_first</code></td><td>First quiz attempted</td><td>25</td></tr>
+            <tr><td><code>quiz_pass</code></td><td>First quiz passed</td><td>50</td></tr>
+            <tr><td><code>quiz_perfect</code></td><td>First 100% score</td><td>100</td></tr>
+            <tr><td><code>streak_3</code></td><td>3-day streak</td><td>30</td></tr>
+            <tr><td><code>streak_7</code></td><td>7-day streak</td><td>75</td></tr>
+            <tr><td><code>streak_30</code></td><td>30-day streak</td><td>300</td></tr>
+            <tr><td><code>level_2</code></td><td>Reached Level 2</td><td>0</td></tr>
+            <tr><td><code>level_5</code></td><td>Reached Level 5</td><td>0</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout tip">
+        <span class="callout-icon">💡</span>
+        <span><code>grantBadge()</code> is idempotent — duplicate grants are silently ignored via Prisma <code>upsert</code>. Safe to call multiple times.</span>
+      </div>
+
+      <h3>Daily Streak Logic (<code>updateStreak</code>)</h3>
+      <ul>
+        <li>If <code>lastActiveDate</code> is <strong>yesterday</strong> → streak increments</li>
+        <li>If <code>lastActiveDate</code> is <strong>today</strong> → no change (already active today)</li>
+        <li>Otherwise → streak resets to 1</li>
+        <li><code>longestStreak</code> is updated whenever the current streak exceeds it</li>
+      </ul>
+    </div>
+
+    <!-- Community -->
+    <div class="doc-section" id="community">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">👥</span> Community Features</h2>
+      <p>All community features require the <code>community</code> platform feature access, checked in route handlers via <code>lib/feature-access.ts</code>.</p>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-icon">💬</div>
+          <div class="card-title">Forums</div>
+          <div class="card-desc">Threads scoped to a course or lesson. Nested replies with upvote/downvote (±1). Sorted by recency or popularity.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">👨‍👩‍👧‍👦</div>
+          <div class="card-title">Study Groups</div>
+          <div class="card-desc">Groups with invite codes, member caps, public/private toggle, and optional join-request approval flow.</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📋</div>
+          <div class="card-title">Peer Review</div>
+          <div class="card-desc">Students submit work for review. Others provide structured feedback with a 1–5 rating and rubric scores (stored as JSON).</div>
+        </div>
+        <div class="card">
+          <div class="card-icon">📡</div>
+          <div class="card-title">Activity Feed</div>
+          <div class="card-desc">Paginated <code>ActivityFeedEvent</code> log. Cached 30s max-age, 60s stale-while-revalidate.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="doc-section" id="email">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">📧</span> Email System</h2>
+      <p>Email is sent via <strong>Resend</strong> (<code>lib/email.ts</code>). Templates are React components rendered server-side to HTML.</p>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Event</th><th>Template</th></tr></thead>
+          <tbody>
+            <tr><td>New user signup</td><td>Welcome email with getting-started guide</td></tr>
+            <tr><td>Course purchase</td><td>Purchase confirmation with course details</td></tr>
+            <tr><td>Course updated by instructor</td><td>Enrolled-student notification</td></tr>
+            <tr><td>Contact form reply (admin)</td><td>Reply delivered to submitter</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout warn">
+        <span class="callout-icon">⚠️</span>
+        <span><code>EMAIL_FROM</code> must be set to an address on a <strong>verified Resend domain</strong>. Emails from unverified domains will be rejected.</span>
+      </div>
+    </div>
+
+    <!-- Uploads -->
+    <div class="doc-section" id="uploads">
+      <h2><span class="h2-icon" style="background:rgba(167,139,250,0.15)">📤</span> File Upload Pipeline</h2>
+
+      <h3>Images (Courses, Blogs, Avatars)</h3>
+      <pre><code>Client  →  POST /api/upload (multipart/form-data)
+  → validate: image only, ≤1 MB, user ≤100 MB total
+  → lib/cloudinary.ts uploads to Cloudinary
+  → MediaAsset row written (tracks publicId, bytes, folder)
+  → returns { url, publicId, width, height, format }</code></pre>
+
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Folder</th><th>Endpoint</th><th>Max Size</th><th>Who</th></tr></thead>
+          <tbody>
+            <tr><td><code>courses</code></td><td><code>POST /api/upload</code></td><td>1 MB</td><td>Ins / Admin</td></tr>
+            <tr><td><code>blogs</code></td><td><code>POST /api/upload</code></td><td>1 MB</td><td>Ins / Admin</td></tr>
+            <tr><td><code>avatars</code></td><td><code>POST /api/upload/avatar</code></td><td>1 MB</td><td>Any</td></tr>
+            <tr><td><code>misc</code></td><td><code>POST /api/upload</code></td><td>1 MB</td><td>Ins / Admin</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>PDF Certificates</h3>
+      <pre><code>GET /api/certificates/[courseId]
+  → validate: all lessons completed
+  → render &lt;CertificatePDF&gt; via @react-pdf/renderer
+  → return PDF stream with Content-Disposition: attachment</code></pre>
+    </div>
+
+    <!-- Real-time -->
+    <div class="doc-section" id="realtime">
+      <h2><span class="h2-icon" style="background:rgba(249,115,22,0.15)">⚡</span> Real-Time Features</h2>
+      <p>Real-time is provided by <strong>Supabase Realtime</strong> channels. No direct WebSocket management is needed.</p>
+      <ul class="feature-list" style="padding-left:0">
+        <li><span class="check">📡</span><div><code>hooks/useRealtimeChannel.ts</code> — subscribes to a named Supabase channel</div></li>
+        <li><span class="check">📡</span><div>Used for live leaderboard updates and study group activity</div></li>
+        <li><span class="check">📡</span><div>Channel setup lives in <code>lib/realtime/</code></div></li>
+      </ul>
+    </div>
+
+    <!-- Configuration -->
+    <div class="doc-section" id="config">
+      <h2><span class="h2-icon" style="background:rgba(96,165,250,0.15)">🔑</span> Configuration</h2>
+
+      <div class="env-block">
+        <div class="env-header">DATABASE</div>
+        <div class="env-row"><div class="env-key">DATABASE_URL</div><div class="env-val">Supabase PostgreSQL pooled connection (Prisma runtime)</div></div>
+        <div class="env-row"><div class="env-key">DIRECT_URL</div><div class="env-val">Supabase direct connection (Prisma migrations only)</div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">SUPABASE</div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_SUPABASE_URL</div><div class="env-val">Supabase project URL</div></div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_SUPABASE_ANON_KEY</div><div class="env-val">Public anon key (safe to expose in browser)</div></div>
+        <div class="env-row"><div class="env-key">SUPABASE_SERVICE_ROLE_KEY</div><div class="env-val">Service role key — seed scripts only, never expose in browser</div></div>
+        <div class="env-row"><div class="env-key">JWT_SECRET</div><div class="env-val">Session signing secret — generate with <code>openssl rand -base64 32</code></div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">STRIPE</div>
+        <div class="env-row"><div class="env-key">STRIPE_SECRET_KEY</div><div class="env-val">Server-side Stripe key (never expose in browser)</div></div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY</div><div class="env-val">Client-side Stripe key</div></div>
+        <div class="env-row"><div class="env-key">STRIPE_WEBHOOK_SECRET</div><div class="env-val">Webhook signing secret from Stripe dashboard</div></div>
+        <div class="env-row"><div class="env-key">STRIPE_PRICE_BASIC</div><div class="env-val">Stripe Price ID for the Basic subscription plan</div></div>
+        <div class="env-row"><div class="env-key">STRIPE_PRICE_PRO</div><div class="env-val">Stripe Price ID for the Pro subscription plan</div></div>
+        <div class="env-row"><div class="env-key">STRIPE_PRICE_ENTERPRISE</div><div class="env-val">Stripe Price ID for the Enterprise subscription plan</div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">EMAIL &amp; FILES</div>
+        <div class="env-row"><div class="env-key">RESEND_API_KEY</div><div class="env-val">Resend email service API key</div></div>
+        <div class="env-row"><div class="env-key">EMAIL_FROM</div><div class="env-val">Sender address — must be on a verified Resend domain</div></div>
+        <div class="env-row"><div class="env-key">CLOUDINARY_CLOUD_NAME</div><div class="env-val">Cloudinary cloud name</div></div>
+        <div class="env-row"><div class="env-key">CLOUDINARY_API_KEY</div><div class="env-val">Cloudinary API key</div></div>
+        <div class="env-row"><div class="env-key">CLOUDINARY_API_SECRET</div><div class="env-val">Cloudinary API secret</div></div>
+      </div>
+
+      <div class="env-block">
+        <div class="env-header">APP</div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_APP_URL</div><div class="env-val">Canonical app domain, e.g. <code>https://coachnest.com</code></div></div>
+        <div class="env-row"><div class="env-key">NEXT_PUBLIC_LAUNCH_MODE</div><div class="env-val">Set <code>"true"</code> to show the coming-soon landing page</div></div>
+      </div>
+    </div>
+
+    <!-- Deployment -->
+    <div class="doc-section" id="deploy">
+      <h2><span class="h2-icon" style="background:rgba(52,211,153,0.15)">🚢</span> Deployment</h2>
+      <p>The app is configured for <strong>Vercel</strong>. Key <code>next.config.ts</code> settings:</p>
+
+      <ul class="feature-list" style="padding-left:0">
+        <li><span class="check">✦</span><div><strong>Image domains</strong> — Unsplash and Cloudinary are whitelisted for <code>next/image</code> optimization</div></li>
+        <li><span class="check">✦</span><div><strong>PDF libraries</strong> excluded from the webpack server bundle (server-side rendering only)</div></li>
+        <li><span class="check">✦</span><div><strong>Tree-shaking</strong> — <code>lucide-react</code>, <code>recharts</code>, and <code>date-fns</code> are tree-shaken to reduce bundle size</div></li>
+        <li><span class="check">✦</span><div><strong>Security headers</strong> — DNS prefetch control, CSP frame-ancestors, Referrer-Policy, X-Content-Type-Options</div></li>
+        <li><span class="check">✦</span><div><strong>Static asset caching</strong> — 1-year cache for <code>/_next/static/*</code></div></li>
+      </ul>
+
+      <h3>Database Setup (Production)</h3>
+      <pre><code><span class="cmt"># 1. Set DATABASE_URL and DIRECT_URL to production Supabase URLs</span>
+<span class="cmt"># 2. Run migrations</span>
+npx prisma migrate deploy
+
+<span class="cmt"># 3. Generate client</span>
+npx prisma generate
+
+<span class="cmt"># 4. (Optional) seed initial admin user</span>
+npm run db:seed</code></pre>
+
+      <h3>Build Commands</h3>
+      <pre><code>npm run dev            <span class="cmt"># Start development server</span>
+npm run build          <span class="cmt"># prisma generate + next build</span>
+npm run db:push        <span class="cmt"># Push schema changes (no migration file)</span>
+npm run db:migrate     <span class="cmt"># Run migration files</span>
+npm run db:seed        <span class="cmt"># Seed demo data (admin/instructors/students/courses)</span>
+npm run db:seed:blogs  <span class="cmt"># Seed blog posts</span></code></pre>
+
+      <h3>Stripe Webhook Setup</h3>
+      <p>Point your Stripe webhook to <code>https://&lt;your-domain&gt;/api/payments/webhook</code>. Subscribe to at minimum:</p>
+      <ul>
+        <li><code>checkout.session.completed</code></li>
+        <li><code>payment_intent.payment_failed</code></li>
+      </ul>
+    </div>
+
+  </main>
+</div>
+
+<footer class="doc-footer">
+  <span>CoachNest v0.2.0 — Architecture Reference</span>
+  <span>Built with Next.js 15 · Prisma · Supabase · Stripe</span>
+</footer>
+
+<script>
+  // Active sidebar link on scroll
+  const sections = document.querySelectorAll('.doc-section[id]');
+  const links = document.querySelectorAll('.sidebar a');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        links.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.sidebar a[href="#${e.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+  sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
