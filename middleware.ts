@@ -60,7 +60,11 @@ export async function middleware(req: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const role = (user?.app_metadata?.role ?? "STUDENT") as string;
+  const role             = (user?.app_metadata?.role ?? "STUDENT") as string;
+  const instructorStatus = (user?.app_metadata?.instructorStatus ?? null) as string | null;
+  const isInstructorPending =
+    role === "INSTRUCTOR" &&
+    (instructorStatus === "PENDING" || instructorStatus === "REJECTED");
 
   // ── 1. Protect dashboard + admin + instructor ─────────────────────────────
   if (PROTECTED.some((p) => pathname.startsWith(p))) {
@@ -73,7 +77,7 @@ export async function middleware(req: NextRequest) {
 
     // /admin — ADMIN only (INSTRUCTOR has their own /instructor portal)
     if (pathname.startsWith("/admin") && role !== "ADMIN") {
-      const dest = role === "INSTRUCTOR" ? "/instructor" : "/dashboard";
+      const dest = isInstructorPending ? "/instructor/pending" : role === "INSTRUCTOR" ? "/instructor" : "/dashboard";
       return NextResponse.redirect(new URL(dest, req.url));
     }
 
@@ -82,16 +86,26 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
+    // /instructor — pending/rejected instructors can only access /instructor/pending
+    if (
+      pathname.startsWith("/instructor") &&
+      isInstructorPending &&
+      !pathname.startsWith("/instructor/pending")
+    ) {
+      return NextResponse.redirect(new URL("/instructor/pending", req.url));
+    }
+
     // /dashboard — STUDENT only (instructors + admins have their own portals)
     if (pathname.startsWith("/dashboard") && role === "INSTRUCTOR") {
-      return NextResponse.redirect(new URL("/instructor", req.url));
+      const dest = isInstructorPending ? "/instructor/pending" : "/instructor";
+      return NextResponse.redirect(new URL(dest, req.url));
     }
   }
 
   // ── 2. Redirect authenticated users away from auth pages ──────────────────
   if (AUTH_ONLY.includes(pathname) && user) {
     let dest = "/dashboard";
-    if (role === "INSTRUCTOR") dest = "/instructor";
+    if (role === "INSTRUCTOR") dest = isInstructorPending ? "/instructor/pending" : "/instructor";
     if (role === "ADMIN")      dest = "/admin";
     return NextResponse.redirect(new URL(dest, req.url));
   }

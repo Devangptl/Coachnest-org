@@ -4,12 +4,12 @@
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { BookOpen, Users, Star, PlusCircle, Eye, Edit2 } from "lucide-react";
+import { BookOpen, Users, Star, PlusCircle, Eye, Edit2, CheckCircle2, AlertTriangle } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { formatDate } from "@/lib/utils";
 
 async function getStats(userId: string) {
-  const [courses, totalStudents, reviews] = await Promise.all([
+  const [courses, totalStudents, reviews, profile] = await Promise.all([
     prisma.course.findMany({
       where:   { createdById: userId },
       include: { _count: { select: { enrollments: true, lessons: true } }, reviews: { select: { rating: true } } },
@@ -21,6 +21,15 @@ async function getStats(userId: string) {
       where:  { course: { createdById: userId } },
       select: { rating: true },
     }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        avatar: true,
+        headline: true,
+        bio: true,
+        instructorStatus: true,
+      },
+    }),
   ]);
 
   const totalCourses = await prisma.course.count({ where: { createdById: userId } });
@@ -28,12 +37,12 @@ async function getStats(userId: string) {
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : 0;
 
-  return { courses, totalStudents, totalCourses, avgRating };
+  return { courses, totalStudents, totalCourses, avgRating, profile };
 }
 
 export default async function InstructorDashboard() {
   const session = await getSession();
-  const { courses, totalStudents, totalCourses, avgRating } = await getStats(session!.userId);
+  const { courses, totalStudents, totalCourses, avgRating, profile } = await getStats(session!.userId);
 
   const stats = [
     { label: "Total Courses",  value: totalCourses,                       icon: BookOpen, color: "text-blue-400",  bg: "bg-blue-500/10"  },
@@ -41,8 +50,58 @@ export default async function InstructorDashboard() {
     { label: "Avg Rating",     value: avgRating ? avgRating.toFixed(1) : "—", icon: Star, color: "text-amber-400", bg: "bg-amber-500/10"  },
   ];
 
+  const isProfileIncomplete = !profile?.headline || !profile?.bio;
+
   return (
     <div className="space-y-6">
+      {/* Alerts */}
+      {isProfileIncomplete && (
+        <div className="flex items-start gap-3 bg-blue-500/10 border border-blue-500/25 rounded-xl px-5 py-4">
+          <AlertTriangle className="w-5 h-5 text-blue-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-blue-400 font-semibold text-sm">Complete your instructor profile</p>
+            <p className="text-blue-400/70 text-xs mt-0.5">
+              Add a headline and bio to help students learn about you.{" "}
+              <Link href="/instructor/profile" className="underline hover:no-underline">Update profile →</Link>
+            </p>
+          </div>
+        </div>
+      )}
+
+      {profile?.instructorStatus === "APPROVED" && (
+        <div className="flex items-start gap-3 bg-emerald-500/10 border border-emerald-500/25 rounded-xl px-5 py-4">
+          <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
+          <div className="flex-1">
+            <p className="text-emerald-400 font-semibold text-sm">Account Active</p>
+            <p className="text-emerald-400/70 text-xs mt-0.5">
+              Your instructor account is approved. Start creating courses to earn revenue.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Profile summary */}
+      <GlassCard className="flex items-center gap-4">
+        {profile?.avatar ? (
+          <img src={profile.avatar} alt={session!.name} className="w-14 h-14 rounded-full object-cover border border-border flex-shrink-0" />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl">
+            {session!.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-foreground truncate">{session!.name}</p>
+          {profile?.headline ? (
+            <p className="text-muted-foreground text-sm truncate">{profile.headline}</p>
+          ) : (
+            <p className="text-muted-foreground/50 text-sm italic">No headline set</p>
+          )}
+        </div>
+        <Link href="/instructor/profile" className="flex-shrink-0 text-xs text-orange-500 hover:text-orange-400 transition-colors font-medium">
+          Edit Profile →
+        </Link>
+      </GlassCard>
+
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

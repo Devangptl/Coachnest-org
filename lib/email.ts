@@ -574,3 +574,118 @@ export async function sendCertificateEmail(
     `),
   });
 }
+
+// ─── 13. Instructor application received (to admin) ───────────────────────────
+
+export async function sendInstructorApplicationToAdmin(
+  instructorName: string,
+  instructorEmail: string,
+  userId: string
+) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
+  return resend.emails.send({
+    from: FROM,
+    to:   resolveRecipient(adminEmail),
+    subject: `[CoachNest] New instructor application from ${instructorName}`,
+    html: shell(`
+      <p style="margin:0 0 4px;">${badge("Instructor Application", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
+        New Instructor Application
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        A new user has applied to become an instructor on CoachNest and is awaiting your review.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Name",   instructorName)}
+          ${infoRow("Email",  `<a href="mailto:${instructorEmail}" style="color:#f97316;">${instructorEmail}</a>`)}
+          ${infoRow("Status", `<span style="color:#f59e0b;font-weight:700;">Pending Review</span>`)}
+        </tbody>
+      </table>
+
+      ${btn("Review Application", `${APP}/admin/instructors/approvals`)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        You can approve or reject this application from the admin panel.
+      </p>
+    `),
+  });
+}
+
+// ─── 14. Instructor application approved ─────────────────────────────────────
+
+export async function sendInstructorApprovedEmail(to: string, name: string) {
+  return resend.emails.send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: "Your CoachNest instructor application has been approved! 🎉",
+    html: shell(`
+      <p style="margin:0 0 4px;">${badge("Application Approved", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Congratulations, ${name}! 🎉
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Your instructor application has been <strong style="color:#22c55e;">approved</strong>.
+        You now have full access to the instructor dashboard where you can create and publish courses,
+        track student progress, and manage your earnings.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Status",  `<span style="color:#22c55e;font-weight:700;">Approved</span>`)}
+          ${infoRow("Access",  "Instructor Dashboard")}
+          ${infoRow("Ability", "Create & publish courses")}
+        </tbody>
+      </table>
+
+      <div style="background:#0d1a0d;border:1px solid #1f3a1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#86efac;font-size:13px;margin:0;line-height:1.6;">
+          💡 <strong>Get started:</strong> Log in and head to your instructor dashboard to create your first course!
+        </p>
+      </div>
+
+      ${btn("Go to Instructor Dashboard", `${APP}/instructor`)}
+    `),
+  });
+}
+
+// ─── 15. Instructor application rejected ─────────────────────────────────────
+
+export async function sendInstructorRejectedEmail(
+  to: string,
+  name: string,
+  reason?: string
+) {
+  return resend.emails.send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: "Update on your CoachNest instructor application",
+    html: shell(`
+      <p style="margin:0 0 4px;">${badge("Application Update", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Application Status Update
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${name}, thank you for applying to become an instructor on CoachNest.
+        After careful review, we're unable to approve your application at this time.
+      </p>
+
+      ${reason ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #6b7280;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:24px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">Reason</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;">${reason}</p>
+      </div>
+      ` : ""}
+
+      <p style="color:#a3a3a3;font-size:14px;line-height:1.7;margin:0 0 28px;">
+        You can continue using CoachNest as a student and access all available courses.
+        If you have questions, please reach out to our support team.
+      </p>
+
+      ${btn("Contact Support", `${APP}/contact`)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        Thank you for your interest in teaching on CoachNest.
+      </p>
+    `),
+  });
+}

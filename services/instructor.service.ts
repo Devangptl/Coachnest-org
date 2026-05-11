@@ -95,8 +95,8 @@ export async function getInstructorsList(filter: InstructorListFilter = {}) {
 }
 
 export async function getInstructorStats() {
-  const [total, withWallet, walletAgg, pendingPayouts] = await Promise.all([
-    prisma.user.count({ where: { role: "INSTRUCTOR" } }),
+  const [total, withWallet, walletAgg, pendingPayouts, pendingApprovals] = await Promise.all([
+    prisma.user.count({ where: { role: "INSTRUCTOR", instructorStatus: "APPROVED" } }),
     prisma.user.count({
       where: { role: "INSTRUCTOR", instructorWallet: { isNot: null } },
     }),
@@ -104,6 +104,7 @@ export async function getInstructorStats() {
       _sum: { balance: true, totalEarned: true, totalWithdrawn: true },
     }),
     prisma.payoutRequest.count({ where: { status: "PENDING" } }),
+    prisma.user.count({ where: { role: "INSTRUCTOR", instructorStatus: "PENDING" } }),
   ]);
 
   return {
@@ -113,6 +114,7 @@ export async function getInstructorStats() {
     totalBalance: Number(walletAgg._sum.balance ?? 0),
     totalWithdrawn: Number(walletAgg._sum.totalWithdrawn ?? 0),
     pendingPayouts,
+    pendingApprovals,
   };
 }
 

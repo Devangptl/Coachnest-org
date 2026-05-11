@@ -30,9 +30,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const role = (data.user.app_metadata?.role ?? "STUDENT") as string;
+    const role             = (data.user.app_metadata?.role ?? "STUDENT") as string;
+    const instructorStatus = (data.user.app_metadata?.instructorStatus ?? null) as string | null;
 
-    return NextResponse.json({ message: "Logged in.", role });
+    return NextResponse.json({ message: "Logged in.", role, instructorStatus });
   } catch (error) {
     console.error("[login]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });
