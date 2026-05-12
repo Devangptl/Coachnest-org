@@ -7,22 +7,38 @@ import { PlusCircle, Mail, ToggleLeft, ToggleRight, FileText, Info } from "lucid
 import EmailTemplateActions from "./EmailTemplateActions";
 
 /** All system email slugs with their available variables. */
-const SYSTEM_SLUGS: { slug: string; label: string; vars: string[] }[] = [
-  { slug: "welcome",                     label: "Welcome Email",                    vars: ["name"] },
-  { slug: "subscription-activated",      label: "Subscription Activated",           vars: ["name", "plan", "billing"] },
-  { slug: "plan-changed",                label: "Plan Changed",                     vars: ["name", "oldPlan", "newPlan", "billing", "action"] },
-  { slug: "subscription-cancelled",      label: "Subscription Cancelled",           vars: ["name", "plan", "endDate"] },
-  { slug: "subscription-resumed",        label: "Subscription Resumed",             vars: ["name", "plan"] },
-  { slug: "payment-failed",              label: "Payment Failed",                   vars: ["name"] },
-  { slug: "purchase-confirmation",       label: "Purchase Confirmation",            vars: ["name", "courseTitle", "amount", "link"] },
-  { slug: "course-update",               label: "New Lesson Notification",          vars: ["name", "courseTitle", "lessonTitle", "link"] },
-  { slug: "contact-confirmation",        label: "Contact Form Confirmation",        vars: ["name"] },
-  { slug: "contact-admin-notification",  label: "Contact Admin Notification",       vars: ["name", "email", "subject", "message"] },
-  { slug: "contact-reply",               label: "Contact Reply",                    vars: ["name", "originalSubject", "replyMessage"] },
-  { slug: "certificate",                 label: "Certificate Issued",               vars: ["name", "courseTitle", "certUrl"] },
-  { slug: "instructor-application-admin",label: "Instructor Application (Admin)",   vars: ["instructorName", "instructorEmail"] },
-  { slug: "instructor-approved",         label: "Instructor Approved",              vars: ["name"] },
-  { slug: "instructor-rejected",         label: "Instructor Rejected",              vars: ["name", "reason"] },
+const SYSTEM_SLUGS: { slug: string; label: string; vars: string[]; group: string }[] = [
+  // Auth
+  { slug: "welcome",                      label: "Welcome",                           vars: ["name"],                                          group: "Auth" },
+  // Billing
+  { slug: "subscription-activated",       label: "Subscription Activated",            vars: ["name", "plan", "billing"],                       group: "Billing" },
+  { slug: "plan-changed",                 label: "Plan Changed",                      vars: ["name", "oldPlan", "newPlan", "billing", "action"],group: "Billing" },
+  { slug: "subscription-cancelled",       label: "Subscription Cancelled",            vars: ["name", "plan", "endDate"],                       group: "Billing" },
+  { slug: "subscription-resumed",         label: "Subscription Resumed",              vars: ["name", "plan"],                                  group: "Billing" },
+  { slug: "payment-failed",               label: "Payment Failed",                    vars: ["name"],                                          group: "Billing" },
+  // Courses
+  { slug: "purchase-confirmation",        label: "Purchase Confirmation",             vars: ["name", "courseTitle", "amount", "link"],          group: "Courses" },
+  { slug: "course-update",                label: "New Lesson Added",                  vars: ["name", "courseTitle", "lessonTitle", "link"],     group: "Courses" },
+  { slug: "course-approved",              label: "Course Approved",                   vars: ["name", "courseTitle", "link"],                   group: "Courses" },
+  { slug: "course-rejected",              label: "Course Rejected",                   vars: ["name", "courseTitle", "reason", "link"],         group: "Courses" },
+  { slug: "certificate",                  label: "Certificate Issued",                vars: ["name", "courseTitle", "certUrl"],                 group: "Courses" },
+  // Refunds
+  { slug: "refund-submitted",             label: "Refund Request Submitted",          vars: ["name", "courseTitle", "refundAmount", "progressPercent"], group: "Refunds" },
+  { slug: "refund-processed",             label: "Refund Processed",                  vars: ["name", "courseTitle", "refundAmount"],            group: "Refunds" },
+  { slug: "refund-rejected",              label: "Refund Rejected",                   vars: ["name", "courseTitle", "adminNotes"],              group: "Refunds" },
+  // Payouts
+  { slug: "payout-requested",             label: "Payout Request Submitted",          vars: ["name", "amount"],                                group: "Payouts" },
+  { slug: "payout-approved",              label: "Payout Approved",                   vars: ["name", "amount"],                                group: "Payouts" },
+  { slug: "payout-rejected",              label: "Payout Rejected",                   vars: ["name", "amount", "adminNotes"],                  group: "Payouts" },
+  { slug: "payout-processed",             label: "Payout Transferred",                vars: ["name", "amount"],                                group: "Payouts" },
+  // Contact
+  { slug: "contact-confirmation",         label: "Contact Form Confirmation",         vars: ["name"],                                          group: "Contact" },
+  { slug: "contact-admin-notification",   label: "Contact Admin Notification",        vars: ["name", "email", "subject", "message"],           group: "Contact" },
+  { slug: "contact-reply",                label: "Contact Reply",                     vars: ["name", "originalSubject", "replyMessage"],        group: "Contact" },
+  // Instructors
+  { slug: "instructor-application-admin", label: "Instructor Application (Admin)",    vars: ["instructorName", "instructorEmail"],              group: "Instructors" },
+  { slug: "instructor-approved",          label: "Instructor Approved",               vars: ["name"],                                          group: "Instructors" },
+  { slug: "instructor-rejected",          label: "Instructor Rejected",               vars: ["name", "reason"],                                group: "Instructors" },
 ];
 
 async function getTemplates() {
@@ -141,45 +157,55 @@ export default async function EmailTemplatesPage() {
             Create a template with the exact slug to override that system email
           </span>
         </div>
-        <div className="divide-y divide-border">
-          {SYSTEM_SLUGS.map((s) => {
-            const overridden = activeSystemSlugs.has(s.slug);
-            return (
-              <div key={s.slug} className="flex items-center justify-between px-4 py-2.5">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span
-                    className={`w-2 h-2 rounded-full flex-shrink-0 ${overridden ? "bg-emerald-400" : "bg-border"}`}
-                  />
-                  <div className="min-w-0">
-                    <p className="text-foreground text-sm">{s.label}</p>
-                    <div className="flex flex-wrap gap-1 mt-0.5">
-                      {s.vars.map((v) => (
-                        <span key={v} className="text-xs px-1 py-0.5 bg-orange-500/10 text-orange-400 rounded font-mono">
-                          {`{{${v}}}`}
-                        </span>
-                      ))}
+        {Object.entries(
+          SYSTEM_SLUGS.reduce<Record<string, typeof SYSTEM_SLUGS>>((acc, s) => {
+            (acc[s.group] ??= []).push(s);
+            return acc;
+          }, {})
+        ).map(([group, items]) => (
+          <div key={group}>
+            <div className="px-4 py-2 bg-secondary/30 border-b border-border">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">{group}</p>
+            </div>
+            <div className="divide-y divide-border">
+              {items.map((s) => {
+                const overridden = activeSystemSlugs.has(s.slug);
+                return (
+                  <div key={s.slug} className="flex items-center justify-between px-4 py-2.5">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${overridden ? "bg-emerald-400" : "bg-border"}`} />
+                      <div className="min-w-0">
+                        <p className="text-foreground text-sm">{s.label}</p>
+                        <div className="flex flex-wrap gap-1 mt-0.5">
+                          {s.vars.map((v) => (
+                            <span key={v} className="text-xs px-1 py-0.5 bg-orange-500/10 text-orange-400 rounded font-mono">
+                              {`{{${v}}}`}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 ml-4 flex-shrink-0">
+                      <code className="text-xs text-muted-foreground font-mono bg-secondary px-2 py-0.5 rounded">
+                        {s.slug}
+                      </code>
+                      {overridden ? (
+                        <span className="text-xs text-emerald-400">Overridden</span>
+                      ) : (
+                        <Link
+                          href={`/admin/email-templates/new?slug=${s.slug}&name=${encodeURIComponent(s.label)}`}
+                          className="text-xs text-[#d97757] hover:text-orange-300 transition-colors"
+                        >
+                          Override
+                        </Link>
+                      )}
                     </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                  <code className="text-xs text-muted-foreground font-mono bg-secondary px-2 py-0.5 rounded">
-                    {s.slug}
-                  </code>
-                  {overridden ? (
-                    <span className="text-xs text-emerald-400">Overridden</span>
-                  ) : (
-                    <Link
-                      href={`/admin/email-templates/new?slug=${s.slug}&name=${encodeURIComponent(s.label)}`}
-                      className="text-xs text-[#d97757] hover:text-orange-300 transition-colors"
-                    >
-                      Override
-                    </Link>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
       </GlassCard>
     </div>
   );

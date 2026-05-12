@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { sendCourseUpdateEmail } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -86,6 +87,30 @@ export async function POST(req: NextRequest) {
     });
 
     revalidateTag("course-lessons");
+
+    // Notify enrolled students if the course is published (fire-and-forget)
+    prisma.course.findUnique({
+      where:  { id: courseId, status: "PUBLISHED" },
+      select: { title: true, id: true },
+    }).then((course) => {
+      if (!course) return;
+      return prisma.enrollment.findMany({
+        where:  { courseId },
+        select: { user: { select: { name: true, email: true } } },
+      }).then((enrollments) => {
+        for (const { user } of enrollments) {
+          if (user.email) {
+            sendCourseUpdateEmail(
+              user.email,
+              user.name ?? "Student",
+              course.title,
+              title,
+              course.id,
+            ).catch(() => null);
+          }
+        }
+      });
+    }).catch(() => null);
 
     return NextResponse.json({ lesson }, { status: 201 });
   } catch (error) {
