@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import ProfileForm from "@/app/dashboard/profile/ProfileForm";
 import PasswordForm from "@/app/dashboard/profile/PasswordForm";
 import InstructorAccountInfo from "./InstructorAccountInfo";
+import ProfileStatusAlert from "./ProfileStatusAlert";
 
 async function getInstructorProfile(userId: string) {
   return prisma.user.findUnique({
@@ -17,6 +18,8 @@ async function getInstructorProfile(userId: string) {
       headline: true,
       website: true,
       createdAt: true,
+      instructorStatus: true,
+      instructorRejectReason: true,
       _count: {
         select: { courses: true },
       },
@@ -47,7 +50,7 @@ export default async function InstructorProfilePage() {
 
   return (
     <div>
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-3xl font-bold text-foreground">Profile & Settings</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">
           Manage your instructor account details and preferences
@@ -55,6 +58,13 @@ export default async function InstructorProfilePage() {
       </div>
 
       <div className="space-y-6">
+        {/* Status alert — APPROVED shown once (dismissible), PENDING/REJECTED always visible */}
+        <ProfileStatusAlert
+          status={user.instructorStatus ?? null}
+          rejectReason={user.instructorRejectReason ?? null}
+          userId={user.id}
+        />
+
         <InstructorAccountInfo
           email={user.email}
           createdAt={user.createdAt.toISOString()}

@@ -2,7 +2,7 @@
  * Admin → Instructors list with stats, search, sort, and links to detail view.
  */
 import Link from "next/link";
-import { GraduationCap, Users, Wallet, Clock, Plus } from "lucide-react";
+import { GraduationCap, Users, Wallet, Clock, Plus, UserCheck } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
 import {
@@ -44,18 +44,44 @@ export default async function AdminInstructorsPage({
             Manage instructor accounts, courses, earnings, and payouts.
           </p>
         </div>
-        <Link href="/admin/instructors/new">
-          <Button variant="primary">
-            <Plus className="w-4 h-4" /> Add Instructor
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          {stats.pendingApprovals > 0 && (
+            <Link href="/admin/instructors/approvals">
+              <Button variant="outline" className="relative border-amber-500/30 text-amber-400 hover:bg-amber-500/10">
+                <UserCheck className="w-4 h-4" />
+                Review Applications
+                <span className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-amber-500 text-white text-[10px] font-bold flex items-center justify-center">
+                  {stats.pendingApprovals}
+                </span>
+              </Button>
+            </Link>
+          )}
+          <Link href="/admin/instructors/new">
+            <Button variant="primary">
+              <Plus className="w-4 h-4" /> Add Instructor
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Pending approvals alert */}
+      {stats.pendingApprovals > 0 && (
+        <Link href="/admin/instructors/approvals" className="block mb-6">
+          <div className="flex items-center gap-3 bg-amber-500/10 border border-amber-500/25 rounded-xl px-5 py-3.5 hover:bg-amber-500/15 transition-colors">
+            <Clock className="w-5 h-5 text-amber-400 flex-shrink-0 animate-pulse" />
+            <p className="text-amber-400 text-sm font-medium flex-1">
+              <span className="font-bold">{stats.pendingApprovals} instructor application{stats.pendingApprovals > 1 ? "s" : ""}</span> awaiting your review.
+            </p>
+            <span className="text-amber-400/60 text-xs">Review →</span>
+          </div>
+        </Link>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         {[
           {
-            label: "Total Instructors",
+            label: "Active Instructors",
             value: stats.total.toString(),
             icon: GraduationCap,
             color: "text-blue-400",

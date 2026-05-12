@@ -106,6 +106,12 @@ enum LedgerEntryType {
   REFUND_REVERSAL_PLATFORM   // Platform share clawed back on refund
 }
 
+enum InstructorStatus {
+  PENDING   // Awaiting admin approval
+  APPROVED  // Approved and active
+  REJECTED  // Application rejected
+}
+
 // ─── Organization (Multi-tenant) ──────────────────────────────────────────────
 
 model Organization {
@@ -154,6 +160,12 @@ model User {
   role      Role     @default(STUDENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  // Instructor approval workflow
+  instructorStatus       InstructorStatus?
+  instructorAppliedAt    DateTime?
+  instructorReviewedAt   DateTime?
+  instructorRejectReason String?           @db.Text
 
   organizations  OrganizationMember[]
   courses        Course[]             @relation("CourseInstructor")

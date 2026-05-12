@@ -87,8 +87,9 @@ export default function SignupPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Signup failed."); return; }
-      // Send user to the email confirmation screen before accessing the platform.
-      router.push(`/confirm-email?email=${encodeURIComponent(email)}`);
+      // Instructor applications go to confirm-email (then /instructor/pending after verification).
+      // Students go straight to confirm-email.
+      router.push(`/confirm-email?email=${encodeURIComponent(email)}${data.instructorStatus === "PENDING" ? "&pending=instructor" : ""}`);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");

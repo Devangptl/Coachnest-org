@@ -7,7 +7,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomeEmail, sendInstructorApplicationToAdmin } from "@/lib/email";
 
 export async function POST(req: NextRequest) {
   try {
@@ -55,9 +55,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // ── 3. Set role in app_metadata (service role only) ───────────────────────
+    const isInstructor = role === "INSTRUCTOR";
+
+    // ── 3. Set role + instructorStatus in app_metadata (service role only) ────
     await supabaseAdmin.auth.admin.updateUserById(data.user.id, {
-      app_metadata: { role },
+      app_metadata: {
+        role,
+        ...(isInstructor ? { instructorStatus: "PENDING" } : {}),
+      },
     });
 
     // ── 4. Upsert profile row — the on_auth_user_created trigger may have already
@@ -69,21 +74,35 @@ export async function POST(req: NextRequest) {
         name,
         email,
         role: role as "STUDENT" | "INSTRUCTOR",
+        ...(isInstructor ? {
+          instructorStatus:    "PENDING",
+          instructorAppliedAt: new Date(),
+        } : {}),
       },
       update: {
         name,
         role: role as "STUDENT" | "INSTRUCTOR",
+        ...(isInstructor ? {
+          instructorStatus:    "PENDING",
+          instructorAppliedAt: new Date(),
+        } : {}),
       },
     });
 
-    // Students use the direct-purchase model — no subscription record needed.
-    // Instructors and Admins may be assigned subscriptions separately by the platform.
-
-    // Fire-and-forget welcome email
+    // Fire-and-forget emails
     sendWelcomeEmail(email, name).catch(console.error);
+    if (isInstructor) {
+      sendInstructorApplicationToAdmin(name, email, user.id).catch(console.error);
+    }
 
     return NextResponse.json(
-      { message: "Account created.", userId: user.id },
+      {
+        message: isInstructor
+          ? "Application submitted. Your account is pending admin approval."
+          : "Account created.",
+        userId: user.id,
+        ...(isInstructor ? { instructorStatus: "PENDING" } : {}),
+      },
       { status: 201 }
     );
   } catch (error) {

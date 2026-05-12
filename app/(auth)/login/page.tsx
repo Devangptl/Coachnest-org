@@ -52,9 +52,13 @@ export default function LoginPage() {
       });
       const data = await res.json();
       if (!res.ok) { setError(data.error ?? "Login failed."); return; }
+      const isPendingInstructor =
+        data.role === "INSTRUCTOR" &&
+        (data.instructorStatus === "PENDING" || data.instructorStatus === "REJECTED");
       router.push(
         data.role === "ADMIN"      ? "/admin" :
-        data.role === "INSTRUCTOR" ? "/instructor" : "/dashboard",
+        data.role === "INSTRUCTOR" ? (isPendingInstructor ? "/instructor/pending" : "/instructor") :
+        "/dashboard",
       );
       router.refresh();
     } catch {

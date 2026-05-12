@@ -7,9 +7,10 @@ import Link from "next/link";
 import { BookOpen, Users, Star, PlusCircle, Eye, Edit2 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { formatDate } from "@/lib/utils";
+import InstructorAlerts from "./InstructorAlerts";
 
 async function getStats(userId: string) {
-  const [courses, totalStudents, reviews] = await Promise.all([
+  const [courses, totalStudents, reviews, profile] = await Promise.all([
     prisma.course.findMany({
       where:   { createdById: userId },
       include: { _count: { select: { enrollments: true, lessons: true } }, reviews: { select: { rating: true } } },
@@ -21,6 +22,15 @@ async function getStats(userId: string) {
       where:  { course: { createdById: userId } },
       select: { rating: true },
     }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        avatar: true,
+        headline: true,
+        bio: true,
+        instructorStatus: true,
+      },
+    }),
   ]);
 
   const totalCourses = await prisma.course.count({ where: { createdById: userId } });
@@ -28,12 +38,12 @@ async function getStats(userId: string) {
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : 0;
 
-  return { courses, totalStudents, totalCourses, avgRating };
+  return { courses, totalStudents, totalCourses, avgRating, profile };
 }
 
 export default async function InstructorDashboard() {
   const session = await getSession();
-  const { courses, totalStudents, totalCourses, avgRating } = await getStats(session!.userId);
+  const { courses, totalStudents, totalCourses, avgRating, profile } = await getStats(session!.userId);
 
   const stats = [
     { label: "Total Courses",  value: totalCourses,                       icon: BookOpen, color: "text-blue-400",  bg: "bg-blue-500/10"  },
@@ -41,8 +51,39 @@ export default async function InstructorDashboard() {
     { label: "Avg Rating",     value: avgRating ? avgRating.toFixed(1) : "—", icon: Star, color: "text-amber-400", bg: "bg-amber-500/10"  },
   ];
 
+  const isProfileIncomplete = !profile?.headline || !profile?.bio;
+
   return (
     <div className="space-y-6">
+      {/* Alerts — shown once per user, dismissed via localStorage */}
+      <InstructorAlerts
+        isProfileIncomplete={isProfileIncomplete}
+        isApproved={profile?.instructorStatus === "APPROVED"}
+        userId={session!.userId}
+      />
+
+      {/* Profile summary */}
+      <GlassCard className="flex items-center gap-4">
+        {profile?.avatar ? (
+          <img src={profile.avatar} alt={session!.name} className="w-14 h-14 rounded-full object-cover border border-border flex-shrink-0" />
+        ) : (
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl">
+            {session!.name.charAt(0).toUpperCase()}
+          </div>
+        )}
+        <div className="flex-1 min-w-0">
+          <p className="font-bold text-foreground truncate">{session!.name}</p>
+          {profile?.headline ? (
+            <p className="text-muted-foreground text-sm truncate">{profile.headline}</p>
+          ) : (
+            <p className="text-muted-foreground/50 text-sm italic">No headline set</p>
+          )}
+        </div>
+        <Link href="/instructor/profile" className="flex-shrink-0 text-xs text-orange-500 hover:text-orange-400 transition-colors font-medium">
+          Edit Profile →
+        </Link>
+      </GlassCard>
+
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
