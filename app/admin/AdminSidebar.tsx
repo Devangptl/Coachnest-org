@@ -12,6 +12,7 @@ import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
   Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
+  Mail, ScrollText,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -30,9 +31,11 @@ const adminNav = [
   { label: "Quizzes",       href: "/admin/quizzes",         icon: HelpCircle },
   { label: "Blog Posts",    href: "/admin/blogs",           icon: FileText },
   { label: "Certificates",  href: "/admin/certificates",    icon: Award },
-  { label: "Messages",      href: "/admin/messages",        icon: MessageSquare },
-  { label: "Professions",   href: "/admin/professions",     icon: Briefcase     },
-  { label: "My Profile",   href: "/admin/profile",         icon: UserCircle    },
+  { label: "Messages",      href: "/admin/messages",          icon: MessageSquare },
+  { label: "Email Templates", href: "/admin/email-templates", icon: Mail          },
+  { label: "Email Logs",    href: "/admin/email-logs",        icon: ScrollText    },
+  { label: "Professions",   href: "/admin/professions",       icon: Briefcase     },
+  { label: "My Profile",   href: "/admin/profile",           icon: UserCircle    },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

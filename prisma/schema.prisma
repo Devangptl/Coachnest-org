@@ -1108,6 +1108,51 @@ model PayoutRequest {
   @@map("payout_requests")
 }
 
+// ─── Email Templates & Logs ───────────────────────────────────────────────────
+
+model EmailTemplate {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  subject     String
+  htmlBody    String   @db.Text
+  description String?
+  variables   String[] // e.g. ["name", "email", "courseTitle"]
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  logs EmailLog[]
+
+  @@map("email_templates")
+}
+
+model EmailLog {
+  id           String         @id @default(cuid())
+  to           String
+  subject      String
+  templateId   String?
+  templateName String?        // snapshot of template name at send time
+  status       EmailLogStatus @default(SENT)
+  resendId     String?
+  error        String?        @db.Text
+  meta         Json?          // extra context (userId, courseId, etc.)
+  sentAt       DateTime       @default(now())
+
+  template EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+
+  @@index([templateId])
+  @@index([status])
+  @@index([sentAt])
+  @@map("email_logs")
+}
+
+enum EmailLogStatus {
+  SENT
+  FAILED
+  PENDING
+}
+
 // ─── Instructor Follow ────────────────────────────────────────────────────────
 
 model UserInstructorFollow {

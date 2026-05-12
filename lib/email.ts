@@ -6,10 +6,40 @@
  * matching the CoachNest UI design language.
  */
 import { Resend } from "resend";
+import { prisma } from "@/lib/prisma";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
 const FROM   = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
 const APP    = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
+
+/** Sends an email via Resend and writes an EmailLog row (fire-and-forget). */
+async function send(params: Parameters<typeof resend.emails.send>[0]) {
+  let resendId: string | null = null;
+  let sendError: string | null = null;
+
+  try {
+    const result = await resend.emails.send(params);
+    resendId = result.data?.id ?? null;
+    return result;
+  } catch (e: unknown) {
+    sendError = e instanceof Error ? e.message : String(e);
+    throw e;
+  } finally {
+    const recipient = Array.isArray(params.to) ? params.to[0] : (params.to as string);
+    const subject   = typeof params.subject === "string" ? params.subject : "";
+    prisma.emailLog
+      .create({
+        data: {
+          to: recipient,
+          subject,
+          status: sendError ? "FAILED" : "SENT",
+          resendId,
+          error: sendError,
+        },
+      })
+      .catch((err) => console.error("[email] log failed:", err));
+  }
+}
 
 /**
  * In dev / Resend sandbox mode, all emails are redirected to a single
@@ -102,7 +132,7 @@ function shell(body: string): string {
 // ─── 1. Welcome email ─────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(to: string, name: string) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: "Welcome to CoachNest — you're in! 🎓",
@@ -165,7 +195,7 @@ export async function sendSubscriptionEmail(
   const access   = isBasic ? "Access up to 5 courses." : "Unlimited access to every course.";
   const bilLabel = billing === "yearly" ? "Annual" : "Monthly";
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: `Your CoachNest ${label} plan is now active 🎉`,
@@ -212,7 +242,7 @@ export async function sendPlanChangeEmail(
   const action   = isUpgrade ? "Upgraded" : "Downgraded";
   const bilLabel = billing === "yearly" ? "Annual" : "Monthly";
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: `Your plan has been ${action.toLowerCase()} to ${newLabel} — CoachNest`,
@@ -257,7 +287,7 @@ export async function sendSubscriptionCancelledEmail(
     day: "numeric", month: "long", year: "numeric",
   });
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: "Your CoachNest subscription has been cancelled",
@@ -303,7 +333,7 @@ export async function sendSubscriptionResumedEmail(
   plan: string
 ) {
   const label = planLabel(plan);
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: `Your CoachNest ${label} plan has been reactivated ✅`,
@@ -332,7 +362,7 @@ export async function sendSubscriptionResumedEmail(
 // ─── 6. Payment failed ────────────────────────────────────────────────────────
 
 export async function sendPaymentFailedEmail(to: string, name: string) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: "Action required: CoachNest payment failed",
@@ -370,7 +400,7 @@ export async function sendPurchaseEmail(
   amount: string,
   courseId: string
 ) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: `You're enrolled in "${courseTitle}" — CoachNest`,
@@ -407,7 +437,7 @@ export async function sendCourseUpdateEmail(
   lessonTitle: string,
   courseId: string
 ) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: `New lesson available in "${courseTitle}"`,
@@ -433,7 +463,7 @@ export async function sendCourseUpdateEmail(
 // ─── 9. Contact: confirmation to user ────────────────────────────────────────
 
 export async function sendContactConfirmationEmail(to: string, name: string) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: "We received your message — CoachNest",
@@ -470,7 +500,7 @@ export async function sendContactNotificationToAdmin(
   message: string
 ) {
   const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
     subject: `[CoachNest] New inquiry from ${name}`,
@@ -510,7 +540,7 @@ export async function sendContactReplyEmail(
     ? `Re: ${originalSubject} — CoachNest`
     : "Reply to your inquiry — CoachNest";
 
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: subjectLine,
@@ -544,7 +574,7 @@ export async function sendCertificateEmail(
   courseTitle: string,
   certUrl: string
 ) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: `Your certificate for "${courseTitle}" is ready! 🏆`,
@@ -583,7 +613,7 @@ export async function sendInstructorApplicationToAdmin(
   userId: string
 ) {
   const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
     subject: `[CoachNest] New instructor application from ${instructorName}`,
@@ -615,7 +645,7 @@ export async function sendInstructorApplicationToAdmin(
 // ─── 14. Instructor application approved ─────────────────────────────────────
 
 export async function sendInstructorApprovedEmail(to: string, name: string) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: "Your CoachNest instructor application has been approved! 🎉",
@@ -656,7 +686,7 @@ export async function sendInstructorRejectedEmail(
   name: string,
   reason?: string
 ) {
-  return resend.emails.send({
+  return send({
     from: FROM,
     to:   resolveRecipient(to),
     subject: "Update on your CoachNest instructor application",
