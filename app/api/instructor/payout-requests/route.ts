@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendPayoutRequestedEmail } from "@/lib/email";
 
 const MIN_PAYOUT = 1000; // ₹1,000
 
@@ -98,6 +99,15 @@ export async function POST(req: NextRequest) {
         },
       }),
     ]);
+
+    // Email confirmation (fire-and-forget)
+    if (session.email) {
+      sendPayoutRequestedEmail(
+        session.email,
+        session.name ?? "Instructor",
+        reqAmount.toLocaleString("en-IN"),
+      ).catch(() => null);
+    }
 
     return NextResponse.json({ request: { ...request, amount: Number(request.amount) } }, { status: 201 });
   } catch (err) {

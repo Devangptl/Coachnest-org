@@ -12,6 +12,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
+import { sendCourseApprovedEmail } from "@/lib/email";
 
 export async function POST(
   _req: NextRequest,
@@ -27,7 +28,10 @@ export async function POST(
 
     const course = await prisma.course.findUnique({
       where: { id },
-      select: { id: true, title: true, status: true, isFree: true, createdById: true },
+      select: {
+        id: true, title: true, status: true, isFree: true, createdById: true,
+        createdBy: { select: { name: true, email: true } },
+      },
     });
 
     if (!course) {
@@ -46,7 +50,7 @@ export async function POST(
       data: { status: "PUBLISHED" },
     });
 
-    // Notify the instructor
+    // In-app notification
     await createNotification({
       data: {
         userId: course.createdById,
@@ -56,6 +60,16 @@ export async function POST(
         link:   `/instructor/courses/${course.id}`,
       },
     });
+
+    // Email the instructor (fire-and-forget)
+    if (course.createdBy?.email) {
+      sendCourseApprovedEmail(
+        course.createdBy.email,
+        course.createdBy.name ?? "Instructor",
+        course.title,
+        course.id,
+      ).catch(() => null);
+    }
 
     return NextResponse.json({ course: updated });
   } catch (err) {

@@ -775,3 +775,348 @@ export async function sendInstructorRejectedEmail(
     `),
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
+
+// ─── 16. Refund request submitted (student confirmation) ──────────────────────
+
+export async function sendRefundSubmittedEmail(
+  to: string,
+  name: string,
+  courseTitle: string,
+  refundAmount: string,
+  progressPercent: string
+) {
+  const override = await resolveTemplate("refund-submitted", {
+    name, courseTitle, refundAmount, progressPercent,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Refund request received for "${courseTitle}" — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Refund Request Received", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        We've Received Your Request
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${name}, your refund request has been submitted and is under review.
+        Our team will process it within <strong style="color:#e5e5e5;">3–5 business days</strong>.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Course",        courseTitle)}
+          ${infoRow("Progress",      `${progressPercent}% completed`)}
+          ${infoRow("Refund amount", `₹${refundAmount}`)}
+          ${infoRow("Status",        `<span style="color:#f59e0b;font-weight:700;">Under Review</span>`)}
+        </tbody>
+      </table>
+
+      <div style="background:#111a11;border:1px solid #1f3a1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#86efac;font-size:13px;margin:0;line-height:1.6;">
+          💡 Your course access remains active until the refund is fully processed.
+        </p>
+      </div>
+
+      ${btn("View Order History", `${APP}/dashboard/orders`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 17. Refund processed (student — money returned) ─────────────────────────
+
+export async function sendRefundProcessedEmail(
+  to: string,
+  name: string,
+  courseTitle: string,
+  refundAmount: string
+) {
+  const override = await resolveTemplate("refund-processed", { name, courseTitle, refundAmount });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your refund for "${courseTitle}" has been processed — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Refund Processed", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Your Refund Is On Its Way
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${name}, we've successfully processed your refund for
+        <strong style="color:#f97316;">${courseTitle}</strong>.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Course",        courseTitle)}
+          ${infoRow("Refund amount", `<span style="color:#22c55e;font-weight:700;">₹${refundAmount}</span>`)}
+          ${infoRow("Status",        `<span style="color:#22c55e;font-weight:700;">Processed</span>`)}
+          ${infoRow("Arrival",       "5–10 business days")}
+        </tbody>
+      </table>
+
+      <p style="color:#a3a3a3;font-size:14px;line-height:1.6;margin:0 0 24px;">
+        The amount will be credited back to your original payment method.
+        If you don't see it within 10 business days, please contact your bank.
+      </p>
+
+      ${btn("Explore More Courses", `${APP}/courses`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 18. Refund rejected (student) ───────────────────────────────────────────
+
+export async function sendRefundRejectedEmail(
+  to: string,
+  name: string,
+  courseTitle: string,
+  adminNotes?: string
+) {
+  const override = await resolveTemplate("refund-rejected", {
+    name, courseTitle, adminNotes: adminNotes ?? "",
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your refund request for "${courseTitle}" was not approved — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Refund Not Approved", "#ef4444")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Refund Request Reviewed
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${name}, after reviewing your refund request for
+        <strong style="color:#f97316;">${courseTitle}</strong>, we were unable to approve it.
+      </p>
+
+      ${adminNotes ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #ef4444;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">Review note</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;">${adminNotes}</p>
+      </div>` : ""}
+
+      <p style="color:#a3a3a3;font-size:14px;line-height:1.6;margin:0 0 24px;">
+        Your access to the course remains active. If you have questions, our support team is happy to help.
+      </p>
+
+      ${btn("Contact Support", `${APP}/contact`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 19. Payout request submitted (instructor confirmation) ───────────────────
+
+export async function sendPayoutRequestedEmail(
+  to: string,
+  name: string,
+  amount: string
+) {
+  const override = await resolveTemplate("payout-requested", { name, amount });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Payout request of ₹${amount} received — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Payout Request Submitted", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Payout Request Received
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${name}, we've received your payout request. Our team will review and process it within
+        <strong style="color:#e5e5e5;">3–7 business days</strong>.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Requested amount", `₹${amount}`)}
+          ${infoRow("Status",           `<span style="color:#f59e0b;font-weight:700;">Pending Review</span>`)}
+        </tbody>
+      </table>
+
+      ${btn("View Wallet", `${APP}/instructor/earnings`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 20. Payout approved (instructor) ────────────────────────────────────────
+
+export async function sendPayoutApprovedEmail(to: string, name: string, amount: string) {
+  const override = await resolveTemplate("payout-approved", { name, amount });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your payout request of ₹${amount} has been approved — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Payout Approved", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Payout Approved!
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${name}, your payout request of <strong style="color:#22c55e;">₹${amount}</strong> has been
+        approved. The transfer will be processed shortly.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Amount", `<span style="color:#22c55e;font-weight:700;">₹${amount}</span>`)}
+          ${infoRow("Status", `<span style="color:#22c55e;font-weight:700;">Approved</span>`)}
+        </tbody>
+      </table>
+
+      ${btn("View Earnings", `${APP}/instructor/earnings`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 21. Payout rejected (instructor) ────────────────────────────────────────
+
+export async function sendPayoutRejectedEmail(
+  to: string,
+  name: string,
+  amount: string,
+  adminNotes?: string
+) {
+  const override = await resolveTemplate("payout-rejected", {
+    name, amount, adminNotes: adminNotes ?? "",
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your payout request of ₹${amount} was not approved — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Payout Not Approved", "#ef4444")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Payout Request Rejected
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${name}, your payout request of <strong style="color:#f97316;">₹${amount}</strong> could not be approved.
+        The amount has been returned to your wallet balance.
+      </p>
+
+      ${adminNotes ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #ef4444;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">Admin note</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;">${adminNotes}</p>
+      </div>` : ""}
+
+      ${btn("View Wallet", `${APP}/instructor/earnings`)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        Have questions? <a href="${APP}/contact" style="color:#f97316;">Contact support</a>.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 22. Payout processed/transferred (instructor) ───────────────────────────
+
+export async function sendPayoutProcessedEmail(to: string, name: string, amount: string) {
+  const override = await resolveTemplate("payout-processed", { name, amount });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your payout of ₹${amount} has been transferred — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Payout Transferred", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Payment Sent! 🎉
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${name}, your payout of <strong style="color:#22c55e;">₹${amount}</strong> has been
+        transferred to your bank account. Keep creating great content!
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Amount transferred", `<span style="color:#22c55e;font-weight:700;">₹${amount}</span>`)}
+          ${infoRow("Status",             `<span style="color:#22c55e;font-weight:700;">Processed</span>`)}
+          ${infoRow("Arrival",            "1–3 business days")}
+        </tbody>
+      </table>
+
+      ${btn("View Earnings", `${APP}/instructor/earnings`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 23. Course approved by admin (instructor) ────────────────────────────────
+
+export async function sendCourseApprovedEmail(
+  to: string,
+  name: string,
+  courseTitle: string,
+  courseId: string
+) {
+  const override = await resolveTemplate("course-approved", {
+    name, courseTitle, link: `${APP}/instructor/courses/${courseId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your course "${courseTitle}" has been approved! 🎉`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Course Approved", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Your Course Is Live!
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${name}, great news — <strong style="color:#f97316;">${courseTitle}</strong> has passed
+        admin review and is now <strong style="color:#22c55e;">live on the platform</strong>.
+        Students can now discover and enroll in your course.
+      </p>
+
+      <div style="background:#0d1a0d;border:1px solid #1f3a1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#86efac;font-size:13px;margin:0;line-height:1.6;">
+          💡 <strong>Promote your course!</strong> Share the link on social media to attract your first students.
+        </p>
+      </div>
+
+      ${btn("View Your Course", `${APP}/instructor/courses/${courseId}`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 24. Course rejected by admin (instructor) ────────────────────────────────
+
+export async function sendCourseRejectedEmail(
+  to: string,
+  name: string,
+  courseTitle: string,
+  courseId: string,
+  reason?: string
+) {
+  const override = await resolveTemplate("course-rejected", {
+    name, courseTitle, reason: reason ?? "", link: `${APP}/instructor/courses/${courseId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Update on your course "${courseTitle}" — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Course Not Approved", "#ef4444")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Course Review Update
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${name}, after reviewing <strong style="color:#f97316;">${courseTitle}</strong>,
+        our team was unable to approve it for publication at this time.
+      </p>
+
+      ${reason ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #ef4444;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">Rejection reason</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;">${reason}</p>
+      </div>` : ""}
+
+      <p style="color:#a3a3a3;font-size:14px;line-height:1.6;margin:0 0 24px;">
+        The course has been moved back to <strong>Draft</strong>. Address the feedback,
+        make improvements, and resubmit for review.
+      </p>
+
+      ${btn("Edit & Resubmit", `${APP}/instructor/courses/${courseId}`)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        Have questions? <a href="${APP}/contact" style="color:#f97316;">Contact support</a>.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
