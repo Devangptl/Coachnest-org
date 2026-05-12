@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { ArrowLeft, Eye, EyeOff, PlusCircle, X } from "lucide-react";
@@ -25,12 +25,13 @@ const STARTER_TEMPLATE = `<h1 style="color:#ffffff;font-size:26px;font-weight:80
 
 export default function NewEmailTemplatePage() {
   const router = useRouter();
+  const params = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState(false);
   const [varInput, setVarInput] = useState("");
   const [form, setForm] = useState({
-    name: "",
-    slug: "",
+    name: params.get("name") ?? "",
+    slug: params.get("slug") ?? "",
     subject: "",
     htmlBody: STARTER_TEMPLATE,
     description: "",

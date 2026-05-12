@@ -13,7 +13,10 @@ const FROM   = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
 const APP    = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
 
 /** Sends an email via Resend and writes an EmailLog row (fire-and-forget). */
-async function send(params: Parameters<typeof resend.emails.send>[0]) {
+async function send(
+  params: Parameters<typeof resend.emails.send>[0],
+  logMeta?: { templateId?: string; templateName?: string }
+) {
   let resendId: string | null = null;
   let sendError: string | null = null;
 
@@ -35,9 +38,38 @@ async function send(params: Parameters<typeof resend.emails.send>[0]) {
           status: sendError ? "FAILED" : "SENT",
           resendId,
           error: sendError,
+          templateId:   logMeta?.templateId   ?? null,
+          templateName: logMeta?.templateName ?? null,
         },
       })
       .catch((err) => console.error("[email] log failed:", err));
+  }
+}
+
+/**
+ * Checks if an admin-created template with the given slug exists and is active.
+ * If so, substitutes {{variable}} placeholders and returns overridden subject + html.
+ * Returns null if no active custom template is found (fall back to hardcoded).
+ */
+async function resolveTemplate(
+  slug: string,
+  vars: Record<string, string>
+): Promise<{ subject: string; html: string; templateId: string; templateName: string } | null> {
+  try {
+    const tpl = await prisma.emailTemplate.findUnique({ where: { slug } });
+    if (!tpl || !tpl.isActive) return null;
+
+    let html    = tpl.htmlBody;
+    let subject = tpl.subject;
+    for (const [key, val] of Object.entries(vars)) {
+      const re = new RegExp(`{{\\s*${key}\\s*}}`, "g");
+      html    = html.replace(re, val);
+      subject = subject.replace(re, val);
+    }
+    return { subject, html, templateId: tpl.id, templateName: tpl.name };
+  } catch {
+    // Never block email delivery because of a DB lookup failure
+    return null;
   }
 }
 
@@ -132,11 +164,12 @@ function shell(body: string): string {
 // ─── 1. Welcome email ─────────────────────────────────────────────────────────
 
 export async function sendWelcomeEmail(to: string, name: string) {
+  const override = await resolveTemplate("welcome", { name });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: "Welcome to CoachNest — you're in! 🎓",
-    html: shell(`
+    subject: override?.subject ?? "Welcome to CoachNest — you're in! 🎓",
+    html: override?.html ?? shell(`
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;letter-spacing:-0.5px;">
         Welcome, ${name}! 👋
       </h1>
@@ -179,7 +212,7 @@ export async function sendWelcomeEmail(to: string, name: string) {
         Questions? Reply to this email or visit <a href="${APP}/contact" style="color:#f97316;">our contact page</a>.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 2. Subscription activated ────────────────────────────────────────────────
@@ -194,12 +227,13 @@ export async function sendSubscriptionEmail(
   const isBasic  = plan.toUpperCase() === "BASIC";
   const access   = isBasic ? "Access up to 5 courses." : "Unlimited access to every course.";
   const bilLabel = billing === "yearly" ? "Annual" : "Monthly";
+  const override = await resolveTemplate("subscription-activated", { name, plan: label, billing: bilLabel });
 
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: `Your CoachNest ${label} plan is now active 🎉`,
-    html: shell(`
+    subject: override?.subject ?? `Your CoachNest ${label} plan is now active 🎉`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge(label + " Plan", "#f97316")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Subscription Activated!
@@ -223,7 +257,7 @@ export async function sendSubscriptionEmail(
         <a href="${APP}/dashboard/subscription" style="color:#f97316;">your subscription dashboard</a>.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 3. Plan changed (upgrade / downgrade) ────────────────────────────────────
@@ -241,12 +275,13 @@ export async function sendPlanChangeEmail(
                     ["FREE","BASIC","PRO","ENTERPRISE"].indexOf(oldPlan.toUpperCase());
   const action   = isUpgrade ? "Upgraded" : "Downgraded";
   const bilLabel = billing === "yearly" ? "Annual" : "Monthly";
+  const override = await resolveTemplate("plan-changed", { name, oldPlan: oldLabel, newPlan: newLabel, billing: bilLabel, action });
 
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: `Your plan has been ${action.toLowerCase()} to ${newLabel} — CoachNest`,
-    html: shell(`
+    subject: override?.subject ?? `Your plan has been ${action.toLowerCase()} to ${newLabel} — CoachNest`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge(action, isUpgrade ? "#f97316" : "#a3a3a3")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Plan ${action}
@@ -271,7 +306,7 @@ export async function sendPlanChangeEmail(
         <a href="${APP}/contact" style="color:#f97316;">contact support</a> immediately.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 4. Subscription cancelled ───────────────────────────────────────────────
@@ -286,12 +321,13 @@ export async function sendSubscriptionCancelledEmail(
   const endStr  = endDate.toLocaleDateString("en-IN", {
     day: "numeric", month: "long", year: "numeric",
   });
+  const override = await resolveTemplate("subscription-cancelled", { name, plan: label, endDate: endStr });
 
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: "Your CoachNest subscription has been cancelled",
-    html: shell(`
+    subject: override?.subject ?? "Your CoachNest subscription has been cancelled",
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Cancellation Notice", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Subscription Cancelled
@@ -322,7 +358,7 @@ export async function sendSubscriptionCancelledEmail(
         <a href="${APP}/contact" style="color:#f97316;">let us know</a>.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 5. Subscription resumed ─────────────────────────────────────────────────
@@ -333,11 +369,13 @@ export async function sendSubscriptionResumedEmail(
   plan: string
 ) {
   const label = planLabel(plan);
+  const override = await resolveTemplate("subscription-resumed", { name, plan: label });
+
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: `Your CoachNest ${label} plan has been reactivated ✅`,
-    html: shell(`
+    subject: override?.subject ?? `Your CoachNest ${label} plan has been reactivated ✅`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Reactivated", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Welcome Back!
@@ -356,17 +394,18 @@ export async function sendSubscriptionResumedEmail(
 
       ${btn("Continue Learning", `${APP}/courses`)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 6. Payment failed ────────────────────────────────────────────────────────
 
 export async function sendPaymentFailedEmail(to: string, name: string) {
+  const override = await resolveTemplate("payment-failed", { name });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: "Action required: CoachNest payment failed",
-    html: shell(`
+    subject: override?.subject ?? "Action required: CoachNest payment failed",
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Payment Failed", "#ef4444")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         We Couldn't Process Your Payment
@@ -388,7 +427,7 @@ export async function sendPaymentFailedEmail(to: string, name: string) {
         Need help? <a href="${APP}/contact" style="color:#f97316;">Contact our support team</a>.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 7. Purchase / enrollment confirmation ────────────────────────────────────
@@ -400,11 +439,14 @@ export async function sendPurchaseEmail(
   amount: string,
   courseId: string
 ) {
+  const override = await resolveTemplate("purchase-confirmation", {
+    name, courseTitle, amount, link: `${APP}/courses/${courseId}`,
+  });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: `You're enrolled in "${courseTitle}" — CoachNest`,
-    html: shell(`
+    subject: override?.subject ?? `You're enrolled in "${courseTitle}" — CoachNest`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Enrollment Confirmed")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         You're In! 🎉
@@ -425,7 +467,7 @@ export async function sendPurchaseEmail(
 
       ${btn("Start Learning", `${APP}/courses/${courseId}`)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 8. Course update / new lesson ───────────────────────────────────────────
@@ -437,11 +479,14 @@ export async function sendCourseUpdateEmail(
   lessonTitle: string,
   courseId: string
 ) {
+  const override = await resolveTemplate("course-update", {
+    name, courseTitle, lessonTitle, link: `${APP}/courses/${courseId}`,
+  });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: `New lesson available in "${courseTitle}"`,
-    html: shell(`
+    subject: override?.subject ?? `New lesson available in "${courseTitle}"`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("New Lesson")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         New Content Unlocked
@@ -457,17 +502,18 @@ export async function sendCourseUpdateEmail(
 
       ${btn("Continue Learning", `${APP}/courses/${courseId}`)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 9. Contact: confirmation to user ────────────────────────────────────────
 
 export async function sendContactConfirmationEmail(to: string, name: string) {
+  const override = await resolveTemplate("contact-confirmation", { name });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: "We received your message — CoachNest",
-    html: shell(`
+    subject: override?.subject ?? "We received your message — CoachNest",
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Message Received")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Thanks for reaching out, ${name}!
@@ -488,7 +534,7 @@ export async function sendContactConfirmationEmail(to: string, name: string) {
 
       ${btn("Visit CoachNest", APP)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 10. Contact: notification to admin ──────────────────────────────────────
@@ -500,11 +546,14 @@ export async function sendContactNotificationToAdmin(
   message: string
 ) {
   const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
+  const override = await resolveTemplate("contact-admin-notification", {
+    name, email, subject: subject ?? "", message,
+  });
   return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
-    subject: `[CoachNest] New inquiry from ${name}`,
-    html: shell(`
+    subject: override?.subject ?? `[CoachNest] New inquiry from ${name}`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("New Contact Inquiry", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
         New Message Received
@@ -525,7 +574,7 @@ export async function sendContactNotificationToAdmin(
 
       ${btn("Reply in Admin Panel", `${APP}/admin/messages`)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 11. Contact: admin reply to user ────────────────────────────────────────
@@ -539,12 +588,15 @@ export async function sendContactReplyEmail(
   const subjectLine = originalSubject
     ? `Re: ${originalSubject} — CoachNest`
     : "Reply to your inquiry — CoachNest";
+  const override = await resolveTemplate("contact-reply", {
+    name, originalSubject: originalSubject ?? "", replyMessage,
+  });
 
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: subjectLine,
-    html: shell(`
+    subject: override?.subject ?? subjectLine,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Support Reply")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Hi ${name}, we've replied!
@@ -563,7 +615,7 @@ export async function sendContactReplyEmail(
 
       ${btn("Contact Us Again", `${APP}/contact`)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 12. Certificate issued ───────────────────────────────────────────────────
@@ -574,11 +626,12 @@ export async function sendCertificateEmail(
   courseTitle: string,
   certUrl: string
 ) {
+  const override = await resolveTemplate("certificate", { name, courseTitle, certUrl });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: `Your certificate for "${courseTitle}" is ready! 🏆`,
-    html: shell(`
+    subject: override?.subject ?? `Your certificate for "${courseTitle}" is ready! 🏆`,
+    html: override?.html ?? shell(`
       <div style="text-align:center;margin-bottom:28px;">
         <div style="display:inline-block;width:64px;height:64px;background:linear-gradient(135deg,#f59e0b,#fbbf24);border-radius:16px;line-height:64px;font-size:32px;margin-bottom:16px;">🏆</div>
         <h1 style="color:#ffffff;font-size:28px;font-weight:900;margin:0 0 8px;letter-spacing:-0.5px;">
@@ -602,7 +655,7 @@ export async function sendCertificateEmail(
         Share your achievement on LinkedIn to showcase your new skills!
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 13. Instructor application received (to admin) ───────────────────────────
@@ -613,11 +666,12 @@ export async function sendInstructorApplicationToAdmin(
   userId: string
 ) {
   const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
+  const override = await resolveTemplate("instructor-application-admin", { instructorName, instructorEmail });
   return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
-    subject: `[CoachNest] New instructor application from ${instructorName}`,
-    html: shell(`
+    subject: override?.subject ?? `[CoachNest] New instructor application from ${instructorName}`,
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Instructor Application", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
         New Instructor Application
@@ -639,17 +693,18 @@ export async function sendInstructorApplicationToAdmin(
         You can approve or reject this application from the admin panel.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 14. Instructor application approved ─────────────────────────────────────
 
 export async function sendInstructorApprovedEmail(to: string, name: string) {
+  const override = await resolveTemplate("instructor-approved", { name });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: "Your CoachNest instructor application has been approved! 🎉",
-    html: shell(`
+    subject: override?.subject ?? "Your CoachNest instructor application has been approved! 🎉",
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Application Approved", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Congratulations, ${name}! 🎉
@@ -676,7 +731,7 @@ export async function sendInstructorApprovedEmail(to: string, name: string) {
 
       ${btn("Go to Instructor Dashboard", `${APP}/instructor`)}
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
 // ─── 15. Instructor application rejected ─────────────────────────────────────
@@ -686,11 +741,12 @@ export async function sendInstructorRejectedEmail(
   name: string,
   reason?: string
 ) {
+  const override = await resolveTemplate("instructor-rejected", { name, reason: reason ?? "" });
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: "Update on your CoachNest instructor application",
-    html: shell(`
+    subject: override?.subject ?? "Update on your CoachNest instructor application",
+    html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Application Update", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Application Status Update
@@ -717,5 +773,5 @@ export async function sendInstructorRejectedEmail(
         Thank you for your interest in teaching on CoachNest.
       </p>
     `),
-  });
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
