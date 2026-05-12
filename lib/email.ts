@@ -116,8 +116,8 @@ function shell(body: string): string {
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
 </head>
-<body style="margin:0;padding:0;background:#0a0a0a;-webkit-font-smoothing:antialiased;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background:#0a0a0a;padding:48px 16px;">
+<body style="margin:0;padding:0;-webkit-font-smoothing:antialiased;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:48px 16px;">
   <tr><td align="center">
   <table width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;">
 
