@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Reorder, useDragControls } from "framer-motion";
+import { Reorder, useDragControls, AnimatePresence, motion } from "framer-motion";
 import GlassCard from "@/components/GlassCard";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import {
@@ -757,45 +757,41 @@ export default function LessonsManager({
                   sectionLessonsRef.current[section.id] = reordered;
                 }}
               >
-                {/* Lesson rows */}
-                {!isCollapsed && (
-                  <>
-                    <Reorder.Group
-                      axis="y"
-                      values={section.lessons}
-                      onReorder={(reordered) => {
-                        setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, lessons: reordered } : s));
-                        sectionLessonsRef.current[section.id] = reordered;
-                      }}
-                      as="div"
-                      className="space-y-2"
-                    >
-                      {renderLessonRows(section.lessons, section.id)}
-                    </Reorder.Group>
+                {/* Lesson rows — always passed; SectionBlock animates visibility */}
+                <Reorder.Group
+                  axis="y"
+                  values={section.lessons}
+                  onReorder={(reordered) => {
+                    setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, lessons: reordered } : s));
+                    sectionLessonsRef.current[section.id] = reordered;
+                  }}
+                  as="div"
+                  className="space-y-2"
+                >
+                  {renderLessonRows(section.lessons, section.id)}
+                </Reorder.Group>
 
-                    {section.lessons.length === 0 && addingToSectionId !== section.id && (
-                      <p className="text-muted-foreground/50 text-xs text-center py-4">No lessons yet — add one below.</p>
-                    )}
+                {section.lessons.length === 0 && addingToSectionId !== section.id && (
+                  <p className="text-muted-foreground/50 text-xs text-center py-4">No lessons yet — add one below.</p>
+                )}
 
-                    {/* Inline add lesson form */}
-                    {renderAddLessonForm(section.id)}
+                {/* Inline add lesson form */}
+                {renderAddLessonForm(section.id)}
 
-                    {/* Add lesson button */}
-                    {addingToSectionId !== section.id && !editingId && (
-                      <button
-                        onClick={() => openAddLessonForm(section.id)}
-                        className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-white/30 hover:bg-secondary/40 transition-all text-sm"
-                      >
-                        <PlusCircle className="w-3.5 h-3.5" /> Add Lesson
-                      </button>
-                    )}
+                {/* Add lesson button */}
+                {addingToSectionId !== section.id && !editingId && (
+                  <button
+                    onClick={() => openAddLessonForm(section.id)}
+                    className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-white/30 hover:bg-secondary/40 transition-all text-sm"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" /> Add Lesson
+                  </button>
+                )}
 
-                    {reordering && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
-                        <Loader2 className="w-3 h-3 animate-spin" /> Saving order…
-                      </p>
-                    )}
-                  </>
+                {reordering && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Saving order…
+                  </p>
                 )}
               </SectionBlock>
             );
@@ -952,19 +948,30 @@ function SectionBlock({
                   {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                 </button>
                 <button onClick={onToggleCollapse} className="p-1.5 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title={isCollapsed ? "Expand" : "Collapse"}>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ease-in-out ${isCollapsed ? "-rotate-90" : "rotate-0"}`} />
                 </button>
               </>
             )}
           </div>
         </div>
 
-        {/* Lessons area */}
-        {!isCollapsed && (
-          <div className="p-3 space-y-2">
-            {children}
-          </div>
-        )}
+        {/* Lessons area — animated collapse */}
+        <AnimatePresence initial={false}>
+          {!isCollapsed && (
+            <motion.div
+              key="section-content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className="p-3 space-y-2">
+                {children}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Reorder.Item>
   );
