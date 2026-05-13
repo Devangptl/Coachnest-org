@@ -268,7 +268,7 @@ export default function EditEmailTemplateForm({ template }: { template: EmailTem
 
               {preview ? (
                 <div
-                  className="min-h-64 rounded-md border border-border bg-[#111] p-4 text-sm overflow-auto"
+                  className="min-h-64 rounded-md border border-border p-4 text-sm overflow-auto"
                   dangerouslySetInnerHTML={{ __html: form.htmlBody }}
                 />
               ) : (
