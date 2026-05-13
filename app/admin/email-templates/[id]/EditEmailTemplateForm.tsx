@@ -9,7 +9,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import type { EmailTemplate } from "@prisma/client";
 
-const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date"];
+const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date", "logo", "appUrl"];
 
 export default function EditEmailTemplateForm({ template }: { template: EmailTemplate }) {
   const router = useRouter();

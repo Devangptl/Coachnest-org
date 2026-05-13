@@ -8,9 +8,10 @@
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
-const FROM   = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
-const APP    = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
+const resend   = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
+const FROM     = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
+const APP      = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
+const LOGO_URL = process.env.EMAIL_LOGO_URL ?? "";
 
 /** Sends an email via Resend and writes an EmailLog row (fire-and-forget). */
 async function send(
@@ -59,9 +60,11 @@ async function resolveTemplate(
     const tpl = await prisma.emailTemplate.findUnique({ where: { slug } });
     if (!tpl || !tpl.isActive) return null;
 
+    const allVars = { logo: LOGO_URL, appUrl: APP, ...vars };
+
     let html    = tpl.htmlBody;
     let subject = tpl.subject;
-    for (const [key, val] of Object.entries(vars)) {
+    for (const [key, val] of Object.entries(allVars)) {
       const re = new RegExp(`{{\\s*${key}\\s*}}`, "g");
       html    = html.replace(re, val);
       subject = subject.replace(re, val);

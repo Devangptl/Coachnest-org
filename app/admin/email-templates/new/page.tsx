@@ -8,7 +8,7 @@ import { ArrowLeft, Eye, EyeOff, PlusCircle, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
-const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date"];
+const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date", "logo", "appUrl"];
 
 const STARTER_TEMPLATE = `<h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;letter-spacing:-0.5px;">
   Hello, {{name}}!
