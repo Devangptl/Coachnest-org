@@ -269,7 +269,11 @@ export default function EditEmailTemplateForm({ template }: { template: EmailTem
               {preview ? (
                 <div
                   className="min-h-64 rounded-md border border-border p-4 text-sm overflow-auto"
-                  dangerouslySetInnerHTML={{ __html: form.htmlBody }}
+                  dangerouslySetInnerHTML={{
+                    __html: form.htmlBody
+                      .replace(/\{\{\s*logo\s*\}\}/g, "https://www.coachnest.in/logo.png")
+                      .replace(/\{\{\s*appUrl\s*\}\}/g, process.env.NEXT_PUBLIC_APP_URL ?? "https://www.coachnest.in"),
+                  }}
                 />
               ) : (
                 <textarea
