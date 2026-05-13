@@ -157,6 +157,24 @@ export default async function EmailTemplatesPage() {
             Create a template with the exact slug to override that system email
           </span>
         </div>
+
+        {/* Built-in variables always available in every custom template */}
+        <div className="px-4 py-3 border-b border-border bg-blue-500/5">
+          <p className="text-xs font-semibold text-blue-400 mb-1.5">Built-in variables — available in every template</p>
+          <div className="flex flex-wrap gap-1.5">
+            {[
+              { v: "logo",   hint: "Logo URL — defaults to /logo.png in your public folder (override with EMAIL_LOGO_URL env var)" },
+              { v: "appUrl", hint: "Your site URL (NEXT_PUBLIC_APP_URL)" },
+            ].map(({ v, hint }) => (
+              <span key={v} title={hint} className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded font-mono cursor-help">
+                {`{{${v}}}`}
+              </span>
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground/60 mt-1.5">
+            Use <code className="font-mono bg-secondary px-1 rounded">{"<img src=\"{{logo}}\" />"}</code> to embed your logo in any template.
+          </p>
+        </div>
         {Object.entries(
           SYSTEM_SLUGS.reduce<Record<string, typeof SYSTEM_SLUGS>>((acc, s) => {
             (acc[s.group] ??= []).push(s);

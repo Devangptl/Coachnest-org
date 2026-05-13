@@ -9,7 +9,7 @@ import Link from "next/link";
 import toast from "react-hot-toast";
 import type { EmailTemplate } from "@prisma/client";
 
-const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date"];
+const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date", "logo", "appUrl"];
 
 export default function EditEmailTemplateForm({ template }: { template: EmailTemplate }) {
   const router = useRouter();
@@ -268,7 +268,7 @@ export default function EditEmailTemplateForm({ template }: { template: EmailTem
 
               {preview ? (
                 <div
-                  className="min-h-64 rounded-md border border-border bg-[#111] p-4 text-sm overflow-auto"
+                  className="min-h-64 rounded-md border border-border p-4 text-sm overflow-auto"
                   dangerouslySetInnerHTML={{ __html: form.htmlBody }}
                 />
               ) : (
