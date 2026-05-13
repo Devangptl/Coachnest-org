@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Megaphone, Pin, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 
 type Announcement = {
   id: string;
@@ -52,10 +53,7 @@ export default function AnnouncementsTab({ classId }: { classId: string }) {
         <input className="input-glass" placeholder="Title" value={title} onChange={(e) => setTitle(e.target.value)} required />
         <textarea className="input-glass min-h-[100px]" placeholder="What's new?" value={body} onChange={(e) => setBody(e.target.value)} required />
         <div className="flex items-center justify-between">
-          <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={pinned} onChange={(e) => setPinned(e.target.checked)} />
-            Pin to top
-          </label>
+          <Checkbox label="Pin to top" checked={pinned} onChange={setPinned} />
           <Button type="submit" size="sm">Post announcement</Button>
         </div>
       </form>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { DateTimeInput } from "@/components/ui/DateTimeInput";
+import { Checkbox } from "@/components/ui/Checkbox";
 import {
   ArrowLeft, ArrowRight, Save, BookOpen, Calendar, Settings,
   Eye, MessageSquare, Video, ClipboardCheck, GripVertical, X, Trophy,
@@ -223,20 +224,17 @@ export default function CreateClassWizard({ availableCourses }: { availableCours
                         <div className="font-medium text-sm truncate">{course.title}</div>
                         <div className="text-xs text-muted-foreground">{course.totalLessons} lessons</div>
                       </div>
-                      <label className="flex items-center gap-1 text-xs">
-                        <input
-                          type="checkbox"
-                          checked={sc.isRequired}
-                          onChange={(e) =>
-                            setSelected((prev) =>
-                              prev.map((p) =>
-                                p.courseId === sc.courseId ? { ...p, isRequired: e.target.checked } : p,
-                              ),
-                            )
-                          }
-                        />
-                        Required
-                      </label>
+                      <Checkbox
+                        label="Required"
+                        checked={sc.isRequired}
+                        onChange={(v) =>
+                          setSelected((prev) =>
+                            prev.map((p) =>
+                              p.courseId === sc.courseId ? { ...p, isRequired: v } : p,
+                            ),
+                          )
+                        }
+                      />
                       <button
                         type="button"
                         className="text-red-400 hover:text-red-300"
@@ -500,15 +498,13 @@ function FeatureToggle({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <label className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-amber-400/30 cursor-pointer">
+    <label
+      className="flex items-center gap-3 p-3 rounded-lg border border-border hover:border-amber-400/30 cursor-pointer transition-colors"
+      onClick={() => onChange(!checked)}
+    >
       <Icon className="w-4 h-4 text-muted-foreground" />
       <span className="flex-1 text-sm">{label}</span>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className="w-4 h-4"
-      />
+      <Checkbox checked={checked} onChange={onChange} />
     </label>
   );
 }
