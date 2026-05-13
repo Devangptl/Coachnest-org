@@ -163,7 +163,7 @@ export default async function EmailTemplatesPage() {
           <p className="text-xs font-semibold text-blue-400 mb-1.5">Built-in variables — available in every template</p>
           <div className="flex flex-wrap gap-1.5">
             {[
-              { v: "logo",   hint: "Your logo image URL (set via EMAIL_LOGO_URL env var)" },
+              { v: "logo",   hint: "Logo URL — defaults to /logo.png in your public folder (override with EMAIL_LOGO_URL env var)" },
               { v: "appUrl", hint: "Your site URL (NEXT_PUBLIC_APP_URL)" },
             ].map(({ v, hint }) => (
               <span key={v} title={hint} className="text-xs px-1.5 py-0.5 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded font-mono cursor-help">
