@@ -7,8 +7,10 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
-const FROM = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
+const resend   = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
+const FROM     = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
+const APP      = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
+const LOGO_URL = process.env.EMAIL_LOGO_URL ?? `${APP}/logo.png`;
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -33,15 +35,14 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: "No recipient email provided" }, { status: 400 });
     }
 
-    // Replace {{variable}} placeholders with provided values
+    // Merge built-in vars (logo, appUrl) with caller-supplied vars, then substitute
+    const allVars: Record<string, string> = { logo: LOGO_URL, appUrl: APP, ...variables };
     let htmlBody = template.htmlBody;
-    let subject = template.subject;
-    if (variables) {
-      for (const [key, val] of Object.entries(variables)) {
-        const re = new RegExp(`{{\\s*${key}\\s*}}`, "g");
-        htmlBody = htmlBody.replace(re, val);
-        subject = subject.replace(re, val);
-      }
+    let subject  = template.subject;
+    for (const [key, val] of Object.entries(allVars)) {
+      const re = new RegExp(`{{\\s*${key}\\s*}}`, "g");
+      htmlBody = htmlBody.replace(re, val);
+      subject  = subject.replace(re, val);
     }
 
     let resendId: string | null = null;
