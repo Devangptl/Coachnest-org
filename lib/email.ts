@@ -214,7 +214,46 @@ export async function sendWelcomeEmail(to: string, name: string) {
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
-// ─── 2. Purchase / enrollment confirmation ────────────────────────────────────
+// ─── 2. Free course enrollment ────────────────────────────────────────────────
+
+export async function sendFreeEnrollmentEmail(
+  to: string,
+  name: string,
+  courseTitle: string,
+  courseId: string
+) {
+  const override = await resolveTemplate("free-enrollment", { name, courseTitle, link: `${APP}/courses/${courseId}` });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `You're enrolled in "${courseTitle}" — CoachNest 🎉`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Free Enrollment", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        You're enrolled, ${name}! 🎉
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        You now have free access to
+        <strong style="color:#f97316;">${courseTitle}</strong>.
+        Start learning whenever you're ready.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Course", courseTitle)}
+          ${infoRow("Access", "Free · Lifetime")}
+        </tbody>
+      </table>
+
+      ${btn("Start Learning", `${APP}/courses/${courseId}`)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        Questions? <a href="${APP}/contact" style="color:#f97316;">Contact us</a> anytime.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 3. Purchase / enrollment confirmation ────────────────────────────────────
 
 export async function sendPurchaseEmail(
   to: string,

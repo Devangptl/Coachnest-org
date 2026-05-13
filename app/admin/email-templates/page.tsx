@@ -12,6 +12,7 @@ const SYSTEM_SLUGS: { slug: string; label: string; vars: string[]; group: string
   // Auth
   { slug: "welcome",                      label: "Welcome",                        vars: ["name"],                                           group: "Auth",        trigger: "User signs up"                        },
   // Courses
+  { slug: "free-enrollment",              label: "Free Course Enrollment",         vars: ["name", "courseTitle", "link"],                    group: "Courses",     trigger: "Student enrolls in a free course"     },
   { slug: "purchase-confirmation",        label: "Purchase Confirmation",          vars: ["name", "courseTitle", "amount", "link"],           group: "Courses",     trigger: "Student purchases a course"           },
   { slug: "course-update",                label: "New Lesson Added",               vars: ["name", "courseTitle", "lessonTitle", "link"],      group: "Courses",     trigger: "Instructor adds a new lesson"         },
   { slug: "course-approved",              label: "Course Approved",                vars: ["name", "courseTitle", "link"],                    group: "Courses",     trigger: "Admin approves a course"              },
