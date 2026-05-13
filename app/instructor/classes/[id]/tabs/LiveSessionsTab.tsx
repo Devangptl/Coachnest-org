@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Video, Loader2, PlusCircle, Play, StopCircle } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { DateTimeInput } from "@/components/ui/DateTimeInput";
 
 type Session = {
   id: string;
@@ -80,7 +81,7 @@ export default function LiveSessionsTab({ classId }: { classId: string }) {
         <form onSubmit={schedule} className="glass p-4 rounded-xl space-y-3">
           <input className="input-glass" required placeholder="Session title" value={title} onChange={(e) => setTitle(e.target.value)} />
           <div className="grid sm:grid-cols-2 gap-3">
-            <input className="input-glass" type="datetime-local" required value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+            <DateTimeInput type="datetime-local" required value={scheduledAt} onChange={setScheduledAt} />
             <input className="input-glass" type="number" placeholder="Duration (min)" value={duration} onChange={(e) => setDuration(e.target.value)} />
           </div>
           <input className="input-glass" placeholder="Meeting URL (Zoom/Meet)" value={meetingUrl} onChange={(e) => setMeetingUrl(e.target.value)} />

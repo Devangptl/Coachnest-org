@@ -168,6 +168,30 @@
     @apply block text-muted-foreground text-xs font-medium mb-1;
   }
 
+  /* ── Strip all native browser chrome from date/time inputs ── */
+  input[type="date"],
+  input[type="datetime-local"],
+  input[type="time"],
+  input[type="month"],
+  input[type="week"] {
+    /* Remove the native calendar/clock picker icon */
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  input[type="date"]::-webkit-calendar-picker-indicator,
+  input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+  input[type="time"]::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator,
+  input[type="week"]::-webkit-calendar-picker-indicator {
+    display: none;
+    -webkit-appearance: none;
+  }
+  /* Firefox */
+  input[type="date"]::-moz-focus-inner,
+  input[type="datetime-local"]::-moz-focus-inner {
+    border: 0;
+  }
+
   /* Shimmer skeleton */
   .skeleton {
     @apply rounded bg-secondary overflow-hidden relative;

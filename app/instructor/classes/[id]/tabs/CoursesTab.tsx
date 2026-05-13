@@ -5,10 +5,12 @@ import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { ArrowDown, ArrowUp, X, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import { useConfirm } from "@/components/ui/ConfirmDialog";
 
 export default function CoursesTab({ cls }: { cls: any }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const { confirm, dialog } = useConfirm();
 
   async function reorder(index: number, dir: -1 | 1) {
     const next = [...cls.courses];
@@ -33,7 +35,13 @@ export default function CoursesTab({ cls }: { cls: any }) {
   }
 
   async function remove(classCourseId: string) {
-    if (!confirm("Remove this course from the class?")) return;
+    const ok = await confirm({
+      title: "Remove course",
+      description: "Remove this course from the class? Student progress in this course will not be affected.",
+      confirmLabel: "Remove",
+      variant: "danger",
+    });
+    if (!ok) return;
     setBusy(true);
     try {
       const res = await fetch(`/api/classes/${cls.id}/courses/${classCourseId}`, {
@@ -51,14 +59,19 @@ export default function CoursesTab({ cls }: { cls: any }) {
 
   if (cls.courses.length === 0) {
     return (
-      <div className="glass p-10 rounded-xl text-center">
-        <BookOpen className="w-12 h-12 text-amber-400/40 mx-auto mb-3" />
-        <p className="text-sm text-muted-foreground">No courses in this class yet.</p>
-      </div>
+      <>
+        {dialog}
+        <div className="glass p-10 rounded-xl text-center">
+          <BookOpen className="w-12 h-12 text-amber-400/40 mx-auto mb-3" />
+          <p className="text-sm text-muted-foreground">No courses in this class yet.</p>
+        </div>
+      </>
     );
   }
 
   return (
+    <>
+      {dialog}
     <div className="space-y-2">
       {cls.courses.map((cc: any, i: number) => (
         <div key={cc.id} className="glass p-3 rounded-lg flex items-center gap-3">
@@ -91,5 +104,6 @@ export default function CoursesTab({ cls }: { cls: any }) {
         </div>
       ))}
     </div>
+    </>
   );
 }

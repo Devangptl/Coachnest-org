@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
+import { CustomSelect } from "@/components/ui/CustomSelect";
 import { Loader2, ClipboardCheck } from "lucide-react";
 
 type Session = { id: string; title: string; scheduledAt: string; status: string };
@@ -58,13 +59,14 @@ export default function AttendanceTab({ classId }: { classId: string }) {
 
   return (
     <div className="space-y-4">
-      <select className="input-glass" value={sessionId} onChange={(e) => setSessionId(e.target.value)}>
-        {sessions.map((s) => (
-          <option key={s.id} value={s.id}>
-            {s.title} — {new Date(s.scheduledAt).toLocaleString()}
-          </option>
-        ))}
-      </select>
+      <CustomSelect
+        value={sessionId}
+        onChange={setSessionId}
+        options={sessions.map((s) => ({
+          value: s.id,
+          label: `${s.title} — ${new Date(s.scheduledAt).toLocaleString()}`,
+        }))}
+      />
 
       <div className="space-y-2">
         {students.map((s) => (

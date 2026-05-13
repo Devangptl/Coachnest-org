@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { DateTimeInput } from "@/components/ui/DateTimeInput";
 import {
   ArrowLeft, ArrowRight, Save, BookOpen, Calendar, Settings,
   Eye, MessageSquare, Video, ClipboardCheck, GripVertical, X, Trophy,
@@ -337,20 +338,10 @@ export default function CreateClassWizard({ availableCourses }: { availableCours
             </h2>
             <div className="grid sm:grid-cols-2 gap-4">
               <Field label="Start date">
-                <input
-                  type="date"
-                  className="input-glass"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                />
+                <DateTimeInput type="date" value={startDate} onChange={setStartDate} />
               </Field>
               <Field label="End date">
-                <input
-                  type="date"
-                  className="input-glass"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                />
+                <DateTimeInput type="date" value={endDate} onChange={setEndDate} />
               </Field>
             </div>
           </div>
