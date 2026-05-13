@@ -35,8 +35,8 @@ export async function POST(req: NextRequest, ctx: Ctx) {
       return NextResponse.json({ error: "No recipient email provided" }, { status: 400 });
     }
 
-    // Merge built-in vars (logo, appUrl) with caller-supplied vars, then substitute
-    const allVars: Record<string, string> = { logo: LOGO_URL, appUrl: APP, ...variables };
+    // Built-in vars (logo, appUrl) always win — placed after spread so caller cannot override them
+    const allVars: Record<string, string> = { ...variables, logo: LOGO_URL, appUrl: APP };
     let htmlBody = template.htmlBody;
     let subject  = template.subject;
     for (const [key, val] of Object.entries(allVars)) {
