@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 const resend   = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
 const FROM     = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
 const APP      = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
-const LOGO_URL = process.env.EMAIL_LOGO_URL ?? `${APP}/logo.png`;
+const LOGO_URL = process.env.EMAIL_LOGO_URL ?? "https://www.coachnest.in/logo.png";
 
 /** Sends an email via Resend and writes an EmailLog row (fire-and-forget). */
 async function send(
