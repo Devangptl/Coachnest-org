@@ -1,36 +1,20 @@
 /**
  * POST /api/admin/email-templates/seed
  *
- * Upserts all 24 default email templates into the database.
- * Protected by:
- *   1. Valid admin session (cookie-based)
- *   2. x-seed-token header must match EMAIL_SEED_SECRET env var (if set)
- *
- * Existing templates are updated; new ones are created.
- * Returns a summary of upserted slugs.
+ * Upserts all default email templates into the database.
+ * Protected by admin session — only logged-in admins can call this.
  */
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { getEmailTemplateSeeds } from "@/lib/email-template-seeds";
 
-export async function POST(req: NextRequest) {
-  // ── 1. Admin session check ──────────────────────────────────────────────────
+export async function POST() {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // ── 2. Optional secret token check ─────────────────────────────────────────
-  const seedSecret = process.env.EMAIL_SEED_SECRET;
-  if (seedSecret) {
-    const token = req.headers.get("x-seed-token");
-    if (!token || token !== seedSecret) {
-      return NextResponse.json({ error: "Invalid seed token" }, { status: 403 });
-    }
-  }
-
-  // ── 3. Upsert all templates ─────────────────────────────────────────────────
   try {
     const templates = getEmailTemplateSeeds();
     const results: { slug: string; action: "created" | "updated" }[] = [];
