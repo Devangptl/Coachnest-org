@@ -60,7 +60,7 @@ async function resolveTemplate(
     const tpl = await prisma.emailTemplate.findUnique({ where: { slug } });
     if (!tpl || !tpl.isActive) return null;
 
-    const allVars = { logo: LOGO_URL, appUrl: APP, ...vars };
+    const allVars = { ...vars, logo: LOGO_URL, appUrl: APP };
 
     let html    = tpl.htmlBody;
     let subject = tpl.subject;
