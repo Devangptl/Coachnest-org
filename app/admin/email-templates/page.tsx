@@ -5,6 +5,7 @@ import GlassCard from "@/components/GlassCard";
 import Link from "next/link";
 import { PlusCircle, Mail, ToggleLeft, ToggleRight, FileText, Info } from "lucide-react";
 import EmailTemplateActions from "./EmailTemplateActions";
+import SeedEmailTemplatesButton from "./SeedEmailTemplatesButton";
 
 /** All system email slugs with their available variables. */
 const SYSTEM_SLUGS: { slug: string; label: string; vars: string[]; group: string }[] = [
@@ -65,12 +66,15 @@ export default async function EmailTemplatesPage() {
             Create custom templates to override system emails. Use the exact slug to replace a built-in email.
           </p>
         </div>
-        <Link
-          href="/admin/email-templates/new"
-          className="btn-primary flex items-center gap-2 text-sm"
-        >
-          <PlusCircle className="w-4 h-4" /> New Template
-        </Link>
+        <div className="flex items-center gap-2">
+          <SeedEmailTemplatesButton />
+          <Link
+            href="/admin/email-templates/new"
+            className="btn-primary flex items-center gap-2 text-sm"
+          >
+            <PlusCircle className="w-4 h-4" /> New Template
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}
