@@ -19,7 +19,33 @@ import AnnouncementsTab from "./tabs/AnnouncementsTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
 import SettingsTab from "./tabs/SettingsTab";
 
-type Cls = Awaited<ReturnType<typeof import("@/lib/prisma").prisma.class.findUnique>> & {
+type Cls = {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  thumbnail: string | null;
+  banner: string | null;
+  visibility: "PUBLIC" | "PRIVATE";
+  joinMode: "OPEN" | "APPROVAL_REQUIRED" | "INVITE_ONLY";
+  status: "DRAFT" | "PUBLISHED" | "ARCHIVED";
+  inviteCode: string | null;
+  maxStudents: number | null;
+  startDate: Date | null;
+  endDate: Date | null;
+  price: unknown | null;
+  isPaid: boolean;
+  enableChat: boolean;
+  enableDiscussion: boolean;
+  enableAttendance: boolean;
+  enableLiveClass: boolean;
+  enableLeaderboard: boolean;
+  enableCertificate: boolean;
+  certCompletionPercent: number;
+  certAttendancePercent: number;
+  instructorId: string;
+  createdAt: Date;
+  updatedAt: Date;
   instructor: { id: string; name: string; avatar: string | null };
   courses: Array<{
     id: string;
