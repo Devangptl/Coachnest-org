@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 
-const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password"];
+const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password", "/onboarding"];
 
 /**
  * Hides its children on auth routes.
