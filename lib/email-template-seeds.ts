@@ -151,7 +151,33 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
       ),
     },
 
-    // ── 2. Purchase Confirmation ──────────────────────────────────────────────
+    // ── 2. Free Course Enrollment ─────────────────────────────────────────────
+    {
+      slug: "free-enrollment",
+      name: "Free Course Enrollment",
+      subject: "You're enrolled in \"{{courseTitle}}\" — CoachNest 🎉",
+      description: "Sent when a student enrolls in a free course for the first time.",
+      variables: ["name", "courseTitle", "link"],
+      htmlBody: shell(
+        "Free enrollment confirmed",
+        "You're enrolled, {{name}}! 🎉",
+        `${para("You now have <strong>free access</strong> to <strong style=\"color:#d97757;\">{{courseTitle}}</strong>. Start learning whenever you're ready.")}
+        ${infoTable([
+          ["Course", "{{courseTitle}}"],
+          ["Access", "Free · Lifetime"],
+        ])}
+        ${steps([
+          ["Start your first lesson", "Jump straight in — no prerequisites needed."],
+          ["Track your progress", "Pick up right where you left off any time."],
+          ["Earn your certificate", "Complete all lessons to get your certificate."],
+        ])}`,
+        "Start Learning",
+        "{{link}}",
+        `Questions? <a href="{{appUrl}}/contact" style="color:#d97757;text-decoration:none;">Contact us</a> anytime.`
+      ),
+    },
+
+    // ── 3. Purchase Confirmation ──────────────────────────────────────────────
     {
       slug: "purchase-confirmation",
       name: "Purchase Confirmation",
