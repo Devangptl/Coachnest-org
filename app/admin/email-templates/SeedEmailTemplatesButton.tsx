@@ -23,12 +23,6 @@ export default function SeedEmailTemplatesButton() {
     try {
       const res = await fetch("/api/admin/email-templates/seed", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(process.env.NEXT_PUBLIC_EMAIL_SEED_SECRET
-            ? { "x-seed-token": process.env.NEXT_PUBLIC_EMAIL_SEED_SECRET }
-            : {}),
-        },
       });
 
       const data = await res.json();
