@@ -4,18 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { DatabaseZap } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 export default function SeedEmailTemplatesButton() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
+  const confirm = useConfirm();
+
   const handleSeed = async () => {
-    if (
-      !confirm(
-        "Seed all 24 default email templates?\n\nExisting templates will be overwritten with the default content."
-      )
-    )
-      return;
+    if (!await confirm(
+      "Existing templates will be overwritten with the default content.",
+      { title: "Seed 24 default email templates?", confirmText: "Seed Templates", variant: "info" }
+    )) return;
 
     setLoading(true);
     const tid = toast.loading("Seeding email templates…");

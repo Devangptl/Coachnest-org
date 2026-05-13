@@ -6,11 +6,11 @@ import toast from "react-hot-toast";
 import { Trash2, RotateCw } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { CustomSelect } from "@/components/ui/CustomSelect";
-import { useConfirm } from "@/components/ui/ConfirmDialog";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 export default function SettingsTab({ cls }: { cls: any }) {
   const router = useRouter();
-  const { confirm, dialog } = useConfirm();
+  const confirm = useConfirm();
 
   const [name, setName] = useState(cls.name);
   const [description, setDescription] = useState(cls.description ?? "");
@@ -44,11 +44,9 @@ export default function SettingsTab({ cls }: { cls: any }) {
   }
 
   async function destroy() {
-    const ok = await confirm({
+    const ok = await confirm(`Delete "${cls.name}"? All enrollments, sessions, and messages will be permanently removed. This cannot be undone.`, {
       title: "Delete class",
-      description: `Delete "${cls.name}"? All enrollments, sessions, and messages will be permanently removed. This cannot be undone.`,
-      confirmLabel: "Delete",
-      variant: "danger",
+      confirmText: "Delete",
     });
     if (!ok) return;
     const res = await fetch(`/api/classes/${cls.id}`, { method: "DELETE" });
@@ -59,11 +57,10 @@ export default function SettingsTab({ cls }: { cls: any }) {
   }
 
   async function regen() {
-    const ok = await confirm({
+    const ok = await confirm("The current invite link will stop working immediately. Are you sure?", {
       title: "Regenerate invite code",
-      description: "The current invite link will stop working immediately. Are you sure?",
-      confirmLabel: "Regenerate",
-      variant: "primary",
+      confirmText: "Regenerate",
+      variant: "info",
     });
     if (!ok) return;
     const res = await fetch(`/api/classes/${cls.id}/invite`, { method: "POST" });
@@ -94,7 +91,6 @@ export default function SettingsTab({ cls }: { cls: any }) {
 
   return (
     <>
-      {dialog}
       <div className="space-y-4">
         <div className="glass p-5 rounded-xl space-y-3">
           <h3 className="font-semibold">General</h3>

@@ -5,14 +5,16 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Pencil, Trash2, MoreHorizontal } from "lucide-react";
 import toast from "react-hot-toast";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 export default function EmailTemplateActions({ templateId }: { templateId: string }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const confirm = useConfirm();
 
   const handleDelete = async () => {
-    if (!confirm("Delete this template? This cannot be undone.")) return;
+    if (!await confirm("Delete this template? This cannot be undone.", { title: "Delete Template", confirmText: "Delete" })) return;
     setDeleting(true);
     try {
       const res = await fetch(`/api/admin/email-templates/${templateId}`, { method: "DELETE" });

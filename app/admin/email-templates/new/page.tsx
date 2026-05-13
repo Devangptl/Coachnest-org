@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
 import { ArrowLeft, Eye, EyeOff, PlusCircle, X } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -159,15 +160,11 @@ export default function NewEmailTemplatePage() {
                     onChange={(e) => setForm({ ...form, description: e.target.value })}
                   />
                 </div>
-                <label className="flex items-center gap-2 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={form.isActive}
-                    onChange={(e) => setForm({ ...form, isActive: e.target.checked })}
-                    className="accent-orange-500"
-                  />
-                  <span className="text-muted-foreground text-sm">Active (can be used for sending)</span>
-                </label>
+                <Checkbox
+                  checked={form.isActive}
+                  onChange={(v) => setForm({ ...form, isActive: v })}
+                  label="Active (can be used for sending)"
+                />
               </div>
             </GlassCard>
 

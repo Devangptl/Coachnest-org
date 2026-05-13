@@ -4,6 +4,7 @@ import { useState, useEffect, type FormEvent } from "react";
 import { useRouter, useParams } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { DateTimeInput } from "@/components/ui/DateTimeInput";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -180,11 +181,10 @@ export default function EditCouponPage() {
             </div>
             <div>
               <label className="label">Expires At (empty = never)</label>
-              <input
+              <DateTimeInput
                 type="date"
-                className="input-glass w-full"
                 value={form.expiresAt}
-                onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+                onChange={(v) => setForm({ ...form, expiresAt: v })}
               />
             </div>
           </div>
