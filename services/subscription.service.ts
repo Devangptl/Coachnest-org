@@ -6,11 +6,6 @@
 import { prisma } from "@/lib/prisma";
 import { getStripe } from "@/lib/stripe";
 import type Stripe from "stripe";
-import {
-  sendSubscriptionCancelledEmail,
-  sendSubscriptionResumedEmail,
-  sendPaymentFailedEmail,
-} from "@/lib/email";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

@@ -7,39 +7,33 @@ import { PlusCircle, Mail, ToggleLeft, ToggleRight, FileText, Info } from "lucid
 import EmailTemplateActions from "./EmailTemplateActions";
 import SeedEmailTemplatesButton from "./SeedEmailTemplatesButton";
 
-/** All system email slugs with their available variables. */
-const SYSTEM_SLUGS: { slug: string; label: string; vars: string[]; group: string }[] = [
+/** All active system email slugs — subscription emails removed (feature disabled). */
+const SYSTEM_SLUGS: { slug: string; label: string; vars: string[]; group: string; trigger: string }[] = [
   // Auth
-  { slug: "welcome",                      label: "Welcome",                           vars: ["name"],                                          group: "Auth" },
-  // Billing
-  { slug: "subscription-activated",       label: "Subscription Activated",            vars: ["name", "plan", "billing"],                       group: "Billing" },
-  { slug: "plan-changed",                 label: "Plan Changed",                      vars: ["name", "oldPlan", "newPlan", "billing", "action"],group: "Billing" },
-  { slug: "subscription-cancelled",       label: "Subscription Cancelled",            vars: ["name", "plan", "endDate"],                       group: "Billing" },
-  { slug: "subscription-resumed",         label: "Subscription Resumed",              vars: ["name", "plan"],                                  group: "Billing" },
-  { slug: "payment-failed",               label: "Payment Failed",                    vars: ["name"],                                          group: "Billing" },
+  { slug: "welcome",                      label: "Welcome",                        vars: ["name"],                                           group: "Auth",        trigger: "User signs up"                        },
   // Courses
-  { slug: "purchase-confirmation",        label: "Purchase Confirmation",             vars: ["name", "courseTitle", "amount", "link"],          group: "Courses" },
-  { slug: "course-update",                label: "New Lesson Added",                  vars: ["name", "courseTitle", "lessonTitle", "link"],     group: "Courses" },
-  { slug: "course-approved",              label: "Course Approved",                   vars: ["name", "courseTitle", "link"],                   group: "Courses" },
-  { slug: "course-rejected",              label: "Course Rejected",                   vars: ["name", "courseTitle", "reason", "link"],         group: "Courses" },
-  { slug: "certificate",                  label: "Certificate Issued",                vars: ["name", "courseTitle", "certUrl"],                 group: "Courses" },
+  { slug: "purchase-confirmation",        label: "Purchase Confirmation",          vars: ["name", "courseTitle", "amount", "link"],           group: "Courses",     trigger: "Student purchases a course"           },
+  { slug: "course-update",                label: "New Lesson Added",               vars: ["name", "courseTitle", "lessonTitle", "link"],      group: "Courses",     trigger: "Instructor adds a new lesson"         },
+  { slug: "course-approved",              label: "Course Approved",                vars: ["name", "courseTitle", "link"],                    group: "Courses",     trigger: "Admin approves a course"              },
+  { slug: "course-rejected",              label: "Course Rejected",                vars: ["name", "courseTitle", "reason", "link"],          group: "Courses",     trigger: "Admin rejects a course"               },
+  { slug: "certificate",                  label: "Certificate Issued",             vars: ["name", "courseTitle", "certUrl"],                  group: "Courses",     trigger: "Student completes all lessons"        },
   // Refunds
-  { slug: "refund-submitted",             label: "Refund Request Submitted",          vars: ["name", "courseTitle", "refundAmount", "progressPercent"], group: "Refunds" },
-  { slug: "refund-processed",             label: "Refund Processed",                  vars: ["name", "courseTitle", "refundAmount"],            group: "Refunds" },
-  { slug: "refund-rejected",              label: "Refund Rejected",                   vars: ["name", "courseTitle", "adminNotes"],              group: "Refunds" },
+  { slug: "refund-submitted",             label: "Refund Request Submitted",       vars: ["name", "courseTitle", "refundAmount", "progressPercent"], group: "Refunds", trigger: "Student submits a refund request"   },
+  { slug: "refund-processed",             label: "Refund Processed",               vars: ["name", "courseTitle", "refundAmount"],             group: "Refunds",     trigger: "Admin approves & processes refund"    },
+  { slug: "refund-rejected",              label: "Refund Rejected",                vars: ["name", "courseTitle", "adminNotes"],               group: "Refunds",     trigger: "Admin rejects a refund request"       },
   // Payouts
-  { slug: "payout-requested",             label: "Payout Request Submitted",          vars: ["name", "amount"],                                group: "Payouts" },
-  { slug: "payout-approved",              label: "Payout Approved",                   vars: ["name", "amount"],                                group: "Payouts" },
-  { slug: "payout-rejected",              label: "Payout Rejected",                   vars: ["name", "amount", "adminNotes"],                  group: "Payouts" },
-  { slug: "payout-processed",             label: "Payout Transferred",                vars: ["name", "amount"],                                group: "Payouts" },
+  { slug: "payout-requested",             label: "Payout Request Submitted",       vars: ["name", "amount"],                                 group: "Payouts",     trigger: "Instructor requests a payout"         },
+  { slug: "payout-approved",              label: "Payout Approved",                vars: ["name", "amount"],                                 group: "Payouts",     trigger: "Admin approves payout"                },
+  { slug: "payout-rejected",              label: "Payout Rejected",                vars: ["name", "amount", "adminNotes"],                   group: "Payouts",     trigger: "Admin rejects payout"                 },
+  { slug: "payout-processed",             label: "Payout Transferred",             vars: ["name", "amount"],                                 group: "Payouts",     trigger: "Admin marks payout as transferred"    },
   // Contact
-  { slug: "contact-confirmation",         label: "Contact Form Confirmation",         vars: ["name"],                                          group: "Contact" },
-  { slug: "contact-admin-notification",   label: "Contact Admin Notification",        vars: ["name", "email", "subject", "message"],           group: "Contact" },
-  { slug: "contact-reply",                label: "Contact Reply",                     vars: ["name", "originalSubject", "replyMessage"],        group: "Contact" },
+  { slug: "contact-confirmation",         label: "Contact Form Confirmation",      vars: ["name"],                                           group: "Contact",     trigger: "User submits contact form → to user"  },
+  { slug: "contact-admin-notification",   label: "Contact Admin Notification",     vars: ["name", "email", "subject", "message"],            group: "Contact",     trigger: "User submits contact form → to admin" },
+  { slug: "contact-reply",                label: "Contact Reply",                  vars: ["name", "originalSubject", "replyMessage"],         group: "Contact",     trigger: "Admin replies to a contact inquiry"   },
   // Instructors
-  { slug: "instructor-application-admin", label: "Instructor Application (Admin)",    vars: ["instructorName", "instructorEmail"],              group: "Instructors" },
-  { slug: "instructor-approved",          label: "Instructor Approved",               vars: ["name"],                                          group: "Instructors" },
-  { slug: "instructor-rejected",          label: "Instructor Rejected",               vars: ["name", "reason"],                                group: "Instructors" },
+  { slug: "instructor-application-admin", label: "Instructor Application (Admin)", vars: ["instructorName", "instructorEmail"],               group: "Instructors", trigger: "Instructor applies → notifies admin"  },
+  { slug: "instructor-approved",          label: "Instructor Approved",            vars: ["name"],                                           group: "Instructors", trigger: "Admin approves instructor application" },
+  { slug: "instructor-rejected",          label: "Instructor Rejected",            vars: ["name", "reason"],                                 group: "Instructors", trigger: "Admin rejects instructor application"  },
 ];
 
 async function getTemplates() {
@@ -193,12 +187,23 @@ export default async function EmailTemplatesPage() {
               {items.map((s) => {
                 const overridden = activeSystemSlugs.has(s.slug);
                 return (
-                  <div key={s.slug} className="flex items-center justify-between px-4 py-2.5">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <span className={`w-2 h-2 rounded-full flex-shrink-0 ${overridden ? "bg-emerald-400" : "bg-border"}`} />
+                  <div key={s.slug} className="flex items-start justify-between px-4 py-3 gap-4">
+                    {/* Left: status dot + label + trigger + vars */}
+                    <div className="flex items-start gap-3 min-w-0">
+                      <span className={`w-2 h-2 rounded-full flex-shrink-0 mt-1.5 ${overridden ? "bg-emerald-400" : "bg-border"}`} />
                       <div className="min-w-0">
-                        <p className="text-foreground text-sm">{s.label}</p>
-                        <div className="flex flex-wrap gap-1 mt-0.5">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-foreground text-sm font-medium">{s.label}</p>
+                          <code className="text-xs text-muted-foreground font-mono bg-secondary px-1.5 py-0.5 rounded">
+                            {s.slug}
+                          </code>
+                        </div>
+                        {/* Trigger / where-used */}
+                        <p className="text-xs text-blue-400/80 mt-0.5 flex items-center gap-1">
+                          <span className="opacity-60">⚡</span> {s.trigger}
+                        </p>
+                        {/* Variables */}
+                        <div className="flex flex-wrap gap-1 mt-1.5">
                           {s.vars.map((v) => (
                             <span key={v} className="text-xs px-1 py-0.5 bg-orange-500/10 text-orange-400 rounded font-mono">
                               {`{{${v}}}`}
@@ -207,12 +212,10 @@ export default async function EmailTemplatesPage() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 ml-4 flex-shrink-0">
-                      <code className="text-xs text-muted-foreground font-mono bg-secondary px-2 py-0.5 rounded">
-                        {s.slug}
-                      </code>
+                    {/* Right: override status / action */}
+                    <div className="flex-shrink-0 pt-0.5">
                       {overridden ? (
-                        <span className="text-xs text-emerald-400">Overridden</span>
+                        <span className="text-xs text-emerald-400 font-medium">Overridden</span>
                       ) : (
                         <Link
                           href={`/admin/email-templates/new?slug=${s.slug}&name=${encodeURIComponent(s.label)}`}
