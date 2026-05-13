@@ -193,7 +193,9 @@ model User {
   hasSeenCommunityTour Boolean  @default(false)
 
   // Onboarding
-  hasCompletedOnboarding Boolean @default(false)
+  hasCompletedOnboarding          Boolean  @default(false)
+  hasCompletedInstructorOnboarding Boolean  @default(false)
+  teachingTopics                  String[] @default([])
 
   // Feature add-on purchases
   featurePurchases      FeaturePurchase[]
