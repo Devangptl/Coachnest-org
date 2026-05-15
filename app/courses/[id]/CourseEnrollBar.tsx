@@ -3,7 +3,7 @@
 import {
   Shield, Share2, CheckCircle2, Edit3,
   BookOpen, Clock, Globe, Award, Smartphone, Download,
-  Infinity, PlayCircle, Trophy, Sparkles, Zap, Play,
+  Infinity, PlayCircle, Trophy, Sparkles, Zap, Play, Signal,
 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
@@ -93,14 +93,14 @@ export default function CourseEnrollBar({
   );
 
   const includeItems = [
-    { icon: BookOpen,   text: `${lessonCount} lesson${lessonCount !== 1 ? "s" : ""}` },
-    ...(durationLabel ? [{ icon: Clock,       text: `${durationLabel} of content` }] : []),
-    { icon: Globe,      text: language },
-    { icon: Shield,     text: `${level.charAt(0).toUpperCase() + level.slice(1)} level` },
-    { icon: Infinity,   text: "Lifetime access" },
-    { icon: Smartphone, text: "Mobile & desktop" },
-    { icon: Award,      text: "Certificate" },
-    { icon: Download,   text: "Offline downloads" },
+    { icon: BookOpen,   text: `${lessonCount} lesson${lessonCount !== 1 ? "s" : ""}`,         iconBg: "bg-blue-500/10",   iconColor: "text-blue-500 dark:text-blue-400"   },
+    ...(durationLabel ? [{ icon: Clock,  text: `${durationLabel} of content`,                 iconBg: "bg-sky-500/10",    iconColor: "text-sky-500 dark:text-sky-400"     }] : []),
+    { icon: Globe,      text: language,                                                         iconBg: "bg-teal-500/10",   iconColor: "text-teal-500 dark:text-teal-400"   },
+    { icon: Signal,     text: `${level.charAt(0).toUpperCase() + level.slice(1)} level`,       iconBg: "bg-amber-500/10",  iconColor: "text-amber-500 dark:text-amber-400" },
+    { icon: Infinity,   text: "Lifetime access",                                                iconBg: "bg-green-500/10",  iconColor: "text-green-500 dark:text-green-400" },
+    { icon: Smartphone, text: "Mobile & desktop",                                               iconBg: "bg-violet-500/10", iconColor: "text-violet-500 dark:text-violet-400" },
+    { icon: Award,      text: "Certificate of completion",                                      iconBg: "bg-orange-500/10", iconColor: "text-orange-500 dark:text-orange-400" },
+    { icon: Download,   text: "Offline downloads",                                              iconBg: "bg-indigo-500/10", iconColor: "text-indigo-500 dark:text-indigo-400" },
   ];
 
   // ── Thumbnail card ────────────────────────────────────────────────────────
@@ -188,20 +188,23 @@ export default function CourseEnrollBar({
           </div>
         </div>
 
-        {/* Course resources */}
-        <div className="border-t border-border px-4 py-3">
-          <div className="flex items-center justify-between mb-2.5">
-            <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Course resources</p>
+        {/* Course includes */}
+        <div className="border-t border-border px-4 py-4">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Zap className="w-3.5 h-3.5 text-primary" />
+              This course includes
+            </p>
             <button
               onClick={() => { window.location.href = `/api/courses/${courseId}/pdf`; }}
               className="flex items-center gap-1.5 text-[11px] text-muted-foreground hover:text-foreground transition-colors"
             >
-              <Download className="w-3 h-3" /> Download PDF
+              <Download className="w-3 h-3" /> PDF
             </button>
           </div>
-          <div className="grid grid-cols-2 gap-y-2 gap-x-3">
-            {includeItems.slice(0, 6).map((item) => (
-              <IncludeItem key={item.text} icon={item.icon} text={item.text} />
+          <div className="space-y-2.5">
+            {includeItems.map((item) => (
+              <IncludeItem key={item.text} icon={item.icon} text={item.text} iconBg={item.iconBg} iconColor={item.iconColor} />
             ))}
           </div>
         </div>
@@ -281,9 +284,12 @@ export default function CourseEnrollBar({
       </div>
 
       {/* This course includes */}
-      <div className="border-t border-border px-4 py-3">
-        <div className="flex items-center justify-between mb-2.5">
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">This course includes</p>
+      <div className="border-t border-border px-4 py-4">
+        <div className="flex items-center justify-between mb-3">
+          <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+            <Zap className="w-3.5 h-3.5 text-primary" />
+            This course includes
+          </p>
           {(userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
             <button
               onClick={() => { window.location.href = `/api/courses/${courseId}/pdf`; }}
@@ -293,9 +299,9 @@ export default function CourseEnrollBar({
             </button>
           )}
         </div>
-        <div className="grid grid-cols-2 gap-y-2 gap-x-3">
+        <div className="space-y-2.5">
           {includeItems.map((item) => (
-            <IncludeItem key={item.text} icon={item.icon} text={item.text} />
+            <IncludeItem key={item.text} icon={item.icon} text={item.text} iconBg={item.iconBg} iconColor={item.iconColor} />
           ))}
         </div>
       </div>
@@ -303,11 +309,20 @@ export default function CourseEnrollBar({
   );
 }
 
-function IncludeItem({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
+function IncludeItem({
+  icon: Icon, text, iconBg, iconColor,
+}: {
+  icon: React.ElementType;
+  text: string;
+  iconBg: string;
+  iconColor: string;
+}) {
   return (
-    <div className="flex items-center gap-2 text-xs text-muted-foreground">
-      <Icon className="w-3.5 h-3.5 text-[#d97757] flex-shrink-0" />
-      <span className="truncate">{text}</span>
+    <div className="flex items-center gap-3">
+      <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${iconBg}`}>
+        <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
+      </div>
+      <span className="text-xs text-foreground/80 leading-snug">{text}</span>
     </div>
   );
 }
