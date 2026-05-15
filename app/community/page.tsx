@@ -1,55 +1,93 @@
 /**
- * Community Hub — Server component that fetches all data via Prisma
- * and passes to the CommunityHubClient for instant render.
- *
- * Eliminates 3 client-side API calls + 1 subscription status call
- * that previously caused waterfall loading with skeleton states.
+ * Community Hub — page shell that streams each section through its own
+ * Suspense boundary. The header (with access status) and the three list
+ * sections (threads, groups, activity) fetch in parallel and pop in
+ * independently. Users see the shell + skeletons immediately.
  */
-import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
-import { hasFeatureAccess } from "@/lib/feature-access";
-import CommunityHubClient from "./CommunityHubClient";
+import { Suspense } from "react";
+import {
+  CommunityHeader,
+  PopularThreadsSection,
+  ActiveGroupsSection,
+  RecentActivitySection,
+} from "./_sections";
+import {
+  Skeleton,
+  ListItemSkeleton,
+  CardGridSkeleton,
+  FeedItemSkeleton,
+  SectionHeadingSkeleton,
+} from "@/components/ui/Skeleton";
 
-export default async function CommunityHubPage() {
-  const session = await getSession();
-
-  const [threads, groups, events, communityAccess] = await Promise.all([
-    prisma.forumThread.findMany({
-      include: {
-        author: { select: { id: true, name: true, avatar: true } },
-        _count: { select: { replies: true } },
-      },
-      orderBy: { replies: { _count: "desc" as const } },
-      take: 5,
-    }),
-    prisma.studyGroup.findMany({
-      where: { isPublic: true },
-      include: {
-        createdBy: { select: { id: true, name: true, avatar: true } },
-        _count: { select: { members: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 4,
-    }),
-    prisma.activityFeedEvent.findMany({
-      include: {
-        user: { select: { id: true, name: true, avatar: true } },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    }),
-    session
-      ? hasFeatureAccess(session.userId, session.role, "community")
-      : Promise.resolve(false),
-  ]);
-
-  // Serialize dates for client component (Prisma returns Date objects)
+function HeaderSkeleton() {
   return (
-    <CommunityHubClient
-      initialThreads={JSON.parse(JSON.stringify(threads))}
-      initialGroups={JSON.parse(JSON.stringify(groups))}
-      initialEvents={JSON.parse(JSON.stringify(events))}
-      hasCommunityAccess={communityAccess}
-    />
+    <>
+      <div className="animate-pulse space-y-3">
+        <Skeleton h="h-8" w="w-56" />
+        <Skeleton h="h-3" w="w-96" />
+      </div>
+      <div className="grid sm:grid-cols-2 gap-4">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <div key={i} className="rounded-md border border-border p-5 bg-card animate-pulse">
+            <div className="flex items-start gap-4">
+              <Skeleton className="w-10 h-10 rounded-md flex-shrink-0" />
+              <div className="flex-1 space-y-2">
+                <Skeleton h="h-4" w="w-1/2" />
+                <Skeleton h="h-3" w="w-full" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+}
+
+function ThreadsSkeleton() {
+  return (
+    <section>
+      <SectionHeadingSkeleton />
+      <ListItemSkeleton rows={5} />
+    </section>
+  );
+}
+
+function GroupsSkeleton() {
+  return (
+    <section>
+      <SectionHeadingSkeleton />
+      <CardGridSkeleton count={4} />
+    </section>
+  );
+}
+
+function ActivitySkeleton() {
+  return (
+    <section>
+      <SectionHeadingSkeleton />
+      <FeedItemSkeleton rows={5} />
+    </section>
+  );
+}
+
+export default function CommunityHubPage() {
+  return (
+    <div className="py-5 space-y-10">
+      <Suspense fallback={<HeaderSkeleton />}>
+        <CommunityHeader />
+      </Suspense>
+
+      <Suspense fallback={<ThreadsSkeleton />}>
+        <PopularThreadsSection />
+      </Suspense>
+
+      <Suspense fallback={<GroupsSkeleton />}>
+        <ActiveGroupsSection />
+      </Suspense>
+
+      <Suspense fallback={<ActivitySkeleton />}>
+        <RecentActivitySection />
+      </Suspense>
+    </div>
   );
 }
