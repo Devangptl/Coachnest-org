@@ -216,6 +216,8 @@ model User {
   forumThreads          ForumThread[]
   forumReplies          ForumReply[]
   forumVotes            ForumVote[]
+  forumReactions        ForumReaction[]
+  forumBookmarks        ForumBookmark[]
   studyGroups           StudyGroupMember[]
   createdGroups         StudyGroup[]           @relation("GroupCreator")
   peerReviewSubmissions PeerReviewAssignment[]
@@ -705,19 +707,22 @@ model ContactMessage {
 // ─── Community: Discussion Forums ─────────────────────────────────────────────
 
 model ForumThread {
-  id         String   @id @default(cuid())
-  title      String
-  body       String   @db.Text
-  courseId   String?
-  lessonId   String?
-  authorId   String
-  isPinned   Boolean  @default(false)
-  isResolved Boolean  @default(false)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id              String   @id @default(cuid())
+  title           String
+  body            String   @db.Text
+  courseId        String?
+  lessonId        String?
+  authorId        String
+  isPinned        Boolean  @default(false)
+  isResolved      Boolean  @default(false)
+  acceptedReplyId String?  @unique
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
-  author  User          @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  replies ForumReply[]
+  author        User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  replies       ForumReply[]
+  acceptedReply ForumReply?     @relation("AcceptedReply", fields: [acceptedReplyId], references: [id], onDelete: SetNull)
+  bookmarks     ForumBookmark[]
 
   @@index([courseId])
   @@index([authorId])
@@ -733,11 +738,13 @@ model ForumReply {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  thread  ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  author  User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent  ForumReply?  @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: SetNull)
-  children ForumReply[] @relation("ReplyToReply")
-  votes   ForumVote[]
+  thread           ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author           User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent           ForumReply?  @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: SetNull)
+  children         ForumReply[] @relation("ReplyToReply")
+  votes            ForumVote[]
+  reactions        ForumReaction[]
+  acceptedInThread ForumThread? @relation("AcceptedReply")
 
   @@index([threadId])
   @@index([authorId])
@@ -755,6 +762,35 @@ model ForumVote {
 
   @@unique([userId, replyId])
   @@map("forum_votes")
+}
+
+model ForumReaction {
+  id        String   @id @default(cuid())
+  userId    String
+  replyId   String
+  emoji     String   // one of a fixed client-side set
+  createdAt DateTime @default(now())
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, replyId, emoji])
+  @@index([replyId])
+  @@map("forum_reactions")
+}
+
+model ForumBookmark {
+  id        String   @id @default(cuid())
+  userId    String
+  threadId  String
+  createdAt DateTime @default(now())
+
+  user   User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thread ForumThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, threadId])
+  @@index([userId])
+  @@map("forum_bookmarks")
 }
 
 // ─── Community: Study Groups ──────────────────────────────────────────────────

@@ -2,8 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { Activity, Clock, MessageSquare, Users, Award, BookOpen, Star } from "lucide-react";
-import { useRealtimeChannel, usePostgresChanges } from "@/hooks/useRealtimeChannel";
-import { channels, events } from "@/lib/realtime/channels";
+import { usePostgresChanges } from "@/hooks/useRealtimeChannel";
+import { FeedItemSkeleton } from "@/components/ui/Skeleton";
 
 interface FeedEvent {
   id: string;
@@ -57,9 +57,8 @@ export default function FeedClient({
     else setHasNewActivity(true);
   }, [page, load]);
 
-  // Broadcast (server-emitted)
-  useRealtimeChannel(channels.activityFeed(), events.activityCreated, onNewActivity);
-  // Postgres Changes (direct DB — catches any write path)
+  // Postgres Changes catches any write path — broadcast subscription was
+  // redundant since both fire from the same INSERT.
   usePostgresChanges("activity_feed_events", onNewActivity, { event: "INSERT" });
 
   function getRelativeTime(dateStr: string) {
@@ -91,11 +90,7 @@ export default function FeedClient({
       )}
 
       {loading ? (
-        <div className="space-y-3">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="h-16 rounded-lg bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <FeedItemSkeleton rows={8} />
       ) : feedEvents.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />

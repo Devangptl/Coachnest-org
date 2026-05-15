@@ -2,10 +2,10 @@ import {
   HeadingSkeleton,
   SectionHeadingSkeleton,
   CardGridSkeleton,
-  ListItemSkeleton,
   FeedItemSkeleton,
   Skeleton,
 } from "@/components/ui/Skeleton";
+import { ThreadListSkeleton } from "@/components/community/CommunitySkeletons";
 
 export default function CommunityLoading() {
   return (
@@ -30,7 +30,7 @@ export default function CommunityLoading() {
       {/* Popular Threads */}
       <section>
         <SectionHeadingSkeleton />
-        <ListItemSkeleton rows={5} />
+        <ThreadListSkeleton rows={4} />
       </section>
 
       {/* Active Study Groups */}

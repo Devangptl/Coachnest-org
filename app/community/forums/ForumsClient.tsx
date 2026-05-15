@@ -4,9 +4,12 @@
  * Forums client component — receives server-fetched initial data.
  * Re-fetches only when user changes sort or navigates pages.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MessageSquare, Plus, Search, CheckCircle, Lock } from "lucide-react";
+import { MessageSquare, Plus, Search, CheckCircle, Lock, Bookmark } from "lucide-react";
+import MentionTextarea from "@/components/MentionTextarea";
+import { stripMentionTokens } from "@/lib/mentions";
+import { ThreadListSkeleton } from "@/components/community/CommunitySkeletons";
 import toast from "react-hot-toast";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
@@ -39,6 +42,7 @@ export default function ForumsClient({
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [sort, setSort] = useState<"recent" | "popular">("recent");
+  const [savedOnly, setSavedOnly] = useState(false);
   const [showCreate, setShowCreate] = useState(false);
   const [newTitle, setNewTitle] = useState("");
   const [newBody, setNewBody] = useState("");
@@ -46,10 +50,13 @@ export default function ForumsClient({
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
 
-  async function load(p = 1, s = sort) {
+  async function load(p = 1, s = sort, query = search, saved = savedOnly) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/community/forums?page=${p}&sort=${s}`);
+      const qs = new URLSearchParams({ page: String(p), sort: s });
+      if (query.trim()) qs.set("q", query.trim());
+      if (saved) qs.set("bookmarked", "1");
+      const res = await fetch(`/api/community/forums?${qs.toString()}`);
       const data = await res.json();
       setThreads(data.threads || []);
       setTotalPages(data.totalPages || 1);
@@ -61,8 +68,23 @@ export default function ForumsClient({
 
   function handleSortChange(s: "recent" | "popular") {
     setSort(s);
-    load(1, s);
+    load(1, s, search, savedOnly);
   }
+
+  function toggleSavedOnly() {
+    const next = !savedOnly;
+    setSavedOnly(next);
+    load(1, sort, search, next);
+  }
+
+  // Debounced server-side search — triggers when search text changes.
+  useEffect(() => {
+    // Skip the first render: the initial threads are already provided as props.
+    if (search === "" && threads === initialThreads) return;
+    const timeout = setTimeout(() => load(1, sort, search), 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   function handleLockedClick() {
     toast("Community Access required to post in forums.", { icon: "🔒" });
@@ -90,9 +112,9 @@ export default function ForumsClient({
     }
   }
 
-  const filtered = threads.filter(t =>
-    t.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // Search now hits the server (title + body, full-text); no client-side
+  // re-filter so body matches aren't hidden.
+  const filtered = threads;
 
   return (
     <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">
@@ -149,15 +171,22 @@ export default function ForumsClient({
             </button>
           ))}
         </div>
+        <button
+          onClick={toggleSavedOnly}
+          className={`flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-lg border transition-colors flex-shrink-0 ${
+            savedOnly
+              ? "border-amber-500/40 bg-amber-500/10 text-amber-400"
+              : "border-border bg-secondary/40 text-muted-foreground hover:text-foreground"
+          }`}
+        >
+          <Bookmark className={`w-3.5 h-3.5 ${savedOnly ? "fill-amber-400" : ""}`} />
+          Saved
+        </button>
       </div>
 
       {/* Thread List */}
       {loading ? (
-        <div className="space-y-3">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="h-20 rounded-lg bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <ThreadListSkeleton rows={6} />
       ) : filtered.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
@@ -188,7 +217,7 @@ export default function ForumsClient({
                     )}
                   </div>
                   <p className="text-foreground font-semibold text-sm transition-colors line-clamp-2">{t.title}</p>
-                  <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{t.body}</p>
+                  <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{stripMentionTokens(t.body)}</p>
                   <p className="text-muted-foreground/60 text-xs mt-2 truncate">
                     {t.author.name} · {new Date(t.createdAt).toLocaleDateString()}
                   </p>
@@ -242,11 +271,11 @@ export default function ForumsClient({
               </div>
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Body</label>
-                <textarea
+                <MentionTextarea
                   rows={5}
                   value={newBody}
-                  onChange={(e) => setNewBody(e.target.value)}
-                  placeholder="Describe your question or share your thoughts..."
+                  onChange={setNewBody}
+                  placeholder="Describe your question — Markdown supported, @ to mention"
                   className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
                 />
               </div>
