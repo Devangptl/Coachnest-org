@@ -51,12 +51,26 @@ export async function POST(
       },
     });
 
-    // Notify thread author if different from replier
-    if (thread.authorId !== session.userId) {
+    // Collect distinct userIds to notify (excluding the replier)
+    const recipients = new Set<string>();
+    if (thread.authorId !== session.userId) recipients.add(thread.authorId);
+
+    // Notify the parent reply's author too (nested reply)
+    if (parentId) {
+      const parent = await prisma.forumReply.findUnique({
+        where: { id: parentId },
+        select: { authorId: true },
+      });
+      if (parent && parent.authorId !== session.userId) {
+        recipients.add(parent.authorId);
+      }
+    }
+
+    for (const userId of recipients) {
       await createNotification({
         data: {
-          userId: thread.authorId,
-          title: "New reply to your thread",
+          userId,
+          title: parentId ? "Someone replied to your comment" : "New reply to your thread",
           body: `${session.name} replied to "${thread.title}"`,
           type: "FORUM_REPLY",
           link: `/community/forums/${threadId}`,

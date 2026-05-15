@@ -4,7 +4,7 @@
  * Forums client component — receives server-fetched initial data.
  * Re-fetches only when user changes sort or navigates pages.
  */
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageSquare, Plus, Search, CheckCircle, Lock } from "lucide-react";
 import toast from "react-hot-toast";
@@ -46,10 +46,12 @@ export default function ForumsClient({
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
 
-  async function load(p = 1, s = sort) {
+  async function load(p = 1, s = sort, query = search) {
     setLoading(true);
     try {
-      const res = await fetch(`/api/community/forums?page=${p}&sort=${s}`);
+      const qs = new URLSearchParams({ page: String(p), sort: s });
+      if (query.trim()) qs.set("q", query.trim());
+      const res = await fetch(`/api/community/forums?${qs.toString()}`);
       const data = await res.json();
       setThreads(data.threads || []);
       setTotalPages(data.totalPages || 1);
@@ -61,8 +63,17 @@ export default function ForumsClient({
 
   function handleSortChange(s: "recent" | "popular") {
     setSort(s);
-    load(1, s);
+    load(1, s, search);
   }
+
+  // Debounced server-side search — triggers when search text changes.
+  useEffect(() => {
+    // Skip the first render: the initial threads are already provided as props.
+    if (search === "" && threads === initialThreads) return;
+    const timeout = setTimeout(() => load(1, sort, search), 300);
+    return () => clearTimeout(timeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [search]);
 
   function handleLockedClick() {
     toast("Community Access required to post in forums.", { icon: "🔒" });
@@ -90,9 +101,9 @@ export default function ForumsClient({
     }
   }
 
-  const filtered = threads.filter(t =>
-    t.title.toLowerCase().includes(search.toLowerCase())
-  );
+  // Search now hits the server (title + body, full-text); no client-side
+  // re-filter so body matches aren't hidden.
+  const filtered = threads;
 
   return (
     <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">

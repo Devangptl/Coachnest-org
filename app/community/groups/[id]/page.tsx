@@ -14,6 +14,8 @@ import {
 import toast from "react-hot-toast";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
 import { channels, events } from "@/lib/realtime/channels";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
+import AuthorActionsMenu from "@/components/AuthorActionsMenu";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -106,6 +108,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const [noteTitle, setNoteTitle] = useState("");
   const [noteContent, setNoteContent] = useState("");
   const [creatingNote, setCreatingNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<string | null>(null);
+  const [noteDraft, setNoteDraft] = useState({ title: "", content: "" });
+  const [savingNote, setSavingNote] = useState(false);
 
   // Progress state
   const [progress, setProgress] = useState<ProgressData | null>(null);
@@ -264,6 +269,45 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       toast.error("Failed to create note");
     } finally {
       setCreatingNote(false);
+    }
+  }
+
+  function startEditNote(note: Note) {
+    setEditingNoteId(note.id);
+    setNoteDraft({ title: note.title, content: note.content });
+  }
+
+  async function saveNoteEdit() {
+    if (!editingNoteId || !noteDraft.title.trim() || !noteDraft.content.trim()) return;
+    setSavingNote(true);
+    try {
+      const res = await fetch(`/api/community/groups/${id}/notes/${editingNoteId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(noteDraft),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Note updated");
+      setEditingNoteId(null);
+      setNoteDraft({ title: "", content: "" });
+      loadNotes();
+    } catch {
+      toast.error("Failed to update note");
+    } finally {
+      setSavingNote(false);
+    }
+  }
+
+  async function deleteNote(noteId: string) {
+    if (!confirm("Delete this note? -25 Group XP will be reversed.")) return;
+    try {
+      const res = await fetch(`/api/community/groups/${id}/notes/${noteId}`, { method: "DELETE" });
+      if (!res.ok) throw new Error();
+      toast.success("Note deleted");
+      loadNotes();
+      loadGroup();
+    } catch {
+      toast.error("Failed to delete note");
     }
   }
 
@@ -491,24 +535,76 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           ) : (
             <div className="space-y-3">
-              {notes.map((note) => (
-                <div key={note.id} className="rounded-md border border-border bg-card p-4 sm:p-5">
-                  <h3 className="text-foreground font-semibold text-sm mb-2 break-words">{note.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap line-clamp-6 break-words">
-                    {note.content}
-                  </p>
-                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-border">
-                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-foreground text-[10px] font-bold flex-shrink-0">
-                      {note.author.avatar ? (
-                        <img src={note.author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                      ) : note.author.name.charAt(0).toUpperCase()}
+              {notes.map((note) => {
+                const isNoteAuthor = note.author.id === currentUserId;
+                const noteEdited =
+                  new Date(note.updatedAt).getTime() - new Date(note.createdAt).getTime() > 1000;
+                const isEditingThisNote = editingNoteId === note.id;
+                return (
+                  <div key={note.id} className="rounded-md border border-border bg-card p-4 sm:p-5">
+                    {isEditingThisNote ? (
+                      <div className="space-y-3">
+                        <input
+                          value={noteDraft.title}
+                          onChange={(e) => setNoteDraft({ ...noteDraft, title: e.target.value })}
+                          className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm font-semibold text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50"
+                          placeholder="Title"
+                        />
+                        <textarea
+                          rows={6}
+                          value={noteDraft.content}
+                          onChange={(e) => setNoteDraft({ ...noteDraft, content: e.target.value })}
+                          className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
+                          placeholder="Content (Markdown supported)"
+                        />
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => { setEditingNoteId(null); setNoteDraft({ title: "", content: "" }); }}
+                            className="px-3 py-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={saveNoteEdit}
+                            disabled={savingNote || !noteDraft.title.trim() || !noteDraft.content.trim()}
+                            className="bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium px-4 py-1.5 rounded-md transition-colors"
+                          >
+                            {savingNote ? "Saving…" : "Save"}
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <h3 className="text-foreground font-semibold text-sm break-words flex-1">{note.title}</h3>
+                          <AuthorActionsMenu
+                            size="sm"
+                            canEdit={isNoteAuthor}
+                            canDelete={isNoteAuthor || !!isAdmin}
+                            onEdit={() => startEditNote(note)}
+                            onDelete={() => deleteNote(note.id)}
+                          />
+                        </div>
+                        <div className="text-sm leading-relaxed break-words">
+                          <MarkdownRenderer content={note.content} compact />
+                        </div>
+                      </>
+                    )}
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-border">
+                      <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-foreground text-[10px] font-bold flex-shrink-0">
+                        {note.author.avatar ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img src={note.author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                        ) : note.author.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="text-muted-foreground text-xs">{note.author.name}</span>
+                      <span className="text-muted-foreground/40 text-xs">·</span>
+                      <span className="text-muted-foreground/60 text-xs">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                      {noteEdited && <span className="text-muted-foreground/60 text-[10px]">(edited)</span>}
                     </div>
-                    <span className="text-muted-foreground text-xs">{note.author.name}</span>
-                    <span className="text-muted-foreground/40 text-xs">·</span>
-                    <span className="text-muted-foreground/60 text-xs">{new Date(note.updatedAt).toLocaleDateString()}</span>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

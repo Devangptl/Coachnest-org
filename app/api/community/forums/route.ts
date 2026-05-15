@@ -15,12 +15,19 @@ export async function GET(req: NextRequest) {
     const courseId = searchParams.get("courseId");
     const lessonId = searchParams.get("lessonId");
     const sort = searchParams.get("sort") || "recent"; // recent | popular
+    const q = searchParams.get("q")?.trim() || "";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;
 
     const where: Record<string, unknown> = {};
     if (courseId) where.courseId = courseId;
     if (lessonId) where.lessonId = lessonId;
+    if (q) {
+      where.OR = [
+        { title: { contains: q, mode: "insensitive" } },
+        { body:  { contains: q, mode: "insensitive" } },
+      ];
+    }
 
     const orderBy =
       sort === "popular"
@@ -41,9 +48,14 @@ export async function GET(req: NextRequest) {
       prisma.forumThread.count({ where }),
     ]);
 
+    // Search results shouldn't be cached cross-user.
+    const cacheHeaders = q
+      ? { "Cache-Control": "no-store" }
+      : { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" };
+
     return NextResponse.json(
       { threads, total, page, totalPages: Math.ceil(total / limit) },
-      { headers: { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" } }
+      { headers: cacheHeaders }
     );
   } catch (err) {
     console.error("[GET /api/community/forums]", err);
