@@ -97,6 +97,13 @@ const COMPLIST_LANG_PREFIX = "__complist__";
 function preprocess(src: string): string {
   let out = src;
 
+  // 0 — @mentions:  @[Display Name](userId)  →  `@@Display Name@@`
+  //     Done first so the [text](id) part is never parsed as a link.
+  out = out.replace(
+    /@\[([^\]\n]+)\]\([^)\s]+\)/g,
+    (_m, name: string) => `\`@@${name.replace(/[`\n]/g, "").trim()}@@\``,
+  );
+
   // 1 — callouts
   out = out.replace(
     /^(> \[!(NOTE|TIP|WARNING|IMPORTANT|CAUTION|SUCCESS|DEFINITION|OBJECTIVE|EXAMPLE)\][^\n]*\n)((?:>[^\n]*\n?)*)/gim,
@@ -548,6 +555,16 @@ function MarkdownListItem({
 // ─── Inline extras (detected by the preprocessor sentinel prefixes) ────────────
 
 function renderInlineExtra(raw: string): ReactNode | null {
+  // @@mention@@  → professional mention chip
+  if (raw.startsWith("@@") && raw.endsWith("@@") && raw.length > 4) {
+    const name = raw.slice(2, -2);
+    return (
+      <span className="inline-flex items-center gap-0.5 align-baseline mx-px px-1.5 py-0.5 rounded-md bg-[#d97757]/12 text-[#d97757] font-medium text-[0.92em] leading-none border border-[#d97757]/20 not-italic whitespace-nowrap">
+        <span className="opacity-60 font-semibold">@</span>
+        {name}
+      </span>
+    );
+  }
   // ==highlight==
   if (raw.startsWith("==") && raw.endsWith("==") && raw.length > 4) {
     const text = raw.slice(2, -2);

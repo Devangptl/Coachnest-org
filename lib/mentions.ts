@@ -19,16 +19,12 @@ export function extractMentionIds(body: string): string[] {
   return [...ids];
 }
 
-/** Replace mention tokens with a plain "@Name" — used for notification text. */
+/**
+ * Replace mention tokens with a plain "@Name" — used for notification
+ * text and list previews where the rich chip isn't rendered.
+ * <MarkdownRenderer> understands the raw @[Name](id) token directly and
+ * renders it as a chip, so do NOT pre-transform bodies passed to it.
+ */
 export function stripMentionTokens(body: string): string {
   return body.replace(MENTION_RE, (_, name) => `@${name}`);
-}
-
-/**
- * Convert mention tokens to the renderer's highlight syntax so they show
- * as a chip:  @[Jane Doe](id)  →  ==@Jane Doe==
- * Call this before passing a body to <MarkdownRenderer>.
- */
-export function mentionsToMarkdown(body: string): string {
-  return body.replace(MENTION_RE, (_, name) => `==@${name}==`);
 }

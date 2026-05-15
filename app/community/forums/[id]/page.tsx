@@ -11,7 +11,6 @@ import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
 import MentionTextarea from "@/components/MentionTextarea";
-import { mentionsToMarkdown } from "@/lib/mentions";
 import { usePostgresChanges } from "@/hooks/useRealtimeChannel";
 
 interface Reply {
@@ -343,7 +342,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
           <>
             <h1 className="text-lg sm:text-xl font-bold text-foreground mb-3 break-words">{thread.title}</h1>
             <div className="text-sm leading-relaxed break-words">
-              <MarkdownRenderer content={mentionsToMarkdown(thread.body)} compact />
+              <MarkdownRenderer content={thread.body} compact />
             </div>
           </>
         )}
@@ -442,7 +441,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
                         </div>
                       ) : (
                         <div className="text-sm leading-relaxed break-words">
-                          <MarkdownRenderer content={mentionsToMarkdown(reply.body)} compact />
+                          <MarkdownRenderer content={reply.body} compact />
                         </div>
                       )}
 
