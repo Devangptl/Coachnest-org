@@ -66,29 +66,7 @@ export default function CourseHero({
   return (
     /* Break out of MainWrapper's horizontal padding for full-bleed background.
        Light mode: warm cream gradient. Dark mode: deep dark gradient. */
-    <div className="relative overflow-hidden -mx-3 sm:-mx-5 lg:-mx-7 bg-gradient-to-br from-[#fdf5ec] via-[#fdf0e6] to-[#f8ebe0] dark:bg-hero-gradient">
-
-      {/* ── Decorative blur glows ── */}
-      <div className="absolute -top-40 -right-20 w-[480px] h-[480px] rounded-full bg-primary/5 dark:bg-primary/10 blur-[100px] pointer-events-none" />
-      <div className="absolute bottom-0 left-1/3 w-[320px] h-[320px] rounded-full bg-orange-300/15 dark:bg-orange-600/6 blur-[80px] pointer-events-none" />
-
-      {/* ── Dot-grid texture — separate layers per theme ── */}
-      <div
-        className="dark:hidden absolute inset-0 opacity-[0.045] pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(140,80,20,0.5) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
-      <div
-        className="hidden dark:block absolute inset-0 opacity-[0.025] pointer-events-none"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle, rgba(255,255,255,0.9) 1px, transparent 1px)",
-          backgroundSize: "28px 28px",
-        }}
-      />
+    <div className="relative overflow-hidden -mx-3 sm:-mx-5 lg:-mx-7">
 
       {/* ── Content — re-apply the same horizontal padding as MainWrapper ── */}
       <div className="relative px-3 sm:px-5 lg:px-7 pt-7 pb-10">
