@@ -1,12 +1,17 @@
 "use client";
 
 /**
- * Textarea with @-mention autocomplete. Inserts tokens of the form
+ * Rich mention input. Renders selected mentions as inline chips while you
+ * type (it's a contentEditable surface, not a plain textarea) but
+ * serialises to the same token format the rest of the system expects:
+ *
  *   @[Display Name](userId)
+ *
  * The server parses tokens for notifications; <MarkdownRenderer> renders
- * the raw token as a styled mention chip (no pre-transform needed).
+ * the same token as a chip in posted content. Same value contract as a
+ * textarea: { value, onChange }.
  */
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AtSign, Loader2 } from "lucide-react";
 
 interface UserHit {
@@ -24,18 +29,61 @@ interface Props {
   autoFocus?: boolean;
 }
 
-/** Split a name on the query so the match can be emphasised. */
-function highlight(name: string, q: string) {
-  if (!q) return name;
-  const i = name.toLowerCase().indexOf(q.toLowerCase());
-  if (i === -1) return name;
-  return (
-    <>
-      {name.slice(0, i)}
-      <span className="text-[#d97757] font-semibold">{name.slice(i, i + q.length)}</span>
-      {name.slice(i + q.length)}
-    </>
-  );
+const TOKEN_SPLIT = /(@\[[^\]\n]+\]\([a-zA-Z0-9_-]+\))/g;
+const TOKEN_ONE = /^@\[([^\]\n]+)\]\(([a-zA-Z0-9_-]+)\)$/;
+
+function makeChip(name: string, id: string): HTMLElement {
+  const span = document.createElement("span");
+  span.className = "mention-chip";
+  span.setAttribute("contenteditable", "false");
+  span.dataset.mid = id;
+  span.dataset.mname = name;
+  const at = document.createElement("span");
+  at.className = "at";
+  at.textContent = "@";
+  span.appendChild(at);
+  span.appendChild(document.createTextNode(name));
+  return span;
+}
+
+/** token string → editor DOM */
+function renderInto(root: HTMLElement, value: string) {
+  root.innerHTML = "";
+  for (const part of value.split(TOKEN_SPLIT)) {
+    if (!part) continue;
+    const m = part.match(TOKEN_ONE);
+    if (m) {
+      root.appendChild(makeChip(m[1], m[2]));
+    } else {
+      part.split("\n").forEach((line, i) => {
+        if (i > 0) root.appendChild(document.createElement("br"));
+        if (line) root.appendChild(document.createTextNode(line));
+      });
+    }
+  }
+}
+
+/** editor DOM → token string */
+function serialize(root: HTMLElement): string {
+  let out = "";
+  const walk = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      out += node.nodeValue ?? "";
+      return;
+    }
+    if (node.nodeType !== Node.ELEMENT_NODE) return;
+    const el = node as HTMLElement;
+    if (el.dataset && el.dataset.mid) {
+      out += `@[${el.dataset.mname}](${el.dataset.mid})`;
+      return;
+    }
+    if (el.tagName === "BR") { out += "\n"; return; }
+    const isBlock = el.tagName === "DIV" || el.tagName === "P";
+    if (isBlock && out && !out.endsWith("\n")) out += "\n";
+    el.childNodes.forEach(walk);
+  };
+  root.childNodes.forEach(walk);
+  return out.replace(/\n+$/, "");
 }
 
 export default function MentionTextarea({
@@ -46,20 +94,34 @@ export default function MentionTextarea({
   className = "",
   autoFocus,
 }: Props) {
-  const taRef = useRef<HTMLTextAreaElement>(null);
+  const editorRef = useRef<HTMLDivElement>(null);
+  const lastEmitted = useRef<string>("");
+  // Saved trigger position (live DOM node + offsets) for chip insertion
+  const trigger = useRef<{ node: Text; atIndex: number; caret: number } | null>(null);
+
   const [hits, setHits] = useState<UserHit[]>([]);
   const [open, setOpen] = useState(false);
   const [searching, setSearching] = useState(false);
   const [activeIdx, setActiveIdx] = useState(0);
-  // Caret offset where the current "@query" starts
-  const [anchor, setAnchor] = useState<number | null>(null);
   const [query, setQuery] = useState("");
 
+  // Initialise + sync on external value changes (e.g. cleared after submit)
   useEffect(() => {
-    if (anchor === null) { setOpen(false); setSearching(false); return; }
+    const el = editorRef.current;
+    if (!el) return;
+    if (value !== lastEmitted.current) {
+      renderInto(el, value);
+      lastEmitted.current = value;
+    }
+    if (autoFocus) el.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [value]);
+
+  // Search effect
+  useEffect(() => {
+    if (!open) { setSearching(false); return; }
     setSearching(true);
-    setOpen(true);
-    const handle = setTimeout(async () => {
+    const h = setTimeout(async () => {
       try {
         const res = await fetch(`/api/community/users/search?q=${encodeURIComponent(query)}`);
         const data = await res.json();
@@ -71,64 +133,98 @@ export default function MentionTextarea({
         setSearching(false);
       }
     }, 180);
-    return () => clearTimeout(handle);
-  }, [query, anchor]);
+    return () => clearTimeout(h);
+  }, [query, open]);
 
-  function detectMention(text: string, caret: number) {
-    const upto = text.slice(0, caret);
-    const match = upto.match(/(?:^|\s)@([\p{L}0-9_ ]{0,30})$/u);
-    if (!match) { setAnchor(null); return; }
-    setAnchor(upto.lastIndexOf("@"));
-    setQuery(match[1]);
+  const emit = useCallback(() => {
+    const el = editorRef.current;
+    if (!el) return;
+    const v = serialize(el);
+    lastEmitted.current = v;
+    onChange(v);
+  }, [onChange]);
+
+  function detectTrigger() {
+    const sel = window.getSelection();
+    if (!sel || sel.rangeCount === 0 || !sel.anchorNode) { setOpen(false); trigger.current = null; return; }
+    const node = sel.anchorNode;
+    if (node.nodeType !== Node.TEXT_NODE) { setOpen(false); trigger.current = null; return; }
+    const offset = sel.anchorOffset;
+    const before = (node.nodeValue ?? "").slice(0, offset);
+    const m = before.match(/(?:^|\s)@([\p{L}0-9_ ]{0,30})$/u);
+    if (!m) { setOpen(false); trigger.current = null; return; }
+    trigger.current = { node: node as Text, atIndex: before.lastIndexOf("@"), caret: offset };
+    setQuery(m[1]);
+    setOpen(true);
   }
 
-  function handleChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
-    const text = e.target.value;
-    onChange(text);
-    detectMention(text, e.target.selectionStart ?? text.length);
+  function handleInput() {
+    emit();
+    // Keep placeholder working when the editor is visually empty
+    const el = editorRef.current;
+    if (el && serialize(el) === "" && el.innerHTML !== "") el.innerHTML = "";
+    detectTrigger();
   }
 
   function pick(u: UserHit) {
-    if (anchor === null || !taRef.current) return;
-    const caret = taRef.current.selectionStart ?? value.length;
-    const before = value.slice(0, anchor);
-    const after = value.slice(caret);
-    const token = `@[${u.name}](${u.id}) `;
-    onChange(before + token + after);
+    const el = editorRef.current;
+    const t = trigger.current;
+    if (!el || !t) return;
+    const range = document.createRange();
+    range.setStart(t.node, t.atIndex);
+    range.setEnd(t.node, Math.min(t.caret, t.node.length));
+    range.deleteContents();
+
+    const chip = makeChip(u.name, u.id);
+    const space = document.createTextNode(" ");
+    const frag = document.createDocumentFragment();
+    frag.appendChild(chip);
+    frag.appendChild(space);
+    range.insertNode(frag);
+
+    // Caret after the trailing space
+    const sel = window.getSelection();
+    const after = document.createRange();
+    after.setStartAfter(space);
+    after.collapse(true);
+    sel?.removeAllRanges();
+    sel?.addRange(after);
+
     setOpen(false);
-    setAnchor(null);
-    requestAnimationFrame(() => {
-      const pos = (before + token).length;
-      taRef.current?.focus();
-      taRef.current?.setSelectionRange(pos, pos);
-    });
+    trigger.current = null;
+    el.focus();
+    emit();
   }
 
-  function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
-    if (!open || (!hits.length && !searching)) return;
-    if (e.key === "ArrowDown") { e.preventDefault(); setActiveIdx((i) => (i + 1) % hits.length); }
-    else if (e.key === "ArrowUp") { e.preventDefault(); setActiveIdx((i) => (i - 1 + hits.length) % hits.length); }
-    else if ((e.key === "Enter" || e.key === "Tab") && hits.length) { e.preventDefault(); pick(hits[activeIdx]); }
-    else if (e.key === "Escape") { e.preventDefault(); setOpen(false); setAnchor(null); }
+  function handleKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (open && hits.length) {
+      if (e.key === "ArrowDown") { e.preventDefault(); setActiveIdx((i) => (i + 1) % hits.length); return; }
+      if (e.key === "ArrowUp") { e.preventDefault(); setActiveIdx((i) => (i - 1 + hits.length) % hits.length); return; }
+      if (e.key === "Enter" || e.key === "Tab") { e.preventDefault(); pick(hits[activeIdx]); return; }
+      if (e.key === "Escape") { e.preventDefault(); setOpen(false); trigger.current = null; return; }
+    }
   }
 
   return (
     <div className="relative">
-      <textarea
-        ref={taRef}
-        rows={rows}
-        value={value}
-        autoFocus={autoFocus}
-        onChange={handleChange}
+      <div
+        ref={editorRef}
+        role="textbox"
+        aria-multiline="true"
+        contentEditable
+        suppressContentEditableWarning
+        data-placeholder={placeholder}
+        onInput={handleInput}
         onKeyDown={handleKeyDown}
-        onBlur={() => setTimeout(() => setOpen(false), 120)}
-        placeholder={placeholder}
-        className={className}
+        onKeyUp={detectTrigger}
+        onClick={detectTrigger}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        style={{ minHeight: rows * 24 }}
+        className={`mention-editor ${className}`}
       />
 
       {open && (
         <div className="absolute z-40 left-0 right-0 sm:right-auto sm:min-w-[300px] mt-1.5 rounded-xl border border-border bg-card shadow-2xl shadow-black/30 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-          {/* Header */}
           <div className="flex items-center gap-1.5 px-3 py-2 border-b border-border bg-secondary/40">
             <AtSign className="w-3.5 h-3.5 text-[#d97757]" />
             <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
@@ -137,7 +233,6 @@ export default function MentionTextarea({
             {searching && <Loader2 className="w-3 h-3 text-muted-foreground animate-spin ml-auto" />}
           </div>
 
-          {/* Results */}
           <div className="max-h-64 overflow-y-auto py-1">
             {!searching && hits.length === 0 && (
               <div className="px-3 py-6 text-center">
@@ -167,9 +262,7 @@ export default function MentionTextarea({
                     )}
                   </span>
                   <span className="min-w-0 flex-1">
-                    <span className="block text-sm text-foreground truncate">
-                      {highlight(u.name, query)}
-                    </span>
+                    <span className="block text-sm text-foreground truncate">{u.name}</span>
                     <span className="block text-[11px] text-muted-foreground/70 truncate">
                       @{u.name.replace(/\s+/g, "").toLowerCase()}
                     </span>
@@ -184,7 +277,6 @@ export default function MentionTextarea({
             })}
           </div>
 
-          {/* Footer hint */}
           {hits.length > 0 && (
             <div className="flex items-center gap-3 px-3 py-1.5 border-t border-border bg-secondary/30 text-[10px] text-muted-foreground/70">
               <span><kbd className="font-mono">↑↓</kbd> navigate</span>
