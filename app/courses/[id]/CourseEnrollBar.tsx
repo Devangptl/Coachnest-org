@@ -44,7 +44,30 @@ export default function CourseEnrollBar({
   thumbnail,
   title,
 }: Props) {
-  const [copied, setCopied] = useState(false);
+  const [copied,          setCopied]          = useState(false);
+  const [downloadingCert, setDownloadingCert] = useState(false);
+
+  async function downloadCertificate() {
+    if (downloadingCert) return;
+    setDownloadingCert(true);
+    try {
+      const res = await fetch(`/api/certificates/${courseId}`);
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        throw new Error(data?.error || "Failed to generate certificate");
+      }
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href = url; a.download = `certificate-${courseId}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+      toast.success("Certificate downloaded!");
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Download failed");
+    } finally {
+      setDownloadingCert(false);
+    }
+  }
 
   const discountNum  = discountPrice ? Number(discountPrice) : null;
   const hasDiscount  = !isFree && discountNum && price && discountNum < price;
@@ -186,6 +209,20 @@ export default function CourseEnrollBar({
             </Link>
             <ActionButtons />
           </div>
+
+          {/* Certificate download — visible once ≥90% complete */}
+          {progressPct >= 90 && (
+            <button
+              onClick={downloadCertificate}
+              disabled={downloadingCert}
+              className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-md border border-amber-400/30 bg-amber-500/10 text-amber-600 dark:text-amber-400 text-xs font-semibold hover:bg-amber-500/20 transition-colors disabled:opacity-50"
+            >
+              {downloadingCert
+                ? <div className="w-3.5 h-3.5 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                : <Award className="w-3.5 h-3.5" />}
+              {downloadingCert ? "Generating certificate…" : isCompleted ? "Download Certificate" : `Download Certificate (${progressPct}% done)`}
+            </button>
+          )}
         </div>
 
         {/* Course includes */}
