@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { CheckCircle, XCircle, Clock, ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react";
+import { useConfirm } from "@/components/ui/UIDialogProvider";
 import toast from "react-hot-toast";
 
 type Log = {
@@ -44,6 +45,7 @@ export default function EmailLogsTable({ logs, total, page, pages, currentStatus
   const [, startTransition] = useTransition();
   const [search, setSearch] = useState(currentSearch ?? "");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const confirm = useConfirm();
 
   const pushParams = (params: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
@@ -58,7 +60,7 @@ export default function EmailLogsTable({ logs, total, page, pages, currentStatus
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Delete this log entry?")) return;
+    if (!await confirm("Delete this log entry?", { title: "Delete Log", confirmText: "Delete" })) return;
     try {
       const res = await fetch(`/api/admin/email-logs/${id}`, { method: "DELETE" });
       if (!res.ok) {

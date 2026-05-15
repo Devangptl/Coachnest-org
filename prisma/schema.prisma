@@ -231,6 +231,18 @@ model User {
   followedInstructors   UserInstructorFollow[] @relation("StudentFollows")
   followers             UserInstructorFollow[] @relation("InstructorFollowers")
 
+  // Class / Cohort management
+  classesOwned        Class[]              @relation("ClassInstructor")
+  classAssistantships ClassAssistant[]
+  classEnrollments    ClassEnrollment[]
+  liveSessionsHosted  LiveSession[]        @relation("LiveSessionHost")
+  attendanceRecords   Attendance[]
+  announcements       Announcement[]       @relation("AnnouncementAuthor")
+  discussions         Discussion[]         @relation("DiscussionAuthor")
+  classMessages       Message[]            @relation("MessageAuthor")
+  classXpEvents       ClassXpEvent[]
+  classCertificates   ClassCertificate[]
+
   @@map("users")
 }
 
@@ -310,6 +322,7 @@ model Course {
   certificates   Certificate[]
   referralLinks  ReferralLink[]
   refundRequests RefundRequest[]
+  classCourses   ClassCourse[]
 
   @@map("courses")
 }
@@ -1168,4 +1181,294 @@ model UserInstructorFollow {
 
   @@unique([userId, instructorId])
   @@map("user_instructor_follows")
+}
+
+// ─── Class / Cohort Management ────────────────────────────────────────────────
+
+enum ClassVisibility {
+  PUBLIC
+  PRIVATE
+}
+
+enum ClassJoinMode {
+  OPEN
+  APPROVAL_REQUIRED
+  INVITE_ONLY
+}
+
+enum ClassStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ClassEnrollmentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  BANNED
+  WAITLISTED
+}
+
+enum ClassMemberRole {
+  STUDENT
+  ASSISTANT
+}
+
+enum LiveSessionStatus {
+  SCHEDULED
+  LIVE
+  ENDED
+  CANCELLED
+}
+
+enum AttendanceStatus {
+  PRESENT
+  ABSENT
+  LATE
+  EXCUSED
+}
+
+enum DiscussionKind {
+  GENERAL
+  QUESTION
+  ANNOUNCEMENT_REPLY
+}
+
+enum ClassCertificateType {
+  COMPLETION
+  ATTENDANCE
+}
+
+model Class {
+  id           String          @id @default(cuid())
+  name         String
+  slug         String          @unique
+  description  String?         @db.Text
+  thumbnail    String?
+  banner       String?
+  visibility   ClassVisibility @default(PUBLIC)
+  joinMode     ClassJoinMode   @default(OPEN)
+  status       ClassStatus     @default(DRAFT)
+  inviteCode   String?         @unique
+  maxStudents  Int?
+  startDate    DateTime?
+  endDate      DateTime?
+  price        Decimal?        @db.Decimal(10, 2)
+  isPaid       Boolean         @default(false)
+
+  // Feature flags
+  enableChat        Boolean @default(true)
+  enableDiscussion  Boolean @default(true)
+  enableAttendance  Boolean @default(false)
+  enableLiveClass   Boolean @default(false)
+  enableLeaderboard Boolean @default(true)
+  enableCertificate Boolean @default(true)
+
+  // Requirements for certificate (percentages 0-100)
+  certCompletionPercent Int @default(100)
+  certAttendancePercent Int @default(0)
+
+  instructorId String
+  instructor   User   @relation("ClassInstructor", fields: [instructorId], references: [id], onDelete: Cascade)
+
+  courses       ClassCourse[]
+  enrollments   ClassEnrollment[]
+  assistants    ClassAssistant[]
+  liveSessions  LiveSession[]
+  announcements Announcement[]
+  discussions   Discussion[]
+  messages      Message[]
+  xpEvents      ClassXpEvent[]
+  certificates  ClassCertificate[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([instructorId])
+  @@index([status, visibility])
+  @@map("classes")
+}
+
+model ClassCourse {
+  id         String  @id @default(cuid())
+  classId    String
+  courseId   String
+  order      Int     @default(0)
+  isRequired Boolean @default(true)
+  // Drip: number of days after enrollment when course unlocks (null = immediate)
+  unlockAfterDays Int?
+
+  class  Class  @relation(fields: [classId], references: [id], onDelete: Cascade)
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([classId, courseId])
+  @@index([classId, order])
+  @@map("class_courses")
+}
+
+model ClassEnrollment {
+  id            String                @id @default(cuid())
+  classId       String
+  userId        String
+  status        ClassEnrollmentStatus @default(APPROVED)
+  role          ClassMemberRole       @default(STUDENT)
+  requestedAt   DateTime              @default(now())
+  approvedAt    DateTime?
+  rejectedAt    DateTime?
+  bannedAt      DateTime?
+  completedAt   DateTime?
+  // Cached progress metrics
+  progressPct   Int                   @default(0)
+  xpEarned      Int                   @default(0)
+  attendStreak  Int                   @default(0)
+  lastActiveAt  DateTime?
+
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, userId])
+  @@index([classId, status])
+  @@index([userId])
+  @@map("class_enrollments")
+}
+
+model ClassAssistant {
+  id        String   @id @default(cuid())
+  classId   String
+  userId    String
+  createdAt DateTime @default(now())
+
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, userId])
+  @@map("class_assistants")
+}
+
+model LiveSession {
+  id          String            @id @default(cuid())
+  classId     String
+  hostId      String
+  title       String
+  description String?           @db.Text
+  scheduledAt DateTime
+  duration    Int               @default(60) // minutes
+  meetingUrl  String?
+  recordingUrl String?
+  status      LiveSessionStatus @default(SCHEDULED)
+  startedAt   DateTime?
+  endedAt     DateTime?
+
+  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  host        User         @relation("LiveSessionHost", fields: [hostId], references: [id])
+  attendance  Attendance[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([classId, scheduledAt])
+  @@map("live_sessions")
+}
+
+model Attendance {
+  id        String           @id @default(cuid())
+  sessionId String
+  userId    String
+  status    AttendanceStatus @default(PRESENT)
+  joinedAt  DateTime?
+  leftAt    DateTime?
+  notes     String?
+
+  session LiveSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, userId])
+  @@index([userId])
+  @@map("class_attendance")
+}
+
+model Announcement {
+  id        String   @id @default(cuid())
+  classId   String
+  authorId  String
+  title     String
+  body      String   @db.Text
+  pinned    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  class  Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  author User  @relation("AnnouncementAuthor", fields: [authorId], references: [id])
+
+  @@index([classId, createdAt])
+  @@map("class_announcements")
+}
+
+model Discussion {
+  id        String         @id @default(cuid())
+  classId   String
+  authorId  String
+  kind      DiscussionKind @default(GENERAL)
+  title     String
+  body      String         @db.Text
+  parentId  String?
+  resolved  Boolean        @default(false)
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  class    Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  author   User         @relation("DiscussionAuthor", fields: [authorId], references: [id])
+  parent   Discussion?  @relation("DiscussionReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Discussion[] @relation("DiscussionReplies")
+
+  @@index([classId, createdAt])
+  @@index([parentId])
+  @@map("class_discussions")
+}
+
+model Message {
+  id        String   @id @default(cuid())
+  classId   String
+  authorId  String
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+
+  class  Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  author User  @relation("MessageAuthor", fields: [authorId], references: [id])
+
+  @@index([classId, createdAt])
+  @@map("class_messages")
+}
+
+model ClassXpEvent {
+  id        String   @id @default(cuid())
+  classId   String
+  userId    String
+  amount    Int
+  reason    String
+  createdAt DateTime @default(now())
+
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([classId, userId])
+  @@map("class_xp_events")
+}
+
+model ClassCertificate {
+  id          String               @id @default(cuid())
+  classId     String
+  userId      String
+  type        ClassCertificateType
+  issuedAt    DateTime             @default(now())
+  certificateUrl String?
+
+  class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([classId, userId, type])
+  @@map("class_certificates")
 }

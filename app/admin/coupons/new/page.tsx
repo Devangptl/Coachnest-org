@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { Checkbox } from "@/components/ui/Checkbox";
+import { DateTimeInput } from "@/components/ui/DateTimeInput";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
@@ -90,17 +92,11 @@ export default function NewCouponPage() {
         <GlassCard padding="md">
           <h3 className="text-foreground font-semibold mb-4">Coupon Code</h3>
           <div className="space-y-3">
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={autoGenerate}
-                onChange={(e) => setAutoGenerate(e.target.checked)}
-                className="accent-purple-500"
-              />
-              <span className="text-muted-foreground text-sm flex items-center gap-1">
-                <Sparkles className="w-3 h-3" /> Auto-generate code
-              </span>
-            </label>
+            <Checkbox
+              checked={autoGenerate}
+              onChange={setAutoGenerate}
+              label="Auto-generate code"
+            />
             {!autoGenerate && (
               <div>
                 <label className="label">Code</label>
@@ -193,11 +189,10 @@ export default function NewCouponPage() {
             </div>
             <div>
               <label className="label">Expires At (empty = never)</label>
-              <input
+              <DateTimeInput
                 type="date"
-                className="input-glass w-full"
                 value={form.expiresAt}
-                onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+                onChange={(v) => setForm({ ...form, expiresAt: v })}
               />
             </div>
           </div>

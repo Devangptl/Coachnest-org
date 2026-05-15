@@ -1,0 +1,142 @@
+/**
+ * Public class detail (student view).
+ */
+import { notFound } from "next/navigation";
+import { GraduationCap, Users, BookOpen, Calendar, Video, MessageCircle } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { getSession } from "@/lib/auth";
+import JoinClassPanel from "./JoinClassPanel";
+import StudentClassTabs from "./StudentClassTabs";
+
+export default async function PublicClassPage({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ invite?: string }>;
+}) {
+  const { slug } = await params;
+  const { invite } = await searchParams;
+  const session = await getSession();
+
+  const cls = await prisma.class.findUnique({
+    where: { slug },
+    include: {
+      instructor: { select: { id: true, name: true, avatar: true, headline: true } },
+      courses: {
+        orderBy: { order: "asc" },
+        include: {
+          course: {
+            select: {
+              id: true, title: true, slug: true, thumbnail: true,
+              totalLessons: true, totalDuration: true,
+            },
+          },
+        },
+      },
+      _count: {
+        select: {
+          enrollments: { where: { status: "APPROVED" } },
+          liveSessions: true,
+        },
+      },
+    },
+  });
+
+  if (!cls) notFound();
+  if (cls.status !== "PUBLISHED" && cls.instructorId !== session?.userId) notFound();
+
+  const enrollment = session
+    ? await prisma.classEnrollment.findUnique({
+        where: { classId_userId: { classId: cls.id, userId: session.userId } },
+      })
+    : null;
+
+  const isMember = enrollment?.status === "APPROVED" || cls.instructorId === session?.userId;
+
+  return (
+    <div className="px-4 max-w-6xl mx-auto py-6">
+      {/* Banner */}
+      <div className="rounded-xl overflow-hidden mb-6">
+        {cls.banner ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={cls.banner} alt="" className="w-full h-48 object-cover" />
+        ) : (
+          <div className="w-full h-32 bg-gradient-to-r from-amber-500/20 via-orange-500/10 to-amber-500/20" />
+        )}
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
+              <GraduationCap className="w-7 h-7 text-amber-400" /> {cls.name}
+            </h1>
+            <p className="text-sm text-muted-foreground">by {cls.instructor.name}</p>
+          </div>
+
+          {cls.description && (
+            <p className="text-sm whitespace-pre-wrap leading-relaxed">{cls.description}</p>
+          )}
+
+          <div className="flex flex-wrap gap-3 text-sm">
+            <Pill icon={Users} label={`${cls._count.enrollments} students`} />
+            <Pill icon={BookOpen} label={`${cls.courses.length} courses`} />
+            {cls.enableLiveClass && <Pill icon={Video} label={`${cls._count.liveSessions} live sessions`} />}
+            {cls.startDate && <Pill icon={Calendar} label={`Starts ${new Date(cls.startDate).toLocaleDateString()}`} />}
+            {cls.enableChat && <Pill icon={MessageCircle} label="Chat" />}
+          </div>
+
+          {/* Course list */}
+          <div className="glass p-5 rounded-xl">
+            <h2 className="font-semibold mb-3">What you&apos;ll learn</h2>
+            <div className="space-y-2">
+              {cls.courses.map((cc, i) => (
+                <div key={cc.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
+                  <span className="text-sm font-bold text-amber-400 w-6">{i + 1}</span>
+                  {cc.course.thumbnail ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={cc.course.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
+                  ) : (
+                    <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
+                      <BookOpen className="w-4 h-4 text-muted-foreground" />
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium text-sm">{cc.course.title}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {cc.course.totalLessons} lessons · {cc.isRequired ? "Required" : "Optional"}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {isMember && <StudentClassTabs classId={cls.id} enableChat={cls.enableChat} enableDiscussion={cls.enableDiscussion} />}
+        </div>
+
+        <aside className="lg:col-span-1">
+          <div className="glass p-5 rounded-xl sticky top-20">
+            <JoinClassPanel
+              classId={cls.id}
+              slug={cls.slug}
+              joinMode={cls.joinMode}
+              isLoggedIn={!!session}
+              enrollmentStatus={enrollment?.status ?? null}
+              inviteCodeHint={invite}
+            />
+          </div>
+        </aside>
+      </div>
+    </div>
+  );
+}
+
+function Pill({ icon: Icon, label }: { icon: React.ComponentType<{ className?: string }>; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-secondary text-xs">
+      <Icon className="w-3.5 h-3.5 text-amber-400" /> {label}
+    </span>
+  );
+}
