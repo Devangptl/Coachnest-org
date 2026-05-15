@@ -202,7 +202,7 @@ export default function CourseEnrollBar({
               <Download className="w-3 h-3" /> PDF
             </button>
           </div>
-          <div className="space-y-2.5">
+          <div className="grid grid-cols-2 gap-y-2 gap-x-3">
             {includeItems.map((item) => (
               <IncludeItem key={item.text} icon={item.icon} text={item.text} iconBg={item.iconBg} iconColor={item.iconColor} />
             ))}
@@ -299,7 +299,7 @@ export default function CourseEnrollBar({
             </button>
           )}
         </div>
-        <div className="space-y-2.5">
+        <div className="grid grid-cols-2 gap-y-2 gap-x-3">
           {includeItems.map((item) => (
             <IncludeItem key={item.text} icon={item.icon} text={item.text} iconBg={item.iconBg} iconColor={item.iconColor} />
           ))}
@@ -310,7 +310,7 @@ export default function CourseEnrollBar({
 }
 
 function IncludeItem({
-  icon: Icon, text, iconBg, iconColor,
+  icon: Icon, text, iconColor,
 }: {
   icon: React.ElementType;
   text: string;
@@ -318,11 +318,9 @@ function IncludeItem({
   iconColor: string;
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className={`w-7 h-7 rounded-md flex items-center justify-center flex-shrink-0 ${iconBg}`}>
-        <Icon className={`w-3.5 h-3.5 ${iconColor}`} />
-      </div>
-      <span className="text-xs text-foreground/80 leading-snug">{text}</span>
+    <div className="flex items-center gap-2 text-xs text-muted-foreground min-w-0">
+      <Icon className={`w-3.5 h-3.5 flex-shrink-0 ${iconColor}`} />
+      <span className="truncate">{text}</span>
     </div>
   );
 }
