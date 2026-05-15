@@ -75,9 +75,9 @@ export default function FeedClient({
   }
 
   return (
-    <div className="py-8 space-y-6">
+    <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Activity Feed</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Activity Feed</h1>
         <p className="text-muted-foreground text-sm mt-1">See what&apos;s happening across the community.</p>
       </div>
 
@@ -111,7 +111,7 @@ export default function FeedClient({
               return (
                 <div
                   key={e.id}
-                  className="flex items-center gap-4 p-4 rounded-md border border-border bg-card hover:bg-secondary/30 transition-all"
+                  className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md border border-border bg-card hover:bg-secondary/30 transition-all"
                 >
                   {/* Avatar */}
                   <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
@@ -122,19 +122,19 @@ export default function FeedClient({
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-sm">
+                    <p className="text-foreground text-sm truncate">
                       <span className="font-medium">{e.user.name}</span>
                     </p>
                     <p className="text-muted-foreground text-xs mt-0.5 truncate">{e.title}</p>
                   </div>
 
-                  {/* Type Badge */}
-                  <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
+                  {/* Type Badge — hide on small screens, time is more useful */}
+                  <div className={`hidden sm:flex w-8 h-8 rounded-lg ${config.bg} items-center justify-center flex-shrink-0`}>
                     <Icon className={`w-4 h-4 ${config.color}`} />
                   </div>
 
                   {/* Time */}
-                  <span className="text-muted-foreground/50 text-xs flex items-center gap-1 flex-shrink-0 min-w-[60px] justify-end">
+                  <span className="text-muted-foreground/50 text-[11px] sm:text-xs flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
                     <Clock className="w-3 h-3" />
                     {getRelativeTime(e.createdAt)}
                   </span>
@@ -145,12 +145,12 @@ export default function FeedClient({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-2 pt-4 flex-wrap">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button
                   key={p}
                   onClick={() => load(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                  className={`w-9 h-9 sm:w-8 sm:h-8 rounded-lg text-xs font-medium transition-all ${
                     p === page
                       ? "bg-emerald-600 text-white"
                       : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"

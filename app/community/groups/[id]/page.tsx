@@ -327,16 +327,16 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   const pendingRequest = myRequest?.status === "PENDING";
 
   return (
-    <div className="py-8 space-y-6">
+    <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">
       <Link href="/community/groups" className="inline-flex items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Groups
       </Link>
 
       {/* ── Group Header ──────────────────────────────────── */}
-      <div className="rounded-md border border-border bg-card p-6">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
+      <div className="rounded-md border border-border bg-card p-4 sm:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4 mb-4">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-2 mb-2">
               <span className="text-muted-foreground text-xs flex items-center gap-1">
                 {group.isPublic ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
                 {group.isPublic ? "Public" : "Private"}
@@ -350,12 +350,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 <Zap className="w-3 h-3" /> {group.groupXp} XP
               </span>
             </div>
-            <h1 className="text-xl font-bold text-foreground">{group.name}</h1>
+            <h1 className="text-lg sm:text-xl font-bold text-foreground break-words">{group.name}</h1>
             {group.description && (
-              <p className="text-muted-foreground text-sm mt-2 leading-relaxed">{group.description}</p>
+              <p className="text-muted-foreground text-sm mt-2 leading-relaxed break-words">{group.description}</p>
             )}
           </div>
-          <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="flex items-center gap-2 flex-shrink-0 flex-wrap">
             {isMember && !isCreator && (
               <button onClick={handleLeave} disabled={leaving}
                 className="flex items-center gap-1.5 px-3 py-2 text-xs font-medium text-red-400 border border-red-500/20 rounded-lg hover:bg-red-500/10 transition-colors">
@@ -391,7 +391,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </div>
         </div>
 
-        <div className="flex items-center gap-4 pt-4 border-t border-border text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-4 border-t border-border text-xs text-muted-foreground">
           <span className="flex items-center gap-1.5">
             <Users className="w-3.5 h-3.5" /> {group._count.members}/{group.maxMembers} members
           </span>
@@ -400,7 +400,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </span>
           {isMember && (
             <button onClick={copyInviteCode}
-              className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors ml-auto">
+              className="flex items-center gap-1.5 text-emerald-400 hover:text-emerald-300 transition-colors sm:ml-auto">
               <Copy className="w-3.5 h-3.5" /> Copy invite code
             </button>
           )}
@@ -408,23 +408,25 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       </div>
 
       {/* ── Tab Navigation ────────────────────────────────── */}
-      <div className="flex gap-1 p-1 bg-secondary rounded-lg w-fit">
-        {TABS.map((t) => {
-          const Icon = t.icon;
-          return (
-            <button
-              key={t.key}
-              onClick={() => setTab(t.key)}
-              className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                tab === t.key
-                  ? "bg-card text-foreground shadow-sm"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Icon className="w-3.5 h-3.5" /> {t.label}
-            </button>
-          );
-        })}
+      <div className="-mx-3 sm:mx-0 px-3 sm:px-0 overflow-x-auto scrollbar-hide">
+        <div className="flex gap-1 p-1 bg-secondary rounded-lg w-fit min-w-min">
+          {TABS.map((t) => {
+            const Icon = t.icon;
+            return (
+              <button
+                key={t.key}
+                onClick={() => setTab(t.key)}
+                className={`flex items-center gap-1.5 px-3 sm:px-4 py-2 text-xs sm:text-sm font-medium rounded-md transition-all whitespace-nowrap ${
+                  tab === t.key
+                    ? "bg-card text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" /> {t.label}
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* ── Tab Content ───────────────────────────────────── */}
@@ -435,9 +437,9 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-4">
             Members ({group.members.length})
           </h2>
-          <div className="grid sm:grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {group.members.map((m) => (
-              <div key={m.userId} className="flex items-center gap-3 p-4 rounded-md border border-border bg-card">
+              <div key={m.userId} className="flex items-center gap-3 p-3 sm:p-4 rounded-md border border-border bg-card">
                 <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
                   {m.user.avatar ? (
                     <img src={m.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
@@ -445,7 +447,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-foreground text-sm font-medium truncate">{m.user.name}</p>
-                  <p className="text-muted-foreground text-xs">Joined {new Date(m.joinedAt).toLocaleDateString()}</p>
+                  <p className="text-muted-foreground text-xs truncate">Joined {new Date(m.joinedAt).toLocaleDateString()}</p>
                 </div>
                 {m.role === "ADMIN" && (
                   <span className="flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-full flex-shrink-0">
@@ -490,12 +492,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           ) : (
             <div className="space-y-3">
               {notes.map((note) => (
-                <div key={note.id} className="rounded-md border border-border bg-card p-5">
-                  <h3 className="text-foreground font-semibold text-sm mb-2">{note.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap line-clamp-6">
+                <div key={note.id} className="rounded-md border border-border bg-card p-4 sm:p-5">
+                  <h3 className="text-foreground font-semibold text-sm mb-2 break-words">{note.title}</h3>
+                  <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap line-clamp-6 break-words">
                     {note.content}
                   </p>
-                  <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-border">
                     <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-foreground text-[10px] font-bold flex-shrink-0">
                       {note.author.avatar ? (
                         <img src={note.author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
@@ -512,10 +514,10 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
 
           {/* Create Note Modal */}
           {showCreateNote && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
               <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreateNote(false)} />
-              <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-lg shadow-2xl">
-                <h2 className="text-lg font-bold text-foreground mb-1">Share a Note</h2>
+              <div className="relative bg-card border border-border rounded-md p-4 sm:p-6 w-full max-w-lg shadow-2xl my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+                <h2 className="text-base sm:text-lg font-bold text-foreground mb-1">Share a Note</h2>
                 <p className="text-muted-foreground text-xs mb-4">Notes are shared with all group members. +25 Group XP per note!</p>
                 <div className="space-y-4">
                   <div>
@@ -559,8 +561,8 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
         <div className="space-y-6">
           {progressLoading ? (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[1,2,3,4].map(i => <div key={i} className="h-24 rounded-md bg-secondary/50 animate-pulse" />)}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+                {[1,2,3,4,5].map(i => <div key={i} className="h-24 rounded-md bg-secondary/50 animate-pulse" />)}
               </div>
               <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
             </div>
@@ -571,17 +573,17 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           ) : (
             <>
-              <div className="rounded-md border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-emerald-600/10 p-5 flex items-center gap-4">
-                <div className="w-14 h-14 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-7 h-7 text-emerald-400" />
+              <div className="rounded-md border border-emerald-500/20 bg-gradient-to-r from-emerald-500/5 to-emerald-600/10 p-4 sm:p-5 flex items-center gap-3 sm:gap-4">
+                <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+                  <Zap className="w-6 h-6 sm:w-7 sm:h-7 text-emerald-400" />
                 </div>
-                <div>
-                  <p className="text-emerald-400 text-2xl font-bold">{progress.groupXp} XP</p>
+                <div className="min-w-0">
+                  <p className="text-emerald-400 text-xl sm:text-2xl font-bold">{progress.groupXp} XP</p>
                   <p className="text-muted-foreground text-xs">Group XP earned from shared notes, activities & milestones</p>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
                 {[
                   { icon: BookOpen, label: "Lessons Done", value: progress.aggregate.totalLessons, color: "text-blue-400", bg: "bg-blue-500/10 border-blue-500/20" },
                   { icon: Zap, label: "Total XP", value: progress.aggregate.totalXp, color: "text-emerald-400", bg: "bg-emerald-500/10 border-emerald-500/20" },
@@ -608,7 +610,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                 </h2>
                 <div className="space-y-2">
                   {progress.members.map((m, i) => (
-                    <div key={m.user?.id} className="flex items-center gap-4 p-4 rounded-md border border-border bg-card">
+                    <div key={m.user?.id} className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md border border-border bg-card">
                       <span className={`w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0 ${
                         i === 0 ? "bg-amber-500/15 text-amber-400 border border-amber-500/25" :
                         i === 1 ? "bg-gray-500/15 text-gray-400 border border-gray-500/25" :
@@ -624,12 +626,12 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-foreground text-sm font-medium truncate">{m.user?.name}</p>
-                        <p className="text-muted-foreground text-xs">
+                        <p className="text-muted-foreground text-xs truncate">
                           Lv. {m.level} · {m.completedLessons} lessons · {m.badges} badges
-                          {m.streak > 0 && <span className="text-[#d97757]"> · 🔥 {m.streak}d streak</span>}
+                          {m.streak > 0 && <span className="text-[#d97757]"> · 🔥 {m.streak}d</span>}
                         </p>
                       </div>
-                      <span className="text-emerald-400 text-sm font-bold flex-shrink-0">{m.xp} XP</span>
+                      <span className="text-emerald-400 text-xs sm:text-sm font-bold flex-shrink-0">{m.xp} XP</span>
                     </div>
                   ))}
                 </div>
@@ -658,30 +660,32 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           ) : (
             <div className="space-y-3">
               {joinRequests.map((req) => (
-                <div key={req.id} className="flex items-center gap-4 p-4 rounded-md border border-border bg-card">
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
-                    {req.user.avatar ? (
-                      <img src={req.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                    ) : req.user.name.charAt(0).toUpperCase()}
+                <div key={req.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md border border-border bg-card">
+                  <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
+                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
+                      {req.user.avatar ? (
+                        <img src={req.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                      ) : req.user.name.charAt(0).toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-foreground text-sm font-medium truncate">{req.user.name}</p>
+                      <p className="text-muted-foreground text-xs truncate">{req.user.email}</p>
+                      {req.message && (
+                        <p className="text-muted-foreground/80 text-xs mt-1 flex items-start gap-1">
+                          <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                          <span className="line-clamp-2">{req.message}</span>
+                        </p>
+                      )}
+                    </div>
+                    <p className="text-muted-foreground text-xs hidden md:block flex-shrink-0">
+                      {new Date(req.createdAt).toLocaleDateString()}
+                    </p>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-sm font-medium">{req.user.name}</p>
-                    <p className="text-muted-foreground text-xs">{req.user.email}</p>
-                    {req.message && (
-                      <p className="text-muted-foreground/80 text-xs mt-1 flex items-start gap-1">
-                        <MessageSquare className="w-3 h-3 flex-shrink-0 mt-0.5" />
-                        <span className="line-clamp-2">{req.message}</span>
-                      </p>
-                    )}
-                  </div>
-                  <p className="text-muted-foreground text-xs hidden sm:block flex-shrink-0">
-                    {new Date(req.createdAt).toLocaleDateString()}
-                  </p>
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <button
                       onClick={() => handleRequest(req.id, "approve")}
                       disabled={processingId === req.id}
-                      className="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-medium px-3 py-2 rounded-lg transition-colors"
                     >
                       {processingId === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                       Approve
@@ -689,7 +693,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                     <button
                       onClick={() => handleRequest(req.id, "reject")}
                       disabled={processingId === req.id}
-                      className="flex items-center gap-1.5 border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
+                      className="flex-1 sm:flex-initial flex items-center justify-center gap-1.5 border border-red-500/30 text-red-400 hover:bg-red-500/10 disabled:opacity-50 text-xs font-medium px-3 py-2 rounded-lg transition-colors"
                     >
                       {processingId === req.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <X className="w-3.5 h-3.5" />}
                       Reject
