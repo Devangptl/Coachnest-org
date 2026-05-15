@@ -100,27 +100,27 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
     : "—";
 
   return (
-    <div className="py-8 space-y-6">
+    <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">
       <Link href="/community/peer-review" className="inline-flex items-center gap-1.5 text-muted-foreground text-sm hover:text-foreground transition-colors">
         <ArrowLeft className="w-4 h-4" /> Back to Peer Review
       </Link>
 
       {/* Assignment */}
-      <div className="rounded-md border border-border bg-card p-6">
-        <div className="flex items-center gap-2 mb-3">
-          <FileText className="w-5 h-5 text-purple-400" />
-          <h1 className="text-xl font-bold text-foreground">{assignment.title}</h1>
+      <div className="rounded-md border border-border bg-card p-4 sm:p-6">
+        <div className="flex items-start gap-2 mb-3">
+          <FileText className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+          <h1 className="text-lg sm:text-xl font-bold text-foreground break-words">{assignment.title}</h1>
         </div>
-        <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap">{assignment.content}</p>
-        <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
-          <span className="flex items-center gap-1.5">
-            <User className="w-3.5 h-3.5" /> {assignment.submittedBy.name}
+        <p className="text-muted-foreground text-sm leading-relaxed whitespace-pre-wrap break-words">{assignment.content}</p>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mt-4 pt-4 border-t border-border text-xs text-muted-foreground">
+          <span className="flex items-center gap-1.5 truncate max-w-full">
+            <User className="w-3.5 h-3.5 flex-shrink-0" /> <span className="truncate">{assignment.submittedBy.name}</span>
           </span>
           <span className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" /> {new Date(assignment.createdAt).toLocaleDateString()}
           </span>
-          <span className="flex items-center gap-1.5 ml-auto">
-            <Star className="w-3.5 h-3.5 text-amber-400" /> {avgRating} ({assignment.reviews.length} reviews)
+          <span className="flex items-center gap-1.5 sm:ml-auto">
+            <Star className="w-3.5 h-3.5 text-amber-400" /> {avgRating} ({assignment.reviews.length})
           </span>
         </div>
       </div>
@@ -138,13 +138,13 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
         ) : (
           <div className="space-y-3">
             {assignment.reviews.map((r) => (
-              <div key={r.id} className="rounded-md border border-border bg-card p-5">
+              <div key={r.id} className="rounded-md border border-border bg-card p-4 sm:p-5">
                 <div className="flex items-center gap-1 mb-2">
                   {[1,2,3,4,5].map((s) => (
                     <Star key={s} className={`w-4 h-4 ${s <= r.rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`} />
                   ))}
                 </div>
-                <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap">{r.feedback}</p>
+                <p className="text-foreground text-sm leading-relaxed whitespace-pre-wrap break-words">{r.feedback}</p>
                 {r.rubricScores && (
                   <div className="flex flex-wrap gap-2 mt-3">
                     {Object.entries(r.rubricScores as Record<string, number>).map(([key, val]) => (
@@ -154,8 +154,8 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
                     ))}
                   </div>
                 )}
-                <div className="flex items-center gap-2 mt-3 text-muted-foreground text-xs">
-                  <span>{r.reviewer.name}</span>
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mt-3 text-muted-foreground text-xs">
+                  <span className="truncate max-w-[180px]">{r.reviewer.name}</span>
                   <span>·</span>
                   <span>{new Date(r.createdAt).toLocaleDateString()}</span>
                 </div>
@@ -167,7 +167,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
 
       {/* Submit Review Form */}
       {!isOwnSubmission && !alreadyReviewed && (
-        <div className="rounded-md border border-border bg-card p-6">
+        <div className="rounded-md border border-border bg-card p-4 sm:p-6">
           <h3 className="text-sm font-semibold text-foreground mb-4">Write a Review</h3>
 
           {/* Star Rating */}
@@ -178,7 +178,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
                 <button
                   key={s}
                   onClick={() => setRating(s)}
-                  className="transition-transform hover:scale-110"
+                  className="transition-transform hover:scale-110 p-1 -m-1"
                 >
                   <Star className={`w-6 h-6 ${s <= rating ? "text-amber-400 fill-amber-400" : "text-muted-foreground/30"}`} />
                 </button>
@@ -189,16 +189,16 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
           {/* Rubric Scores */}
           <div className="mb-4">
             <label className="text-xs font-medium text-muted-foreground mb-2 block">Rubric Scores (optional)</label>
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
               {RUBRIC_KEYS.map((key) => (
-                <div key={key} className="flex items-center justify-between px-3 py-2 rounded-lg bg-secondary">
-                  <span className="text-xs text-muted-foreground capitalize">{key}</span>
-                  <div className="flex gap-0.5">
+                <div key={key} className="flex items-center justify-between gap-2 px-3 py-2 rounded-lg bg-secondary">
+                  <span className="text-xs text-muted-foreground capitalize truncate">{key}</span>
+                  <div className="flex gap-0.5 flex-shrink-0">
                     {[1,2,3,4,5].map((v) => (
                       <button
                         key={v}
                         onClick={() => setRubric(prev => ({ ...prev, [key]: v }))}
-                        className="transition-transform hover:scale-110"
+                        className="transition-transform hover:scale-110 p-0.5"
                       >
                         <Star className={`w-3.5 h-3.5 ${v <= (rubric[key] || 0) ? "text-amber-400 fill-amber-400" : "text-muted-foreground/20"}`} />
                       </button>
@@ -225,7 +225,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
             <button
               onClick={handleSubmitReview}
               disabled={sending || !rating || !feedback.trim()}
-              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
+              className="flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors w-full sm:w-auto"
             >
               <Send className="w-4 h-4" />
               {sending ? "Submitting…" : "Submit Review"}

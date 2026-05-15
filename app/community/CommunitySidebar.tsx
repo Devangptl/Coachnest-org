@@ -122,7 +122,7 @@ export default function CommunitySidebar() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-card border-r border-border shadow-2xl shadow-black/60 p-5 overflow-y-auto animate-slide-in">
+          <div className="absolute left-0 top-0 bottom-0 w-[85vw] max-w-xs bg-card border-r border-border shadow-2xl shadow-black/60 p-5 overflow-y-auto overscroll-contain animate-slide-in">
             <div className="flex items-center justify-between mb-5">
               <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">
                 Community

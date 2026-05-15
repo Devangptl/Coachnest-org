@@ -71,22 +71,22 @@ export async function CommunityHeader() {
   return (
     <>
       {/* Hero */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground mb-2">Community Hub</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Community Hub</h1>
           <p className="text-muted-foreground text-sm max-w-lg">
             Connect with fellow learners — ask questions, join study groups, review peers&apos; work, and celebrate wins together.
           </p>
         </div>
         {hasCommunityAccess && (
-          <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 mt-1">
+          <span className="self-start flex-shrink-0 text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full bg-emerald-500/15 text-emerald-400 border border-emerald-500/25 sm:mt-1">
             ✓ Community Member
           </span>
         )}
       </div>
 
       {/* Quick Links */}
-      <div id="tour-community-quicklinks" className="grid sm:grid-cols-2 gap-4">
+      <div id="tour-community-quicklinks" className="grid sm:grid-cols-2 gap-3 sm:gap-4">
         {QUICK_LINKS.map((item) => {
           const Icon = item.icon;
           const isLocked = item.proWrite && showLocks;
@@ -94,25 +94,25 @@ export async function CommunityHeader() {
             <Link
               key={item.href}
               href={item.href}
-              className={`group rounded-md border p-5 transition-all relative overflow-hidden ${
+              className={`group rounded-md border p-4 sm:p-5 transition-all relative overflow-hidden ${
                 isLocked
                   ? "border-border bg-card hover:border-primary/30 cursor-not-allowed"
                   : "border-border bg-card hover:border-primary/30"
               }`}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
                 <div className={`w-10 h-10 rounded-md ${item.bg} border flex items-center justify-center flex-shrink-0 ${isLocked ? "opacity-50" : ""}`}>
                   <Icon className={`w-5 h-5 ${item.color}`} />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className={`font-semibold text-sm mb-1 flex items-center gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground"}`}>
-                    {item.title}
+                  <p className={`font-semibold text-sm mb-1 flex flex-wrap items-center gap-1.5 sm:gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground"}`}>
+                    <span className="truncate">{item.title}</span>
                     {isLocked ? (
-                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500/70 border border-orange-500/20">
+                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500/70 border border-orange-500/20 flex-shrink-0">
                         <Lock className="w-2.5 h-2.5" /> Add-on Required
                       </span>
                     ) : (
-                      <ArrowRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-70 group-hover:translate-x-0 transition-all" />
+                      <ArrowRight className="hidden sm:inline w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-70 group-hover:translate-x-0 transition-all" />
                     )}
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
@@ -130,12 +130,12 @@ export async function CommunityHeader() {
 
       {/* Buy CTA */}
       {showLocks && (
-        <div className="rounded-md border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
+        <div className="rounded-md border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+          <div className="flex items-start gap-3 min-w-0">
             <div className="w-9 h-9 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
               <Users className="w-4 h-4 text-[#d97757]" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-foreground font-semibold text-sm">Unlock the full community experience</p>
               <p className="text-muted-foreground text-xs mt-0.5">
                 Post threads, create study groups, and submit peer reviews. One-time purchase, lifetime access.
@@ -144,7 +144,7 @@ export async function CommunityHeader() {
           </div>
           <Link
             href="/features/community"
-            className="flex items-center gap-2 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0"
+            className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0 w-full sm:w-auto"
           >
             <ShoppingCart className="w-3.5 h-3.5" /> Buy Access — ₹499
           </Link>
@@ -178,7 +178,7 @@ export async function PopularThreadsSection() {
         </Link>
       </div>
       {threads.length === 0 ? (
-        <div className="rounded-md border border-border bg-card p-8 text-center">
+        <div className="rounded-md border border-border bg-card p-6 sm:p-8 text-center">
           <MessageSquare className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">No discussions yet. Be the first to start one!</p>
           <Link href="/community/forums" className="inline-flex items-center gap-1.5 mt-3 text-emerald-400 text-xs font-medium hover:underline">
@@ -191,15 +191,15 @@ export async function PopularThreadsSection() {
             <Link
               key={t.id}
               href={`/community/forums/${t.id}`}
-              className="flex items-center justify-between p-4 rounded-lg border border-border bg-card transition-all group"
+              className="flex items-center justify-between gap-3 p-3 sm:p-4 rounded-lg border border-border bg-card transition-all group"
             >
               <div className="min-w-0 flex-1">
                 <p className="text-foreground text-sm font-medium truncate transition-colors">{t.title}</p>
-                <p className="text-muted-foreground text-xs mt-0.5">
+                <p className="text-muted-foreground text-xs mt-0.5 truncate">
                   by {t.author.name} · {new Date(t.createdAt).toLocaleDateString()}
                 </p>
               </div>
-              <div className="flex items-center gap-1.5 text-muted-foreground text-xs ml-4 flex-shrink-0">
+              <div className="flex items-center gap-1.5 text-muted-foreground text-xs flex-shrink-0">
                 <MessageSquare className="w-3.5 h-3.5" />
                 {t._count.replies}
               </div>
@@ -236,7 +236,7 @@ export async function ActiveGroupsSection() {
         </Link>
       </div>
       {groups.length === 0 ? (
-        <div className="rounded-md border border-border bg-card p-8 text-center">
+        <div className="rounded-md border border-border bg-card p-6 sm:p-8 text-center">
           <Users className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">No study groups yet. Create one!</p>
           <Link href="/community/groups" className="inline-flex items-center gap-1.5 mt-3 text-emerald-400 text-xs font-medium hover:underline">
@@ -244,14 +244,14 @@ export async function ActiveGroupsSection() {
           </Link>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {groups.map((g) => (
             <Link
               key={g.id}
               href={`/community/groups/${g.id}`}
-              className="p-4 rounded-lg border border-border bg-card transition-all group"
+              className="p-3 sm:p-4 rounded-lg border border-border bg-card transition-all group"
             >
-              <p className="text-foreground text-sm font-semibold transition-colors">{g.name}</p>
+              <p className="text-foreground text-sm font-semibold truncate transition-colors">{g.name}</p>
               {g.description && (
                 <p className="text-muted-foreground text-xs mt-1 line-clamp-1">{g.description}</p>
               )}
@@ -290,7 +290,7 @@ export async function RecentActivitySection() {
         </Link>
       </div>
       {events.length === 0 ? (
-        <div className="rounded-md border border-border bg-card p-8 text-center">
+        <div className="rounded-md border border-border bg-card p-6 sm:p-8 text-center">
           <Activity className="w-8 h-8 text-muted-foreground mx-auto mb-3 opacity-40" />
           <p className="text-muted-foreground text-sm">No activity yet. Start learning and contributing!</p>
         </div>
@@ -307,7 +307,7 @@ export async function RecentActivitySection() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-foreground text-xs">
+                <p className="text-foreground text-xs truncate">
                   <span className="font-medium">{e.user.name}</span>{" "}
                   <span className="text-muted-foreground">{e.title}</span>
                 </p>

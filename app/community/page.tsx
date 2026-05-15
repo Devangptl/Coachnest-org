@@ -72,7 +72,7 @@ function ActivitySkeleton() {
 
 export default function CommunityHubPage() {
   return (
-    <div className="py-5 space-y-10">
+    <div className="py-4 sm:py-5 space-y-6 sm:space-y-10">
       <Suspense fallback={<HeaderSkeleton />}>
         <CommunityHeader />
       </Suspense>
