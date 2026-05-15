@@ -6,6 +6,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
+import { createNotification } from "@/lib/notifications";
+import { extractMentionIds } from "@/lib/mentions";
 import { emit } from "@/lib/realtime/emit";
 import { channels, events } from "@/lib/realtime/channels";
 
@@ -16,6 +18,7 @@ export async function GET(req: NextRequest) {
     const lessonId = searchParams.get("lessonId");
     const sort = searchParams.get("sort") || "recent"; // recent | popular
     const q = searchParams.get("q")?.trim() || "";
+    const onlyBookmarked = searchParams.get("bookmarked") === "1";
     const page = parseInt(searchParams.get("page") || "1");
     const limit = 20;
 
@@ -27,6 +30,13 @@ export async function GET(req: NextRequest) {
         { title: { contains: q, mode: "insensitive" } },
         { body:  { contains: q, mode: "insensitive" } },
       ];
+    }
+
+    // "Saved" view — restrict to threads the current user has bookmarked.
+    if (onlyBookmarked) {
+      const session = await getSession();
+      if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      where.bookmarks = { some: { userId: session.userId } };
     }
 
     const orderBy =
@@ -48,8 +58,8 @@ export async function GET(req: NextRequest) {
       prisma.forumThread.count({ where }),
     ]);
 
-    // Search results shouldn't be cached cross-user.
-    const cacheHeaders = q
+    // Search / per-user results shouldn't be cached cross-user.
+    const cacheHeaders = q || onlyBookmarked
       ? { "Cache-Control": "no-store" }
       : { "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60" };
 
@@ -97,6 +107,20 @@ export async function POST(req: NextRequest) {
         _count: { select: { replies: true } },
       },
     });
+
+    // Notify @mentioned users
+    for (const userId of extractMentionIds(body)) {
+      if (userId === session.userId) continue;
+      await createNotification({
+        data: {
+          userId,
+          title: "You were mentioned",
+          body: `${session.name} mentioned you in "${title.trim()}"`,
+          type: "FORUM_REPLY",
+          link: `/community/forums/${thread.id}`,
+        },
+      });
+    }
 
     const activity = await prisma.activityFeedEvent.create({
       data: {

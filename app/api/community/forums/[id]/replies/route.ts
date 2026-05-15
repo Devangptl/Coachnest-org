@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
 import { createNotification } from "@/lib/notifications";
+import { extractMentionIds } from "@/lib/mentions";
 import { emit } from "@/lib/realtime/emit";
 import { channels, events } from "@/lib/realtime/channels";
 
@@ -72,6 +73,20 @@ export async function POST(
           userId,
           title: parentId ? "Someone replied to your comment" : "New reply to your thread",
           body: `${session.name} replied to "${thread.title}"`,
+          type: "FORUM_REPLY",
+          link: `/community/forums/${threadId}`,
+        },
+      });
+    }
+
+    // Notify @mentioned users (skip the replier and anyone already notified)
+    for (const userId of extractMentionIds(body)) {
+      if (userId === session.userId || recipients.has(userId)) continue;
+      await createNotification({
+        data: {
+          userId,
+          title: "You were mentioned",
+          body: `${session.name} mentioned you in "${thread.title}"`,
           type: "FORUM_REPLY",
           link: `/community/forums/${threadId}`,
         },

@@ -23,6 +23,7 @@ export async function GET(
           include: {
             author: { select: { id: true, name: true, avatar: true } },
             votes: true,
+            reactions: { select: { emoji: true, userId: true } },
             _count: { select: { children: true } },
           },
           orderBy: { createdAt: "asc" },
@@ -39,12 +40,29 @@ export async function GET(
       const userVote = session
         ? reply.votes.find((v) => v.userId === session.userId)?.value || 0
         : 0;
-      const { votes, ...rest } = reply;
-      return { ...rest, score, userVote };
+
+      // Group reactions: { "👍": { count, reacted } }
+      const reactions: Record<string, { count: number; reacted: boolean }> = {};
+      for (const r of reply.reactions) {
+        const entry = reactions[r.emoji] || { count: 0, reacted: false };
+        entry.count += 1;
+        if (session && r.userId === session.userId) entry.reacted = true;
+        reactions[r.emoji] = entry;
+      }
+
+      const { votes, reactions: _raw, ...rest } = reply;
+      return { ...rest, score, userVote, reactions };
     });
 
+    const bookmarked = session
+      ? !!(await prisma.forumBookmark.findUnique({
+          where: { userId_threadId: { userId: session.userId, threadId: id } },
+          select: { id: true },
+        }))
+      : false;
+
     return NextResponse.json({
-      thread: { ...thread, replies: repliesWithScores },
+      thread: { ...thread, replies: repliesWithScores, bookmarked },
     });
   } catch (err) {
     console.error("[GET /api/community/forums/[id]]", err);
