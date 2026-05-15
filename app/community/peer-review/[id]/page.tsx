@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
+import { PeerReviewDetailSkeleton } from "@/components/community/CommunitySkeletons";
 
 interface Review {
   id: string;
@@ -125,12 +126,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
   }
 
   if (loading) {
-    return (
-      <div className="py-8 space-y-4">
-        <div className="h-8 w-32 rounded bg-secondary/50 animate-pulse" />
-        <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
-      </div>
-    );
+    return <PeerReviewDetailSkeleton />;
   }
 
   if (!assignment) {

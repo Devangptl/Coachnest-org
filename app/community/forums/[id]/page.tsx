@@ -11,6 +11,7 @@ import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
 import MentionTextarea from "@/components/MentionTextarea";
+import { ThreadDetailSkeleton } from "@/components/community/CommunitySkeletons";
 import { usePostgresChanges } from "@/hooks/useRealtimeChannel";
 
 interface Reply {
@@ -242,15 +243,7 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
   }
 
   if (loading) {
-    return (
-      <div className="py-8 space-y-4">
-        <div className="h-8 w-32 rounded bg-secondary/50 animate-pulse" />
-        <div className="h-48 rounded-md bg-secondary/50 animate-pulse" />
-        <div className="space-y-3">
-          {[1,2,3].map(i => <div key={i} className="h-24 rounded-lg bg-secondary/50 animate-pulse" />)}
-        </div>
-      </div>
-    );
+    return <ThreadDetailSkeleton />;
   }
 
   if (!thread) {

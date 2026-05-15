@@ -9,6 +9,7 @@ import Link from "next/link";
 import { MessageSquare, Plus, Search, CheckCircle, Lock, Bookmark } from "lucide-react";
 import MentionTextarea from "@/components/MentionTextarea";
 import { stripMentionTokens } from "@/lib/mentions";
+import { ThreadListSkeleton } from "@/components/community/CommunitySkeletons";
 import toast from "react-hot-toast";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 
@@ -185,11 +186,7 @@ export default function ForumsClient({
 
       {/* Thread List */}
       {loading ? (
-        <div className="space-y-3">
-          {[1,2,3,4,5].map(i => (
-            <div key={i} className="h-20 rounded-lg bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <ThreadListSkeleton rows={6} />
       ) : filtered.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <MessageSquare className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />

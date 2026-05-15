@@ -9,6 +9,7 @@ import Link from "next/link";
 import { ClipboardCheck, Plus, FileText, Star, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
+import { AssignmentListSkeleton } from "@/components/community/CommunitySkeletons";
 
 interface Assignment {
   id: string;
@@ -131,11 +132,7 @@ export default function PeerReviewClient({
 
       {/* Assignment List */}
       {loading ? (
-        <div className="space-y-3">
-          {[1,2,3].map(i => (
-            <div key={i} className="h-24 rounded-lg bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <AssignmentListSkeleton rows={4} />
       ) : assignments.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <ClipboardCheck className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />

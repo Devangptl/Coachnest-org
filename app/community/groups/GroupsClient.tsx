@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
+import { CardGridSkeleton } from "@/components/ui/Skeleton";
 
 interface Group {
   id: string;
@@ -237,11 +238,7 @@ export default function GroupsClient({
 
       {/* Groups grid */}
       {loading ? (
-        <div className="grid sm:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="h-36 rounded-md bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <CardGridSkeleton count={6} />
       ) : filtered.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />

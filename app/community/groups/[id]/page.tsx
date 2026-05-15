@@ -16,6 +16,12 @@ import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
 import { channels, events } from "@/lib/realtime/channels";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
+import {
+  GroupDetailSkeleton,
+  GroupNotesSkeleton,
+  GroupProgressSkeleton,
+  GroupRequestsSkeleton,
+} from "@/components/community/CommunitySkeletons";
 
 /* ─── Types ─────────────────────────────────────────────────── */
 
@@ -332,12 +338,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   if (loading) {
-    return (
-      <div className="py-8 space-y-4">
-        <div className="h-8 w-32 rounded bg-secondary/50 animate-pulse" />
-        <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
-      </div>
-    );
+    return <GroupDetailSkeleton />;
   }
 
   if (!group) {
@@ -522,9 +523,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </div>
 
           {notesLoading ? (
-            <div className="space-y-3">
-              {[1,2,3].map(i => <div key={i} className="h-28 rounded-lg bg-secondary/50 animate-pulse" />)}
-            </div>
+            <GroupNotesSkeleton count={3} />
           ) : notes.length === 0 ? (
             <div className="rounded-md border border-border bg-card p-10 text-center">
               <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
@@ -656,12 +655,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
       {tab === "progress" && (
         <div className="space-y-6">
           {progressLoading ? (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                {[1,2,3,4,5].map(i => <div key={i} className="h-24 rounded-md bg-secondary/50 animate-pulse" />)}
-              </div>
-              <div className="h-60 rounded-md bg-secondary/50 animate-pulse" />
-            </div>
+            <GroupProgressSkeleton />
           ) : !progress ? (
             <div className="rounded-md border border-border bg-card p-10 text-center">
               <BarChart3 className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
@@ -745,9 +739,7 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           </h2>
 
           {requestsLoading ? (
-            <div className="space-y-3">
-              {[1,2,3].map(i => <div key={i} className="h-20 rounded-lg bg-secondary/50 animate-pulse" />)}
-            </div>
+            <GroupRequestsSkeleton count={3} />
           ) : joinRequests.length === 0 ? (
             <div className="rounded-md border border-border bg-card p-10 text-center">
               <ShieldCheck className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
