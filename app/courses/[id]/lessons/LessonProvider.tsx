@@ -5,11 +5,12 @@
  * Fetched ONCE per course visit and shared between sidebar + content.
  * Avoids duplicate API calls and re-fetching on lesson navigation.
  */
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 
 interface LessonContextType {
   isEnrolled: boolean;
   loading: boolean;
+  completedCount: number;
   isCompleted: (lessonId: string) => boolean;
   markComplete: (lessonId: string, value: boolean) => Promise<void>;
   mobileSidebarOpen: boolean;
@@ -19,6 +20,7 @@ interface LessonContextType {
 const LessonContext = createContext<LessonContextType>({
   isEnrolled: false,
   loading: true,
+  completedCount: 0,
   isCompleted: () => false,
   markComplete: async () => {},
   mobileSidebarOpen: false,
@@ -53,6 +55,15 @@ export function LessonProvider({ courseId, children }: Props) {
       .finally(() => setLoading(false));
   }, [courseId]);
 
+  const completedCount = useMemo(() => {
+    const ids = new Set(serverCompleted);
+    for (const [lessonId, done] of Object.entries(localOverrides)) {
+      if (done) ids.add(lessonId);
+      else ids.delete(lessonId);
+    }
+    return ids.size;
+  }, [serverCompleted, localOverrides]);
+
   const isCompleted = useCallback(
     (lessonId: string) => {
       if (lessonId in localOverrides) return localOverrides[lessonId];
@@ -81,7 +92,7 @@ export function LessonProvider({ courseId, children }: Props) {
 
   return (
     <LessonContext.Provider
-      value={{ isEnrolled, loading, isCompleted, markComplete, mobileSidebarOpen, setMobileSidebarOpen }}
+      value={{ isEnrolled, loading, completedCount, isCompleted, markComplete, mobileSidebarOpen, setMobileSidebarOpen }}
     >
       {children}
     </LessonContext.Provider>

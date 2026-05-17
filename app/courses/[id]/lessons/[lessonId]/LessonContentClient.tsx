@@ -51,7 +51,7 @@ const typeConfig = {
 
 export default function LessonContentClient({ courseId, lesson, lessonIndex, totalLessons, chapterTitle, chapterIndex, totalChapters, prev, next }: Props) {
   const router = useRouter();
-  const { isEnrolled, loading, isCompleted, markComplete } = useLessonContext();
+  const { isEnrolled, loading, completedCount, isCompleted, markComplete } = useLessonContext();
   const [showAudioPlayer,  setShowAudioPlayer]  = useState(false);
   const [isAudioPlaying,   setIsAudioPlaying]   = useState(false);
   const [downloadingCert,  setDownloadingCert]  = useState(false);
@@ -60,7 +60,11 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   const TypeIcon = config.icon;
   const done     = isCompleted(lesson.id);
   const isLocked = !loading && !lesson.isFree && !isEnrolled;
-  const allComplete = !loading && isEnrolled && !next && done;
+
+  // Show certificate banner once ≥90% of the course is complete
+  const progressPct     = totalLessons > 0 ? completedCount / totalLessons : 0;
+  const eligibleForCert = !loading && isEnrolled && progressPct >= 0.9;
+  const courseFinished  = progressPct >= 1;
 
   // ── Keyboard navigation ──────────────────────────────────────────────────
   useEffect(() => {
@@ -363,8 +367,8 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         )}
       </div>
 
-      {/* ── Certificate banner ────────────────────────────────────────────── */}
-      {allComplete && (
+      {/* ── Certificate banner — shown when ≥90% complete ─────────────────── */}
+      {eligibleForCert && (
         <motion.div
           initial={{ opacity: 0, y: 12, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -381,9 +385,17 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
               <Award className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-foreground font-bold text-sm">Course Completed!</h3>
-              <p className="text-muted-foreground/70 text-xs mt-0.5 hidden sm:block">All lessons done. Claim your certificate!</p>
-              <p className="text-muted-foreground/70 text-xs mt-0.5 sm:hidden">Claim your certificate!</p>
+              <h3 className="text-foreground font-bold text-sm">
+                {courseFinished ? "Course Completed!" : "Certificate Unlocked!"}
+              </h3>
+              <p className="text-muted-foreground/70 text-xs mt-0.5 hidden sm:block">
+                {courseFinished
+                  ? "All lessons done — download your certificate."
+                  : `${Math.round(progressPct * 100)}% complete — you've earned your certificate.`}
+              </p>
+              <p className="text-muted-foreground/70 text-xs mt-0.5 sm:hidden">
+                {courseFinished ? "All done!" : `${Math.round(progressPct * 100)}% complete`}
+              </p>
             </div>
             <button
               onClick={downloadCertificate}
