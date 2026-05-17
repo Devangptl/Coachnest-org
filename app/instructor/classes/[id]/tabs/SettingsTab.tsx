@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/Button";
 import { CustomSelect } from "@/components/ui/CustomSelect";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
 
-export default function SettingsTab({ cls }: { cls: any }) {
+export default function SettingsTab({ cls, onRefresh }: { cls: any; onRefresh?: () => void }) {
   const router = useRouter();
   const confirm = useConfirm();
 
@@ -38,6 +38,7 @@ export default function SettingsTab({ cls }: { cls: any }) {
       });
       if (!res.ok) throw new Error();
       toast.success("Saved");
+      onRefresh?.();
       router.refresh();
     } catch { toast.error("Failed"); }
     finally { setSaving(false); }
@@ -66,6 +67,7 @@ export default function SettingsTab({ cls }: { cls: any }) {
     const res = await fetch(`/api/classes/${cls.id}/invite`, { method: "POST" });
     if (res.ok) {
       toast.success("New invite code generated");
+      onRefresh?.();
       router.refresh();
     } else { toast.error("Failed"); }
   }
