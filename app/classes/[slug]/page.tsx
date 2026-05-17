@@ -12,6 +12,7 @@ import { getSession } from "@/lib/auth";
 import { Skeleton } from "@/components/ui/Skeleton";
 import JoinClassPanel from "./JoinClassPanel";
 import StudentClassTabs from "./StudentClassTabs";
+import ClassCourseList from "./ClassCourseList";
 
 export default async function PublicClassPage({
   params,
@@ -103,37 +104,19 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
             {cls.enableChat && <Pill icon={MessageCircle} label="Chat" />}
           </div>
 
-          {/* Course list */}
-          <div className="glass p-5 rounded-xl">
-            <h2 className="font-semibold mb-3">What you&apos;ll learn</h2>
-            {cls.courses.length === 0 ? (
-              <p className="text-sm text-muted-foreground py-2">
-                The instructor hasn&apos;t added any courses yet.
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {cls.courses.map((cc, i) => (
-                  <div key={cc.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                    <span className="text-sm font-bold text-amber-400 w-6">{i + 1}</span>
-                    {cc.course.thumbnail ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={cc.course.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
-                    ) : (
-                      <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
-                        <BookOpen className="w-4 h-4 text-muted-foreground" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-sm">{cc.course.title}</div>
-                      <div className="text-xs text-muted-foreground">
-                        {cc.course.totalLessons} lessons · {cc.isRequired ? "Required" : "Optional"}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Course list — click to read in a side panel */}
+          <ClassCourseList
+            classId={cls.id}
+            enableChat={cls.enableChat}
+            isMember={isMember}
+            courses={cls.courses.map((cc) => ({
+              courseId: cc.course.id,
+              title: cc.course.title,
+              thumbnail: cc.course.thumbnail,
+              totalLessons: cc.course.totalLessons,
+              isRequired: cc.isRequired,
+            }))}
+          />
 
           {isMember && <StudentClassTabs classId={cls.id} enableChat={cls.enableChat} enableDiscussion={cls.enableDiscussion} />}
         </div>
