@@ -12,7 +12,7 @@ import { isRunnerEnabled, runMigrateDeploy } from "@/services/migration.service"
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-const CONFIRM_PHRASE = "migrate deploy";
+const CONFIRM_PHRASE = "CONFIRM";
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
   }
 
   const body = await req.json().catch(() => null);
-  if (!body || body.confirm !== CONFIRM_PHRASE) {
+  if (!body || String(body.confirm ?? "").trim() !== CONFIRM_PHRASE) {
     return NextResponse.json(
       { error: `Confirmation required: send { "confirm": "${CONFIRM_PHRASE}" }` },
       { status: 400 },

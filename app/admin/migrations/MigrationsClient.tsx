@@ -24,7 +24,7 @@ interface Status {
   failed: { name: string; startedAt: string | null }[];
 }
 
-const CONFIRM_PHRASE = "migrate deploy";
+const CONFIRM_PHRASE = "CONFIRM";
 
 export default function MigrationsClient() {
   const confirm = useConfirm();
@@ -99,8 +99,8 @@ export default function MigrationsClient() {
       disabledReasons.push("a migration is in a failed state — resolve it first");
     if (knownUpToDate)
       disabledReasons.push("schema is already up to date — nothing to apply");
-    if (confirmText !== CONFIRM_PHRASE)
-      disabledReasons.push(`type "${CONFIRM_PHRASE}" to confirm`);
+    if (confirmText.trim() !== CONFIRM_PHRASE)
+      disabledReasons.push(`type ${CONFIRM_PHRASE} (exactly, nothing else) to confirm`);
   }
 
   const canDeploy =
@@ -108,7 +108,7 @@ export default function MigrationsClient() {
     status.runnerEnabled &&
     status.failed.length === 0 &&
     !knownUpToDate &&
-    confirmText === CONFIRM_PHRASE &&
+    confirmText.trim() === CONFIRM_PHRASE &&
     !running;
 
   return (
@@ -223,15 +223,17 @@ export default function MigrationsClient() {
             ) : (
               <>
                 <p className="text-xs text-muted-foreground mb-3">
-                  Runs <code>prisma migrate deploy</code> on the live database.
-                  This is irreversible. Type{" "}
-                  <code className="text-orange-400">{CONFIRM_PHRASE}</code> to
-                  enable the button.
+                  Runs <code>prisma migrate deploy</code> — applies{" "}
+                  <strong>all pending migrations in order</strong> on the live
+                  database. You can&apos;t choose a single migration here. This
+                  is irreversible. To confirm, type exactly{" "}
+                  <code className="text-orange-400">{CONFIRM_PHRASE}</code> in
+                  the box (just that word — no command, no migration name).
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     className="input-glass flex-1"
-                    placeholder={CONFIRM_PHRASE}
+                    placeholder={`Type ${CONFIRM_PHRASE} to enable`}
                     value={confirmText}
                     onChange={(e) => setConfirmText(e.target.value)}
                     disabled={running}
