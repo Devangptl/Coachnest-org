@@ -94,7 +94,7 @@ export default function CourseContent({
 
   return (
     <div className="space-y-4 sm:space-y-6">
-      {/* Tabs */}
+      {/* Floating bottom tab bar */}
       <CourseTabs
         activeTab={activeTab}
         onTabChange={setActiveTab}

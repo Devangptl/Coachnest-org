@@ -265,7 +265,7 @@ export default async function CourseDetailPage({ params }: Props) {
   };
 
   return (
-    <div className="pb-10">
+    <div className="pb-28">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(courseJsonLd) }}
