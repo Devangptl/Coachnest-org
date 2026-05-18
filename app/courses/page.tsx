@@ -7,7 +7,6 @@ import type { Metadata } from "next";
 import { BookOpen, ListVideo, ArrowRight } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { playlistDurations } from "@/services/playlist.service";
-import { Badge } from "@/components/ui/Badge";
 import PlaylistCard from "@/components/playlists/PlaylistCard";
 import CoursesBrowser, { type CourseVM } from "./CoursesBrowser";
 
@@ -45,13 +44,6 @@ async function getCourses() {
   });
 }
 
-async function getCategories() {
-  return prisma.category.findMany({
-    include: { _count: { select: { courses: true } } },
-    orderBy: { courses: { _count: "desc" } },
-  });
-}
-
 /** Public playlists for the curated section. Resilient if the tables
  *  don't exist yet (e.g. migrations not applied) — never breaks /courses. */
 async function getPlaylists() {
@@ -76,9 +68,8 @@ async function getPlaylists() {
 }
 
 export default async function CoursesPage() {
-  const [courses, categories, playlists] = await Promise.all([
+  const [courses, playlists] = await Promise.all([
     getCourses(),
-    getCategories(),
     getPlaylists(),
   ]);
 
@@ -134,33 +125,17 @@ export default async function CoursesPage() {
               View all <ArrowRight className="w-3 h-3" />
             </Link>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {playlists.map((p) => (
               <PlaylistCard
                 key={p.id}
                 href={`/playlists/${p.slug}`}
                 playlist={p}
+                compact
               />
             ))}
           </div>
         </section>
-      )}
-
-      {/* Category pills */}
-      {categories.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
-          {categories.map((cat) => (
-            <Link key={cat.id} href={`/search?category=${cat.slug}`}>
-              <Badge
-                variant="outline"
-                className="cursor-pointer hover:bg-secondary transition-colors"
-              >
-                {cat.icon && <span>{cat.icon}</span>} {cat.name} (
-                {cat._count.courses})
-              </Badge>
-            </Link>
-          ))}
-        </div>
       )}
 
       {/* Searchable course grid */}
