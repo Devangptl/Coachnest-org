@@ -87,11 +87,27 @@ export default function MigrationsClient() {
     }
   }
 
+  // In serverless/prod the migration files often aren't bundled, so we can't
+  // know the pending count — only block on "nothing to apply" when we can
+  // actually read the files on disk. `migrate deploy` is idempotent anyway.
+  const knownUpToDate =
+    !!status && status.diskAvailable && status.pending.length === 0;
+
+  const disabledReasons: string[] = [];
+  if (status) {
+    if (status.failed.length > 0)
+      disabledReasons.push("a migration is in a failed state — resolve it first");
+    if (knownUpToDate)
+      disabledReasons.push("schema is already up to date — nothing to apply");
+    if (confirmText !== CONFIRM_PHRASE)
+      disabledReasons.push(`type "${CONFIRM_PHRASE}" to confirm`);
+  }
+
   const canDeploy =
     !!status &&
     status.runnerEnabled &&
-    status.pending.length > 0 &&
     status.failed.length === 0 &&
+    !knownUpToDate &&
     confirmText === CONFIRM_PHRASE &&
     !running;
 
@@ -230,9 +246,22 @@ export default function MigrationsClient() {
                     {running ? "Running…" : "Run migrate deploy"}
                   </Button>
                 </div>
-                {status.pending.length === 0 && (
+                {!canDeploy && !running && disabledReasons.length > 0 && (
+                  <p className="text-xs text-amber-400 mt-2">
+                    Button disabled: {disabledReasons.join("; ")}.
+                  </p>
+                )}
+                {knownUpToDate && (
                   <p className="text-xs text-emerald-400 mt-2">
                     Nothing to apply — schema is already up to date.
+                  </p>
+                )}
+                {!status.diskAvailable && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Note: migration files aren&apos;t readable at runtime here,
+                    so the pending count is unknown. <code>migrate deploy</code>{" "}
+                    is safe to run — it applies only what&apos;s missing and is a
+                    no-op if nothing is pending.
                   </p>
                 )}
               </>
