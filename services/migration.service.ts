@@ -91,7 +91,6 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
   const appliedOk = (applied ?? []).filter(
     (r) => r.finished_at && !r.rolled_back_at,
   );
-  const appliedNames = new Set(appliedOk.map((r) => r.migration_name));
 
   const failed = (applied ?? [])
     .filter((r) => !r.finished_at || r.rolled_back_at)
@@ -100,7 +99,12 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
       startedAt: r.started_at ? r.started_at.toISOString() : null,
     }));
 
-  const pending = (disk ?? []).filter((n) => !appliedNames.has(n));
+  // A migration that already has ANY row in _prisma_migrations (applied OR
+  // failed) is NOT pending — otherwise a single failed migration would be
+  // double-counted as both "failed" and "pending". Pending = on disk with
+  // no migration-table record at all.
+  const recordedNames = new Set((applied ?? []).map((r) => r.migration_name));
+  const pending = (disk ?? []).filter((n) => !recordedNames.has(n));
 
   return {
     runnerEnabled: isRunnerEnabled(),
