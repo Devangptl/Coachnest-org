@@ -9,6 +9,7 @@
  * All functions return plain, serializable objects safe to pass to Client Components.
  */
 import { prisma } from "@/lib/prisma";
+import { playlistDurations } from "@/services/playlist.service";
 
 export type InstructorListFilter = {
   search?: string;
@@ -257,6 +258,150 @@ export async function getInstructorDetails(id: string) {
       averageRating: reviewsAgg._avg.rating ? Number(reviewsAgg._avg.rating.toFixed(2)) : 0,
       reviewsCount: reviewsAgg._count.rating,
     },
+  };
+}
+
+/**
+ * Lightweight public-safe instructor summary — used by the hover card.
+ * No wallet, payout, or email data is exposed. Returns null when the id
+ * does not belong to an instructor/admin.
+ */
+export async function getInstructorPublicCard(id: string) {
+  const instructor = await prisma.user.findFirst({
+    where: { id, role: { in: ["INSTRUCTOR", "ADMIN"] } },
+    select: {
+      id: true,
+      name: true,
+      avatar: true,
+      headline: true,
+      bio: true,
+      website: true,
+      _count: { select: { followers: true } },
+    },
+  });
+  if (!instructor) return null;
+
+  const [coursesCount, enrollments, reviewsAgg] = await Promise.all([
+    prisma.course.count({
+      where: { createdById: id, status: "PUBLISHED" },
+    }),
+    prisma.enrollment.findMany({
+      where: { course: { createdById: id } },
+      select: { userId: true },
+    }),
+    prisma.review.aggregate({
+      where: { course: { createdById: id } },
+      _avg: { rating: true },
+      _count: { rating: true },
+    }),
+  ]);
+
+  return {
+    id: instructor.id,
+    name: instructor.name,
+    avatar: instructor.avatar,
+    headline: instructor.headline,
+    bio: instructor.bio,
+    website: instructor.website,
+    stats: {
+      coursesCount,
+      studentsCount: new Set(enrollments.map((e) => e.userId)).size,
+      averageRating: reviewsAgg._avg.rating
+        ? Number(reviewsAgg._avg.rating.toFixed(2))
+        : 0,
+      reviewsCount: reviewsAgg._count.rating,
+      followerCount: instructor._count.followers,
+    },
+  };
+}
+
+export type InstructorPublicCard = NonNullable<
+  Awaited<ReturnType<typeof getInstructorPublicCard>>
+>;
+
+/**
+ * Full public instructor profile — summary + published courses + public
+ * playlists. Powers the /instructors/[id] detail page. Playlist lookup is
+ * resilient if the playlist tables are not migrated yet.
+ */
+export async function getInstructorPublicProfile(id: string) {
+  const card = await getInstructorPublicCard(id);
+  if (!card) return null;
+
+  const courses = await prisma.course.findMany({
+    where: { createdById: id, status: "PUBLISHED" },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      thumbnail: true,
+      price: true,
+      discountPrice: true,
+      isFree: true,
+      level: true,
+      _count: { select: { lessons: true, enrollments: true } },
+      reviews: { select: { rating: true } },
+    },
+    orderBy: { enrollments: { _count: "desc" } },
+  });
+
+  let playlists: {
+    id: string;
+    title: string;
+    slug: string;
+    description: string | null;
+    coverImage: string | null;
+    visibility: "PUBLIC" | "PRIVATE";
+    totalDuration: number;
+    _count: { items: number; followers: number };
+  }[] = [];
+
+  try {
+    const rows = await prisma.coursePlaylist.findMany({
+      where: { ownerId: id, visibility: "PUBLIC" },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        description: true,
+        coverImage: true,
+        visibility: true,
+        _count: { select: { items: true, followers: true } },
+      },
+      orderBy: [{ followers: { _count: "desc" } }, { createdAt: "desc" }],
+    });
+    const durations = await playlistDurations(rows.map((p) => p.id));
+    playlists = rows.map((p) => ({
+      ...p,
+      totalDuration: durations.get(p.id) ?? 0,
+    }));
+  } catch {
+    playlists = [];
+  }
+
+  return {
+    ...card,
+    courses: courses.map((c) => ({
+      id: c.id,
+      title: c.title,
+      description: c.description,
+      thumbnail: c.thumbnail,
+      price: c.price != null ? Number(c.price) : null,
+      discountPrice: c.discountPrice != null ? Number(c.discountPrice) : null,
+      isFree: c.isFree,
+      level: c.level,
+      totalLessons: c._count.lessons,
+      enrollmentCount: c._count.enrollments,
+      avgRating: c.reviews.length
+        ? Number(
+            (
+              c.reviews.reduce((s, r) => s + r.rating, 0) / c.reviews.length
+            ).toFixed(1),
+          )
+        : 0,
+      reviewCount: c.reviews.length,
+    })),
+    playlists,
   };
 }
 

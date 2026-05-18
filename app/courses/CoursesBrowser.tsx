@@ -11,6 +11,8 @@ export interface CourseVM {
   description: string;
   thumbnail: string | null;
   instructorName: string;
+  instructorId: string;
+  instructorAvatar: string | null;
   price: number | null;
   discountPrice: number | null;
   isFree: boolean;
@@ -70,6 +72,8 @@ export default function CoursesBrowser({ courses }: { courses: CourseVM[] }) {
               description={c.description}
               thumbnail={c.thumbnail}
               instructorName={c.instructorName}
+              instructorId={c.instructorId}
+              instructorAvatar={c.instructorAvatar}
               price={c.price}
               discountPrice={c.discountPrice}
               isFree={c.isFree}

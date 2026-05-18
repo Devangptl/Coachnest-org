@@ -3,6 +3,8 @@ import Image from "next/image";
 import { BookOpen, Users, Star, Clock } from "lucide-react";
 import { truncate } from "@/lib/utils";
 import { Badge } from "./ui/Badge";
+import InstructorHoverCard from "./InstructorHoverCard";
+import InstructorAvatar from "./InstructorAvatar";
 
 interface CourseCardProps {
   id:               string;
@@ -10,6 +12,8 @@ interface CourseCardProps {
   description:      string;
   thumbnail?:       string | null;
   instructorName?:  string;
+  instructorId?:    string;
+  instructorAvatar?: string | null;
   price?:           number | null;
   discountPrice?:   number | null;
   isFree?:          boolean;
@@ -30,6 +34,7 @@ const LEVEL_COLORS = {
 
 export default function CourseCard({
   id, title, description, thumbnail, instructorName,
+  instructorId, instructorAvatar,
   price, discountPrice, isFree, level, totalLessons = 0,
   enrollmentCount, avgRating, reviewCount, progress,
   compact = false,
@@ -116,9 +121,28 @@ export default function CourseCard({
 
           {/* Instructor — non-compact only */}
           {instructorName && !compact && (
-            <p className="text-muted-foreground/60 text-xs mb-1.5 truncate">
-              by {instructorName}
-            </p>
+            instructorId ? (
+              <div className="mb-1.5">
+                <InstructorHoverCard
+                  instructorId={instructorId}
+                  instructorName={instructorName}
+                  avatarUrl={instructorAvatar}
+                  className="inline-flex items-center gap-1.5 text-muted-foreground/70 text-xs hover:text-orange-500 transition-colors max-w-full"
+                >
+                  <InstructorAvatar
+                    name={instructorName}
+                    avatar={instructorAvatar}
+                    size="w-5 h-5"
+                    textSize="text-[10px]"
+                  />
+                  <span className="truncate">{instructorName}</span>
+                </InstructorHoverCard>
+              </div>
+            ) : (
+              <p className="text-muted-foreground/60 text-xs mb-1.5 truncate">
+                by {instructorName}
+              </p>
+            )
           )}
 
           {/* Title */}
