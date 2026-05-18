@@ -193,7 +193,7 @@ export default function CourseHero({
             >
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <InstructorAvatar name={instructorName} />
+                <InstructorAvatar name={instructorName} seed={instructorId} />
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[#f8ebe0] dark:border-[#0f0f0f]" />
               </div>
 

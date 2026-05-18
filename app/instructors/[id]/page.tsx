@@ -70,8 +70,8 @@ export default async function InstructorPage({ params }: Params) {
           <InstructorAvatar
             name={profile.name}
             avatar={profile.avatar}
+            seed={profile.id}
             size="w-20 h-20"
-            textSize="text-2xl"
             className="flex-shrink-0"
           />
           <div className="flex-1 min-w-0">

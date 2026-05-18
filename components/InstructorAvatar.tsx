@@ -3,16 +3,25 @@ import { cn } from "@/lib/utils";
 interface Props {
   name: string;
   avatar?: string | null;
+  /** Stable seed (instructor id) so the cartoon stays the same per person. */
+  seed?: string;
   /** Tailwind size classes, e.g. "w-10 h-10". */
   size?: string;
-  /** Text size class for the fallback initial. */
+  /** Kept for API compatibility (was the initial's text size). */
   textSize?: string;
   className?: string;
 }
 
+/** Deterministic cartoon avatar (DiceBear) used when no real photo exists. */
+function cartoonUrl(seed: string) {
+  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(
+    seed,
+  )}&backgroundColor=ffd5dc,ffdfbf,c0aede,d1d4f9,b6e3f4,transparent`;
+}
+
 /**
- * Instructor avatar — shows the photo when available, otherwise a gradient
- * circle with the name's first initial (matches the course hero style).
+ * Instructor avatar — shows the uploaded photo when available, otherwise a
+ * random-but-stable cartoon avatar derived from the instructor id/name.
  *
  * Uses a plain <img> (like the rest of the app) so avatars hosted on
  * domains outside next.config's remotePatterns don't crash the page.
@@ -20,36 +29,22 @@ interface Props {
 export default function InstructorAvatar({
   name,
   avatar,
+  seed,
   size = "w-10 h-10",
-  textSize = "text-sm",
   className,
 }: Props) {
-  if (avatar) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img
-        src={avatar}
-        alt={name}
-        className={cn(
-          size,
-          "rounded-full object-cover ring-2 ring-border dark:ring-white/10",
-          className,
-        )}
-      />
-    );
-  }
+  const src = avatar || cartoonUrl(seed || name || "instructor");
 
   return (
-    <div
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={src}
+      alt={name}
       className={cn(
         size,
-        textSize,
-        "rounded-full bg-gradient-to-br from-primary via-orange-400 to-amber-500 flex items-center justify-center text-white font-bold shadow-lg ring-2 ring-border dark:ring-white/10",
+        "rounded-full object-cover bg-secondary ring-2 ring-border dark:ring-white/10",
         className,
       )}
-      aria-hidden
-    >
-      {name.charAt(0).toUpperCase()}
-    </div>
+    />
   );
 }

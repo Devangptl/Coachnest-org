@@ -132,8 +132,8 @@ export default function CourseCard({
                   <InstructorAvatar
                     name={instructorName}
                     avatar={instructorAvatar}
+                    seed={instructorId}
                     size="w-5 h-5"
-                    textSize="text-[10px]"
                   />
                   <span className="truncate">{instructorName}</span>
                 </InstructorHoverCard>

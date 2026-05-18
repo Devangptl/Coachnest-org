@@ -219,8 +219,8 @@ export default function InstructorHoverCard({
                   <InstructorAvatar
                     name={data.instructor.name}
                     avatar={data.instructor.avatar}
+                    seed={data.instructor.id}
                     size="w-12 h-12"
-                    textSize="text-base"
                     className="flex-shrink-0"
                   />
                   <div className="min-w-0">
