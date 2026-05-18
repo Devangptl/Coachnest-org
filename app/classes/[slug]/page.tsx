@@ -1,12 +1,18 @@
 /**
  * Public class detail (student view).
+ *
+ * The page returns a layout shell immediately and streams the class content
+ * through a Suspense boundary, so navigation feels instant.
  */
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { GraduationCap, Users, BookOpen, Calendar, Video, MessageCircle } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { Skeleton } from "@/components/ui/Skeleton";
 import JoinClassPanel from "./JoinClassPanel";
 import StudentClassTabs from "./StudentClassTabs";
+import ClassCourseList from "./ClassCourseList";
 
 export default async function PublicClassPage({
   params,
@@ -17,6 +23,17 @@ export default async function PublicClassPage({
 }) {
   const { slug } = await params;
   const { invite } = await searchParams;
+
+  return (
+    <div className="px-4 max-w-6xl mx-auto py-6">
+      <Suspense fallback={<ClassDetailSkeleton />}>
+        <ClassDetailContent slug={slug} invite={invite} />
+      </Suspense>
+    </div>
+  );
+}
+
+async function ClassDetailContent({ slug, invite }: { slug: string; invite?: string }) {
   const session = await getSession();
 
   const cls = await prisma.class.findUnique({
@@ -55,7 +72,7 @@ export default async function PublicClassPage({
   const isMember = enrollment?.status === "APPROVED" || cls.instructorId === session?.userId;
 
   return (
-    <div className="px-4 max-w-6xl mx-auto py-6">
+    <>
       {/* Banner */}
       <div className="rounded-xl overflow-hidden mb-6">
         {cls.banner ? (
@@ -87,31 +104,19 @@ export default async function PublicClassPage({
             {cls.enableChat && <Pill icon={MessageCircle} label="Chat" />}
           </div>
 
-          {/* Course list */}
-          <div className="glass p-5 rounded-xl">
-            <h2 className="font-semibold mb-3">What you&apos;ll learn</h2>
-            <div className="space-y-2">
-              {cls.courses.map((cc, i) => (
-                <div key={cc.id} className="flex items-center gap-3 py-2 border-b border-border last:border-0">
-                  <span className="text-sm font-bold text-amber-400 w-6">{i + 1}</span>
-                  {cc.course.thumbnail ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={cc.course.thumbnail} alt="" className="w-12 h-12 rounded object-cover" />
-                  ) : (
-                    <div className="w-12 h-12 rounded bg-secondary flex items-center justify-center">
-                      <BookOpen className="w-4 h-4 text-muted-foreground" />
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <div className="font-medium text-sm">{cc.course.title}</div>
-                    <div className="text-xs text-muted-foreground">
-                      {cc.course.totalLessons} lessons · {cc.isRequired ? "Required" : "Optional"}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {/* Course list — click to read in a side panel */}
+          <ClassCourseList
+            classId={cls.id}
+            enableChat={cls.enableChat}
+            isMember={isMember}
+            courses={cls.courses.map((cc) => ({
+              courseId: cc.course.id,
+              title: cc.course.title,
+              thumbnail: cc.course.thumbnail,
+              totalLessons: cc.course.totalLessons,
+              isRequired: cc.isRequired,
+            }))}
+          />
 
           {isMember && <StudentClassTabs classId={cls.id} enableChat={cls.enableChat} enableDiscussion={cls.enableDiscussion} />}
         </div>
@@ -126,6 +131,48 @@ export default async function PublicClassPage({
               enrollmentStatus={enrollment?.status ?? null}
               inviteCodeHint={invite}
             />
+          </div>
+        </aside>
+      </div>
+    </>
+  );
+}
+
+function ClassDetailSkeleton() {
+  return (
+    <div className="animate-pulse">
+      <Skeleton className="w-full h-48 rounded-xl mb-6" />
+      <div className="grid lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 space-y-4">
+          <Skeleton h="h-8" w="w-2/3" />
+          <Skeleton h="h-3" w="w-32" />
+          <div className="space-y-2 pt-2">
+            <Skeleton h="h-3" className="w-full" />
+            <Skeleton h="h-3" w="w-5/6" />
+          </div>
+          <div className="flex gap-3 pt-1">
+            <Skeleton h="h-7" w="w-28" className="rounded-full" />
+            <Skeleton h="h-7" w="w-24" className="rounded-full" />
+            <Skeleton h="h-7" w="w-28" className="rounded-full" />
+          </div>
+          <div className="glass p-5 rounded-xl space-y-3">
+            <Skeleton h="h-5" w="w-40" />
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex items-center gap-3 py-1">
+                <Skeleton className="w-12 h-12 rounded" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton h="h-4" w="w-1/2" />
+                  <Skeleton h="h-3" w="w-1/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <aside className="lg:col-span-1">
+          <div className="glass p-5 rounded-xl space-y-3">
+            <Skeleton h="h-5" w="w-32" />
+            <Skeleton h="h-3" className="w-full" />
+            <Skeleton h="h-10" className="w-full rounded-lg" />
           </div>
         </aside>
       </div>

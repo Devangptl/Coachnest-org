@@ -74,9 +74,11 @@ type TabId = (typeof TABS)[number]["id"];
 export default function ClassDetailShell({
   cls,
   initialTab,
+  onRefresh,
 }: {
   cls: NonNullable<Cls>;
   initialTab: string;
+  onRefresh?: () => void;
 }) {
   const router = useRouter();
   const [tab, setTab] = useState<TabId>(
@@ -96,6 +98,7 @@ export default function ClassDetailShell({
       });
       if (!res.ok) throw new Error("Failed");
       toast.success(cls.status === "PUBLISHED" ? "Unpublished" : "Published!");
+      onRefresh?.();
       router.refresh();
     } catch {
       toast.error("Could not update");
@@ -187,7 +190,7 @@ export default function ClassDetailShell({
           {tab === "discussion" && <DiscussionTab classId={cls.id} />}
           {tab === "announcements" && <AnnouncementsTab classId={cls.id} />}
           {tab === "analytics" && <AnalyticsTab classId={cls.id} />}
-          {tab === "settings" && <SettingsTab cls={cls} />}
+          {tab === "settings" && <SettingsTab cls={cls} onRefresh={onRefresh} />}
         </main>
       </div>
 

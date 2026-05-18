@@ -1,14 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 import { channels, events } from "@/lib/realtime/channels";
-import { Megaphone, MessageCircle, Video, Send } from "lucide-react";
+import { Megaphone, MessageCircle, Video } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import toast from "react-hot-toast";
+import ClassChatPanel from "./ClassChatPanel";
 
 type Announcement = { id: string; title: string; body: string; createdAt: string; author: { name: string } };
-type ChatMsg = { id: string; content: string; createdAt: string; author: { id: string; name: string; avatar: string | null } };
 type LiveSession = { id: string; title: string; scheduledAt: string; meetingUrl: string | null; status: string };
 
 export default function StudentClassTabs({
@@ -31,7 +30,7 @@ export default function StudentClassTabs({
       </div>
       <div className="p-4">
         {tab === "announcements" && <AnnouncementsPanel classId={classId} />}
-        {tab === "chat" && <ChatPanel classId={classId} />}
+        {tab === "chat" && <ClassChatPanel classId={classId} />}
         {tab === "live" && <LivePanel classId={classId} />}
       </div>
     </div>
@@ -88,72 +87,6 @@ function AnnouncementsPanel({ classId }: { classId: string }) {
           <div className="text-[10px] text-muted-foreground mt-1">— {a.author.name}</div>
         </div>
       ))}
-    </div>
-  );
-}
-
-function ChatPanel({ classId }: { classId: string }) {
-  const [items, setItems] = useState<ChatMsg[]>([]);
-  const [text, setText] = useState("");
-  const endRef = useRef<HTMLDivElement>(null);
-
-  async function load() {
-    const r = await fetch(`/api/classes/${classId}/messages`);
-    const d = await r.json();
-    setItems(d.messages ?? []);
-  }
-  useEffect(() => { load(); }, []); // eslint-disable-line
-
-  useEffect(() => {
-    const sb = supabaseClient;
-    const ch = sb.channel(channels.classChat(classId));
-    ch.on("broadcast", { event: events.classChatMessage }, ({ payload }) => {
-      setItems((prev) => [...prev, payload as ChatMsg]);
-    }).subscribe();
-    return () => { sb.removeChannel(ch); };
-  }, [classId]);
-
-  useEffect(() => { endRef.current?.scrollIntoView({ behavior: "smooth" }); }, [items]);
-
-  async function send(e: React.FormEvent) {
-    e.preventDefault();
-    if (!text.trim()) return;
-    const content = text;
-    setText("");
-    try {
-      await fetch(`/api/classes/${classId}/messages`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ content }),
-      });
-    } catch { toast.error("Could not send"); }
-  }
-
-  return (
-    <div className="flex flex-col h-[400px]">
-      <div className="flex-1 overflow-y-auto space-y-2 mb-3 pr-1">
-        {items.length === 0 ? (
-          <div className="text-sm text-muted-foreground text-center py-6">Be the first to say hi!</div>
-        ) : (
-          items.map((m) => (
-            <div key={m.id} className="text-sm">
-              <span className="font-semibold text-amber-400">{m.author.name}: </span>
-              <span>{m.content}</span>
-            </div>
-          ))
-        )}
-        <div ref={endRef} />
-      </div>
-      <form onSubmit={send} className="flex gap-2">
-        <input
-          className="input-glass flex-1"
-          placeholder="Type a message…"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          maxLength={2000}
-        />
-        <Button type="submit" size="icon"><Send className="w-4 h-4" /></Button>
-      </form>
     </div>
   );
 }
