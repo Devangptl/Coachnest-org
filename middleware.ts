@@ -20,6 +20,11 @@ import { NextRequest, NextResponse } from "next/server";
 const PROTECTED  = ["/dashboard", "/admin", "/instructor", "/onboarding"];
 const AUTH_ONLY  = ["/login", "/signup"];
 
+/** Segment-aware prefix match: "/instructor" matches "/instructor" and
+ *  "/instructor/x" but NOT the public "/instructors/[id]" page. */
+const underPath = (pathname: string, base: string) =>
+  pathname === base || pathname.startsWith(base + "/");
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -67,7 +72,7 @@ export async function middleware(req: NextRequest) {
     (instructorStatus === "PENDING" || instructorStatus === "REJECTED");
 
   // ── 1. Protect dashboard + admin + instructor ─────────────────────────────
-  if (PROTECTED.some((p) => pathname.startsWith(p))) {
+  if (PROTECTED.some((p) => underPath(pathname, p))) {
     if (!user) {
       const loginUrl = req.nextUrl.clone();
       loginUrl.pathname = "/login";
@@ -76,27 +81,27 @@ export async function middleware(req: NextRequest) {
     }
 
     // /admin — ADMIN only (INSTRUCTOR has their own /instructor portal)
-    if (pathname.startsWith("/admin") && role !== "ADMIN") {
+    if (underPath(pathname, "/admin") && role !== "ADMIN") {
       const dest = isInstructorPending ? "/instructor/pending" : role === "INSTRUCTOR" ? "/instructor" : "/dashboard";
       return NextResponse.redirect(new URL(dest, req.url));
     }
 
     // /instructor — INSTRUCTOR and ADMIN only
-    if (pathname.startsWith("/instructor") && role === "STUDENT") {
+    if (underPath(pathname, "/instructor") && role === "STUDENT") {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
     // /instructor — pending/rejected instructors can only access /instructor/pending
     if (
-      pathname.startsWith("/instructor") &&
+      underPath(pathname, "/instructor") &&
       isInstructorPending &&
-      !pathname.startsWith("/instructor/pending")
+      !underPath(pathname, "/instructor/pending")
     ) {
       return NextResponse.redirect(new URL("/instructor/pending", req.url));
     }
 
     // /dashboard — STUDENT only (instructors + admins have their own portals)
-    if (pathname.startsWith("/dashboard") && role === "INSTRUCTOR") {
+    if (underPath(pathname, "/dashboard") && role === "INSTRUCTOR") {
       const dest = isInstructorPending ? "/instructor/pending" : "/instructor";
       return NextResponse.redirect(new URL(dest, req.url));
     }
