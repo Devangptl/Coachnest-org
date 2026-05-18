@@ -35,7 +35,7 @@ async function getCourses() {
   return prisma.course.findMany({
     where: { status: "PUBLISHED" },
     include: {
-      createdBy: { select: { name: true } },
+      createdBy: { select: { id: true, name: true, avatar: true } },
       category: { select: { name: true, slug: true } },
       _count: { select: { lessons: true, enrollments: true } },
       reviews: { select: { rating: true } },
@@ -79,6 +79,8 @@ export default async function CoursesPage() {
     description: course.description,
     thumbnail: course.thumbnail,
     instructorName: course.createdBy.name,
+    instructorId: course.createdBy.id,
+    instructorAvatar: course.createdBy.avatar,
     price: course.price ? Number(course.price) : null,
     discountPrice: course.discountPrice ? Number(course.discountPrice) : null,
     isFree: course.isFree,

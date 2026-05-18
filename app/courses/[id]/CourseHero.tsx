@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/Badge";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import FollowInstructorButton from "@/components/FollowInstructorButton";
+import InstructorHoverCard from "@/components/InstructorHoverCard";
+import InstructorAvatar from "@/components/InstructorAvatar";
 
 interface Props {
   title: string;
@@ -184,12 +186,14 @@ export default function CourseHero({
             {...fadeUp(0.2)}
             className="flex items-center gap-4 flex-wrap pt-5 border-t border-border dark:border-white/[0.08]"
           >
-            <div className="flex items-center gap-3">
+            <InstructorHoverCard
+              instructorId={instructorId}
+              instructorName={instructorName}
+              className="flex items-center gap-3"
+            >
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary via-orange-400 to-amber-500 flex items-center justify-center text-white text-sm font-bold shadow-lg ring-2 ring-border dark:ring-white/10">
-                  {instructorName.charAt(0).toUpperCase()}
-                </div>
+                <InstructorAvatar name={instructorName} seed={instructorId} />
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[#f8ebe0] dark:border-[#0f0f0f]" />
               </div>
 
@@ -198,11 +202,11 @@ export default function CourseHero({
                 <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 dark:text-white/35 font-medium mb-0.5">
                   Created by
                 </p>
-                <p className="text-foreground dark:text-white font-semibold text-sm leading-tight">
+                <p className="text-foreground dark:text-white font-semibold text-sm leading-tight hover:text-orange-500 transition-colors">
                   {instructorName}
                 </p>
               </div>
-            </div>
+            </InstructorHoverCard>
 
             <FollowInstructorButton
               instructorId={instructorId}

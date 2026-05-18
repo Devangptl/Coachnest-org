@@ -31,6 +31,7 @@ import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
 import ThemeToggle from "./ThemeToggle";
+import InstructorAvatar from "./InstructorAvatar";
 import { useTheme, type Theme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
 
@@ -42,6 +43,34 @@ const THEME_OPTIONS: { value: Theme; icon: React.ElementType; label: string }[] 
 
 interface Props {
   session: SessionPayload | null;
+}
+
+/**
+ * Navbar avatar — shows the user's photo, or a stable DiceBear cartoon
+ * dummy avatar when no real photo exists or the image fails to load.
+ * Uses the shared InstructorAvatar so the navbar matches the rest of
+ * the app instead of rendering a broken image / blank circle.
+ */
+function NavAvatar({
+  name,
+  avatar,
+  seed,
+  className,
+}: {
+  name: string;
+  avatar?: string | null;
+  seed: string;
+  className?: string;
+}) {
+  return (
+    <InstructorAvatar
+      name={name}
+      avatar={avatar}
+      seed={seed}
+      size="w-7 h-7"
+      className={cn("ring-0 dark:ring-0", className)}
+    />
+  );
 }
 
 // Role-based dropdown menu items
@@ -129,14 +158,6 @@ export default function NavbarClient({ session }: Props) {
 
   const dropdownLinks = session ? DROPDOWN_LINKS[session.role] : [];
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
-  const initials = session
-    ? session.name
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-    : "";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 lg:px-7 py-1.5">
@@ -194,13 +215,7 @@ export default function NavbarClient({ session }: Props) {
                   )}
                 >
                   {/* Avatar */}
-                  {session.avatar ? (
-                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                      {initials}
-                    </div>
-                  )}
+                  <NavAvatar name={session.name} avatar={session.avatar} seed={session.userId} />
                   <div className="hidden sm:flex flex-col items-start">
                     <span className="text-foreground text-xs font-medium leading-tight">
                       {session.name.split(" ")[0]}
@@ -232,13 +247,7 @@ export default function NavbarClient({ session }: Props) {
                       {/* User info header */}
                       <div className="px-3 py-2.5 border-b border-border">
                         <div className="flex items-center gap-2.5">
-                          {session.avatar ? (
-                            <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                          ) : (
-                            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                              {initials}
-                            </div>
-                          )}
+                          <NavAvatar name={session.name} avatar={session.avatar} seed={session.userId} />
                           <div className="flex-1 min-w-0">
                             <p className="text-foreground text-sm font-semibold truncate">{session.name}</p>
                             <p className="text-muted-foreground text-xs truncate">{session.email}</p>
@@ -407,13 +416,7 @@ export default function NavbarClient({ session }: Props) {
                 <>
                   <div className="border-t border-border my-2" />
                   <div className="px-4 py-2 flex items-center gap-3">
-                    {session.avatar ? (
-                      <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                        {initials}
-                      </div>
-                    )}
+                    <NavAvatar name={session.name} avatar={session.avatar} seed={session.userId} />
                     <div>
                       <p className="text-foreground text-sm font-medium">{session.name}</p>
                       <p className="text-muted-foreground text-xs">{session.email}</p>

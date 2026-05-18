@@ -108,7 +108,8 @@ export default function AddCoursesModal({
         <DialogHeader>
           <DialogTitle>Add courses</DialogTitle>
           <DialogDescription>
-            Search and filter published courses to add to this list.
+            Search your published courses to add to this list. You can only
+            add courses you created.
           </DialogDescription>
         </DialogHeader>
 
@@ -191,7 +192,8 @@ export default function AddCoursesModal({
           )}
           {!loading && courses.length === 0 && (
             <p className="text-center text-sm text-muted-foreground py-8">
-              No courses match your search.
+              No matching courses. Only your own published courses can be
+              added to a playlist.
             </p>
           )}
           {hasMore && !loading && (

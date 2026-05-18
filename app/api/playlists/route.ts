@@ -92,6 +92,10 @@ export async function POST(req: NextRequest) {
     const playlist = await createPlaylist(session.userId, parsed.data);
     return NextResponse.json({ playlist }, { status: 201 });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : "Failed to create playlist";
+    if (msg.includes("own courses") || msg === "Course not found") {
+      return NextResponse.json({ error: msg }, { status: 400 });
+    }
     console.error("[POST /api/playlists]", err);
     return NextResponse.json({ error: "Failed to create playlist" }, { status: 500 });
   }
