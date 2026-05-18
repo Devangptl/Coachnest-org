@@ -11,6 +11,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle,
   UserCircle, Trophy, Menu, X, Users2, Package, CreditCard, BarChart2, GraduationCap,
+  ListVideo, Bookmark,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,8 +19,10 @@ const navItems = [
   { label: "My Courses",    href: "/dashboard",                    icon: LayoutDashboard },
   { label: "My Classes",    href: "/dashboard/classes",            icon: GraduationCap },
   { label: "Browse Classes",href: "/classes",                      icon: Users2 },
+  { label: "Browse Lists",  href: "/playlists",                    icon: ListVideo },
   { label: "My Progress",   href: "/dashboard/progress",           icon: BarChart2 },
   { label: "Wishlist",      href: "/dashboard/wishlist",           icon: Heart },
+  { label: "Saved Lists",   href: "/dashboard/playlists",          icon: Bookmark },
   { label: "Certificates",  href: "/dashboard/certificates",       icon: Award },
   { label: "Achievements",  href: "/dashboard/achievements",       icon: Trophy },
   { label: "Quiz History",  href: "/dashboard/quizzes",            icon: HelpCircle },

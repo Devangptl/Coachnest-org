@@ -29,3 +29,12 @@ export function truncate(str: string, max: number): string {
   if (str.length <= max) return str;
   return str.slice(0, max).trimEnd() + "…";
 }
+
+/** Format a duration given in minutes as "Xh Ym" / "Ym" (course totalDuration is in minutes). */
+export function formatMinutes(minutes: number): string {
+  if (!minutes || minutes <= 0) return "0m";
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}

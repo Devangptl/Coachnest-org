@@ -112,6 +112,11 @@ enum InstructorStatus {
   REJECTED  // Application rejected
 }
 
+enum PlaylistVisibility {
+  PUBLIC
+  PRIVATE
+}
+
 // ─── Organization (Multi-tenant) ──────────────────────────────────────────────
 
 model Organization {
@@ -245,6 +250,10 @@ model User {
   classXpEvents       ClassXpEvent[]
   classCertificates   ClassCertificate[]
 
+  // Course Playlists
+  coursePlaylists CoursePlaylist[]       @relation("PlaylistOwner")
+  playlistFollows CoursePlaylistFollow[]
+
   @@map("users")
 }
 
@@ -325,6 +334,7 @@ model Course {
   referralLinks  ReferralLink[]
   refundRequests RefundRequest[]
   classCourses   ClassCourse[]
+  playlistItems  CoursePlaylistItem[]
 
   @@map("courses")
 }
@@ -1507,4 +1517,57 @@ model ClassCertificate {
 
   @@unique([classId, userId, type])
   @@map("class_certificates")
+}
+
+// ─── Course Playlists ─────────────────────────────────────────────────────────
+// YouTube-style curated course lists. Created by instructors/admins to organize
+// courses by topic, learning path, category, or skill level. Students can
+// follow/save public playlists.
+
+model CoursePlaylist {
+  id          String             @id @default(cuid())
+  title       String
+  slug        String             @unique
+  description String?            @db.Text
+  coverImage  String?
+  visibility  PlaylistVisibility @default(PUBLIC)
+  ownerId     String
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+
+  owner     User                   @relation("PlaylistOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+  items     CoursePlaylistItem[]
+  followers CoursePlaylistFollow[]
+
+  @@index([ownerId])
+  @@index([visibility, createdAt])
+  @@map("course_playlists")
+}
+
+model CoursePlaylistItem {
+  id         String   @id @default(cuid())
+  playlistId String
+  courseId   String
+  order      Int      @default(0)
+  addedAt    DateTime @default(now())
+
+  playlist CoursePlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  course   Course         @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([playlistId, courseId])
+  @@index([playlistId, order])
+  @@map("course_playlist_items")
+}
+
+model CoursePlaylistFollow {
+  userId     String
+  playlistId String
+  createdAt  DateTime @default(now())
+
+  user     User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  playlist CoursePlaylist @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+
+  @@id([userId, playlistId])
+  @@index([playlistId])
+  @@map("course_playlist_follows")
 }
