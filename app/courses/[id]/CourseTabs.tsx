@@ -2,12 +2,12 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { BookOpen, ListChecks, MessageSquare } from "lucide-react";
+import { BookMarked, GraduationCap, Star } from "lucide-react";
 
 const TABS = [
-  { id: "overview",   label: "Overview",   icon: BookOpen,      countKey: null },
-  { id: "curriculum", label: "Curriculum", icon: ListChecks,    countKey: "curriculum" },
-  { id: "reviews",    label: "Reviews",    icon: MessageSquare, countKey: "reviews" },
+  { id: "overview",   label: "Overview",   icon: BookMarked,     countKey: null },
+  { id: "curriculum", label: "Curriculum", icon: GraduationCap,  countKey: "curriculum" },
+  { id: "reviews",    label: "Reviews",    icon: Star,           countKey: "reviews" },
 ] as const;
 
 interface Props {
@@ -52,14 +52,14 @@ export default function CourseTabs({
                   className={cn(
                     "relative flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 sm:py-3 font-medium transition-colors select-none",
                     isActive
-                      ? "text-primary-foreground"
+                      ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
                   )}
                 >
                   {isActive && (
                     <motion.div
                       layoutId="course-tab-indicator"
-                      className="absolute inset-0 rounded-xl bg-primary shadow-lg shadow-primary/35"
+                      className="absolute inset-0 rounded-xl bg-primary/15 border border-primary/70"
                       transition={{ type: "spring", stiffness: 400, damping: 32 }}
                     />
                   )}
@@ -72,7 +72,7 @@ export default function CourseTabs({
                       <span className={cn(
                         "hidden sm:inline-flex text-[10px] min-w-[18px] items-center justify-center px-1.5 py-0.5 rounded-full font-bold leading-none",
                         isActive
-                          ? "bg-primary-foreground/25 text-primary-foreground"
+                          ? "bg-primary/20 text-primary"
                           : "bg-border text-muted-foreground/70"
                       )}>
                         {count}
