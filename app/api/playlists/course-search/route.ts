@@ -23,8 +23,18 @@ export async function GET(req: NextRequest) {
   const playlistId = url.searchParams.get("playlistId")?.trim();
   const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
 
+  // A playlist may only contain courses authored by its owner (admins are
+  // exempt so they can curate cross-instructor lists). Scope the picker to
+  // the owner's courses so only addable courses are shown.
+  let ownerId = session.userId;
   let excludeIds: string[] = [];
   if (playlistId) {
+    const playlist = await prisma.coursePlaylist.findUnique({
+      where: { id: playlistId },
+      select: { ownerId: true },
+    });
+    if (playlist) ownerId = playlist.ownerId;
+
     const existing = await prisma.coursePlaylistItem.findMany({
       where: { playlistId },
       select: { courseId: true },
@@ -32,8 +42,15 @@ export async function GET(req: NextRequest) {
     excludeIds = existing.map((e) => e.courseId);
   }
 
+  const owner = await prisma.user.findUnique({
+    where: { id: ownerId },
+    select: { role: true },
+  });
+  const restrictToOwner = owner?.role !== "ADMIN";
+
   const where: Prisma.CourseWhereInput = {
     status: "PUBLISHED",
+    ...(restrictToOwner ? { createdById: ownerId } : {}),
     ...(excludeIds.length ? { id: { notIn: excludeIds } } : {}),
     ...(level ? { level } : {}),
     ...(categoryId ? { categoryId } : {}),

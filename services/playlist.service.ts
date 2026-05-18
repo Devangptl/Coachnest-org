@@ -30,6 +30,34 @@ async function uniqueSlug(title: string, ignoreId?: string): Promise<string> {
   }
 }
 
+/**
+ * A playlist may only contain courses authored by its owner. Admin-owned
+ * playlists are exempt so admins can still curate cross-instructor lists.
+ * Also doubles as an existence check for the given course ids.
+ */
+async function assertCoursesOwnedBy(ownerId: string, courseIds: string[]) {
+  if (courseIds.length === 0) return;
+
+  const owner = await prisma.user.findUnique({
+    where: { id: ownerId },
+    select: { role: true },
+  });
+  if (owner?.role === "ADMIN") return;
+
+  const courses = await prisma.course.findMany({
+    where: { id: { in: courseIds } },
+    select: { id: true, createdById: true },
+  });
+  const creatorOf = new Map(courses.map((c) => [c.id, c.createdById]));
+
+  for (const id of courseIds) {
+    if (!creatorOf.has(id)) throw new Error("Course not found");
+    if (creatorOf.get(id) !== ownerId) {
+      throw new Error("You can only add your own courses to this playlist");
+    }
+  }
+}
+
 export async function assertPlaylistManager(playlistId: string, actor: Actor) {
   const playlist = await prisma.coursePlaylist.findUnique({
     where: { id: playlistId },
@@ -51,6 +79,7 @@ export async function createPlaylist(
 
   // De-dupe incoming course ids while preserving order.
   const ids = [...new Set(input.courseIds)];
+  await assertCoursesOwnedBy(ownerId, ids);
 
   return prisma.coursePlaylist.create({
     data: {
@@ -98,13 +127,9 @@ export async function addCourseToPlaylist(
   actor: Actor,
   courseId: string,
 ) {
-  await assertPlaylistManager(playlistId, actor);
+  const playlist = await assertPlaylistManager(playlistId, actor);
 
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    select: { id: true },
-  });
-  if (!course) throw new Error("Course not found");
+  await assertCoursesOwnedBy(playlist.ownerId, [courseId]);
 
   const existing = await prisma.coursePlaylistItem.findUnique({
     where: { playlistId_courseId: { playlistId, courseId } },
