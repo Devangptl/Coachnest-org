@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -14,6 +13,9 @@ interface Props {
 /**
  * Instructor avatar — shows the photo when available, otherwise a gradient
  * circle with the name's first initial (matches the course hero style).
+ *
+ * Uses a plain <img> (like the rest of the app) so avatars hosted on
+ * domains outside next.config's remotePatterns don't crash the page.
  */
 export default function InstructorAvatar({
   name,
@@ -24,11 +26,10 @@ export default function InstructorAvatar({
 }: Props) {
   if (avatar) {
     return (
-      <Image
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
         src={avatar}
         alt={name}
-        width={64}
-        height={64}
         className={cn(
           size,
           "rounded-full object-cover ring-2 ring-border dark:ring-white/10",
