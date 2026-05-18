@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import { playlistDurations } from "@/services/playlist.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -70,8 +71,48 @@ export async function GET(req: NextRequest) {
       discountPrice: c.discountPrice ? Number(c.discountPrice) : null,
     }));
 
+    // Matching public course lists — only on the first page so the section
+    // appears once. Resilient if the playlist tables aren't provisioned yet.
+    let playlists: unknown[] = [];
+    if (page === 1) {
+      try {
+        const pls = await prisma.coursePlaylist.findMany({
+          where: {
+            visibility: "PUBLIC",
+            ...(q && {
+              OR: [
+                { title:       { contains: q, mode: "insensitive" } },
+                { description: { contains: q, mode: "insensitive" } },
+              ],
+            }),
+          },
+          include: {
+            owner:  { select: { name: true } },
+            _count: { select: { items: true, followers: true } },
+          },
+          orderBy: [{ followers: { _count: "desc" } }, { createdAt: "desc" }],
+          take: 8,
+        });
+        const durations = await playlistDurations(pls.map((p) => p.id));
+        playlists = pls.map((p) => ({
+          id: p.id,
+          title: p.title,
+          slug: p.slug,
+          description: p.description,
+          coverImage: p.coverImage,
+          visibility: p.visibility,
+          owner: p.owner,
+          _count: p._count,
+          totalDuration: durations.get(p.id) ?? 0,
+        }));
+      } catch {
+        playlists = [];
+      }
+    }
+
     return NextResponse.json({
       courses: enriched,
+      playlists,
       total,
       page,
       totalPages: Math.ceil(total / limit),

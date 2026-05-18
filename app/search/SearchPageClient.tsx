@@ -2,12 +2,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
+import PlaylistCard, { type PlaylistCardData } from "@/components/playlists/PlaylistCard";
 import { CourseCardSkeleton } from "@/components/ui/Skeleton";
 import {
   Filter, SlidersHorizontal, X, BookOpen,
-  AlertCircle, ChevronLeft, ChevronRight,
+  AlertCircle, ChevronLeft, ChevronRight, ListVideo, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -148,6 +150,7 @@ export default function SearchPageClient() {
   const [category,   setCategory]   = useState(sp.get("category") ?? "");
   const [page,       setPage]       = useState(1);
   const [courses,    setCourses]    = useState<Course[]>([]);
+  const [playlists,  setPlaylists]  = useState<PlaylistCardData[]>([]);
   const [total,      setTotal]      = useState(0);
   const [pages,      setPages]      = useState(1);
   const [loading,    setLoading]    = useState(true);
@@ -219,12 +222,14 @@ export default function SearchPageClient() {
       if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const data = await res.json();
       setCourses(data.courses ?? []);
+      setPlaylists(data.playlists ?? []);
       setTotal(data.total   ?? 0);
       setPages(data.totalPages ?? 1);
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError("Something went wrong. Please try again.");
       setCourses([]);
+      setPlaylists([]);
       setTotal(0);
       setPages(1);
     } finally {
@@ -392,6 +397,33 @@ export default function SearchPageClient() {
                 Retry
               </Button>
             </div>
+          )}
+
+          {/* Matching course lists (playlists) — first page only */}
+          {!loading && !error && page === 1 && playlists.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <ListVideo className="w-4 h-4 text-orange-500" />
+                  Course lists
+                </h2>
+                <Link
+                  href="/playlists"
+                  className="text-xs font-medium text-orange-500 hover:text-orange-400 inline-flex items-center gap-1"
+                >
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                {playlists.map((p) => (
+                  <PlaylistCard
+                    key={p.id}
+                    href={`/playlists/${p.slug}`}
+                    playlist={p}
+                  />
+                ))}
+              </div>
+            </section>
           )}
 
           {/* Grid — adapts columns based on sidebar open state */}
