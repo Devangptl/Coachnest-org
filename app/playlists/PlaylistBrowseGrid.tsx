@@ -86,12 +86,13 @@ export default function PlaylistBrowseGrid() {
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
           {playlists.map((p) => (
             <PlaylistCard
               key={p.id}
               href={`/playlists/${p.slug}`}
               playlist={p}
+              compact
             />
           ))}
         </div>

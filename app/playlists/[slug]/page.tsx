@@ -28,7 +28,7 @@ export default async function PlaylistDetailPage({
 }) {
   const { slug } = await params;
   return (
-    <div className="px-4 max-w-6xl mx-auto py-6">
+    <div className="px-4 py-6">
       <Suspense fallback={<DetailSkeleton />}>
         <PlaylistDetail slug={slug} />
       </Suspense>

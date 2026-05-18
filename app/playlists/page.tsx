@@ -11,7 +11,7 @@ export const metadata = {
 
 export default function BrowsePlaylistsPage() {
   return (
-    <div className="px-4 max-w-7xl mx-auto py-8">
+    <div className="px-4 py-8">
       <h1 className="text-3xl font-bold mb-2 flex items-center gap-2">
         <ListVideo className="w-7 h-7 text-orange-500" /> Course Lists
       </h1>
