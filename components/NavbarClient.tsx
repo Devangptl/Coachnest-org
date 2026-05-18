@@ -44,6 +44,47 @@ interface Props {
   session: SessionPayload | null;
 }
 
+/**
+ * Avatar with graceful fallback: shows the user's photo, but if it is
+ * missing or fails to load (broken/expired/blocked URL) it falls back to
+ * the initials circle instead of a broken image.
+ */
+function NavAvatar({
+  avatar,
+  initials,
+  className,
+}: {
+  avatar?: string | null;
+  initials: string;
+  className?: string;
+}) {
+  const [errored, setErrored] = useState(false);
+  const showImage = !!avatar && !errored;
+
+  if (showImage) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={avatar as string}
+        alt="Avatar"
+        onError={() => setErrored(true)}
+        className={cn("w-7 h-7 rounded-full object-cover", className)}
+      />
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold",
+        className
+      )}
+    >
+      {initials}
+    </div>
+  );
+}
+
 // Role-based dropdown menu items
 const DROPDOWN_LINKS = {
   STUDENT: [
@@ -194,13 +235,7 @@ export default function NavbarClient({ session }: Props) {
                   )}
                 >
                   {/* Avatar */}
-                  {session.avatar ? (
-                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                      {initials}
-                    </div>
-                  )}
+                  <NavAvatar avatar={session.avatar} initials={initials} />
                   <div className="hidden sm:flex flex-col items-start">
                     <span className="text-foreground text-xs font-medium leading-tight">
                       {session.name.split(" ")[0]}
@@ -232,13 +267,7 @@ export default function NavbarClient({ session }: Props) {
                       {/* User info header */}
                       <div className="px-3 py-2.5 border-b border-border">
                         <div className="flex items-center gap-2.5">
-                          {session.avatar ? (
-                            <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                          ) : (
-                            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                              {initials}
-                            </div>
-                          )}
+                          <NavAvatar avatar={session.avatar} initials={initials} />
                           <div className="flex-1 min-w-0">
                             <p className="text-foreground text-sm font-semibold truncate">{session.name}</p>
                             <p className="text-muted-foreground text-xs truncate">{session.email}</p>
@@ -407,13 +436,7 @@ export default function NavbarClient({ session }: Props) {
                 <>
                   <div className="border-t border-border my-2" />
                   <div className="px-4 py-2 flex items-center gap-3">
-                    {session.avatar ? (
-                      <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                        {initials}
-                      </div>
-                    )}
+                    <NavAvatar avatar={session.avatar} initials={initials} />
                     <div>
                       <p className="text-foreground text-sm font-medium">{session.name}</p>
                       <p className="text-muted-foreground text-xs">{session.email}</p>
