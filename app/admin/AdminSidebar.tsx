@@ -12,7 +12,7 @@ import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
   Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
-  Mail, ScrollText,
+  Mail, ScrollText, ListVideo, Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +20,7 @@ const adminNav = [
   { label: "Overview",      href: "/admin",                 icon: LayoutDashboard },
   { label: "Analytics",     href: "/admin/analytics",       icon: BarChart3 },
   { label: "All Courses",   href: "/admin/courses",         icon: BookOpen },
+  { label: "Course Lists",  href: "/admin/playlists",       icon: ListVideo },
   { label: "Instructors",   href: "/admin/instructors",     icon: UserCog },
   { label: "Approvals",    href: "/admin/instructors/approvals", icon: UserCheck },
   { label: "Students",      href: "/admin/students",        icon: Users },
@@ -35,6 +36,7 @@ const adminNav = [
   { label: "Email Templates", href: "/admin/email-templates", icon: Mail          },
   { label: "Email Logs",    href: "/admin/email-logs",        icon: ScrollText    },
   { label: "Professions",   href: "/admin/professions",       icon: Briefcase     },
+  { label: "Migrations",    href: "/admin/migrations",        icon: Database      },
   { label: "My Profile",   href: "/admin/profile",           icon: UserCircle    },
 ];
 

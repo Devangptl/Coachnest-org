@@ -2,12 +2,14 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
+import PlaylistCard, { type PlaylistCardData } from "@/components/playlists/PlaylistCard";
 import { CourseCardSkeleton } from "@/components/ui/Skeleton";
 import {
   Filter, SlidersHorizontal, X, BookOpen,
-  AlertCircle, ChevronLeft, ChevronRight,
+  AlertCircle, ChevronLeft, ChevronRight, ListVideo, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
@@ -29,23 +31,14 @@ interface Course {
   category: { name: string; slug: string } | null;
 }
 
-interface Category {
-  id: string; name: string; slug: string; icon: string | null;
-  _count: { courses: number };
-}
-
 // ─── Filter panel content (shared by sidebar + drawer) ─────────────────────
 function FilterContent({
   level, setLevel,
-  category, setCategory,
-  categories,
   hasActiveFilters,
   clearFilters,
   isMobile = false,
 }: {
   level: string; setLevel: (v: string) => void;
-  category: string; setCategory: (v: string) => void;
-  categories: Category[];
   hasActiveFilters: boolean;
   clearFilters: () => void;
   isMobile?: boolean;
@@ -76,51 +69,6 @@ function FilterContent({
         </div>
       </div>
 
-      {/* Category filter */}
-      {categories.length > 0 && (
-        <div>
-          <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <BookOpen className="w-3 h-3" /> Category
-          </h4>
-          <div className={cn(
-            "space-y-1",
-            !isMobile && "max-h-48 overflow-y-auto pr-1 scrollbar-hide",
-          )}>
-            <button
-              onClick={() => setCategory("")}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-sm transition-all",
-                category === ""
-                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              All categories
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.slug)}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2",
-                  category === cat.slug
-                    ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                <span className="flex items-center gap-1.5 truncate">
-                  {cat.icon && <span>{cat.icon}</span>}
-                  <span className="truncate">{cat.name}</span>
-                </span>
-                <span className="text-xs text-muted-foreground/50 flex-shrink-0">
-                  {cat._count.courses}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Clear */}
       {hasActiveFilters && (
         <Button
@@ -145,15 +93,14 @@ export default function SearchPageClient() {
   const [query,      setQuery]      = useState(sp.get("q")        ?? "");
   const [level,      setLevel]      = useState(sp.get("level")    ?? "");
   const [sort,       setSort]       = useState(sp.get("sort")     ?? "popular");
-  const [category,   setCategory]   = useState(sp.get("category") ?? "");
   const [page,       setPage]       = useState(1);
   const [courses,    setCourses]    = useState<Course[]>([]);
+  const [playlists,  setPlaylists]  = useState<PlaylistCardData[]>([]);
   const [total,      setTotal]      = useState(0);
   const [pages,      setPages]      = useState(1);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState<string | null>(null);
   const [sideOpen,   setSideOpen]   = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isMobile,   setIsMobile]   = useState(false);
 
   const abortRef = useRef<AbortController | null>(null);
@@ -180,14 +127,6 @@ export default function SearchPageClient() {
     return () => { document.body.style.overflow = ""; };
   }, [isMobile, sideOpen]);
 
-  // Fetch categories once
-  useEffect(() => {
-    fetch("/api/categories")
-      .then((r) => r.json())
-      .then((data) => Array.isArray(data) && setCategories(data))
-      .catch(() => {});
-  }, []);
-
   const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: number } = {}) => {
     const { reset = false, q = query, pg = reset ? 1 : page } = opts;
 
@@ -199,19 +138,17 @@ export default function SearchPageClient() {
     setError(null);
 
     const params = new URLSearchParams({
-      ...(q        && { q }),
-      ...(level    && { level }),
-      ...(category && { category }),
+      ...(q     && { q }),
+      ...(level && { level }),
       sort,
       page:  String(pg),
       limit: "12",
     });
 
     const urlParams = new URLSearchParams();
-    if (q)                  urlParams.set("q",        q);
-    if (level)              urlParams.set("level",    level);
-    if (category)           urlParams.set("category", category);
-    if (sort !== "popular") urlParams.set("sort",     sort);
+    if (q)                  urlParams.set("q",     q);
+    if (level)              urlParams.set("level", level);
+    if (sort !== "popular") urlParams.set("sort",  sort);
     router.replace(`/search?${urlParams}`, { scroll: false });
 
     try {
@@ -219,18 +156,20 @@ export default function SearchPageClient() {
       if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const data = await res.json();
       setCourses(data.courses ?? []);
+      setPlaylists(data.playlists ?? []);
       setTotal(data.total   ?? 0);
       setPages(data.totalPages ?? 1);
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError("Something went wrong. Please try again.");
       setCourses([]);
+      setPlaylists([]);
       setTotal(0);
       setPages(1);
     } finally {
       setLoading(false);
     }
-  }, [query, level, sort, category, page, router]);
+  }, [query, level, sort, page, router]);
 
   const mountedRef = useRef(false);
   useEffect(() => {
@@ -241,15 +180,15 @@ export default function SearchPageClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const prevFiltersRef = useRef({ level, sort, category });
+  const prevFiltersRef = useRef({ level, sort });
   useEffect(() => {
     const prev = prevFiltersRef.current;
-    if (prev.level !== level || prev.sort !== sort || prev.category !== category) {
-      prevFiltersRef.current = { level, sort, category };
+    if (prev.level !== level || prev.sort !== sort) {
+      prevFiltersRef.current = { level, sort };
       search({ reset: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level, sort, category]);
+  }, [level, sort]);
 
   const prevPageRef = useRef(page);
   useEffect(() => {
@@ -260,18 +199,16 @@ export default function SearchPageClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  const hasActiveFilters = level !== "" || category !== "" || sort !== "popular";
-  const activeFilterCount = [level, category, sort !== "popular"].filter(Boolean).length;
+  const hasActiveFilters = level !== "" || sort !== "popular";
+  const activeFilterCount = [level, sort !== "popular"].filter(Boolean).length;
 
   function clearFilters() {
     setLevel("");
-    setCategory("");
     setSort("popular");
   }
 
   const filterProps = {
-    level, setLevel, category, setCategory,
-    categories, hasActiveFilters, clearFilters,
+    level, setLevel, hasActiveFilters, clearFilters,
   };
 
   return (
@@ -321,32 +258,20 @@ export default function SearchPageClient() {
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
       <AnimatePresence>
-        {(level || category) && (
+        {level && (
           <motion.div
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center gap-2 flex-wrap mb-4 overflow-hidden"
           >
-            {level && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                onClick={() => setLevel("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
-              >
-                <span className="capitalize">{level}</span>
-                <X className="w-3 h-3" />
-              </motion.button>
-            )}
-            {category && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                onClick={() => setCategory("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
-              >
-                <span>{categories.find((c) => c.slug === category)?.name ?? category}</span>
-                <X className="w-3 h-3" />
-              </motion.button>
-            )}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+              onClick={() => setLevel("")}
+              className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
+            >
+              <span className="capitalize">{level}</span>
+              <X className="w-3 h-3" />
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
@@ -392,6 +317,34 @@ export default function SearchPageClient() {
                 Retry
               </Button>
             </div>
+          )}
+
+          {/* Matching course lists (playlists) — first page only */}
+          {!loading && !error && page === 1 && playlists.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <ListVideo className="w-4 h-4 text-orange-500" />
+                  Course lists
+                </h2>
+                <Link
+                  href="/playlists"
+                  className="text-xs font-medium text-orange-500 hover:text-orange-400 inline-flex items-center gap-1"
+                >
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {playlists.map((p) => (
+                  <PlaylistCard
+                    key={p.id}
+                    href={`/playlists/${p.slug}`}
+                    playlist={p}
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
           )}
 
           {/* Grid — adapts columns based on sidebar open state */}

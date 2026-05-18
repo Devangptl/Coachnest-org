@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
-  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle,
+  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ const navItems = [
   { label: "My Courses",    href: "/instructor/courses",      icon: BookOpen },
   { label: "New Course",    href: "/instructor/courses/new",  icon: PlusCircle },
   { label: "My Classes",    href: "/instructor/classes",      icon: GraduationCap },
+  { label: "Course Lists",  href: "/instructor/playlists",    icon: ListVideo },
   { label: "My Students",   href: "/instructor/students",     icon: Users },
   { label: "Analytics",     href: "/instructor/analytics",    icon: BarChart3 },
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
