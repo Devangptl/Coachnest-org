@@ -9,6 +9,7 @@ interface Props {
   className?:    string;
   placeholder?:  string;
   onSearch?:     (q: string) => void; // For controlled use (search page)
+  onChange?:     (q: string) => void; // Fires on every keystroke (for debounce)
   navigateTo?:   boolean;             // Navigate to /search?q= on submit
 }
 
@@ -17,6 +18,7 @@ export default function SearchBar({
   className,
   placeholder = "Search courses...",
   onSearch,
+  onChange,
   navigateTo = true,
 }: Props) {
   const [value,   setValue]   = useState(initialValue);
@@ -37,7 +39,8 @@ export default function SearchBar({
 
   function clear() {
     setValue("");
-    if (onSearch) onSearch("");
+    onSearch?.("");
+    onChange?.("");
     inputRef.current?.focus();
   }
 
@@ -52,7 +55,7 @@ export default function SearchBar({
           ref={inputRef}
           type="text"
           value={value}
-          onChange={(e) => setValue(e.target.value)}
+          onChange={(e) => { setValue(e.target.value); onChange?.(e.target.value); }}
           onFocus={() => setFocused(true)}
           onBlur={()  => setFocused(false)}
           placeholder={placeholder}

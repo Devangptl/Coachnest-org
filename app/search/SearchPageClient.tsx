@@ -103,7 +103,8 @@ export default function SearchPageClient() {
   const [sideOpen,   setSideOpen]   = useState(false);
   const [isMobile,   setIsMobile]   = useState(false);
 
-  const abortRef = useRef<AbortController | null>(null);
+  const abortRef    = useRef<AbortController | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track viewport for mobile/desktop filter treatment
   useEffect(() => {
@@ -207,6 +208,12 @@ export default function SearchPageClient() {
     setSort("popular");
   }
 
+  function handleQueryChange(q: string) {
+    setQuery(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search({ reset: true, q }), 350);
+  }
+
   const filterProps = {
     level, setLevel, hasActiveFilters, clearFilters,
   };
@@ -231,14 +238,21 @@ export default function SearchPageClient() {
       </div>
 
       {/* ── Controls bar ─────────────────────────────────────────────────── */}
-      <div className="mb-5 flex items-center gap-2.5">
+      <div className="mb-3">
         <SearchBar
           initialValue={query}
-          onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
+          onSearch={(q) => {
+            if (debounceRef.current) clearTimeout(debounceRef.current);
+            setQuery(q);
+            search({ reset: true, q });
+          }}
+          onChange={handleQueryChange}
           navigateTo={false}
-          className="flex-1 min-w-0"
+          className="w-full"
           placeholder="Search courses, topics, instructors…"
         />
+      </div>
+      <div className="mb-5 flex items-center gap-2.5">
         <Select
           value={sort}
           onValueChange={setSort}
