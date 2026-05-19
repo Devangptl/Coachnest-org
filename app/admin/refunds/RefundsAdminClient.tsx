@@ -11,6 +11,7 @@ import {
   BookOpen, BarChart3, Filter,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import Avatar from "@/components/Avatar";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -246,13 +247,13 @@ function RefundRow({
         {/* Student */}
         <td className="py-3 px-4">
           <div className="flex items-center gap-3">
-            {req.user.avatar ? (
-              <img src={req.user.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">
-                {req.user.name?.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <Avatar
+              name={req.user.name}
+              avatar={req.user.avatar}
+              seed={req.user.id}
+              size="w-8 h-8"
+              className="flex-shrink-0"
+            />
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{req.user.name}</p>
               <p className="text-xs text-muted-foreground truncate">{req.user.email}</p>

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { Clock, XCircle, Mail, LogOut, BookOpen, Users, TrendingUp } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import Avatar from "@/components/Avatar";
 
 export default async function InstructorPendingPage() {
   const session = await getSession();
@@ -59,17 +60,13 @@ export default async function InstructorPendingPage() {
 
         {/* Profile Card */}
         <GlassCard className="flex items-center gap-5">
-          {user.avatar ? (
-            <img
-              src={user.avatar}
-              alt={user.name}
-              className="w-16 h-16 rounded-full object-cover border-2 border-border flex-shrink-0"
-            />
-          ) : (
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl">
-              {user.name.charAt(0).toUpperCase()}
-            </div>
-          )}
+          <Avatar
+            name={user.name}
+            avatar={user.avatar}
+            seed={session.userId}
+            size="w-16 h-16"
+            className="flex-shrink-0"
+          />
           <div className="flex-1 min-w-0">
             <h2 className="text-lg font-bold text-foreground truncate">{user.name}</h2>
             {user.headline && (

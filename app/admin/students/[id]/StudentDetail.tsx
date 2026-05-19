@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import Avatar from "@/components/Avatar";
 import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -161,15 +161,13 @@ export default function StudentDetail({ student }: { student: StudentData }) {
 
           {/* Avatar */}
           <div className="flex-shrink-0">
-            <div className="w-20 h-20 rounded-md bg-gradient-to-br from-orange-600/30 to-orange-500/20 border border-border flex items-center justify-center overflow-hidden">
-              {student.avatar ? (
-                <Image src={student.avatar} alt={student.name} width={80} height={80} className="w-20 h-20 object-cover" />
-              ) : (
-                <span className="text-3xl font-bold text-[#d97757]/60">
-                  {student.name.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
+            <Avatar
+              name={student.name}
+              avatar={student.avatar}
+              seed={student.id}
+              size="w-20 h-20"
+              className="rounded-md"
+            />
           </div>
 
           {/* Info */}

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { BookOpen, Users, Star, PlusCircle, Eye, Edit2 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import Avatar from "@/components/Avatar";
 import { formatDate } from "@/lib/utils";
 import InstructorAlerts from "./InstructorAlerts";
 
@@ -64,13 +65,13 @@ export default async function InstructorDashboard() {
 
       {/* Profile summary */}
       <GlassCard className="flex items-center gap-4">
-        {profile?.avatar ? (
-          <img src={profile.avatar} alt={session!.name} className="w-14 h-14 rounded-full object-cover border border-border flex-shrink-0" />
-        ) : (
-          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0 text-white font-bold text-xl">
-            {session!.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Avatar
+          name={session!.name}
+          avatar={profile?.avatar}
+          seed={session!.userId}
+          size="w-14 h-14"
+          className="flex-shrink-0"
+        />
         <div className="flex-1 min-w-0">
           <p className="font-bold text-foreground truncate">{session!.name}</p>
           {profile?.headline ? (

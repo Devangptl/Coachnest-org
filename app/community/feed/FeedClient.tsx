@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { Activity, Clock, MessageSquare, Users, Award, BookOpen, Star } from "lucide-react";
 import { usePostgresChanges } from "@/hooks/useRealtimeChannel";
 import { FeedItemSkeleton } from "@/components/ui/Skeleton";
+import Avatar from "@/components/Avatar";
 
 interface FeedEvent {
   id: string;
@@ -109,11 +110,13 @@ export default function FeedClient({
                   className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md border border-border bg-card hover:bg-secondary/30 transition-all"
                 >
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
-                    {e.user.avatar ? (
-                      <img src={e.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                    ) : e.user.name.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar
+                    name={e.user.name}
+                    avatar={e.user.avatar}
+                    seed={e.user.id}
+                    size="w-10 h-10"
+                    className="flex-shrink-0"
+                  />
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">

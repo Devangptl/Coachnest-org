@@ -16,6 +16,7 @@ import {
   Lock,
   ShoppingCart,
 } from "lucide-react";
+import Avatar from "@/components/Avatar";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { hasFeatureAccess } from "@/lib/feature-access";
@@ -298,14 +299,13 @@ export async function RecentActivitySection() {
         <div className="space-y-1.5">
           {events.map((e) => (
             <div key={e.id} className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card">
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0">
-                {e.user.avatar ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={e.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                ) : (
-                  e.user.name.charAt(0).toUpperCase()
-                )}
-              </div>
+              <Avatar
+                name={e.user.name}
+                avatar={e.user.avatar}
+                seed={e.user.id}
+                size="w-8 h-8"
+                className="flex-shrink-0"
+              />
               <div className="flex-1 min-w-0">
                 <p className="text-foreground text-xs truncate">
                   <span className="font-medium">{e.user.name}</span>{" "}

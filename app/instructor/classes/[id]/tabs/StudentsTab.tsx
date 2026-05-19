@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Check, X, Ban, UserMinus, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Button } from "@/components/ui/Button";
+import Avatar from "@/components/Avatar";
 
 type Enrollment = {
   id: string;
@@ -78,14 +79,12 @@ export default function StudentsTab({ classId }: { classId: string }) {
         <div className="space-y-2">
           {items.map((e) => (
             <div key={e.id} className="glass p-3 rounded-lg flex items-center gap-3">
-              {e.user.avatar ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={e.user.avatar} alt="" className="w-10 h-10 rounded-full object-cover" />
-              ) : (
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-xs font-bold">
-                  {e.user.name?.[0]?.toUpperCase() ?? "?"}
-                </div>
-              )}
+              <Avatar
+                name={e.user.name}
+                avatar={e.user.avatar}
+                seed={e.user.id}
+                size="w-10 h-10"
+              />
               <div className="flex-1 min-w-0">
                 <div className="font-medium text-sm truncate">{e.user.name}</div>
                 <div className="text-xs text-muted-foreground truncate">{e.user.email}</div>

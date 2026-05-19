@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { getInstructorStudentsWithProgress } from "@/services/analytics.service";
 import GlassCard from "@/components/GlassCard";
+import Avatar from "@/components/Avatar";
 import { Users, CheckCircle, Clock, BookOpen } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -118,13 +119,13 @@ export default async function InstructorStudentsPage() {
                 >
                   {/* Student */}
                   <div className="col-span-4 flex items-center gap-2.5 min-w-0">
-                    {s.userAvatar ? (
-                      <img src={s.userAvatar} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-                        {s.userName.split(" ").map((w) => w[0]).join("").toUpperCase().slice(0, 2)}
-                      </div>
-                    )}
+                    <Avatar
+                      name={s.userName}
+                      avatar={s.userAvatar}
+                      seed={s.userId}
+                      size="w-8 h-8"
+                      className="flex-shrink-0"
+                    />
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground truncate">{s.userName}</p>
                       <p className="text-xs text-muted-foreground/60 truncate">{s.userEmail}</p>

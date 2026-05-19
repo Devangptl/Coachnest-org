@@ -14,6 +14,7 @@ import {
 import toast from "react-hot-toast";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
 import { channels, events } from "@/lib/realtime/channels";
+import Avatar from "@/components/Avatar";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
 import {
@@ -485,11 +486,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {group.members.map((m) => (
               <div key={m.userId} className="flex items-center gap-3 p-3 sm:p-4 rounded-md border border-border bg-card">
-                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
-                  {m.user.avatar ? (
-                    <img src={m.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                  ) : m.user.name.charAt(0).toUpperCase()}
-                </div>
+                <Avatar
+                  name={m.user.name}
+                  avatar={m.user.avatar}
+                  seed={m.user.id}
+                  size="w-10 h-10"
+                  className="flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
                   <p className="text-foreground text-sm font-medium truncate">{m.user.name}</p>
                   <p className="text-muted-foreground text-xs truncate">Joined {new Date(m.joinedAt).toLocaleDateString()}</p>
@@ -590,12 +593,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       </>
                     )}
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-3 pt-3 border-t border-border">
-                      <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-foreground text-[10px] font-bold flex-shrink-0">
-                        {note.author.avatar ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img src={note.author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                        ) : note.author.name.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        name={note.author.name}
+                        avatar={note.author.avatar}
+                        seed={note.author.id}
+                        size="w-6 h-6"
+                        className="flex-shrink-0"
+                      />
                       <span className="text-muted-foreground text-xs">{note.author.name}</span>
                       <span className="text-muted-foreground/40 text-xs">·</span>
                       <span className="text-muted-foreground/60 text-xs">{new Date(note.updatedAt).toLocaleDateString()}</span>
@@ -709,11 +713,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
                       }`}>
                         {i + 1}
                       </span>
-                      <div className="w-9 h-9 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
-                        {m.user?.avatar ? (
-                          <img src={m.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                        ) : m.user?.name.charAt(0).toUpperCase()}
-                      </div>
+                      <Avatar
+                        name={m.user?.name ?? ""}
+                        avatar={m.user?.avatar}
+                        seed={m.user?.id}
+                        size="w-9 h-9"
+                        className="flex-shrink-0"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-foreground text-sm font-medium truncate">{m.user?.name}</p>
                         <p className="text-muted-foreground text-xs truncate">
@@ -750,11 +756,13 @@ export default function GroupDetailPage({ params }: { params: Promise<{ id: stri
               {joinRequests.map((req) => (
                 <div key={req.id} className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md border border-border bg-card">
                   <div className="flex items-start gap-3 sm:gap-4 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
-                      {req.user.avatar ? (
-                        <img src={req.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                      ) : req.user.name.charAt(0).toUpperCase()}
-                    </div>
+                    <Avatar
+                      name={req.user.name}
+                      avatar={req.user.avatar}
+                      seed={req.user.id}
+                      size="w-10 h-10"
+                      className="flex-shrink-0"
+                    />
                     <div className="flex-1 min-w-0">
                       <p className="text-foreground text-sm font-medium truncate">{req.user.name}</p>
                       <p className="text-muted-foreground text-xs truncate">{req.user.email}</p>
