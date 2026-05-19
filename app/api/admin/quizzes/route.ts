@@ -13,8 +13,12 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const quizzes = await getQuizzesList();
-    return NextResponse.json({ data: quizzes }, { status: 200 });
+    const url = new URL(req.url);
+    const page = Number(url.searchParams.get("page")) || undefined;
+    const pageSize = Number(url.searchParams.get("pageSize")) || undefined;
+
+    const result = await getQuizzesList({ page, pageSize });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("[GET /api/admin/quizzes]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

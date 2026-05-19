@@ -3,7 +3,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
+import { getStudentsList, type StudentListFilter } from "@/services/student.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -13,45 +13,24 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = new URL(req.url);
-    const search = searchParams.get("search")?.trim() || "";
-    const sort = searchParams.get("sort") || "newest";
+    const filter: StudentListFilter = {
+      search: searchParams.get("search")?.trim() || "",
+      sort: (searchParams.get("sort") as StudentListFilter["sort"]) || "newest",
+      page: Number(searchParams.get("page")) || undefined,
+      pageSize: Number(searchParams.get("pageSize")) || undefined,
+    };
 
-    const where: any = { role: "STUDENT" as const };
+    const result = await getStudentsList(filter);
 
-    if (search) {
-      where.OR = [
-        { name: { contains: search, mode: "insensitive" } },
-        { email: { contains: search, mode: "insensitive" } },
-      ];
-    }
-
-    const orderBy: any =
-      sort === "name" ? { name: "asc" } :
-      sort === "oldest" ? { createdAt: "asc" } :
-      { createdAt: "desc" };
-
-    const students = await prisma.user.findMany({
-      where,
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatar: true,
-        headline: true,
-        createdAt: true,
-        _count: {
-          select: {
-            enrollments: true,
-            certificates: true,
-            orders: true,
-            reviews: true,
-          },
-        },
+    return NextResponse.json({
+      students: result.data,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
       },
-      orderBy,
     });
-
-    return NextResponse.json({ students });
   } catch (error) {
     console.error("[GET /api/admin/students]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

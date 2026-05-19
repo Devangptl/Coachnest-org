@@ -1,62 +1,55 @@
 /**
- * Admin → Students list with search, stats, and links to detail view.
+ * Admin → Students list with search, stats, pagination, and links to detail view.
  */
-import { prisma } from "@/lib/prisma";
+import { Suspense } from "react";
 import GlassCard from "@/components/GlassCard";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import Pagination from "@/components/ui/Pagination";
 import { Users, GraduationCap, Award, Star } from "lucide-react";
 import StudentTable from "./StudentTable";
 import StudentSearch from "./StudentSearch";
-import { getLevelForXp } from "@/lib/badges";
+import { getStudentsList, getStudentStats, type StudentListFilter } from "@/services/student.service";
 
-async function getStudentsData() {
-  const [students, totalStudents, totalEnrollments, totalCertificates] =
-    await Promise.all([
-      prisma.user.findMany({
-        where: { role: "STUDENT" },
-        select: {
-          id: true,
-          name: true,
-          email: true,
-          avatar: true,
-          headline: true,
-          createdAt: true,
-          gameProfile: { select: { xp: true, level: true, streak: true } },
-          _count: {
-            select: {
-              enrollments: true,
-              certificates: true,
-              orders: true,
-              reviews: true,
-            },
-          },
-        },
-        orderBy: { createdAt: "desc" },
-      }),
-      prisma.user.count({ where: { role: "STUDENT" } }),
-      prisma.enrollment.count(),
-      prisma.certificate.count(),
-    ]);
+type SearchParams = { search?: string; sort?: string; page?: string; pageSize?: string };
 
-  const activeThreshold = new Date();
-  activeThreshold.setDate(activeThreshold.getDate() - 30);
-  const activeStudents = await prisma.enrollment.groupBy({
-    by: ["userId"],
-    where: { enrolledAt: { gte: activeThreshold } },
+async function StudentsSection({ sp }: { sp: SearchParams }) {
+  const { data, total, page, pageSize } = await getStudentsList({
+    search: sp.search?.trim() || "",
+    sort: (sp.sort as StudentListFilter["sort"]) || "newest",
+    page: sp.page ? Number(sp.page) : undefined,
+    pageSize: sp.pageSize ? Number(sp.pageSize) : undefined,
   });
 
-  return {
-    students,
-    stats: {
-      total: totalStudents,
-      active: activeStudents.length,
-      totalEnrollments,
-      totalCertificates,
-    },
-  };
+  if (total === 0) {
+    return (
+      <GlassCard className="text-center py-16">
+        <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+        <p className="text-muted-foreground">
+          {sp.search ? "No students match your search." : "No students have signed up yet."}
+        </p>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard padding="sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-foreground font-semibold">All Students</h2>
+        <span className="text-muted-foreground/70 text-sm">{total.toLocaleString()} total</span>
+      </div>
+      <StudentTable students={data} />
+      <Pagination page={page} pageSize={pageSize} total={total} />
+    </GlassCard>
+  );
 }
 
-export default async function AdminStudentsPage() {
-  const { students, stats } = await getStudentsData();
+export default async function AdminStudentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
+  const sp = await searchParams;
+  const stats = await getStudentStats();
 
   return (
     <div>
@@ -96,31 +89,12 @@ export default async function AdminStudentsPage() {
       </div>
 
       {/* Table */}
-      {students.length === 0 ? (
-        <GlassCard className="text-center py-16">
-          <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">No students have signed up yet.</p>
-        </GlassCard>
-      ) : (
-        <GlassCard padding="sm">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h2 className="text-foreground font-semibold">All Students</h2>
-            <span className="text-muted-foreground/70 text-sm">{students.length} total</span>
-          </div>
-          <StudentTable students={students.map(s => {
-            const xp = s.gameProfile?.xp ?? 0;
-            const lvl = getLevelForXp(xp);
-            return {
-              ...s,
-              createdAt: s.createdAt.toISOString(),
-              xp,
-              level: lvl.level,
-              levelLabel: lvl.label,
-              streak: s.gameProfile?.streak ?? 0,
-            };
-          })} />
-        </GlassCard>
-      )}
+      <Suspense
+        key={`${sp.search ?? ""}|${sp.sort ?? ""}|${sp.page ?? "1"}|${sp.pageSize ?? ""}`}
+        fallback={<TableSkeleton rows={10} />}
+      >
+        <StudentsSection sp={sp} />
+      </Suspense>
     </div>
   );
 }

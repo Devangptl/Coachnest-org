@@ -1,32 +1,75 @@
 /**
- * Admin Enrollments Page — List all student enrollments
+ * Admin Enrollments Page — List all student enrollments (paginated)
  */
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import GlassCard from "@/components/GlassCard";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import Pagination from "@/components/ui/Pagination";
 import { getEnrollmentsList, getEnrollmentStats } from "@/services/enrollment.service";
-import { formatDate } from "@/lib/utils";
 import Link from "next/link";
 import { Users, GraduationCap, TrendingUp } from "lucide-react";
 import EnrollmentFiltersBar from "./EnrollmentFiltersBar";
 import EnrollmentTable from "./EnrollmentTable";
 
-async function getInitialData() {
-  const [enrollments, stats] = await Promise.all([
-    getEnrollmentsList({}),
-    getEnrollmentStats(),
-  ]);
-  return { enrollments, stats };
+type SearchParams = {
+  search?: string;
+  status?: "ACTIVE" | "COMPLETED" | "DROPPED";
+  courseId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: string;
+  pageSize?: string;
+};
+
+async function EnrollmentsSection({ sp }: { sp: SearchParams }) {
+  const { data, total, page, pageSize } = await getEnrollmentsList({
+    search: sp.search,
+    status: sp.status,
+    courseId: sp.courseId,
+    dateFrom: sp.dateFrom,
+    dateTo: sp.dateTo,
+    page: sp.page ? Number(sp.page) : undefined,
+    pageSize: sp.pageSize ? Number(sp.pageSize) : undefined,
+  });
+
+  return (
+    <GlassCard padding="sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-foreground font-semibold">Enrollments</h2>
+        <span className="text-muted-foreground/70 text-sm">{total.toLocaleString()} total</span>
+      </div>
+
+      {total === 0 ? (
+        <div className="text-center py-12 text-muted-foreground/70">
+          <p className="mb-4">No enrollments found.</p>
+          <Link href="/admin/courses" className="text-[#d97757] hover:text-orange-300">
+            View Courses
+          </Link>
+        </div>
+      ) : (
+        <>
+          <EnrollmentTable enrollments={data} />
+          <Pagination page={page} pageSize={pageSize} total={total} />
+        </>
+      )}
+    </GlassCard>
+  );
 }
 
-export default async function AdminEnrollmentsPage() {
+export default async function AdminEnrollmentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const session = await getSession();
-
   if (!session || session.role !== "ADMIN") {
     redirect("/login");
   }
 
-  const { enrollments, stats } = await getInitialData();
+  const sp = await searchParams;
+  const stats = await getEnrollmentStats();
 
   return (
     <div>
@@ -68,23 +111,12 @@ export default async function AdminEnrollmentsPage() {
       </div>
 
       {/* Table */}
-      <GlassCard padding="sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-foreground font-semibold">Enrollments</h2>
-          <span className="text-muted-foreground/70 text-sm">{enrollments.length} total</span>
-        </div>
-
-        <EnrollmentTable enrollments={enrollments} />
-
-        {enrollments.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground/70">
-            <p className="mb-4">No enrollments found.</p>
-            <Link href="/admin/courses" className="text-[#d97757] hover:text-orange-300">
-              View Courses
-            </Link>
-          </div>
-        )}
-      </GlassCard>
+      <Suspense
+        key={`${sp.search ?? ""}|${sp.status ?? ""}|${sp.courseId ?? ""}|${sp.dateFrom ?? ""}|${sp.dateTo ?? ""}|${sp.page ?? "1"}|${sp.pageSize ?? ""}`}
+        fallback={<TableSkeleton rows={10} />}
+      >
+        <EnrollmentsSection sp={sp} />
+      </Suspense>
     </div>
   );
 }

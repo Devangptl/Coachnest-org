@@ -4,6 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { startOfDay, endOfDay, parseISO } from "date-fns";
+import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
 
 // ─── Enrollment List with Filters ──────────────────────────────────────────
 
@@ -13,7 +14,8 @@ export async function getEnrollmentsList(filters?: {
   dateFrom?: string;
   dateTo?: string;
   search?: string;
-}) {
+} & PaginationParams): Promise<Paginated<any>> {
+  const { page, pageSize, skip, take } = parsePagination(filters);
   const where: any = {};
 
   if (filters?.courseId) {
@@ -43,27 +45,32 @@ export async function getEnrollmentsList(filters?: {
     }
   }
 
-  const enrollments = await prisma.enrollment.findMany({
-    where,
-    include: {
-      user: { select: { id: true, name: true, email: true, avatar: true } },
-      course: { select: { id: true, title: true } },
-    },
-    orderBy: { enrolledAt: "desc" },
-  });
-
-  // Filter by search (name/email) on the client side after fetch
-  let filtered = enrollments;
+  // Search by student name/email — pushed into the query so pagination and
+  // the total count stay correct.
   if (filters?.search) {
-    const q = filters.search.toLowerCase();
-    filtered = enrollments.filter(
-      (e) =>
-        e.user.name.toLowerCase().includes(q) ||
-        e.user.email.toLowerCase().includes(q)
-    );
+    where.user = {
+      OR: [
+        { name: { contains: filters.search, mode: "insensitive" } },
+        { email: { contains: filters.search, mode: "insensitive" } },
+      ],
+    };
   }
 
-  return filtered;
+  const [enrollments, total] = await Promise.all([
+    prisma.enrollment.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true, email: true, avatar: true } },
+        course: { select: { id: true, title: true } },
+      },
+      orderBy: { enrolledAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.enrollment.count({ where }),
+  ]);
+
+  return buildPaginated(enrollments, total, page, pageSize);
 }
 
 // ─── Student Profile with Enrollments ──────────────────────────────────────

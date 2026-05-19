@@ -4,27 +4,64 @@
  */
 import { prisma } from "@/lib/prisma";
 import { parseISO, startOfDay, endOfDay } from "date-fns";
+import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
+
+// ─── Quiz Stats (whole dataset, independent of pagination) ─────────────────
+
+export async function getQuizStats() {
+  const [totalQuizzes, totalAttempts, passedAttempts] = await Promise.all([
+    prisma.quiz.count(),
+    prisma.quizAttempt.count(),
+    prisma.quizAttempt.count({ where: { passed: true } }),
+  ]);
+
+  return {
+    totalQuizzes,
+    totalAttempts,
+    avgPassRate: totalAttempts > 0 ? Math.round((passedAttempts / totalAttempts) * 100) : 0,
+  };
+}
 
 // ─── Quizzes List with Attempt Stats ───────────────────────────────────────
 
-export async function getQuizzesList() {
-  const quizzes = await prisma.quiz.findMany({
-    include: {
-      lesson: {
-        select: {
-          id: true,
-          title: true,
-          order: true,
-          course: { select: { id: true, title: true, createdAt: true } },
-        },
-      },
-      questions: { select: { id: true } },
-      attempts: { select: { score: true, passed: true } },
-    },
-    orderBy: { title: "asc" },
-  });
+export async function getQuizzesList(params?: PaginationParams): Promise<Paginated<{
+  id: string;
+  title: string;
+  lessonId: string;
+  courseTitle: string;
+  courseId: string;
+  questionCount: number;
+  passMark: number;
+  timeLimit: number | null;
+  attemptCount: number;
+  avgScore: number;
+  passRate: number;
+  createdAt: Date;
+}>> {
+  const { page, pageSize, skip, take } = parsePagination(params);
 
-  return quizzes.map((quiz) => {
+  const [quizzes, total] = await Promise.all([
+    prisma.quiz.findMany({
+      include: {
+        lesson: {
+          select: {
+            id: true,
+            title: true,
+            order: true,
+            course: { select: { id: true, title: true, createdAt: true } },
+          },
+        },
+        questions: { select: { id: true } },
+        attempts: { select: { score: true, passed: true } },
+      },
+      orderBy: { title: "asc" },
+      skip,
+      take,
+    }),
+    prisma.quiz.count(),
+  ]);
+
+  const data = quizzes.map((quiz) => {
     const avgScore =
       quiz.attempts.length > 0
         ? Math.round(
@@ -53,6 +90,8 @@ export async function getQuizzesList() {
       createdAt: quiz.lesson.course.createdAt,
     };
   });
+
+  return buildPaginated(data, total, page, pageSize);
 }
 
 // ─── Single Quiz Details ───────────────────────────────────────────────────

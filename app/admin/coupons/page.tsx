@@ -1,32 +1,62 @@
 /**
- * Admin Coupons Page — Manage promotional coupons
+ * Admin Coupons Page — Manage promotional coupons (paginated)
  */
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import GlassCard from "@/components/GlassCard";
-import { getCouponsList } from "@/services/coupon.service";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import Pagination from "@/components/ui/Pagination";
+import { getCouponsList, getCouponStats } from "@/services/coupon.service";
 import Link from "next/link";
 import { PlusCircle, TrendingUp, Ticket } from "lucide-react";
 import CouponTable from "./CouponTable";
 
-async function getCouponsData() {
-  const coupons = await getCouponsList();
-  const totalDiscount = coupons.reduce((sum, c) => sum + c.totalDiscountGiven, 0);
-  const activeCoupons = coupons.filter((c) => c.status === "ACTIVE").length;
+type SearchParams = { page?: string; pageSize?: string };
 
-  return { coupons, totalDiscount, activeCoupons };
+async function CouponsSection({ sp }: { sp: SearchParams }) {
+  const { data, total, page, pageSize } = await getCouponsList({
+    page: sp.page ? Number(sp.page) : undefined,
+    pageSize: sp.pageSize ? Number(sp.pageSize) : undefined,
+  });
+
+  return (
+    <GlassCard padding="sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-foreground font-semibold">All Coupons</h2>
+        <span className="text-muted-foreground/70 text-sm">{total.toLocaleString()} total</span>
+      </div>
+
+      {total === 0 ? (
+        <div className="text-center py-12 text-muted-foreground/70">
+          <p className="mb-4">No coupons created yet.</p>
+          <Link href="/admin/coupons/new" className="text-[#d97757] hover:text-orange-300">
+            Create your first coupon
+          </Link>
+        </div>
+      ) : (
+        <>
+          <CouponTable coupons={data} />
+          <Pagination page={page} pageSize={pageSize} total={total} />
+        </>
+      )}
+    </GlassCard>
+  );
 }
 
-export default async function AdminCouponsPage() {
+export default async function AdminCouponsPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const session = await getSession();
 
   if (!session || session.role !== "ADMIN") {
     redirect("/login");
   }
 
-  const { coupons, totalDiscount, activeCoupons } = await getCouponsData();
+  const sp = await searchParams;
+  const { totalCoupons, activeCoupons, totalDiscount } = await getCouponStats();
 
   return (
     <div>
@@ -45,7 +75,7 @@ export default async function AdminCouponsPage() {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
         {[
-          { label: "Total Coupons", value: coupons.length, icon: Ticket, color: "text-blue-400" },
+          { label: "Total Coupons", value: totalCoupons, icon: Ticket, color: "text-blue-400" },
           { label: "Active", value: activeCoupons, icon: TrendingUp, color: "text-emerald-400" },
           { label: "Total Discount", value: `₹${totalDiscount.toLocaleString("en-IN")}`, icon: Ticket, color: "text-[#d97757]" },
         ].map((stat) => {
@@ -65,23 +95,12 @@ export default async function AdminCouponsPage() {
       </div>
 
       {/* Table */}
-      <GlassCard padding="sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-foreground font-semibold">All Coupons</h2>
-          <span className="text-muted-foreground/70 text-sm">{coupons.length} total</span>
-        </div>
-
-        <CouponTable coupons={coupons} />
-
-        {coupons.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground/70">
-            <p className="mb-4">No coupons created yet.</p>
-            <Link href="/admin/coupons/new" className="text-[#d97757] hover:text-orange-300">
-              Create your first coupon
-            </Link>
-          </div>
-        )}
-      </GlassCard>
+      <Suspense
+        key={`${sp.page ?? "1"}|${sp.pageSize ?? ""}`}
+        fallback={<TableSkeleton rows={10} />}
+      >
+        <CouponsSection sp={sp} />
+      </Suspense>
     </div>
   );
 }
