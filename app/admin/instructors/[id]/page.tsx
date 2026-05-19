@@ -8,6 +8,7 @@ import { ArrowLeft, Pencil, Mail, Globe, Wallet, BookOpen, Users, Star, Clock } 
 import { getSession } from "@/lib/auth";
 import { getInstructorDetails } from "@/services/instructor.service";
 import GlassCard from "@/components/GlassCard";
+import Avatar from "@/components/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
@@ -55,15 +56,13 @@ export default async function InstructorDetailPage({
       <GlassCard className="mb-6">
         <div className="flex flex-wrap items-start gap-6 justify-between">
           <div className="flex items-start gap-4">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-600/40 to-orange-500/40 border border-border flex items-center justify-center flex-shrink-0">
-              {instructor.avatar ? (
-                <img src={instructor.avatar} alt={instructor.name} className="w-16 h-16 rounded-full object-cover" />
-              ) : (
-                <span className="text-muted-foreground text-lg font-bold">
-                  {instructor.name.charAt(0).toUpperCase()}
-                </span>
-              )}
-            </div>
+            <Avatar
+              name={instructor.name}
+              avatar={instructor.avatar}
+              seed={instructor.id}
+              size="w-16 h-16"
+              className="flex-shrink-0"
+            />
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
                 <h1 className="text-2xl font-bold text-foreground">{instructor.name}</h1>

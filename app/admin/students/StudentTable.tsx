@@ -4,6 +4,7 @@ import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import Avatar from "@/components/Avatar";
 import { User, Eye, BookOpen, Award, Star, Mail } from "lucide-react";
 import { useState } from "react";
 import SendNotificationModal from "./SendNotificationModal";
@@ -53,19 +54,13 @@ export default function StudentTable({ students }: { students: Student[] }) {
           >
             {/* Avatar + name */}
             <div className="col-span-3 flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-600/40 to-orange-500/40 border border-border flex items-center justify-center flex-shrink-0">
-                {student.avatar ? (
-                  <img
-                    src={student.avatar}
-                    alt={student.name}
-                    className="w-9 h-9 rounded-full object-cover"
-                  />
-                ) : (
-                  <span className="text-muted-foreground text-xs font-bold">
-                    {student.name.charAt(0).toUpperCase()}
-                  </span>
-                )}
-              </div>
+              <Avatar
+                name={student.name}
+                avatar={student.avatar}
+                seed={student.id}
+                size="w-9 h-9"
+                className="flex-shrink-0"
+              />
               <div className="min-w-0">
                 <p className="text-foreground text-sm font-medium truncate">
                   {student.name}

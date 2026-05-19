@@ -13,6 +13,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AtSign, Loader2 } from "lucide-react";
+import Avatar from "./Avatar";
 
 interface UserHit {
   id: string;
@@ -253,14 +254,13 @@ export default function MentionTextarea({
                   }`}
                 >
                   {active && <span className="absolute left-0 top-1.5 bottom-1.5 w-0.5 rounded-full bg-[#d97757]" />}
-                  <span className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 overflow-hidden bg-gradient-to-br from-[#d97757]/25 to-[#d97757]/5 text-[#d97757] ring-1 ring-border">
-                    {u.avatar ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={u.avatar} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      u.name.charAt(0).toUpperCase()
-                    )}
-                  </span>
+                  <Avatar
+                    name={u.name}
+                    avatar={u.avatar}
+                    seed={u.id}
+                    size="w-8 h-8"
+                    className="flex-shrink-0"
+                  />
                   <span className="min-w-0 flex-1">
                     <span className="block text-sm text-foreground truncate">{u.name}</span>
                     <span className="block text-[11px] text-muted-foreground/70 truncate">

@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
+import Avatar from "@/components/Avatar";
 
 interface Props {
   name: string;
@@ -12,7 +13,7 @@ interface Props {
   delay?: number;
 }
 
-export default function TestimonialCard({ name, role, comment, rating, avatar, delay = 0 }: Props) {
+export default function TestimonialCard({ name, role, comment, rating, delay = 0 }: Props) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -34,9 +35,7 @@ export default function TestimonialCard({ name, role, comment, rating, avatar, d
         ))}
       </div>
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d97757] to-orange-500 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-          {avatar}
-        </div>
+        <Avatar name={name} seed={name} size="w-10 h-10" className="flex-shrink-0" />
         <div>
           <p className="text-white font-medium text-sm">{name}</p>
           <p className="text-muted-foreground/70 text-xs">{role}</p>

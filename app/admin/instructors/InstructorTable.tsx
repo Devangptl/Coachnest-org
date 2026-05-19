@@ -6,6 +6,7 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import Avatar from "@/components/Avatar";
 import { Eye, Pencil, Trash2 } from "lucide-react";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
 
@@ -94,19 +95,13 @@ export default function InstructorTable({
               >
                 {/* Avatar + name */}
                 <div className="col-span-3 flex items-center gap-3 min-w-0">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-br from-orange-600/40 to-orange-500/40 border border-border flex items-center justify-center flex-shrink-0">
-                    {i.avatar ? (
-                      <img
-                        src={i.avatar}
-                        alt={i.name}
-                        className="w-9 h-9 rounded-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-muted-foreground text-xs font-bold">
-                        {i.name.charAt(0).toUpperCase()}
-                      </span>
-                    )}
-                  </div>
+                  <Avatar
+                    name={i.name}
+                    avatar={i.avatar}
+                    seed={i.id}
+                    size="w-9 h-9"
+                    className="flex-shrink-0"
+                  />
                   <div className="min-w-0">
                     <p className="text-foreground text-sm font-medium truncate">
                       {i.name}

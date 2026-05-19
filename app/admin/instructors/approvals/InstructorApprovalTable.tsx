@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { CheckCircle2, XCircle, Clock, ChevronDown, ChevronUp, Mail } from "lucide-react";
 import { Button } from "@/components/ui/Button";
+import Avatar from "@/components/Avatar";
 import { formatDate } from "@/lib/utils";
 
 interface Application {
@@ -71,13 +72,13 @@ function ApprovalRow({ app }: { app: Application }) {
     <div className="border-b border-border/50 last:border-0">
       <div className="flex items-center gap-4 px-4 py-3.5">
         {/* Avatar */}
-        {app.avatar ? (
-          <img src={app.avatar} alt="" className="w-10 h-10 rounded-full object-cover border border-border flex-shrink-0" />
-        ) : (
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center flex-shrink-0 text-white font-bold text-sm">
-            {app.name.charAt(0).toUpperCase()}
-          </div>
-        )}
+        <Avatar
+          name={app.name}
+          avatar={app.avatar}
+          seed={app.id}
+          size="w-10 h-10"
+          className="flex-shrink-0"
+        />
 
         {/* Info */}
         <div className="flex-1 min-w-0">

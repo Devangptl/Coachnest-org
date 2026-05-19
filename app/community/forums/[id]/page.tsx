@@ -7,6 +7,7 @@ import { ArrowLeft, ChevronUp, ChevronDown, MessageSquare, Send, Clock, CheckCir
 import toast from "react-hot-toast";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import Avatar from "@/components/Avatar";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
@@ -341,12 +342,13 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
         )}
 
         <div className="flex items-center gap-3 mt-4 pt-4 border-t border-border">
-          <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-foreground text-xs font-bold flex-shrink-0">
-            {thread.author.avatar ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={thread.author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-            ) : thread.author.name.charAt(0).toUpperCase()}
-          </div>
+          <Avatar
+            name={thread.author.name}
+            avatar={thread.author.avatar}
+            seed={thread.author.id}
+            size="w-8 h-8"
+            className="flex-shrink-0"
+          />
           <div className="min-w-0">
             <p className="text-foreground text-sm font-medium truncate">{thread.author.name}</p>
             <p className="text-muted-foreground text-xs flex items-center gap-1">
@@ -479,12 +481,13 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
 
                       <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1 mt-3">
                         <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                          <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center text-foreground text-[10px] font-bold flex-shrink-0">
-                            {reply.author.avatar ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={reply.author.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                            ) : reply.author.name.charAt(0).toUpperCase()}
-                          </div>
+                          <Avatar
+                            name={reply.author.name}
+                            avatar={reply.author.avatar}
+                            seed={reply.author.id}
+                            size="w-6 h-6"
+                            className="flex-shrink-0"
+                          />
                           <span className="text-muted-foreground text-xs">{reply.author.name}</span>
                           <span className="text-muted-foreground/40 text-xs">·</span>
                           <span className="text-muted-foreground/60 text-xs">{new Date(reply.createdAt).toLocaleDateString()}</span>
