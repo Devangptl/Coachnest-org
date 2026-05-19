@@ -1,28 +1,84 @@
 /**
- * Admin Orders Page — Track orders, payments, and revenue
+ * Admin Orders Page — Track orders, payments, and revenue (paginated)
  */
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { Suspense } from "react";
 import GlassCard from "@/components/GlassCard";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import Pagination from "@/components/ui/Pagination";
 import { getOrdersList, getRevenueStats } from "@/services/order.service";
-import Link from "next/link";
 import { ShoppingCart, TrendingUp, AlertCircle, DollarSign } from "lucide-react";
+import { OrderStatus } from "@prisma/client";
 import OrderTable from "./OrderTable";
 import OrderFiltersBar from "./OrderFiltersBar";
 
-async function getOrdersData() {
-  const [orders, stats] = await Promise.all([
-    getOrdersList({}),
-    getRevenueStats(),
-  ]);
-  return { orders, stats };
+type SearchParams = {
+  search?: string;
+  status?: OrderStatus;
+  courseId?: string;
+  dateFrom?: string;
+  dateTo?: string;
+  page?: string;
+  pageSize?: string;
+};
+
+async function OrdersSection({ sp }: { sp: SearchParams }) {
+  const { data, total, page, pageSize } = await getOrdersList({
+    search: sp.search,
+    status: sp.status,
+    courseId: sp.courseId,
+    dateFrom: sp.dateFrom,
+    dateTo: sp.dateTo,
+    page: sp.page ? Number(sp.page) : undefined,
+    pageSize: sp.pageSize ? Number(sp.pageSize) : undefined,
+  });
+
+  return (
+    <GlassCard padding="sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-foreground font-semibold">All Orders</h2>
+        <span className="text-muted-foreground/70 text-sm">{total.toLocaleString()} total</span>
+      </div>
+
+      {total === 0 ? (
+        <div className="text-center py-12 text-muted-foreground/70">
+          <p className="mb-4">No orders found.</p>
+        </div>
+      ) : (
+        <>
+          <div className="overflow-x-auto">
+            <div className="min-w-[600px]">
+              {/* Header Row */}
+              <div className="grid grid-cols-12 gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 border-b border-border">
+                <div className="col-span-2">Order ID</div>
+                <div className="col-span-3">Student</div>
+                <div className="col-span-3">Course</div>
+                <div className="col-span-1">Amount</div>
+                <div className="col-span-1">Status</div>
+                <div className="col-span-2 text-right">Actions</div>
+              </div>
+
+              <OrderTable orders={data} />
+            </div>
+          </div>
+          <Pagination page={page} pageSize={pageSize} total={total} />
+        </>
+      )}
+    </GlassCard>
+  );
 }
 
-export default async function AdminOrdersPage() {
+export default async function AdminOrdersPage({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}) {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") redirect("/login");
 
-  const { orders, stats } = await getOrdersData();
+  const sp = await searchParams;
+  const stats = await getRevenueStats();
 
   return (
     <div>
@@ -82,34 +138,12 @@ export default async function AdminOrdersPage() {
       </div>
 
       {/* Table */}
-      <GlassCard padding="sm">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-          <h2 className="text-foreground font-semibold">All Orders</h2>
-          <span className="text-muted-foreground/70 text-sm">{orders.length} total</span>
-        </div>
-
-        <div className="overflow-x-auto">
-        <div className="min-w-[600px]">
-        {/* Header Row */}
-        <div className="grid grid-cols-12 gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 border-b border-border">
-          <div className="col-span-2">Order ID</div>
-          <div className="col-span-3">Student</div>
-          <div className="col-span-3">Course</div>
-          <div className="col-span-1">Amount</div>
-          <div className="col-span-1">Status</div>
-          <div className="col-span-2 text-right">Actions</div>
-        </div>
-
-        <OrderTable orders={orders} />
-        </div>
-        </div>
-
-        {orders.length === 0 && (
-          <div className="text-center py-12 text-muted-foreground/70">
-            <p className="mb-4">No orders found.</p>
-          </div>
-        )}
-      </GlassCard>
+      <Suspense
+        key={`${sp.search ?? ""}|${sp.status ?? ""}|${sp.courseId ?? ""}|${sp.dateFrom ?? ""}|${sp.dateTo ?? ""}|${sp.page ?? "1"}|${sp.pageSize ?? ""}`}
+        fallback={<TableSkeleton rows={10} />}
+      >
+        <OrdersSection sp={sp} />
+      </Suspense>
     </div>
   );
 }

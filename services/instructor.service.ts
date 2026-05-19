@@ -10,14 +10,18 @@
  */
 import { prisma } from "@/lib/prisma";
 import { playlistDurations } from "@/services/playlist.service";
+import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
 
 export type InstructorListFilter = {
   search?: string;
   sort?: "newest" | "oldest" | "name" | "earnings" | "courses";
-};
+} & PaginationParams;
 
-export async function getInstructorsList(filter: InstructorListFilter = {}) {
+export async function getInstructorsList(
+  filter: InstructorListFilter = {},
+): Promise<Paginated<any>> {
   const { search = "", sort = "newest" } = filter;
+  const { page, pageSize, skip, take } = parsePagination(filter);
 
   const where: any = { role: "INSTRUCTOR" as const };
   if (search) {
@@ -27,13 +31,21 @@ export async function getInstructorsList(filter: InstructorListFilter = {}) {
     ];
   }
 
+  // Ordering is done at the DB level (including aggregate sorts) so paging
+  // is correct across the whole dataset rather than just the current slice.
   const orderBy: any =
-    sort === "name"   ? { name: "asc" } :
-    sort === "oldest" ? { createdAt: "asc" } :
+    sort === "name"     ? { name: "asc" } :
+    sort === "oldest"   ? { createdAt: "asc" } :
+    sort === "earnings" ? { instructorWallet: { totalEarned: "desc" } } :
+    sort === "courses"  ? { courses: { _count: "desc" } } :
     { createdAt: "desc" };
+
+  const total = await prisma.user.count({ where });
 
   const instructors = await prisma.user.findMany({
     where,
+    skip,
+    take,
     select: {
       id: true,
       name: true,
@@ -88,11 +100,7 @@ export async function getInstructorsList(filter: InstructorListFilter = {}) {
     })
   );
 
-  // Optional sorts that need aggregated fields
-  if (sort === "earnings") rows.sort((a, b) => b.totalEarned - a.totalEarned);
-  if (sort === "courses")  rows.sort((a, b) => b.coursesCount - a.coursesCount);
-
-  return rows;
+  return buildPaginated(rows, total, page, pageSize);
 }
 
 export async function getInstructorStats() {

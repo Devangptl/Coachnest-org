@@ -21,8 +21,10 @@ export async function GET(req: Request) {
     const maxAmount = url.searchParams.get("maxAmount") ? Number(url.searchParams.get("maxAmount")) : undefined;
     const courseId = url.searchParams.get("courseId") || undefined;
     const search = url.searchParams.get("search") || undefined;
+    const page = Number(url.searchParams.get("page")) || undefined;
+    const pageSize = Number(url.searchParams.get("pageSize")) || undefined;
 
-    const orders = await getOrdersList({
+    const result = await getOrdersList({
       status,
       dateFrom,
       dateTo,
@@ -30,9 +32,11 @@ export async function GET(req: Request) {
       maxAmount,
       courseId,
       search,
+      page,
+      pageSize,
     });
 
-    return NextResponse.json({ data: orders }, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("[GET /api/admin/orders]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

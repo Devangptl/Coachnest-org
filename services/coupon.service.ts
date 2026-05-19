@@ -4,22 +4,51 @@
  */
 import { prisma } from "@/lib/prisma";
 import { DiscountType } from "@prisma/client";
+import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
 
 // ─── Coupon List with Usage Stats ─────────────────────────────────────────
 
-export async function getCouponsList(organizationId?: string) {
-  const coupons = await prisma.coupon.findMany({
-    where: organizationId ? { organizationId } : undefined,
-    include: {
-      _count: { select: { orders: true } },
-      orders: {
-        select: { discountAmount: true },
-      },
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export async function getCouponsList(
+  opts?: { organizationId?: string; search?: string } & PaginationParams,
+): Promise<Paginated<{
+  id: string;
+  code: string;
+  description: string | null;
+  discountType: DiscountType;
+  discount: number;
+  maxUses: number | null;
+  uses: number;
+  expiresAt: Date | null;
+  createdAt: Date;
+  totalDiscountGiven: number;
+  status: "ACTIVE" | "EXPIRED" | "DISABLED" | "UNLIMITED";
+}>> {
+  const { page, pageSize, skip, take } = parsePagination(opts);
 
-  return coupons.map((coupon) => ({
+  const where: any = {};
+  if (opts?.organizationId) where.organizationId = opts.organizationId;
+  if (opts?.search) {
+    where.OR = [
+      { code: { contains: opts.search, mode: "insensitive" } },
+      { description: { contains: opts.search, mode: "insensitive" } },
+    ];
+  }
+
+  const [coupons, total] = await Promise.all([
+    prisma.coupon.findMany({
+      where,
+      include: {
+        _count: { select: { orders: true } },
+        orders: { select: { discountAmount: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.coupon.count({ where }),
+  ]);
+
+  const data = coupons.map((coupon) => ({
     id: coupon.id,
     code: coupon.code,
     description: coupon.description,
@@ -32,6 +61,36 @@ export async function getCouponsList(organizationId?: string) {
     totalDiscountGiven: coupon.orders.reduce((sum, order) => sum + Number(order.discountAmount || 0), 0),
     status: getCouponStatus(coupon),
   }));
+
+  return buildPaginated(data, total, page, pageSize);
+}
+
+// ─── Coupon Stats (whole dataset, independent of pagination) ───────────────
+
+export async function getCouponStats(organizationId?: string) {
+  const where = organizationId ? { organizationId } : {};
+
+  const [totalCoupons, discountAgg, statusRows] = await Promise.all([
+    prisma.coupon.count({ where }),
+    prisma.order.aggregate({
+      where: { couponId: { not: null }, ...(organizationId ? { coupon: { organizationId } } : {}) },
+      _sum: { discountAmount: true },
+    }),
+    prisma.coupon.findMany({
+      where,
+      select: { maxUses: true, uses: true, expiresAt: true },
+    }),
+  ]);
+
+  const activeCoupons = statusRows.filter(
+    (c) => getCouponStatus(c) === "ACTIVE",
+  ).length;
+
+  return {
+    totalCoupons,
+    activeCoupons,
+    totalDiscount: Number(discountAgg._sum.discountAmount || 0),
+  };
 }
 
 // ─── Single Coupon Details ────────────────────────────────────────────────

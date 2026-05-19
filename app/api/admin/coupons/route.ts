@@ -14,8 +14,13 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
-    const coupons = await getCouponsList();
-    return NextResponse.json({ data: coupons }, { status: 200 });
+    const url = new URL(req.url);
+    const page = Number(url.searchParams.get("page")) || undefined;
+    const pageSize = Number(url.searchParams.get("pageSize")) || undefined;
+    const search = url.searchParams.get("search") || undefined;
+
+    const result = await getCouponsList({ page, pageSize, search });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("[GET /api/admin/coupons]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

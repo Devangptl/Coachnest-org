@@ -2,9 +2,12 @@
  * Admin → Instructors list with stats, search, sort, and links to detail view.
  */
 import Link from "next/link";
+import { Suspense } from "react";
 import { GraduationCap, Users, Wallet, Clock, Plus, UserCheck } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
+import { TableSkeleton } from "@/components/ui/Skeleton";
+import Pagination from "@/components/ui/Pagination";
 import {
   getInstructorsList,
   getInstructorStats,
@@ -15,25 +18,58 @@ import InstructorSearch from "./InstructorSearch";
 
 export const dynamic = "force-dynamic";
 
+type SearchParams = { search?: string; sort?: string; page?: string; pageSize?: string };
+
 function formatMoney(n: number) {
   return `₹${n.toLocaleString("en-IN", { maximumFractionDigits: 0 })}`;
+}
+
+async function InstructorsSection({ sp }: { sp: SearchParams }) {
+  const filter: InstructorListFilter = {
+    search: sp.search?.trim() || "",
+    sort: (sp.sort as InstructorListFilter["sort"]) || "newest",
+    page: sp.page ? Number(sp.page) : undefined,
+    pageSize: sp.pageSize ? Number(sp.pageSize) : undefined,
+  };
+
+  const { data, total, page, pageSize } = await getInstructorsList(filter);
+
+  if (total === 0) {
+    return (
+      <GlassCard className="text-center py-16">
+        <GraduationCap className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+        <p className="text-muted-foreground">
+          {filter.search
+            ? "No instructors match your search."
+            : "No instructors yet. Click “Add Instructor” to create one."}
+        </p>
+      </GlassCard>
+    );
+  }
+
+  return (
+    <GlassCard padding="sm">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+        <h2 className="text-foreground font-semibold">All Instructors</h2>
+        <span className="text-muted-foreground/70 text-sm">{total.toLocaleString()} total</span>
+      </div>
+      <InstructorTable instructors={data} />
+      <Pagination page={page} pageSize={pageSize} total={total} />
+    </GlassCard>
+  );
 }
 
 export default async function AdminInstructorsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; sort?: string }>;
+  searchParams: Promise<SearchParams>;
 }) {
   const sp = await searchParams;
-  const filter: InstructorListFilter = {
+  const stats = await getInstructorStats();
+  const filter = {
     search: sp.search?.trim() || "",
     sort: (sp.sort as InstructorListFilter["sort"]) || "newest",
   };
-
-  const [instructors, stats] = await Promise.all([
-    getInstructorsList(filter),
-    getInstructorStats(),
-  ]);
 
   return (
     <div>
@@ -126,26 +162,12 @@ export default async function AdminInstructorsPage({
       </div>
 
       {/* Table */}
-      {instructors.length === 0 ? (
-        <GlassCard className="text-center py-16">
-          <GraduationCap className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">
-            {filter.search
-              ? "No instructors match your search."
-              : "No instructors yet. Click “Add Instructor” to create one."}
-          </p>
-        </GlassCard>
-      ) : (
-        <GlassCard padding="sm">
-          <div className="flex items-center justify-between px-4 py-3 border-b border-border">
-            <h2 className="text-foreground font-semibold">All Instructors</h2>
-            <span className="text-muted-foreground/70 text-sm">
-              {instructors.length} total
-            </span>
-          </div>
-          <InstructorTable instructors={instructors} />
-        </GlassCard>
-      )}
+      <Suspense
+        key={`${sp.search ?? ""}|${sp.sort ?? ""}|${sp.page ?? "1"}|${sp.pageSize ?? ""}`}
+        fallback={<TableSkeleton rows={10} />}
+      >
+        <InstructorsSection sp={sp} />
+      </Suspense>
     </div>
   );
 }

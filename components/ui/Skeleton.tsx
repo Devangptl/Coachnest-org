@@ -133,6 +133,38 @@ export function CardGridSkeleton({ count = 4 }: { count?: number }) {
   );
 }
 
+/** Paginated table skeleton — header strip + rows + footer, wrapped in a card. */
+export function TableSkeleton({ rows = 10, title = true }: { rows?: number; title?: boolean }) {
+  return (
+    <div className="bg-card border border-border rounded-lg animate-pulse">
+      {title && (
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border">
+          <Skeleton h="h-5" w="w-40" />
+          <Skeleton h="h-4" w="w-16" />
+        </div>
+      )}
+      <div className="divide-y divide-border/50">
+        {Array.from({ length: rows }).map((_, i) => (
+          <div key={i} className="flex items-center gap-4 px-4 py-3.5">
+            <Skeleton className="h-9 w-9 rounded-full flex-shrink-0" />
+            <div className="flex-1 space-y-2">
+              <Skeleton h="h-3.5" w="w-1/3" />
+              <Skeleton h="h-3" w="w-1/4" />
+            </div>
+            <Skeleton h="h-3" w="w-20" className="hidden sm:block" />
+            <Skeleton className="h-6 w-16 rounded-full" />
+            <Skeleton h="h-7" w="w-14" />
+          </div>
+        ))}
+      </div>
+      <div className="flex items-center justify-between px-4 py-3 border-t border-border">
+        <Skeleton h="h-3" w="w-32" />
+        <Skeleton h="h-7" w="w-40" />
+      </div>
+    </div>
+  );
+}
+
 /** Activity feed item skeleton — avatar + text rows. */
 export function FeedItemSkeleton({ rows = 5 }: { rows?: number }) {
   return (
