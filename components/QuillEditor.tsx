@@ -185,13 +185,15 @@ function buildMarkdownTableHtml(lines: string[]): string {
   const headers = lines.slice(0, sepIdx);
   const rows    = lines.slice(sepIdx + 1).filter((l) => l.startsWith("|"));
 
-  // Use <tbody> only (no <thead>) — Quill v2's dangerouslyPasteHTML requires this
-  // structure to correctly render tables; <thead> causes the table to be lost.
+  // Quill v2's table module only models <td> cells (grouped by row) — it has
+  // no <th>/<thead> blot, so emitting those collapses the header into a single
+  // cell. Every cell is a <td>; the header row is styled via CSS (first row).
+  const cell = (c: string) => `<td>${convertCellContent(c) || "<br>"}</td>`;
   let html = '<table class="lh-table"><tbody>';
   for (const line of headers)
-    html += "<tr>" + parseRow(line).map((c) => `<th>${convertCellContent(c)}</th>`).join("") + "</tr>";
+    html += "<tr>" + parseRow(line).map(cell).join("") + "</tr>";
   for (const line of rows)
-    html += "<tr>" + parseRow(line).map((c) => `<td>${convertCellContent(c)}</td>`).join("") + "</tr>";
+    html += "<tr>" + parseRow(line).map(cell).join("") + "</tr>";
   html += "</tbody></table><p><br></p>";
   return html;
 }
@@ -454,7 +456,7 @@ export default function QuillEditor({
         for (let r = 0; r < rows; r++) {
           html += "<tr>";
           for (let c = 0; c < cols; c++) {
-            html += r === 0 ? '<th><br></th>' : '<td><br></td>';
+            html += '<td><br></td>';
           }
           html += "</tr>";
         }

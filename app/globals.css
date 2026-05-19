@@ -1043,6 +1043,14 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 .quill-content table tr:nth-child(even) td {
   background: hsl(var(--secondary) / 0.35);
 }
+/* Quill 2 tables have no <th>; render the first row as the header. */
+.ql-editor table tr:first-child td,
+.quill-content table tr:first-child td {
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  text-align: left;
+}
 
 /* ── Table picker popover ────────────────────────────────────────────────── */
 .ql-table-picker {
