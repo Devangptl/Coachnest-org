@@ -6,24 +6,17 @@ import { cn } from "@/lib/utils";
 interface Props {
   name: string;
   avatar?: string | null;
-  /** Stable seed (instructor id) so the cartoon stays the same per person. */
+  /** Stable seed (instructor id) so the colour stays the same per person. */
   seed?: string;
   /** Tailwind size classes, e.g. "w-10 h-10". */
   size?: string;
-  /** Kept for API compatibility (was the initial's text size). */
+  /** Tailwind text size class for the initials, e.g. "text-sm". */
   textSize?: string;
   className?: string;
 }
 
-/** Deterministic cartoon avatar (DiceBear) used when no real photo exists. */
-function cartoonUrl(seed: string) {
-  return `https://api.dicebear.com/9.x/adventurer/svg?seed=${encodeURIComponent(
-    seed,
-  )}&backgroundColor=ffd5dc,ffdfbf,c0aede,d1d4f9,b6e3f4,transparent`;
-}
-
 /** Auto-generated "initials" placeholders (seed data, etc.) are not real
- *  photos — treat them as missing so the cartoon is used instead. */
+ *  photos — treat them as missing so the text avatar is used instead. */
 function isPlaceholder(url?: string | null) {
   if (!url || !url.trim()) return true;
   const u = url.toLowerCase();
@@ -34,11 +27,39 @@ function isPlaceholder(url?: string | null) {
   );
 }
 
+function getInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if (parts.length === 0) return "?";
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+}
+
+/** Deterministic background colour derived from the seed/name. */
+const PALETTE = [
+  "bg-rose-500",
+  "bg-orange-500",
+  "bg-amber-500",
+  "bg-emerald-500",
+  "bg-teal-500",
+  "bg-sky-500",
+  "bg-indigo-500",
+  "bg-violet-500",
+  "bg-fuchsia-500",
+];
+
+function colorFor(seed: string) {
+  let hash = 0;
+  for (let i = 0; i < seed.length; i++) {
+    hash = (hash * 31 + seed.charCodeAt(i)) | 0;
+  }
+  return PALETTE[Math.abs(hash) % PALETTE.length];
+}
+
 /**
  * Instructor avatar — shows the uploaded photo when available, otherwise a
- * random-but-stable cartoon avatar derived from the instructor id/name.
- * Falls back to the cartoon if the stored image is a placeholder or fails
- * to load.
+ * simple text avatar showing the person's initials on a stable colour
+ * derived from their id/name. Falls back to the text avatar if the stored
+ * image is a placeholder or fails to load.
  *
  * Uses a plain <img> (like the rest of the app) so avatars hosted on
  * domains outside next.config's remotePatterns don't crash the page.
@@ -48,17 +69,36 @@ export default function InstructorAvatar({
   avatar,
   seed,
   size = "w-10 h-10",
+  textSize = "text-sm",
   className,
 }: Props) {
   const [errored, setErrored] = useState(false);
-  const fallback = cartoonUrl(seed || name || "instructor");
   const useFallback = errored || isPlaceholder(avatar);
-  const src = useFallback ? fallback : (avatar as string);
+
+  if (useFallback) {
+    const key = seed || name || "instructor";
+    return (
+      <div
+        aria-label={name}
+        title={name}
+        className={cn(
+          size,
+          colorFor(key),
+          "rounded-full flex items-center justify-center select-none",
+          "text-white font-semibold ring-2 ring-border dark:ring-white/10",
+          textSize,
+          className,
+        )}
+      >
+        {getInitials(name)}
+      </div>
+    );
+  }
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
-      src={src}
+      src={avatar as string}
       alt={name}
       onError={() => setErrored(true)}
       className={cn(
