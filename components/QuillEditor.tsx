@@ -108,7 +108,7 @@ const MARKDOWN_BINDINGS = {
 
 const IMAGE_MAX_BYTES = 1 * 1024 * 1024; // matches /api/upload limit
 
-// ── Markdown table paste helpers ───────────────────────────────────────────────
+// ── Markdown paste helpers ─────────────────────────────────────────────────────
 
 /** Returns true if the text contains at least one GFM separator row (|---|---| …). */
 function hasMarkdownTable(text: string): boolean {
@@ -121,14 +121,57 @@ function escHtml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
-/** Escape HTML then convert inline markdown (**bold**, *em*, `code`, ~~del~~) in a table cell. */
-function convertCellContent(raw: string): string {
-  let s = raw.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+const HR_RE = /^[ \t]*(?:(?:-[ \t]*){3,}|(?:\*[ \t]*){3,}|(?:_[ \t]*){3,})$/;
+const LIST_RE = /^([ \t]*)([-*+]|\d+[.)])[ \t]+(.*)$/;
+const FENCE_RE = /^[ \t]*(`{3,}|~{3,})(.*)$/;
+
+// Private-use sentinels that wrap tokenised code spans while emphasis is
+// processed, so a span's contents are never reinterpreted as markdown.
+const CODE_OPEN = String.fromCharCode(0xe000);
+const CODE_CLOSE = String.fromCharCode(0xe001);
+
+/**
+ * Convert inline markdown (links, images, bold, italic, strikethrough, inline
+ * code) to HTML. Code spans are tokenised first so their contents are never
+ * reinterpreted as other markdown, then everything is HTML-escaped.
+ */
+function convertInline(raw: string): string {
+  const codeTokens: string[] = [];
+  let s = raw.replace(/`([^`]+?)`/g, (_m, code: string) => {
+    codeTokens.push(code);
+    return `${CODE_OPEN}${codeTokens.length - 1}${CODE_CLOSE}`;
+  });
+
+  s = escHtml(s);
+
+  // Images: ![alt](url "title")
+  s = s.replace(
+    /!\[([^\]]*)\]\([ \t]*([^)\s]+)(?:[ \t]+"[^"]*")?[ \t]*\)/g,
+    (_m, alt: string, url: string) => `<img src="${url}" alt="${alt}">`,
+  );
+  // Links: [text](url "title")
+  s = s.replace(
+    /\[([^\]]+)\]\([ \t]*([^)\s]+)(?:[ \t]+"[^"]*")?[ \t]*\)/g,
+    (_m, text: string, url: string) => `<a href="${url}">${text}</a>`,
+  );
+
+  s = s.replace(/\*\*\*(.+?)\*\*\*/g, "<strong><em>$1</em></strong>");
+  s = s.replace(/___(.+?)___/g, "<strong><em>$1</em></strong>");
   s = s.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
-  s = s.replace(/\*(.+?)\*/g, "<em>$1</em>");
-  s = s.replace(/`([^`]+)`/g, "<code>$1</code>");
+  s = s.replace(/__(.+?)__/g, "<strong>$1</strong>");
+  s = s.replace(/(^|[^*\w])\*(?!\s)([^*]+?)\*(?!\*)/g, "$1<em>$2</em>");
+  s = s.replace(/(^|[^_\w])_(?!\s)([^_]+?)_(?![\w_])/g, "$1<em>$2</em>");
   s = s.replace(/~~(.+?)~~/g, "<del>$1</del>");
+
+  const restore = new RegExp(`${CODE_OPEN}(\\d+)${CODE_CLOSE}`, "g");
+  s = s.replace(restore, (_m, idx: string) =>
+    `<code>${escHtml(codeTokens[Number(idx)])}</code>`);
   return s;
+}
+
+/** Escape HTML then convert inline markdown in a table cell. */
+function convertCellContent(raw: string): string {
+  return convertInline(raw);
 }
 
 /** Convert a block of table lines (already filtered to start with `|`) to an HTML table. */
@@ -142,40 +185,181 @@ function buildMarkdownTableHtml(lines: string[]): string {
   const headers = lines.slice(0, sepIdx);
   const rows    = lines.slice(sepIdx + 1).filter((l) => l.startsWith("|"));
 
-  // Use <tbody> only (no <thead>) — Quill v2's dangerouslyPasteHTML requires this
-  // structure to correctly render tables; <thead> causes the table to be lost.
+  // Quill v2's table module only models <td> cells (grouped by row) — it has
+  // no <th>/<thead> blot, so emitting those collapses the header into a single
+  // cell. Every cell is a <td>; the header row is styled via CSS (first row).
+  const cell = (c: string) => `<td>${convertCellContent(c) || "<br>"}</td>`;
   let html = '<table class="lh-table"><tbody>';
   for (const line of headers)
-    html += "<tr>" + parseRow(line).map((c) => `<th>${convertCellContent(c)}</th>`).join("") + "</tr>";
+    html += "<tr>" + parseRow(line).map(cell).join("") + "</tr>";
   for (const line of rows)
-    html += "<tr>" + parseRow(line).map((c) => `<td>${convertCellContent(c)}</td>`).join("") + "</tr>";
+    html += "<tr>" + parseRow(line).map(cell).join("") + "</tr>";
   html += "</tbody></table><p><br></p>";
   return html;
 }
 
+/** Build a (possibly nested) HTML list from collected list items. */
+function buildListHtml(items: { indent: number; ordered: boolean; content: string }[]): string {
+  // Snap raw indentation widths onto contiguous levels (0,1,2,…) so uneven
+  // source indentation still nests predictably.
+  const uniq = Array.from(new Set(items.map((x) => x.indent))).sort((a, b) => a - b);
+  const levelOf = new Map(uniq.map((v, idx) => [v, idx] as const));
+  const norm = items.map((x) => ({ ...x, indent: levelOf.get(x.indent)! }));
+
+  let pos = 0;
+  function build(level: number): string {
+    const ordered = norm[pos].ordered;
+    let out = ordered ? "<ol>" : "<ul>";
+    while (pos < norm.length && norm[pos].indent >= level) {
+      if (norm[pos].indent > level) break; // belongs to a deeper <li>
+      const it = norm[pos];
+      pos++;
+      let li = `<li>${convertInline(it.content)}`;
+      if (pos < norm.length && norm[pos].indent > level) li += build(norm[pos].indent);
+      li += "</li>";
+      out += li;
+    }
+    out += ordered ? "</ol>" : "</ul>";
+    return out;
+  }
+  return build(norm[0].indent);
+}
+
+/** Heuristic: does the pasted plain text contain markdown syntax worth converting? */
+function looksLikeMarkdown(text: string): boolean {
+  if (!text) return false;
+  if (hasMarkdownTable(text)) return true;
+  return (
+    /^[ \t]*#{1,6}[ \t]+\S/m.test(text) ||        // ATX heading
+    new RegExp(FENCE_RE.source, "m").test(text) || // fenced code block
+    /^[ \t]*>[ \t]?\S/m.test(text) ||              // blockquote
+    /^[ \t]*[-*+][ \t]+\S/m.test(text) ||          // bullet list
+    /^[ \t]*\d+[.)][ \t]+\S/m.test(text) ||        // ordered list
+    new RegExp(HR_RE.source, "m").test(text) ||     // thematic break
+    /\*\*[^*\n]+\*\*/.test(text) ||                // bold
+    /__[^_\n]+__/.test(text) ||                    // bold
+    /~~[^~\n]+~~/.test(text) ||                    // strikethrough
+    /`[^`\n]+`/.test(text) ||                      // inline code
+    /\[[^\]\n]+\]\([^)\n]+\)/.test(text) ||        // link
+    /!\[[^\]\n]*\]\([^)\n]+\)/.test(text)          // image
+  );
+}
+
 /**
- * Convert pasted plain-text (possibly containing markdown tables mixed with
- * regular paragraphs) to HTML suitable for insertion via dangerouslyPasteHTML.
+ * Convert pasted plain-text markdown (headings, emphasis, lists, code blocks,
+ * blockquotes, links/images and GFM tables) to HTML suitable for insertion via
+ * Quill's dangerouslyPasteHTML.
  */
 function convertMarkdownPaste(text: string): string {
   const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
   let html = "";
   let i = 0;
+
   while (i < lines.length) {
-    const trimmed = lines[i].trim();
-    if (trimmed.startsWith("|") && trimmed.endsWith("|")) {
-      // Collect all consecutive table lines
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    if (!trimmed) { i++; continue; }
+
+    // ── Fenced code block ──────────────────────────────────────────────────
+    const fence = trimmed.match(FENCE_RE);
+    if (fence) {
+      const fenceChar = fence[1][0];
+      const fenceLen = fence[1].length;
+      i++;
+      const codeLines: string[] = [];
+      while (i < lines.length) {
+        const ct = lines[i].trim();
+        const cm = ct.match(/^(`{3,}|~{3,})\s*$/);
+        if (cm && ct[0] === fenceChar && cm[1].length >= fenceLen) { i++; break; }
+        codeLines.push(lines[i]);
+        i++;
+      }
+      html += `<pre>${escHtml(codeLines.join("\n")) || "<br>"}</pre>`;
+      continue;
+    }
+
+    // ── ATX heading ────────────────────────────────────────────────────────
+    const heading = trimmed.match(/^(#{1,6})[ \t]+(.*?)[ \t]*#*[ \t]*$/);
+    if (heading) {
+      const level = heading[1].length;
+      html += `<h${level}>${convertInline(heading[2])}</h${level}>`;
+      i++;
+      continue;
+    }
+
+    // ── Thematic break ─────────────────────────────────────────────────────
+    if (HR_RE.test(line) && !trimmed.startsWith("|")) {
+      html += "<hr>";
+      i++;
+      continue;
+    }
+
+    // ── Table ──────────────────────────────────────────────────────────────
+    if (trimmed.startsWith("|")) {
       const tableLines: string[] = [];
       while (i < lines.length && lines[i].trim().startsWith("|")) {
         tableLines.push(lines[i].trim());
         i++;
       }
-      html += buildMarkdownTableHtml(tableLines);
+      if (tableLines.some((l) => /^\|[\s\-:|]+\|$/.test(l))) {
+        html += buildMarkdownTableHtml(tableLines);
+      } else {
+        for (const tl of tableLines) html += `<p>${convertInline(tl)}</p>`;
+      }
       continue;
     }
-    if (trimmed) html += `<p>${escHtml(trimmed)}</p>`;
-    i++;
+
+    // ── Blockquote ─────────────────────────────────────────────────────────
+    if (/^[ \t]*>/.test(line)) {
+      const quoteLines: string[] = [];
+      while (i < lines.length && /^[ \t]*>/.test(lines[i])) {
+        quoteLines.push(lines[i].replace(/^[ \t]*>[ \t]?/, ""));
+        i++;
+      }
+      html += `<blockquote>${quoteLines
+        .map((q) => convertInline(q) || "<br>")
+        .join("<br>")}</blockquote>`;
+      continue;
+    }
+
+    // ── List (ordered / unordered, nested by indentation) ──────────────────
+    if (LIST_RE.test(line)) {
+      const items: { indent: number; ordered: boolean; content: string }[] = [];
+      while (i < lines.length) {
+        const m = lines[i].match(LIST_RE);
+        if (!m) break;
+        items.push({
+          indent: m[1].replace(/\t/g, "  ").length,
+          ordered: /\d/.test(m[2]),
+          content: m[3],
+        });
+        i++;
+      }
+      html += buildListHtml(items);
+      continue;
+    }
+
+    // ── Paragraph (consecutive plain lines, soft-wrapped) ──────────────────
+    const paraLines: string[] = [];
+    while (i < lines.length) {
+      const pl = lines[i];
+      const pt = pl.trim();
+      if (
+        !pt ||
+        FENCE_RE.test(pt) ||
+        /^#{1,6}[ \t]+/.test(pt) ||
+        /^[ \t]*>/.test(pl) ||
+        pt.startsWith("|") ||
+        LIST_RE.test(pl) ||
+        (HR_RE.test(pl) && !pt.startsWith("|"))
+      ) break;
+      paraLines.push(pt);
+      i++;
+    }
+    if (paraLines.length) html += `<p>${paraLines.map(convertInline).join("<br>")}</p>`;
   }
+
   return html || "<p><br></p>";
 }
 
@@ -272,7 +456,7 @@ export default function QuillEditor({
         for (let r = 0; r < rows; r++) {
           html += "<tr>";
           for (let c = 0; c < cols; c++) {
-            html += r === 0 ? '<th><br></th>' : '<td><br></td>';
+            html += '<td><br></td>';
           }
           html += "</tr>";
         }
@@ -346,7 +530,7 @@ export default function QuillEditor({
       const KEEP_ATTRS = new Set([
         "bold", "italic", "underline", "strike",
         "link", "header", "list", "indent",
-        "code-block", "blockquote", "script",
+        "code", "code-block", "blockquote", "script",
       ]);
       const TABLE_TAGS = new Set(["TABLE", "THEAD", "TBODY", "TFOOT", "TR", "TH", "TD", "CAPTION", "COLGROUP", "COL"]);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -679,13 +863,15 @@ export default function QuillEditor({
           }
         }
 
-        // ── Markdown table ──────────────────────────────────────────────────
-        // Always prefer our GFM → HTML conversion when the plain-text clipboard
-        // contains a markdown table, even if the HTML clipboard also has a <table>
-        // (e.g. pasting from a browser-rendered markdown page). Our converter
-        // produces consistent, clean HTML that Quill v2 renders reliably.
+        // ── Markdown content ────────────────────────────────────────────────
+        // Always prefer our markdown → HTML conversion when the plain-text
+        // clipboard contains markdown syntax (headings, emphasis, lists, code,
+        // quotes, links, tables), even if an HTML flavour is also present
+        // (e.g. copying markdown source from VS Code or a rendered docs page).
+        // Our converter produces consistent, clean HTML that Quill v2 renders
+        // reliably.
         const textClip = e.clipboardData?.getData("text/plain") ?? "";
-        if (hasMarkdownTable(textClip)) {
+        if (looksLikeMarkdown(textClip)) {
           e.preventDefault();
           e.stopPropagation();
           const converted = convertMarkdownPaste(textClip);
