@@ -376,34 +376,40 @@ export default function LessonSidebar({ courseId, courseTitle, sections, ungroup
       </div>
 
       {/* ── Progress card ─────────────────────────────────────────────────── */}
-      <div className="flex-shrink-0 mx-3 mb-3 rounded-xl border border-border/50 bg-secondary/20 p-3.5 space-y-3">
-        {/* Top row: label + badge */}
+      <div className="flex-shrink-0 mx-3 mb-2 rounded-lg border border-border/50 bg-secondary/20 px-2.5 py-2 space-y-1.5">
+        {/* Top row: label + badge + stats */}
         <div className="flex items-center justify-between gap-2">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1">
             {hasSections
-              ? <BookOpen className="w-3.5 h-3.5 text-[#d97757]" />
-              : <LayoutList className="w-3.5 h-3.5 text-[#d97757]" />
+              ? <BookOpen className="w-3 h-3 text-[#d97757]" />
+              : <LayoutList className="w-3 h-3 text-[#d97757]" />
             }
-            <span className="text-[12px] font-semibold text-foreground/80">
-              {hasSections
-                ? `${sections.length} Chapter${sections.length !== 1 ? "s" : ""}`
-                : "Lessons"}
+            <span className="text-[11px] font-semibold text-foreground/70">
+              {loading ? "…" : `${totalCompleted} / ${allLessons.length}`}
             </span>
           </div>
 
-          <div className={cn(
-            "flex items-center gap-1 text-[11px] font-bold px-2 py-0.5 rounded-full border",
-            courseComplete
-              ? "bg-amber-500/10 border-amber-400/25 text-amber-400"
-              : "bg-secondary border-border/50 text-muted-foreground/60",
-          )}>
-            {courseComplete && <Trophy className="w-3 h-3" />}
-            {loading ? "—" : `${completionPct}%`}
+          <div className="flex items-center gap-2">
+            {remainingMins > 0 && !loading && (
+              <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/50">
+                <Clock className="w-2.5 h-2.5" />
+                {fmtDuration(remainingMins)} left
+              </span>
+            )}
+            <div className={cn(
+              "flex items-center gap-1 text-[10px] font-bold px-1.5 py-0.5 rounded-full border",
+              courseComplete
+                ? "bg-amber-500/10 border-amber-400/25 text-amber-400"
+                : "bg-secondary border-border/50 text-muted-foreground/60",
+            )}>
+              {courseComplete && <Trophy className="w-2.5 h-2.5" />}
+              {loading ? "—" : `${completionPct}%`}
+            </div>
           </div>
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 rounded-full bg-border/30 overflow-hidden">
+        <div className="h-1 rounded-full bg-border/30 overflow-hidden">
           <motion.div
             className={cn(
               "h-full rounded-full",
@@ -415,22 +421,6 @@ export default function LessonSidebar({ courseId, courseTitle, sections, ungroup
             animate={{ width: `${completionPct}%` }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           />
-        </div>
-
-        {/* Stats row */}
-        <div className="flex items-center justify-between text-[10.5px] text-muted-foreground/50">
-          <span>
-            {loading ? "…" : `${totalCompleted} / ${allLessons.length} lessons`}
-          </span>
-          {remainingMins > 0 && !loading && (
-            <span className="flex items-center gap-1">
-              <Clock className="w-2.5 h-2.5" />
-              {fmtDuration(remainingMins)} left
-            </span>
-          )}
-          {courseComplete && (
-            <span className="text-amber-400 font-semibold">Complete!</span>
-          )}
         </div>
       </div>
 
