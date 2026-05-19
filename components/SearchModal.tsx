@@ -10,7 +10,7 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
-  Search, X, Star, BookOpen, Flame, Clock, Hash,
+  Search, X, Star, BookOpen, Flame, Clock,
   TrendingUp, ArrowUpRight, Loader2, GraduationCap,
   ChevronRight, History, Users,
 } from "lucide-react";
@@ -43,12 +43,6 @@ const SORT_OPTIONS = [
   { value: "newest",     label: "Newest",   icon: Clock    },
   { value: "price_asc",  label: "Cheapest", icon: TrendingUp },
   { value: "price_desc", label: "Priciest", icon: TrendingUp },
-];
-
-const TRENDING = [
-  "React", "Next.js", "TypeScript", "Python",
-  "Node.js", "UI/UX Design", "Data Science", "Machine Learning",
-  "Tailwind CSS", "System Design",
 ];
 
 const MAX_RECENT = 5;
@@ -317,56 +311,40 @@ export default function SearchModal({ open, onClose }: Props) {
 
                   {/* ── Empty state (no query) ─────────────────────────── */}
                   {isEmpty && (
-                    <div className="p-3 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-4">
-
-                      {/* Recent searches */}
-                      {recent.length > 0 && (
-                        <div>
-                          <div className="flex items-center justify-between px-2 mb-1">
-                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 flex items-center gap-1">
-                              <History className="w-2.5 h-2.5" /> Recent
+                    <>
+                      {recent.length > 0 ? (
+                        <div className="p-3">
+                          <div className="flex items-center justify-between px-2 mb-2">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 flex items-center gap-1.5">
+                              <History className="w-2.5 h-2.5" /> Recent searches
                             </span>
                             <button
                               onClick={() => { localStorage.removeItem(LS_KEY); setRecent([]); }}
                               className="text-[10px] text-muted-foreground/25 hover:text-muted-foreground/60 transition-colors"
                             >
-                              Clear
+                              Clear all
                             </button>
                           </div>
-                          <div>
+                          <div className="space-y-0.5">
                             {recent.map((r) => (
                               <div key={r}
                                 onClick={() => pickSuggestion(r)}
-                                className="flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer group hover:bg-white/[0.04] transition-colors"
+                                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer group hover:bg-white/[0.04] transition-colors"
                               >
-                                <History className="w-3 h-3 text-muted-foreground/25 flex-shrink-0" />
+                                <div className="w-6 h-6 rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
+                                  <History className="w-3 h-3 text-muted-foreground/30" />
+                                </div>
                                 <span className="flex-1 text-[13px] text-muted-foreground/60 group-hover:text-foreground transition-colors truncate">{r}</span>
                                 <button onClick={(e) => removeOne(r, e)}
-                                  className="opacity-0 group-hover:opacity-100 w-4 h-4 rounded flex items-center justify-center text-muted-foreground/30 hover:text-muted-foreground hover:bg-white/10 transition-all">
-                                  <X className="w-2.5 h-2.5" />
+                                  className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center justify-center text-muted-foreground/30 hover:text-muted-foreground hover:bg-white/10 transition-all flex-shrink-0">
+                                  <X className="w-3 h-3" />
                                 </button>
                               </div>
                             ))}
                           </div>
                         </div>
-                      )}
-
-                      {/* Trending */}
-                      <div className={recent.length === 0 ? "sm:col-span-2" : ""}>
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/30 flex items-center gap-1 px-2 mb-1">
-                          <TrendingUp className="w-2.5 h-2.5" /> Trending
-                        </span>
-                        <div className="flex flex-wrap gap-1 px-2">
-                          {TRENDING.slice(0, recent.length > 0 ? 5 : 10).map((t) => (
-                            <button key={t} onClick={() => pickSuggestion(t)}
-                              className="flex items-center gap-1 px-2 py-1 rounded-md bg-white/[0.03] hover:bg-orange-500/10 border border-white/[0.06] hover:border-[#d97757]/20 text-[11px] text-muted-foreground/50 hover:text-[#d97757] transition-all">
-                              <Hash className="w-2.5 h-2.5" />
-                              {t}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
+                      ) : null}
+                    </>
                   )}
 
                   {/* ── Loading ────────────────────────────────────────── */}

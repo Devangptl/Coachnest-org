@@ -27,6 +27,7 @@ export async function GET(req: NextRequest) {
         { title:       { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },
         { shortDesc:   { contains: q, mode: "insensitive" } },
+        { createdBy:   { name: { contains: q, mode: "insensitive" } } },
       ]}),
       ...(category && { category: { slug: category } }),
       ...(level    && { level }),
