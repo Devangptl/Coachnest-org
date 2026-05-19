@@ -212,14 +212,39 @@ export default function SearchPageClient() {
   };
 
   return (
-    <div className="pt-6 pb-16">
-      {/* ── Top bar ───────────────────────────────────────────────────────
-           Mobile  : [Search — full width]
-                     [Filters btn] [Sort — flex-1]
-           Tablet+ : [Filters btn] [Search — flex-1] [Sort — fixed]
-      ──────────────────────────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        {/* Filters button — left on all sizes */}
+    <div className="pt-4 pb-16">
+      {/* ── Page header ──────────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-foreground tracking-tight">
+          {query
+            ? <><span className="text-muted-foreground/50 font-medium">Results for </span><span className="text-[#d97757]">"{query}"</span></>
+            : "Browse Courses"
+          }
+        </h1>
+        <p className="text-sm text-muted-foreground/50 mt-0.5">
+          {loading
+            ? "Searching…"
+            : error
+              ? "Something went wrong"
+              : `${total.toLocaleString()} course${total !== 1 ? "s" : ""} found`}
+        </p>
+      </div>
+
+      {/* ── Controls bar ─────────────────────────────────────────────────── */}
+      <div className="mb-5 flex items-center gap-2.5">
+        <SearchBar
+          initialValue={query}
+          onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
+          navigateTo={false}
+          className="flex-1 min-w-0"
+          placeholder="Search courses, topics, instructors…"
+        />
+        <Select
+          value={sort}
+          onValueChange={setSort}
+          options={SORT_OPT}
+          className="flex-shrink-0 w-auto min-w-[150px]"
+        />
         <Button
           variant="secondary"
           size="md"
@@ -230,30 +255,13 @@ export default function SearchPageClient() {
           )}
         >
           <SlidersHorizontal className="w-4 h-4" />
-          <span className="hidden xs:inline sm:inline">Filters</span>
+          <span>Filters</span>
           {activeFilterCount > 0 && (
             <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
               {activeFilterCount}
             </span>
           )}
         </Button>
-
-        {/* Sort — right of Filters on mobile, right-end on desktop */}
-        <Select
-          value={sort}
-          onValueChange={setSort}
-          options={SORT_OPT}
-          className="flex-1 sm:flex-none sm:w-auto sm:min-w-[150px]"
-        />
-
-        {/* Search — full width below on mobile, flex-1 middle on desktop */}
-        <SearchBar
-          initialValue={query}
-          onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
-          navigateTo={false}
-          className="order-last w-full sm:order-none sm:flex-1 sm:min-w-0 sm:w-auto"
-          placeholder="Search courses..."
-        />
       </div>
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
@@ -264,6 +272,7 @@ export default function SearchPageClient() {
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center gap-2 flex-wrap mb-4 overflow-hidden"
           >
+            <span className="text-[11px] text-muted-foreground/40 font-medium">Filtering by:</span>
             <motion.button
               initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
               onClick={() => setLevel("")}
@@ -284,12 +293,28 @@ export default function SearchPageClient() {
           {sideOpen && !isMobile && (
             <motion.aside
               initial={{ opacity: 0, x: -16, width: 0 }}
-              animate={{ opacity: 1, x: 0, width: 260 }}
+              animate={{ opacity: 1, x: 0, width: 240 }}
               exit={{ opacity: 0, x: -16, width: 0 }}
               transition={{ duration: 0.2 }}
               className="hidden lg:block flex-shrink-0 overflow-hidden"
             >
-              <div className="glass p-5 w-[260px] sticky top-20">
+              <div className="rounded-xl border border-border/60 bg-card p-4 w-[240px] sticky top-20">
+                <div className="flex items-center justify-between mb-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground/50" />
+                    <h3 className="text-sm font-semibold text-foreground/80">Filters</h3>
+                  </div>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-[11px] text-muted-foreground/40 hover:text-[#d97757] transition-colors font-medium flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <div className="h-px bg-border/50 mb-3.5" />
                 <FilterContent {...filterProps} />
               </div>
             </motion.aside>
@@ -298,15 +323,6 @@ export default function SearchPageClient() {
 
         {/* Results column */}
         <div className="flex-1 min-w-0">
-          {/* Result count */}
-          <p className="text-muted-foreground/70 text-sm mb-4">
-            {loading
-              ? "Searching…"
-              : error
-                ? "Search error"
-                : `${total.toLocaleString()} course${total !== 1 ? "s" : ""} found`}
-          </p>
-
           {/* Error banner */}
           {error && !loading && (
             <div className="flex items-center gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 mb-5">
@@ -390,12 +406,14 @@ export default function SearchPageClient() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-16 sm:py-20"
             >
-              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-secondary mb-4">
-                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground/40" />
+              <div className="w-16 h-16 rounded-2xl bg-secondary border border-border/60 flex items-center justify-center mb-5">
+                <BookOpen className="w-7 h-7 text-muted-foreground/30" />
               </div>
-              <p className="text-base sm:text-lg font-medium text-foreground mb-2">No courses found</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Try different keywords or adjust your filters
+              <h3 className="text-base font-semibold text-foreground/70 mb-1.5">No courses found</h3>
+              <p className="text-sm text-muted-foreground/50 max-w-sm mb-6">
+                {query
+                  ? `We couldn't find any courses matching "${query}". Try different keywords or adjust your filters.`
+                  : "No courses match your current filters. Try adjusting or clearing them."}
               </p>
               {hasActiveFilters && (
                 <Button variant="secondary" size="sm" onClick={clearFilters}>
@@ -411,9 +429,10 @@ export default function SearchPageClient() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-3 h-9 rounded-lg text-sm font-medium text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed border border-border/50"
               >
                 <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Prev</span>
               </button>
 
               {Array.from({ length: pages }, (_, i) => i + 1)
@@ -433,10 +452,10 @@ export default function SearchPageClient() {
                       key={p}
                       onClick={() => setPage(p)}
                       className={cn(
-                        "w-8 h-8 sm:w-9 sm:h-9 rounded-md text-sm font-medium transition-all",
+                        "w-9 h-9 rounded-lg text-sm font-medium transition-all border",
                         page === p
-                          ? "bg-orange-500 text-white shadow-md shadow-orange-500/25"
-                          : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/25"
+                          : "border-border/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
                       )}
                     >
                       {p}
@@ -447,8 +466,9 @@ export default function SearchPageClient() {
               <button
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
                 disabled={page === pages}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-3 h-9 rounded-lg text-sm font-medium text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed border border-border/50"
               >
+                <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
