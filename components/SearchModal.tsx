@@ -343,15 +343,7 @@ export default function SearchModal({ open, onClose }: Props) {
                             ))}
                           </div>
                         </div>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                          <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/[0.06] flex items-center justify-center mb-3">
-                            <Search className="w-5 h-5 text-white/20" />
-                          </div>
-                          <p className="text-[13px] font-medium text-foreground/40">Start typing to search</p>
-                          <p className="text-[11px] text-muted-foreground/25 mt-1">Courses, topics, instructors…</p>
-                        </div>
-                      )}
+                      ) : null}
                     </>
                   )}
 
