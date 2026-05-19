@@ -12,6 +12,7 @@
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Select } from "@/components/ui/Select";
 import { PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 type Props = {
@@ -74,20 +75,15 @@ export default function Pagination({ page, pageSize, total, pageSizeOptions = PA
           <span className="text-foreground font-medium">{to.toLocaleString()}</span> of{" "}
           <span className="text-foreground font-medium">{total.toLocaleString()}</span>
         </span>
-        <label className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <span className="hidden sm:inline">Rows</span>
-          <select
-            value={pageSize}
-            onChange={(e) => push({ pageSize: e.target.value, page: "1" })}
-            className="bg-secondary border border-border rounded-md px-2 py-1 text-xs text-foreground focus:outline-none focus:border-[#d97757]/40 cursor-pointer"
-          >
-            {pageSizeOptions.map((opt) => (
-              <option key={opt} value={opt}>
-                {opt}
-              </option>
-            ))}
-          </select>
-        </label>
+          <Select
+            value={String(pageSize)}
+            onValueChange={(v) => push({ pageSize: v, page: "1" })}
+            options={pageSizeOptions.map((opt) => ({ value: String(opt), label: String(opt) }))}
+            className="px-2 py-1 text-xs rounded-md font-normal"
+          />
+        </div>
       </div>
 
       <div className="flex items-center gap-1">
