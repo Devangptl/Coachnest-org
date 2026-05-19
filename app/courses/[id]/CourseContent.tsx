@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import CourseTabs from "./CourseTabs";
 import CourseViewer from "./CourseViewer";
@@ -71,6 +71,21 @@ export default function CourseContent({
     return () => window.removeEventListener("course:open-curriculum", onOpenCurriculum);
   }, []);
 
+  // Float the tab bar in only while this section is on screen
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const [tabsVisible, setTabsVisible] = useState(false);
+
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => setTabsVisible(entry.isIntersecting),
+      { rootMargin: "-15% 0px -10% 0px", threshold: 0 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
   // Live completion state — shared between progress bar, viewer, and overview
   const [completedMap, setCompletedMap] = useState<Record<string, boolean>>(
     () => Object.fromEntries(lessons.map((l) => [l.id, l.completed]))
@@ -93,9 +108,10 @@ export default function CourseContent({
   const liveUngrouped = ungroupedLessons?.map((l) => ({ ...l, completed: completedMap[l.id] ?? l.completed }));
 
   return (
-    <div className="space-y-4 sm:space-y-6">
-      {/* Tabs */}
+    <div ref={sectionRef} className="space-y-4 sm:space-y-6">
+      {/* Floating bottom tab bar — appears only while this section is in view */}
       <CourseTabs
+        visible={tabsVisible}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         reviewCount={reviewCount}
