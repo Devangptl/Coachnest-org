@@ -237,45 +237,54 @@ export default function SearchPageClient() {
         </p>
       </div>
 
-      {/* ── Controls bar ─────────────────────────────────────────────────── */}
-      <div className="mb-3">
-        <SearchBar
-          initialValue={query}
-          onSearch={(q) => {
-            if (debounceRef.current) clearTimeout(debounceRef.current);
-            setQuery(q);
-            search({ reset: true, q });
-          }}
-          onChange={handleQueryChange}
-          navigateTo={false}
-          className="w-full"
-          placeholder="Search courses, topics, instructors…"
-        />
-      </div>
-      <div className="mb-5 flex items-center gap-2.5">
-        <Select
-          value={sort}
-          onValueChange={setSort}
-          options={SORT_OPT}
-          className="flex-shrink-0 w-auto min-w-[150px]"
-        />
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={() => setSideOpen((o) => !o)}
-          className={cn(
-            "flex-shrink-0",
-            sideOpen && "border-[#d97757]/40 bg-orange-500/10 text-[#d97757]"
-          )}
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span>Filters</span>
-          {activeFilterCount > 0 && (
-            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
+      {/* ── Controls bar ───────────────────────────────────────────────────
+           Desktop : [Search — grows] [Sort] [Filters]  — one aligned row
+           Mobile  : [Search — full width]
+                     [Sort — grows]   [Filters]
+      ──────────────────────────────────────────────────────────────────── */}
+      <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-2.5">
+        {/* Search — full width on mobile, grows on desktop */}
+        <div className="w-full sm:flex-1 sm:min-w-0">
+          <SearchBar
+            initialValue={query}
+            onSearch={(q) => {
+              if (debounceRef.current) clearTimeout(debounceRef.current);
+              setQuery(q);
+              search({ reset: true, q });
+            }}
+            onChange={handleQueryChange}
+            navigateTo={false}
+            className="w-full"
+            placeholder="Search courses, topics, instructors…"
+          />
+        </div>
+
+        {/* Sort + Filters — own row on mobile, inline on desktop */}
+        <div className="flex items-center gap-2.5 sm:flex-shrink-0">
+          <Select
+            value={sort}
+            onValueChange={setSort}
+            options={SORT_OPT}
+            className="flex-1 sm:flex-none sm:w-auto sm:min-w-[160px]"
+          />
+          <Button
+            variant="secondary"
+            size="md"
+            onClick={() => setSideOpen((o) => !o)}
+            className={cn(
+              "flex-shrink-0",
+              sideOpen && "border-[#d97757]/40 bg-orange-500/10 text-[#d97757]"
+            )}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span>Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
+        </div>
       </div>
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
