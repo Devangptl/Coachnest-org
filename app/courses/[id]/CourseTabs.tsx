@@ -35,7 +35,7 @@ export default function CourseTabs({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 28, opacity: 0, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.28)] rounded-2xl p-1.5 gap-1 pointer-events-auto"
+            className="flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.28)] rounded-full p-1.5 gap-1 pointer-events-auto"
           >
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
@@ -50,7 +50,7 @@ export default function CourseTabs({
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
                   className={cn(
-                    "relative flex items-center gap-2 rounded-xl px-4 sm:px-5 py-2.5 sm:py-3 font-medium transition-colors select-none",
+                    "relative flex items-center gap-2 rounded-full px-4 sm:px-5 py-2.5 sm:py-3 font-medium transition-colors select-none",
                     isActive
                       ? "text-primary"
                       : "text-muted-foreground hover:text-foreground"
@@ -59,7 +59,7 @@ export default function CourseTabs({
                   {isActive && (
                     <motion.div
                       layoutId="course-tab-indicator"
-                      className="absolute inset-0 rounded-xl bg-primary/15 border border-primary/70"
+                      className="absolute inset-0 rounded-full bg-primary/15 border border-primary/70"
                       transition={{ type: "spring", stiffness: 400, damping: 32 }}
                     />
                   )}
