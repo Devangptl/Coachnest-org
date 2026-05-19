@@ -3,16 +3,14 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import SearchBar from "@/components/SearchBar";
 import CourseCard from "@/components/CourseCard";
 import PlaylistCard, { type PlaylistCardData } from "@/components/playlists/PlaylistCard";
 import { CourseCardSkeleton } from "@/components/ui/Skeleton";
 import {
-  Filter, SlidersHorizontal, X, BookOpen,
+  Filter, SlidersHorizontal, X, BookOpen, Search, ChevronDown,
   AlertCircle, ChevronLeft, ChevronRight, ListVideo, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils";
 
 const LEVELS = ["beginner", "intermediate", "advanced"];
@@ -102,9 +100,11 @@ export default function SearchPageClient() {
   const [error,      setError]      = useState<string | null>(null);
   const [sideOpen,   setSideOpen]   = useState(false);
   const [isMobile,   setIsMobile]   = useState(false);
+  const [sortOpen,   setSortOpen]   = useState(false);
 
   const abortRef    = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sortRef     = useRef<HTMLDivElement>(null);
 
   // Track viewport for mobile/desktop filter treatment
   useEffect(() => {
@@ -127,6 +127,15 @@ export default function SearchPageClient() {
     }
     return () => { document.body.style.overflow = ""; };
   }, [isMobile, sideOpen]);
+
+  // Close sort dropdown on outside click
+  useEffect(() => {
+    function onOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
+    }
+    if (sortOpen) document.addEventListener("mousedown", onOutside);
+    return () => document.removeEventListener("mousedown", onOutside);
+  }, [sortOpen]);
 
   const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: number } = {}) => {
     const { reset = false, q = query, pg = reset ? 1 : page } = opts;
@@ -219,7 +228,7 @@ export default function SearchPageClient() {
   };
 
   return (
-    <div className="pt-4 pb-16">
+    <div className="pt-4 pb-32">
       {/* ── Page header ──────────────────────────────────────────────────── */}
       <div className="mb-6">
         <h1 className="text-xl font-bold text-foreground tracking-tight">
@@ -237,55 +246,6 @@ export default function SearchPageClient() {
         </p>
       </div>
 
-      {/* ── Controls bar ───────────────────────────────────────────────────
-           Desktop : [Search — grows] [Sort] [Filters]  — one aligned row
-           Mobile  : [Search — full width]
-                     [Sort — grows]   [Filters]
-      ──────────────────────────────────────────────────────────────────── */}
-      <div className="mb-5 flex flex-col sm:flex-row sm:items-center gap-2.5">
-        {/* Search — full width on mobile, grows on desktop */}
-        <div className="w-full sm:flex-1 sm:min-w-0">
-          <SearchBar
-            initialValue={query}
-            onSearch={(q) => {
-              if (debounceRef.current) clearTimeout(debounceRef.current);
-              setQuery(q);
-              search({ reset: true, q });
-            }}
-            onChange={handleQueryChange}
-            navigateTo={false}
-            className="w-full"
-            placeholder="Search courses, topics, instructors…"
-          />
-        </div>
-
-        {/* Sort + Filters — own row on mobile, inline on desktop */}
-        <div className="flex items-center gap-2.5 sm:flex-shrink-0">
-          <Select
-            value={sort}
-            onValueChange={setSort}
-            options={SORT_OPT}
-            className="flex-1 sm:flex-none sm:w-auto sm:min-w-[160px]"
-          />
-          <Button
-            variant="secondary"
-            size="md"
-            onClick={() => setSideOpen((o) => !o)}
-            className={cn(
-              "flex-shrink-0",
-              sideOpen && "border-[#d97757]/40 bg-orange-500/10 text-[#d97757]"
-            )}
-          >
-            <SlidersHorizontal className="w-4 h-4" />
-            <span>Filters</span>
-            {activeFilterCount > 0 && (
-              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
-                {activeFilterCount}
-              </span>
-            )}
-          </Button>
-        </div>
-      </div>
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
       <AnimatePresence>
@@ -499,6 +459,118 @@ export default function SearchPageClient() {
         </div>
       </div>
 
+      {/* ── Floating search + filter bar ──────────────────────────────────── */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none w-[calc(100%-2rem)] max-w-3xl">
+        <motion.div
+          initial={{ y: 28, opacity: 0, scale: 0.96 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          className="w-full flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.28)] rounded-full p-1.5 pointer-events-auto"
+        >
+          {/* Search input */}
+          <div className="flex items-center gap-2 flex-1 px-4 min-w-0">
+            {loading
+              ? <div className="w-4 h-4 border-2 border-[#d97757]/40 border-t-[#d97757] rounded-full animate-spin flex-shrink-0" />
+              : <Search className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
+            }
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => handleQueryChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  search({ reset: true });
+                }
+              }}
+              placeholder="Search courses, topics, instructors…"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/35 focus:outline-none min-w-0 py-2"
+            />
+            {query && (
+              <button
+                onClick={() => {
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  setQuery("");
+                  search({ reset: true, q: "" });
+                }}
+                className="text-muted-foreground/40 hover:text-foreground transition-colors flex-shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-border/50 mx-0.5 flex-shrink-0" />
+
+          {/* Sort dropdown */}
+          <div className="relative flex-shrink-0" ref={sortRef}>
+            <button
+              onClick={() => setSortOpen((v) => !v)}
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap select-none"
+            >
+              <span className="hidden sm:inline">
+                {SORT_OPT.find((o) => o.value === sort)?.label ?? "Popular"}
+              </span>
+              <span className="sm:hidden">Sort</span>
+              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", sortOpen && "rotate-180")} />
+            </button>
+            <AnimatePresence>
+              {sortOpen && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden py-1.5 z-50"
+                >
+                  {SORT_OPT.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => { setSort(opt.value); setSortOpen(false); }}
+                      className={cn(
+                        "w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
+                        sort === opt.value
+                          ? "text-[#d97757] bg-orange-500/10 font-medium"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                      )}
+                    >
+                      <div className={cn(
+                        "w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
+                        sort === opt.value ? "bg-[#d97757]" : "bg-transparent"
+                      )} />
+                      {opt.label}
+                    </button>
+                  ))}
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-border/50 mx-0.5 flex-shrink-0" />
+
+          {/* Filters button */}
+          <button
+            onClick={() => setSideOpen((v) => !v)}
+            className={cn(
+              "flex items-center gap-1.5 pl-3 pr-4 py-2.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 select-none",
+              sideOpen
+                ? "bg-orange-500/15 text-[#d97757]"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="hidden sm:inline">Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </motion.div>
+      </div>
+
       {/* ── Mobile filter bottom sheet ───────────────────────────────────── */}
       <AnimatePresence>
         {sideOpen && isMobile && (
@@ -509,7 +581,7 @@ export default function SearchPageClient() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
               onClick={() => setSideOpen(false)}
             />
 
@@ -519,7 +591,7 @@ export default function SearchPageClient() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl max-h-[85dvh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-[55] bg-card border-t border-border rounded-t-2xl shadow-2xl max-h-[85dvh] flex flex-col"
             >
               {/* Drag handle + header */}
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border flex-shrink-0">
