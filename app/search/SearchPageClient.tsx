@@ -7,7 +7,7 @@ import CourseCard from "@/components/CourseCard";
 import PlaylistCard, { type PlaylistCardData } from "@/components/playlists/PlaylistCard";
 import { CourseCardSkeleton } from "@/components/ui/Skeleton";
 import {
-  Filter, SlidersHorizontal, X, BookOpen, Search, ChevronDown,
+  Filter, SlidersHorizontal, X, BookOpen, Search, ArrowUpDown,
   AlertCircle, ChevronLeft, ChevronRight, ListVideo, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
@@ -32,52 +32,67 @@ interface Course {
 // ─── Filter panel content (shared by sidebar + drawer) ─────────────────────
 function FilterContent({
   level, setLevel,
+  sort, setSort,
   hasActiveFilters,
   clearFilters,
   isMobile = false,
 }: {
   level: string; setLevel: (v: string) => void;
+  sort: string;  setSort:  (v: string) => void;
   hasActiveFilters: boolean;
   clearFilters: () => void;
   isMobile?: boolean;
 }) {
+  const optionCls = (active: boolean) => cn(
+    "w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border",
+    isMobile && "text-center",
+    active
+      ? "bg-orange-500/15 text-[#d97757] border-[#d97757]/25 font-medium"
+      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/70"
+  );
+
   return (
     <div className={cn("space-y-6", isMobile && "pb-4")}>
-      {/* Level filter */}
+      {/* Sort by */}
       <div>
-        <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <h4 className="text-muted-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+          <ArrowUpDown className="w-3 h-3" /> Sort by
+        </h4>
+        <div className={cn("gap-1.5", isMobile ? "grid grid-cols-2" : "space-y-1")}>
+          {SORT_OPT.map((opt) => (
+            <button key={opt.value} onClick={() => setSort(opt.value)} className={optionCls(sort === opt.value)}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-border/50" />
+
+      {/* Level */}
+      <div>
+        <h4 className="text-muted-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
           <Filter className="w-3 h-3" /> Level
         </h4>
-        <div className={cn("gap-2", isMobile ? "grid grid-cols-2" : "space-y-1")}>
+        <div className={cn("gap-1.5", isMobile ? "grid grid-cols-2" : "space-y-1")}>
           {["", ...LEVELS].map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all",
-                isMobile && "text-center",
-                level === l
-                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
+            <button key={l} onClick={() => setLevel(l)} className={optionCls(level === l)}>
               {l || "All levels"}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Clear */}
+      {/* Clear all */}
       {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full text-muted-foreground hover:text-foreground"
+        <button
           onClick={clearFilters}
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground/60 hover:text-foreground hover:bg-secondary/60 transition-all border border-dashed border-border/60 hover:border-border"
         >
-          <X className="w-3.5 h-3.5 mr-1" />
+          <X className="w-3.5 h-3.5" />
           Clear all filters
-        </Button>
+        </button>
       )}
     </div>
   );
@@ -100,11 +115,9 @@ export default function SearchPageClient() {
   const [error,      setError]      = useState<string | null>(null);
   const [sideOpen,   setSideOpen]   = useState(false);
   const [isMobile,   setIsMobile]   = useState(false);
-  const [sortOpen,   setSortOpen]   = useState(false);
 
   const abortRef    = useRef<AbortController | null>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const sortRef     = useRef<HTMLDivElement>(null);
 
   // Track viewport for mobile/desktop filter treatment
   useEffect(() => {
@@ -128,16 +141,7 @@ export default function SearchPageClient() {
     return () => { document.body.style.overflow = ""; };
   }, [isMobile, sideOpen]);
 
-  // Close sort dropdown on outside click
-  useEffect(() => {
-    function onOutside(e: MouseEvent) {
-      if (sortRef.current && !sortRef.current.contains(e.target as Node)) setSortOpen(false);
-    }
-    if (sortOpen) document.addEventListener("mousedown", onOutside);
-    return () => document.removeEventListener("mousedown", onOutside);
-  }, [sortOpen]);
-
-  const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: number } = {}) => {
+const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: number } = {}) => {
     const { reset = false, q = query, pg = reset ? 1 : page } = opts;
 
     abortRef.current?.abort();
@@ -224,7 +228,7 @@ export default function SearchPageClient() {
   }
 
   const filterProps = {
-    level, setLevel, hasActiveFilters, clearFilters,
+    level, setLevel, sort, setSort, hasActiveFilters, clearFilters,
   };
 
   return (
@@ -249,21 +253,35 @@ export default function SearchPageClient() {
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
       <AnimatePresence>
-        {level && (
+        {(level || sort !== "popular") && (
           <motion.div
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center gap-2 flex-wrap mb-4 overflow-hidden"
           >
-            <span className="text-[11px] text-muted-foreground/40 font-medium">Filtering by:</span>
-            <motion.button
-              initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-              onClick={() => setLevel("")}
-              className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
-            >
-              <span className="capitalize">{level}</span>
-              <X className="w-3 h-3" />
-            </motion.button>
+            <span className="text-[11px] text-muted-foreground/40 font-medium">Active:</span>
+            {sort !== "popular" && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+                onClick={() => setSort("popular")}
+                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
+              >
+                <ArrowUpDown className="w-2.5 h-2.5" />
+                {SORT_OPT.find((o) => o.value === sort)?.label}
+                <X className="w-3 h-3" />
+              </motion.button>
+            )}
+            {level && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+                onClick={() => setLevel("")}
+                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
+              >
+                <Filter className="w-2.5 h-2.5" />
+                <span className="capitalize">{level}</span>
+                <X className="w-3 h-3" />
+              </motion.button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -498,53 +516,6 @@ export default function SearchPageClient() {
                 <X className="w-3.5 h-3.5" />
               </button>
             )}
-          </div>
-
-          {/* Divider */}
-          <div className="w-px h-5 bg-border/50 mx-0.5 flex-shrink-0" />
-
-          {/* Sort dropdown */}
-          <div className="relative flex-shrink-0" ref={sortRef}>
-            <button
-              onClick={() => setSortOpen((v) => !v)}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground transition-colors whitespace-nowrap select-none"
-            >
-              <span className="hidden sm:inline">
-                {SORT_OPT.find((o) => o.value === sort)?.label ?? "Popular"}
-              </span>
-              <span className="sm:hidden">Sort</span>
-              <ChevronDown className={cn("w-3.5 h-3.5 transition-transform duration-200", sortOpen && "rotate-180")} />
-            </button>
-            <AnimatePresence>
-              {sortOpen && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 8, scale: 0.96 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 rounded-2xl border border-border/80 bg-card/95 backdrop-blur-xl shadow-xl shadow-black/30 overflow-hidden py-1.5 z-50"
-                >
-                  {SORT_OPT.map((opt) => (
-                    <button
-                      key={opt.value}
-                      onClick={() => { setSort(opt.value); setSortOpen(false); }}
-                      className={cn(
-                        "w-full text-left flex items-center gap-2.5 px-4 py-2.5 text-sm transition-colors",
-                        sort === opt.value
-                          ? "text-[#d97757] bg-orange-500/10 font-medium"
-                          : "text-muted-foreground hover:text-foreground hover:bg-secondary/60"
-                      )}
-                    >
-                      <div className={cn(
-                        "w-1.5 h-1.5 rounded-full flex-shrink-0 transition-colors",
-                        sort === opt.value ? "bg-[#d97757]" : "bg-transparent"
-                      )} />
-                      {opt.label}
-                    </button>
-                  ))}
-                </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
           {/* Divider */}
