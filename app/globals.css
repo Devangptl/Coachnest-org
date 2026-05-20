@@ -776,6 +776,27 @@ html.light .text-orange-500 { color: #b84800; }
 html.light .hover\:#d97757:hover { color: #c2550e; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
+   MARKDOWN TEXT EDITOR — textarea-based markdown editing mode
+   ══════════════════════════════════════════════════════════════════════════════ */
+
+.md-editor-textarea {
+  display: block;
+  width: 100%;
+  resize: vertical;
+  tab-size: 2;
+  -moz-tab-size: 2;
+}
+
+/* Scrollbar inside the preview pane */
+.md-preview-pane { scrollbar-width: thin; scrollbar-color: hsl(var(--border)) transparent; }
+.md-preview-pane::-webkit-scrollbar { width: 6px; }
+.md-preview-pane::-webkit-scrollbar-track { background: transparent; }
+.md-preview-pane::-webkit-scrollbar-thumb { background: hsl(var(--border)); border-radius: 9999px; }
+
+/* Light mode overrides */
+html.light .md-editor-textarea { color: hsl(var(--foreground)); }
+
+/* ═══════════════════════════════════════════════════════════════════════════════
    QUILL RICH TEXT EDITOR — dark theme overrides
    ══════════════════════════════════════════════════════════════════════════════ */
 
