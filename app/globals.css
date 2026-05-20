@@ -925,63 +925,223 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
    QUILL CONTENT — rendered output (from MarkdownRenderer HTML branch)
    ══════════════════════════════════════════════════════════════════════════ */
 .quill-content {
-  font-size: 0.9rem;
-  line-height: 1.8;
+  font-size: 0.9375rem;
+  line-height: 1.85;
   color: hsl(var(--foreground));
   white-space: normal;
   overflow-wrap: break-word;
   word-break: break-word;
+  letter-spacing: 0.01em;
+  font-family: var(--font-poppins, system-ui, sans-serif);
 }
 .quill-content-compact { font-size: 0.85rem; line-height: 1.6; }
 
-.quill-content h1 { font-size: 1.45rem; font-weight: 700; margin: 1.5rem 0 0.6rem;  color: hsl(var(--foreground)); }
-.quill-content h2 { font-size: 1.2rem;  font-weight: 600; margin: 1.2rem 0 0.5rem;  color: hsl(var(--foreground)); }
-.quill-content h3 { font-size: 1.05rem; font-weight: 600; margin: 1rem 0 0.4rem;    color: hsl(var(--foreground)); }
+/* ── Headings ────────────────────────────────────────────────────────────── */
+.quill-content h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 2rem 0 0.75rem;
+  color: hsl(var(--foreground));
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid hsl(var(--border) / 0.5);
+  letter-spacing: -0.03em;
+  line-height: 1.2;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.quill-content h1::before {
+  content: "#";
+  color: #d97757;
+  font-weight: 900;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+.quill-content h2 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin: 1.75rem 0 0.6rem;
+  color: hsl(var(--foreground));
+  padding-left: 0.75rem;
+  border-left: 3px solid rgba(217, 119, 87, 0.6);
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+.quill-content h3 {
+  font-size: 1.0625rem;
+  font-weight: 600;
+  margin: 1.25rem 0 0.5rem;
+  color: hsl(var(--foreground));
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: -0.01em;
+}
+.quill-content h3::before {
+  content: "";
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(217, 119, 87, 0.6);
+  flex-shrink: 0;
+}
+/* Remove top margin on the very first heading in the content */
+.quill-content > h1:first-child,
+.quill-content > h2:first-child,
+.quill-content > h3:first-child { margin-top: 0; }
 
-.quill-content p  { margin-bottom: 0.75rem; }
-
-.quill-content a  { color: hsl(var(--primary)); text-decoration: underline; text-underline-offset: 2px; }
-
-.quill-content strong { font-weight: 600; color: hsl(var(--foreground)); }
-.quill-content em     { font-style: italic; color: hsl(var(--muted-foreground) / 0.9); }
-.quill-content s      { text-decoration: line-through; opacity: 0.6; }
-
-.quill-content blockquote {
-  border-left: 3px solid hsl(var(--primary) / 0.5);
-  background: hsl(var(--primary) / 0.04);
+/* ── Paragraph ───────────────────────────────────────────────────────────── */
+.quill-content p {
+  margin-bottom: 1rem;
   color: hsl(var(--muted-foreground));
-  padding: 8px 14px;
-  margin: 12px 0;
-  border-radius: 0 var(--radius) var(--radius) 0;
+  line-height: 1.85;
 }
 
-.quill-content pre {
-  background: hsl(0 0% 7%);
-  color: #86efac;
-  border: 1px solid hsl(var(--border));
-  border-radius: var(--radius);
-  padding: 12px 16px;
-  font-size: 0.8rem;
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-  overflow-x: auto;
-  margin: 12px 0;
+/* ── Links ───────────────────────────────────────────────────────────────── */
+.quill-content a {
+  color: #d97757;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-color: rgba(217, 119, 87, 0.4);
+  transition: color 0.15s, text-decoration-color 0.15s;
+}
+.quill-content a:hover {
+  color: #fb923c;
+  text-decoration-color: rgba(251, 146, 60, 0.6);
 }
 
+/* ── Inline marks ────────────────────────────────────────────────────────── */
+.quill-content strong { font-weight: 600; color: hsl(var(--foreground)); }
+.quill-content em     { font-style: italic; color: hsl(var(--muted-foreground)); }
+.quill-content s      { text-decoration: line-through; opacity: 0.5; }
+
+/* ── Blockquote ──────────────────────────────────────────────────────────── */
+.quill-content blockquote {
+  border-left: 3px solid rgba(217, 119, 87, 0.4);
+  background: rgba(217, 119, 87, 0.04);
+  color: hsl(var(--muted-foreground));
+  padding: 0.75rem 1rem 0.75rem 1.25rem;
+  margin: 1.25rem 0;
+  border-radius: 0 0.5rem 0.5rem 0;
+  font-style: italic;
+  position: relative;
+}
+.quill-content blockquote::before {
+  content: '\201C';
+  position: absolute;
+  top: -4px;
+  left: -2px;
+  font-size: 2.5rem;
+  color: rgba(217, 119, 87, 0.2);
+  font-family: Georgia, serif;
+  line-height: 1;
+  user-select: none;
+}
+
+/* ── Inline code ─────────────────────────────────────────────────────────── */
 .quill-content code {
-  background: hsl(var(--secondary));
-  border-radius: 4px;
-  padding: 1px 5px;
-  font-size: 0.82em;
+  background: rgba(217, 119, 87, 0.1);
+  color: #d97757;
+  border: 1px solid rgba(217, 119, 87, 0.2);
+  border-radius: 0.375rem;
+  padding: 1px 6px;
+  font-size: 0.84em;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
-.quill-content ul, .quill-content ol {
-  padding-left: 1.5rem;
-  margin: 0.5rem 0 0.75rem;
+/* ── Code blocks ─────────────────────────────────────────────────────────── */
+.quill-content pre {
+  background: #1e1e1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.75rem;
+  overflow: hidden;
+  margin: 1.25rem 0;
 }
-.quill-content li { margin-bottom: 0.3rem; }
+.quill-content pre::before {
+  content: "code";
+  display: flex;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.quill-content pre code {
+  background: transparent;
+  color: #d4d4d4;
+  border: none;
+  padding: 0.875rem 1rem;
+  display: block;
+  border-radius: 0;
+  font-size: 0.8125rem;
+  line-height: 1.7;
+  overflow-x: auto;
+  white-space: pre;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
 
-.quill-content img { max-width: 100%; border-radius: var(--radius); margin: 8px 0; }
+/* ── Lists ───────────────────────────────────────────────────────────────── */
+.quill-content ul, .quill-content ol {
+  padding-left: 0;
+  margin: 1rem 0 1.25rem;
+  list-style: none;
+}
+.quill-content li {
+  position: relative;
+  padding-left: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--muted-foreground));
+  line-height: 1.75;
+}
+.quill-content ul > li::before {
+  content: "";
+  position: absolute;
+  left: 0.25rem;
+  top: 0.625em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(217, 119, 87, 0.5);
+}
+.quill-content ol { counter-reset: quill-ol; }
+.quill-content ol > li {
+  counter-increment: quill-ol;
+  padding-left: 2.25rem;
+}
+.quill-content ol > li::before {
+  content: counter(quill-ol);
+  position: absolute;
+  left: 0;
+  top: 0.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 0.3125rem;
+  background: rgba(217, 119, 87, 0.15);
+  color: #d97757;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border: 1px solid rgba(217, 119, 87, 0.2);
+}
+
+/* ── Images ──────────────────────────────────────────────────────────────── */
+.quill-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  margin: 1.5rem auto;
+  display: block;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
 
 /* ── Alignment (editor + rendered output) ────────────────────────────────── */
 .ql-editor .ql-align-center, .quill-content .ql-align-center { text-align: center; }
@@ -994,7 +1154,14 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 
 /* ── Headers level 4 ─────────────────────────────────────────────────────── */
 .ql-editor h4    { font-size: 1rem;  font-weight: 600; margin: 0.75rem 0 0.3rem; color: hsl(var(--foreground)); }
-.quill-content h4 { font-size: 1rem; font-weight: 600; margin: 0.9rem 0 0.35rem; color: hsl(var(--foreground)); }
+.quill-content h4 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  margin: 1rem 0 0.4rem;
+  color: hsl(var(--foreground) / 0.7);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
 /* ── Quill size whitelist (small / large / huge) ─────────────────────────── */
 .ql-editor .ql-size-small, .quill-content .ql-size-small { font-size: 0.75em; }
@@ -1015,8 +1182,8 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 /* ── RTL direction ───────────────────────────────────────────────────────── */
 .ql-editor [dir="rtl"], .quill-content [dir="rtl"] { text-align: right; }
 
-/* ── Tables (editor + rendered output) ───────────────────────────────────── */
-.ql-editor table, .quill-content table {
+/* ── Tables — editor ─────────────────────────────────────────────────────── */
+.ql-editor table {
   width: 100%;
   border-collapse: collapse;
   margin: 12px 0;
@@ -1026,31 +1193,74 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   border-radius: var(--radius);
   overflow: hidden;
 }
-.ql-editor table th, .quill-content table th,
-.ql-editor table td, .quill-content table td {
+.ql-editor table th,
+.ql-editor table td {
   border: 1px solid hsl(var(--border));
   padding: 8px 12px;
   vertical-align: top;
   min-width: 60px;
 }
-.ql-editor table th, .quill-content table th {
+.ql-editor table th {
   background: hsl(var(--secondary));
   color: hsl(var(--foreground));
   font-weight: 600;
   text-align: left;
 }
-.ql-editor table tr:nth-child(even) td,
-.quill-content table tr:nth-child(even) td {
-  background: hsl(var(--secondary) / 0.35);
-}
+.ql-editor table tr:nth-child(even) td { background: hsl(var(--secondary) / 0.35); }
 /* Quill 2 tables have no <th>; render the first row as the header. */
-.ql-editor table tr:first-child td,
-.quill-content table tr:first-child td {
+.ql-editor table tr:first-child td {
   background: hsl(var(--secondary));
   color: hsl(var(--foreground));
   font-weight: 600;
   text-align: left;
 }
+
+/* ── Tables — rendered content ───────────────────────────────────────────── */
+/* border-collapse:separate + border-spacing:0 lets border-radius work on the
+   table element itself without needing a wrapper div. */
+.quill-content table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin: 1.25rem 0;
+  font-size: 0.875em;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.75rem;
+  overflow: hidden;
+}
+.quill-content table th,
+.quill-content table td {
+  border-right: 1px solid hsl(var(--border) / 0.7);
+  border-bottom: 1px solid hsl(var(--border) / 0.7);
+  padding: 0.625rem 1rem;
+  vertical-align: top;
+  min-width: 60px;
+}
+.quill-content table th:last-child,
+.quill-content table td:last-child { border-right: none; }
+.quill-content table tr:last-child td,
+.quill-content table tr:last-child th { border-bottom: none; }
+.quill-content table th {
+  background: hsl(var(--secondary) / 0.7);
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-align: left;
+}
+/* Quill 2 uses only <td>; style the first row as a header */
+.quill-content table tr:first-child td {
+  background: hsl(var(--secondary) / 0.7);
+  color: hsl(var(--foreground));
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.quill-content table tr:nth-child(even) td { background: hsl(var(--secondary) / 0.25); }
+.quill-content table tr:hover td { background: hsl(var(--secondary) / 0.4); transition: background 0.15s; }
 
 /* ── Table picker popover ────────────────────────────────────────────────── */
 .ql-table-picker {
