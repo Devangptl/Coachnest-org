@@ -1216,21 +1216,19 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 }
 
 /* ── Tables — rendered content ───────────────────────────────────────────── */
-/* display:block + overflow-x:auto gives horizontal scroll on small screens
-   without a wrapper div (needed since content is dangerouslySetInnerHTML).
-   border-collapse:separate + border-spacing:0 preserves border-radius. */
+/* display:block + overflow-x:auto gives horizontal scroll on small screens.
+   border-style:hidden on the table hides the outer border while cell borders
+   form the internal grid (highest priority in the collapsing border algorithm). */
 .quill-content table {
   display: block;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   max-width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
+  border-collapse: collapse;
+  border-style: hidden;
   margin: 1.25rem 0;
   font-size: 0.875em;
   background: transparent;
-  border: none;
-  border-radius: 0;
 }
 /* Thin scrollbar so the scroll handle doesn't distract */
 .quill-content table::-webkit-scrollbar { height: 4px; }
@@ -1241,19 +1239,12 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 }
 .quill-content table th,
 .quill-content table td {
-  border-right: 1px solid hsl(var(--border) / 0.25);
-  border-bottom: 1px solid hsl(var(--border) / 0.25);
+  border: 1px solid hsl(var(--border) / 0.25);
   padding: 0.625rem 1rem;
   vertical-align: top;
-  min-width: 80px;
-  white-space: nowrap;
 }
-.quill-content table th { white-space: nowrap; }
+.quill-content table th { white-space: nowrap; min-width: 80px; }
 .quill-content table td { white-space: normal; min-width: 120px; }
-.quill-content table th:last-child,
-.quill-content table td:last-child { border-right: none; }
-.quill-content table tr:last-child td,
-.quill-content table tr:last-child th { border-bottom: none; }
 .quill-content table th {
   background: hsl(var(--secondary) / 0.25);
   color: hsl(var(--foreground) / 0.7);

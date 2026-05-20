@@ -514,7 +514,7 @@ function TableWrapper({ children }: { children: ReactNode }) {
   return (
     <div className="my-6 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse">{children}</table>
+        <table className="w-full text-sm border-collapse" style={{ borderStyle: "hidden" }}>{children}</table>
       </div>
     </div>
   );
@@ -805,15 +805,15 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
 
     // ── Tables ─────────────────────────────────────────────────────────────────
     table:  ({ children })          => <TableWrapper>{children}</TableWrapper>,
-    thead:  ({ children })          => <thead className="bg-secondary/[0.15] border-b border-border/[0.15]">{children}</thead>,
+    thead:  ({ children })          => <thead className="bg-secondary/[0.15]">{children}</thead>,
     tbody:  ({ children })          => <tbody>{children}</tbody>,
-    tr:     ({ children })          => <tr className="border-b border-border/20 last:border-b-0 hover:bg-[#d97757]/[0.03] transition-colors duration-100">
+    tr:     ({ children })          => <tr className="hover:bg-[#d97757]/[0.03] transition-colors duration-100">
         {children}
       </tr>,
     th:     ({ children, style })   => (
       <th
         style={{ textAlign: (style as React.CSSProperties)?.textAlign }}
-        className="px-4 py-3 text-left text-[11px] font-bold text-foreground/60 uppercase tracking-widest whitespace-nowrap border-r border-border/25 last:border-r-0"
+        className="px-4 py-3 text-left text-[11px] font-bold text-foreground/60 uppercase tracking-widest whitespace-nowrap border border-border/25"
       >
         {children}
       </th>
@@ -827,7 +827,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
         <td
           style={{ textAlign: (style as React.CSSProperties)?.textAlign }}
           className={cn(
-            "px-4 py-3 text-[13px] align-top border-r border-border/[0.12] last:border-r-0 whitespace-normal",
+            "px-4 py-3 text-[13px] align-top border border-border/[0.12] whitespace-normal",
             isPos ? "text-emerald-400 font-medium" : isNeg ? "text-red-400 font-medium" : "text-muted-foreground/90",
           )}
         >
