@@ -100,7 +100,7 @@ function PriceChip({ isFree, price, discountPrice }: { isFree: boolean; price: n
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-2.5 px-3 py-2 animate-pulse">
+    <div className="flex items-center gap-2.5 px-3 py-2.5 sm:py-2 animate-pulse">
       <div className="w-9 h-7 rounded-md bg-white/[0.06] flex-shrink-0" />
       <div className="flex-1 space-y-1.5">
         <div className="h-2.5 bg-white/[0.06] rounded-full w-3/5" />
@@ -118,14 +118,24 @@ export default function SearchModal({ open, onClose }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef  = useRef<HTMLDivElement>(null);
 
-  const [query,   setQuery]   = useState("");
-  const [level,   setLevel]   = useState("");
-  const [sort,    setSort]    = useState("popular");
-  const [courses, setCourses] = useState<Course[]>([]);
-  const [total,   setTotal]   = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [focused, setFocused] = useState(-1);
-  const [recent,  setRecent]  = useState<string[]>([]);
+  const [query,    setQuery]    = useState("");
+  const [level,    setLevel]    = useState("");
+  const [sort,     setSort]     = useState("popular");
+  const [courses,  setCourses]  = useState<Course[]>([]);
+  const [total,    setTotal]    = useState(0);
+  const [loading,  setLoading]  = useState(false);
+  const [focused,  setFocused]  = useState(-1);
+  const [recent,   setRecent]   = useState<string[]>([]);
+  const [isMobile, setIsMobile] = useState(false);
+
+  // ── Mobile detection ───────────────────────────────────────────────────────
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   // ── Reset on open ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -222,31 +232,36 @@ export default function SearchModal({ open, onClose }: Props) {
           <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             transition={{ duration: 0.18 }}
-            className="fixed inset-0 z-[200] bg-black/20 backdrop-blur-sm"
+            className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm"
             onClick={onClose}
           />
 
           {/* ── Wrapper ───────────────────────────────────────────────────── */}
-          <div className="fixed inset-0 z-[201] flex items-start justify-center px-3 sm:px-4 pt-[2vh] sm:pt-[5vh] pointer-events-none">
+          <div className="fixed inset-0 z-[201] flex items-end sm:items-start justify-center sm:px-4 sm:pt-[5vh] pointer-events-none">
             <motion.div
-              initial={{ opacity: 0, y: -16, scale: 0.97 }}
-              animate={{ opacity: 1, y: 0,   scale: 1    }}
-              exit={{    opacity: 0, y: -10,  scale: 0.98 }}
-              transition={{ duration: 0.22, ease: [0.16, 1, 0.3, 1] }}
-              className="w-full max-w-[780px] pointer-events-auto max-h-[96dvh] flex flex-col"
+              initial={isMobile ? { opacity: 0, y: 48 } : { opacity: 0, y: -16, scale: 0.97 }}
+              animate={isMobile ? { opacity: 1, y: 0  } : { opacity: 1, y: 0,   scale: 1    }}
+              exit={   isMobile ? { opacity: 0, y: 48 } : { opacity: 0, y: -10,  scale: 0.98 }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full sm:max-w-[780px] pointer-events-auto sm:max-h-[96dvh] flex flex-col"
               onClick={(e) => e.stopPropagation()}
             >
               <div
-                className="relative rounded-md overflow-hidden border border-border shadow-[0 5px 12px rgba(0,0,0,1)] flex flex-col"
+                className="relative rounded-t-2xl sm:rounded-md overflow-hidden border border-border shadow-[0_8px_32px_rgba(0,0,0,0.6)] flex flex-col h-[87dvh] sm:h-auto"
                 style={{ background: "hsl(var(--card))" }}
               >
+                {/* Drag handle — mobile only */}
+                <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
+                  <div className="w-10 h-1 bg-white/[0.18] rounded-full" />
+                </div>
+
                 {/* Orange top glow line */}
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-orange-500/70 to-transparent" />
                 {/* Subtle inner glow */}
                 <div className="absolute inset-x-0 top-0 h-20 bg-gradient-to-b from-orange-500/[0.04] to-transparent pointer-events-none" />
 
                 {/* ── Search input ─────────────────────────────────────── */}
-                <div className="relative flex items-center gap-3 px-4 py-3.5">
+                <div className="relative flex items-center gap-3 px-4 py-3.5 flex-shrink-0">
                   <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-orange-500/10 border border-orange-500/20 flex items-center justify-center">
                     {loading
                       ? <Loader2 className="w-3.5 h-3.5 text-[#d97757] animate-spin" />
@@ -256,14 +271,14 @@ export default function SearchModal({ open, onClose }: Props) {
                     ref={inputRef}
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Search courses, topics, instructors…"
+                    placeholder="Search courses, topics…"
                     className="flex-1 bg-transparent text-[15px] font-medium text-foreground placeholder:text-muted-foreground/35 focus:outline-none"
                   />
                   <div className="flex items-center gap-2 flex-shrink-0">
                     {query
                       ? <button onClick={() => setQuery("")}
-                          className="w-6 h-6 rounded-md bg-white/[0.06] hover:bg-white/[0.1] flex items-center justify-center text-muted-foreground/50 hover:text-foreground transition-all">
-                          <X className="w-3 h-3" />
+                          className="w-7 h-7 sm:w-6 sm:h-6 rounded-md bg-white/[0.06] hover:bg-white/[0.1] flex items-center justify-center text-muted-foreground/50 hover:text-foreground transition-all">
+                          <X className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                         </button>
                       : <kbd className="hidden sm:flex text-[10px] font-medium text-muted-foreground/25 bg-white/[0.04] border border-white/[0.07] rounded px-1.5 py-0.5">
                           esc
@@ -272,12 +287,12 @@ export default function SearchModal({ open, onClose }: Props) {
                 </div>
 
                 {/* ── Filter strip ─────────────────────────────────────── */}
-                <div className="flex items-center gap-1.5 px-4 pb-2.5 overflow-x-auto scrollbar-hide">
+                <div className="flex items-center gap-1.5 px-4 pb-3 sm:pb-2.5 overflow-x-auto scrollbar-hide flex-shrink-0">
                   {/* Level chips */}
                   {LEVELS.map((l) => (
                     <button key={l.value} onClick={() => setLevel(l.value)}
                       className={cn(
-                        "px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border flex-shrink-0",
+                        "px-3 sm:px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border flex-shrink-0",
                         level === l.value
                           ? "bg-orange-500/15 text-[#d97757] border-[#d97757]/30"
                           : "bg-white/[0.03] text-muted-foreground/50 border-white/[0.06] hover:bg-white/[0.06] hover:text-muted-foreground"
@@ -292,7 +307,7 @@ export default function SearchModal({ open, onClose }: Props) {
                   {SORT_OPTIONS.map((o) => (
                     <button key={o.value} onClick={() => setSort(o.value)}
                       className={cn(
-                        "flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border flex-shrink-0",
+                        "flex items-center gap-1 px-3 sm:px-2.5 py-1.5 sm:py-1 rounded-lg text-[11px] font-semibold whitespace-nowrap transition-all border flex-shrink-0",
                         sort === o.value
                           ? "bg-orange-500/15 text-[#d97757] border-[#d97757]/30"
                           : "bg-white/[0.03] text-muted-foreground/50 border-white/[0.06] hover:bg-white/[0.06] hover:text-muted-foreground"
@@ -304,10 +319,10 @@ export default function SearchModal({ open, onClose }: Props) {
                 </div>
 
                 {/* Hairline */}
-                <div className="h-px bg-white/[0.06]" />
+                <div className="h-px bg-white/[0.06] flex-shrink-0" />
 
                 {/* ── Scrollable body ───────────────────────────────────── */}
-                <div className="overflow-y-auto overscroll-contain max-h-[55vh] sm:max-h-[62vh] relative">
+                <div className="overflow-y-auto overscroll-contain flex-1 min-h-0 sm:flex-none sm:max-h-[62vh] relative">
 
                   {/* ── Empty state (no query) ─────────────────────────── */}
                   {isEmpty && (
@@ -329,15 +344,15 @@ export default function SearchModal({ open, onClose }: Props) {
                             {recent.map((r) => (
                               <div key={r}
                                 onClick={() => pickSuggestion(r)}
-                                className="flex items-center gap-2.5 px-2.5 py-2 rounded-lg cursor-pointer group hover:bg-white/[0.04] transition-colors"
+                                className="flex items-center gap-2.5 px-2.5 py-2.5 sm:py-2 rounded-lg cursor-pointer group hover:bg-white/[0.04] transition-colors"
                               >
-                                <div className="w-6 h-6 rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
+                                <div className="w-7 h-7 sm:w-6 sm:h-6 rounded-md bg-white/[0.04] border border-white/[0.06] flex items-center justify-center flex-shrink-0">
                                   <History className="w-3 h-3 text-muted-foreground/30" />
                                 </div>
                                 <span className="flex-1 text-[13px] text-muted-foreground/60 group-hover:text-foreground transition-colors truncate">{r}</span>
                                 <button onClick={(e) => removeOne(r, e)}
-                                  className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded flex items-center justify-center text-muted-foreground/30 hover:text-muted-foreground hover:bg-white/10 transition-all flex-shrink-0">
-                                  <X className="w-3 h-3" />
+                                  className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 w-7 h-7 sm:w-5 sm:h-5 rounded flex items-center justify-center text-muted-foreground/30 hover:text-muted-foreground hover:bg-white/10 transition-all flex-shrink-0">
+                                  <X className="w-3.5 h-3.5 sm:w-3 sm:h-3" />
                                 </button>
                               </div>
                             ))}
@@ -383,14 +398,14 @@ export default function SearchModal({ open, onClose }: Props) {
                             onClick={() => open_course(c.id)}
                             onMouseEnter={() => setFocused(i)}
                             className={cn(
-                              "flex items-center gap-2.5 px-2.5 py-2 rounded-md transition-all group border",
+                              "flex items-center gap-2.5 px-2.5 py-3 sm:py-2 rounded-md transition-all group border",
                               focused === i
                                 ? "bg-orange-500/[0.07] border-[#d97757]/[0.15]"
                                 : "border-transparent hover:bg-white/[0.035] hover:border-white/[0.07]"
                             )}
                           >
                             {/* Thumbnail */}
-                            <div className="w-10 h-8 rounded-md overflow-hidden bg-white/[0.05] border border-white/[0.07] flex-shrink-0">
+                            <div className="w-11 h-9 sm:w-10 sm:h-8 rounded-md overflow-hidden bg-white/[0.05] border border-white/[0.07] flex-shrink-0">
                               {c.thumbnail
                                 ? <img src={c.thumbnail} alt="" className="w-full h-full object-cover" />
                                 : <div className="w-full h-full flex items-center justify-center">
@@ -449,8 +464,8 @@ export default function SearchModal({ open, onClose }: Props) {
 
                   {/* ── No results ─────────────────────────────────────── */}
                   {!loading && query && courses.length === 0 && (
-                    <div className="flex flex-col items-center py-8 text-center">
-                      <div className="w-10 h-10 rounded-md bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-2.5">
+                    <div className="flex flex-col items-center py-10 sm:py-8 text-center">
+                      <div className="w-11 h-11 sm:w-10 sm:h-10 rounded-md bg-white/[0.04] border border-white/[0.07] flex items-center justify-center mb-2.5">
                         <Search className="w-4 h-4 text-white/15" />
                       </div>
                       <p className="text-sm font-medium text-foreground/50">No results for "{query}"</p>
@@ -465,23 +480,36 @@ export default function SearchModal({ open, onClose }: Props) {
                 </div>
 
                 {/* ── Footer ───────────────────────────────────────────── */}
-                <div className="flex items-center justify-between px-4 py-2 border-t border-white/[0.05] bg-white/[0.01]">
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground/20 font-medium">
-                    <span className="hidden sm:flex items-center gap-1">
-                      <kbd className="bg-white/[0.05] border border-white/[0.08] rounded px-1 py-0.5 font-mono">↑↓</kbd>
-                      navigate
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <kbd className="bg-white/[0.05] border border-white/[0.08] rounded px-1 py-0.5 font-mono">↵</kbd>
-                      open
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <kbd className="bg-white/[0.05] border border-white/[0.08] rounded px-1 py-0.5 font-mono">esc</kbd>
-                      close
-                    </span>
+                <div
+                  className="flex items-center justify-between px-4 pt-2 border-t border-white/[0.05] bg-white/[0.01] flex-shrink-0"
+                  style={{ paddingBottom: "max(0.5rem, env(safe-area-inset-bottom))" }}
+                >
+                  {/* Mobile: close button | Desktop: keyboard hints */}
+                  <div className="flex items-center">
+                    <button
+                      onClick={onClose}
+                      className="sm:hidden flex items-center gap-1.5 text-[11px] text-muted-foreground/35 hover:text-foreground transition-colors py-1"
+                    >
+                      <X className="w-3 h-3" />
+                      Close
+                    </button>
+                    <div className="hidden sm:flex items-center gap-3 text-[10px] text-muted-foreground/20 font-medium">
+                      <span className="flex items-center gap-1">
+                        <kbd className="bg-white/[0.05] border border-white/[0.08] rounded px-1 py-0.5 font-mono">↑↓</kbd>
+                        navigate
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <kbd className="bg-white/[0.05] border border-white/[0.08] rounded px-1 py-0.5 font-mono">↵</kbd>
+                        open
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <kbd className="bg-white/[0.05] border border-white/[0.08] rounded px-1 py-0.5 font-mono">esc</kbd>
+                        close
+                      </span>
+                    </div>
                   </div>
                   <button onClick={goFullSearch}
-                    className="flex items-center gap-1 text-[11px] text-muted-foreground/30 hover:text-[#d97757] transition-colors group">
+                    className="flex items-center gap-1 text-[11px] text-muted-foreground/30 hover:text-[#d97757] transition-colors group py-1">
                     Advanced search
                     <ArrowUpRight className="w-3 h-3 group-hover:translate-x-px group-hover:-translate-y-px transition-transform" />
                   </button>
