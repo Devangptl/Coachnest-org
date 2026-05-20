@@ -898,9 +898,10 @@ function SectionBlock({
       dragControls={controls}
       dragListener={false}
       layout={"position"}
-      whileDrag={{ scale: 1.01, boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
+      whileDrag={{ scale: 1.01, boxShadow: "0 0px 10px rgba(0,0,0,0.2)" }}
+      className="rounded-xl border border-border bg-card/60 overflow-hidden"
     >
-      <div className="rounded-xl border border-border bg-card/60 overflow-hidden">
+      <div>
         {/* Chapter header */}
         <div className="flex items-center gap-2 px-3 py-3 bg-secondary/40 border-b border-border/60">
           {/* Drag handle */}
@@ -1316,8 +1317,9 @@ function DraggableLessonRow({
       dragControls={controls}
       dragListener={false}
       onDragEnd={onDragEnd}
-      whileDrag={{ scale: 1.01, boxShadow: "0 4px 20px rgba(0,0,0,0.25)" }}
+      whileDrag={{ scale: 1.01, boxShadow: "0 0px 10px rgba(0,0,0,0.2)" }}
       className="rounded-xl"
+      layout="position"
     >
       <GlassCard padding="sm" className="flex items-center gap-3 px-4 py-3 group">
         <GripVertical
