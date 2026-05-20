@@ -782,7 +782,8 @@ html.light .hover\:#d97757:hover { color: #c2550e; }
 .md-editor-textarea {
   display: block;
   width: 100%;
-  resize: vertical;
+  resize: none;
+  overflow: hidden;   /* auto-grow keeps scrollHeight ≤ height */
   tab-size: 2;
   -moz-tab-size: 2;
 }
@@ -805,10 +806,26 @@ html.light .md-editor-textarea { color: hsl(var(--foreground)); }
   border-radius: var(--radius);
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0,0,0,0.10), 0 4px 20px rgba(0,0,0,0.07);
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.rte-shell:focus-within {
+  border-color: hsl(var(--primary) / 0.45);
+  box-shadow:
+    0 0 0 3px hsl(var(--primary) / 0.10),
+    0 1px 3px rgba(0,0,0,0.10),
+    0 4px 20px rgba(0,0,0,0.07);
 }
 
 html.light .rte-shell {
   box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 20px rgba(0,0,0,0.04);
+}
+
+html.light .rte-shell:focus-within {
+  box-shadow:
+    0 0 0 3px hsl(var(--primary) / 0.08),
+    0 1px 3px rgba(0,0,0,0.06),
+    0 4px 20px rgba(0,0,0,0.04);
 }
 
 /* Header bar with mode tabs */
@@ -880,6 +897,30 @@ html.light .rte-shell {
   color: hsl(var(--primary));
   border-color: hsl(var(--primary) / 0.4);
   background: hsl(var(--primary) / 0.08);
+}
+
+/* Status bar */
+.rte-status-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 5px 14px;
+  background: hsl(var(--secondary));
+  border-top: 1px solid hsl(var(--border));
+  font-size: 11px;
+  color: hsl(var(--muted-foreground) / 0.55);
+  font-variant-numeric: tabular-nums;
+  user-select: none;
+  line-height: 1;
+}
+
+.rte-status-dot {
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: hsl(var(--muted-foreground) / 0.3);
+  flex-shrink: 0;
 }
 
 /* Quill nested inside rte-shell — suppress duplicate borders & border-radius */
@@ -958,8 +999,8 @@ html.light .rte-shell {
 
 .ql-editor {
   color: hsl(var(--foreground));
-  line-height: 1.75;
-  padding: 14px 18px;
+  line-height: 1.8;
+  padding: 18px 24px;
 }
 
 .ql-editor.ql-blank::before {

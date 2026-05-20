@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useCallback } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import {
   Bold, Italic, Underline, Strikethrough, Code, Quote,
   List, ListOrdered, Heading1, Heading2, Heading3,
@@ -36,6 +36,18 @@ export default function MarkdownTextEditor({
   onPickImage,
 }: Props) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Auto-grow: recalculate height whenever value or minHeight changes.
+  const adjustHeight = useCallback(() => {
+    const ta = textareaRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    ta.style.height = `${Math.max(minHeight, ta.scrollHeight)}px`;
+  }, [minHeight]);
+
+  useEffect(() => {
+    adjustHeight();
+  }, [value, adjustHeight]);
 
   const applyFormat = useCallback(
     ({ prefix, suffix = "", defaultText = "text", block = false }: InsertOpts) => {
@@ -204,12 +216,17 @@ export default function MarkdownTextEditor({
         <textarea
           ref={textareaRef}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={(e) => {
+            onChange(e.target.value);
+            const ta = e.target;
+            ta.style.height = "auto";
+            ta.style.height = `${Math.max(minHeight, ta.scrollHeight)}px`;
+          }}
           placeholder={placeholder ?? "Write Markdown here…"}
           className={cn(
-            "md-editor-textarea w-full resize-y bg-[hsl(var(--secondary)/0.3)]",
-            "text-[hsl(var(--foreground))] placeholder-[hsl(var(--muted-foreground))]",
-            "font-mono text-sm leading-relaxed p-4 outline-none",
+            "md-editor-textarea w-full bg-[hsl(var(--secondary)/0.3)]",
+            "text-[hsl(var(--foreground))] placeholder-[hsl(var(--muted-foreground)/0.5)]",
+            "font-mono text-sm leading-loose p-5 outline-none",
             "focus:bg-[hsl(var(--secondary)/0.5)] transition-colors",
           )}
           style={{ minHeight }}

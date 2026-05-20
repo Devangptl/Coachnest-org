@@ -25,6 +25,13 @@ function isHtmlContent(s: string): boolean {
   return s.trimStart().startsWith("<");
 }
 
+function countWords(value: string): number {
+  const text = isHtmlContent(value)
+    ? value.replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ")
+    : value;
+  return text.trim() === "" ? 0 : text.trim().split(/\s+/).filter(Boolean).length;
+}
+
 export default function MarkdownEditor({
   value,
   onChange,
@@ -65,6 +72,11 @@ export default function MarkdownEditor({
     setShowPreview(false);
     converting.current = false;
   }, [mode, value, onChange]);
+
+  const wordCount = countWords(value);
+  const lineCount = mode === "markdown" && !showPreview
+    ? (value.match(/\n/g)?.length ?? 0) + 1
+    : null;
 
   return (
     <div className="rte-shell">
@@ -138,6 +150,19 @@ export default function MarkdownEditor({
           onPickImage={onPickImage}
         />
       )}
+
+      {/* ── Status bar ────────────────────────────────────────────────────── */}
+      <div className="rte-status-bar">
+        <span>{wordCount.toLocaleString()} {wordCount === 1 ? "word" : "words"}</span>
+        <span className="rte-status-dot" />
+        <span>{value.length.toLocaleString()} chars</span>
+        {lineCount !== null && (
+          <>
+            <span className="rte-status-dot" />
+            <span>{lineCount.toLocaleString()} {lineCount === 1 ? "line" : "lines"}</span>
+          </>
+        )}
+      </div>
     </div>
   );
 }
