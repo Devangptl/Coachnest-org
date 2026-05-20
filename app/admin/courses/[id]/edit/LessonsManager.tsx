@@ -617,7 +617,7 @@ export default function LessonsManager({
     return lessons.map((lesson) => {
       if (editingId === lesson.id) {
         return (
-          <Reorder.Item key={lesson.id} value={lesson} as="div" dragListener={false}>
+          <Reorder.Item key={lesson.id} value={lesson} as="div" layout={"position"} dragListener={false}>
             <GlassCard className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
@@ -766,11 +766,12 @@ export default function LessonsManager({
                     sectionLessonsRef.current[section.id] = reordered;
                   }}
                   as="div"
+                  layout={"position"}
                   className="space-y-2"
                 >
                   {renderLessonRows(section.lessons, section.id)}
                 </Reorder.Group>
-
+                
                 {section.lessons.length === 0 && addingToSectionId !== section.id && (
                   <p className="text-muted-foreground/50 text-xs text-center py-4">No lessons yet — add one below.</p>
                 )}
@@ -812,6 +813,7 @@ export default function LessonsManager({
             values={ungroupedLessons}
             onReorder={(reordered) => { setUngroupedLessons(reordered); ungroupedRef.current = reordered; }}
             as="div"
+            layout={"position"}
             className="space-y-2"
           >
             {renderLessonRows(ungroupedLessons, "ungrouped")}
@@ -895,6 +897,7 @@ function SectionBlock({
       as="div"
       dragControls={controls}
       dragListener={false}
+      layout={"position"}
       whileDrag={{ scale: 1.01, boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
     >
       <div className="rounded-xl border border-border bg-card/60 overflow-hidden">
