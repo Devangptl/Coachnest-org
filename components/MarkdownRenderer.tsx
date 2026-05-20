@@ -512,8 +512,10 @@ function ContentImage({ src, alt }: { src: string; alt: string }) {
 
 function TableWrapper({ children }: { children: ReactNode }) {
   return (
-    <div className="my-6 overflow-x-auto rounded-xl border border-border/60 shadow-sm">
-      <table className="w-full text-sm border-collapse">{children}</table>
+    <div className="my-6 rounded-xl border border-border/60 shadow-sm overflow-hidden">
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm border-collapse">{children}</table>
+      </div>
     </div>
   );
 }
@@ -803,13 +805,15 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
 
     // ── Tables ─────────────────────────────────────────────────────────────────
     table:  ({ children })          => <TableWrapper>{children}</TableWrapper>,
-    thead:  ({ children })          => <thead className="bg-secondary/50 border-b border-border/60">{children}</thead>,
-    tbody:  ({ children })          => <tbody className="divide-y divide-border/30">{children}</tbody>,
-    tr:     ({ children })          => <tr className="hover:bg-secondary/20 transition-colors even:bg-secondary/[0.07]">{children}</tr>,
+    thead:  ({ children })          => <thead className="bg-secondary/60 border-b border-border/60">{children}</thead>,
+    tbody:  ({ children })          => <tbody>{children}</tbody>,
+    tr:     ({ children })          => <tr className="border-b border-border/20 last:border-b-0 even:bg-secondary/[0.06] hover:bg-[#d97757]/[0.04] transition-colors duration-100">
+        {children}
+      </tr>,
     th:     ({ children, style })   => (
       <th
         style={{ textAlign: (style as React.CSSProperties)?.textAlign }}
-        className="px-4 py-2.5 text-left text-[11px] font-bold text-foreground/80 uppercase tracking-wider whitespace-nowrap border-r border-border/30 last:border-r-0"
+        className="px-4 py-3 text-left text-[11px] font-bold text-foreground/70 uppercase tracking-widest whitespace-nowrap border-r border-border/30 last:border-r-0"
       >
         {children}
       </th>
@@ -817,14 +821,14 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     td: ({ children, style, node }: any) => {
       const raw    = extractNodeText(node);
-      const isPos  = raw.startsWith("+ ") || raw.startsWith("+ ");
-      const isNeg  = raw.startsWith("- ") || raw.startsWith("−");
+      const isPos = raw.startsWith("+ ");
+      const isNeg = raw.startsWith("- ") || raw.startsWith("−");
       return (
         <td
           style={{ textAlign: (style as React.CSSProperties)?.textAlign }}
           className={cn(
-            "px-4 py-2.5 text-[13px] align-top border-r border-border/20 last:border-r-0",
-            isPos ? "text-emerald-400 font-medium" : isNeg ? "text-red-400 font-medium" : "text-muted-foreground",
+            "px-4 py-3 text-[13px] align-top border-r border-border/20 last:border-r-0 whitespace-normal",
+            isPos ? "text-emerald-400 font-medium" : isNeg ? "text-red-400 font-medium" : "text-muted-foreground/90",
           )}
         >
           {children}

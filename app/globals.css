@@ -1216,10 +1216,14 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 }
 
 /* ── Tables — rendered content ───────────────────────────────────────────── */
-/* border-collapse:separate + border-spacing:0 lets border-radius work on the
-   table element itself without needing a wrapper div. */
+/* display:block + overflow-x:auto gives horizontal scroll on small screens
+   without a wrapper div (needed since content is dangerouslySetInnerHTML).
+   border-collapse:separate + border-spacing:0 preserves border-radius. */
 .quill-content table {
-  width: 100%;
+  display: block;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  max-width: 100%;
   border-collapse: separate;
   border-spacing: 0;
   margin: 1.25rem 0;
@@ -1227,7 +1231,13 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   background: hsl(var(--card));
   border: 1px solid hsl(var(--border));
   border-radius: 0.75rem;
-  overflow: hidden;
+}
+/* Thin scrollbar so the scroll handle doesn't distract */
+.quill-content table::-webkit-scrollbar { height: 4px; }
+.quill-content table::-webkit-scrollbar-track { background: transparent; }
+.quill-content table::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 2px;
 }
 .quill-content table th,
 .quill-content table td {
@@ -1235,8 +1245,11 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   border-bottom: 1px solid hsl(var(--border) / 0.7);
   padding: 0.625rem 1rem;
   vertical-align: top;
-  min-width: 60px;
+  min-width: 80px;
+  white-space: nowrap;
 }
+.quill-content table th { white-space: nowrap; }
+.quill-content table td { white-space: normal; min-width: 120px; }
 .quill-content table th:last-child,
 .quill-content table td:last-child { border-right: none; }
 .quill-content table tr:last-child td,
@@ -1244,23 +1257,27 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
 .quill-content table th {
   background: hsl(var(--secondary) / 0.7);
   color: hsl(var(--foreground));
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-weight: 700;
+  font-size: 0.6875rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
   text-align: left;
 }
 /* Quill 2 uses only <td>; style the first row as a header */
 .quill-content table tr:first-child td {
   background: hsl(var(--secondary) / 0.7);
   color: hsl(var(--foreground));
-  font-weight: 600;
-  font-size: 0.75rem;
+  font-weight: 700;
+  font-size: 0.6875rem;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
 }
-.quill-content table tr:nth-child(even) td { background: hsl(var(--secondary) / 0.25); }
-.quill-content table tr:hover td { background: hsl(var(--secondary) / 0.4); transition: background 0.15s; }
+.quill-content table tr:nth-child(even) td { background: hsl(var(--secondary) / 0.2); }
+/* Don't override the header row on hover */
+.quill-content table tr:not(:first-child):hover td {
+  background: hsl(var(--primary) / 0.06);
+  transition: background 0.12s;
+}
 
 /* ── Table picker popover ────────────────────────────────────────────────── */
 .ql-table-picker {
