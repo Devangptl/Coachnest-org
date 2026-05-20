@@ -514,7 +514,7 @@ function TableWrapper({ children }: { children: ReactNode }) {
   return (
     <div className="my-6 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
-        <table className="w-full text-sm border-collapse" style={{ borderStyle: "hidden" }}>{children}</table>
+        <table className="w-full text-sm border-collapse">{children}</table>
       </div>
     </div>
   );
