@@ -11,6 +11,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  sendPayoutApprovedEmail,
+  sendPayoutRejectedEmail,
+  sendPayoutProcessedEmail,
+} from "@/lib/email";
 
 export async function PUT(
   req: NextRequest,
@@ -32,11 +37,18 @@ export async function PUT(
 
     const request = await prisma.payoutRequest.findUnique({
       where:   { id },
-      include: { wallet: true },
+      include: {
+        wallet:     true,
+        instructor: { select: { name: true, email: true } },
+      },
     });
     if (!request) return NextResponse.json({ error: "Not found." }, { status: 404 });
 
     const amount = Number(request.amount);
+
+    const instructorEmail = request.instructor?.email;
+    const instructorName  = request.instructor?.name ?? "Instructor";
+    const amountStr       = amount.toLocaleString("en-IN");
 
     if (action === "APPROVE") {
       if (request.status !== "PENDING") {
@@ -46,13 +58,15 @@ export async function PUT(
         where: { id },
         data: { status: "APPROVED", adminNotes: adminNotes?.trim() || null },
       });
+      if (instructorEmail) {
+        sendPayoutApprovedEmail(instructorEmail, instructorName, amountStr).catch(() => null);
+      }
     }
 
     if (action === "REJECT") {
       if (!["PENDING", "APPROVED"].includes(request.status)) {
         return NextResponse.json({ error: "Cannot reject this request." }, { status: 400 });
       }
-      // Refund balance to wallet
       await prisma.$transaction([
         prisma.payoutRequest.update({
           where: { id },
@@ -71,6 +85,9 @@ export async function PUT(
           },
         }),
       ]);
+      if (instructorEmail) {
+        sendPayoutRejectedEmail(instructorEmail, instructorName, amountStr, adminNotes?.trim()).catch(() => null);
+      }
     }
 
     if (action === "PROCESS") {
@@ -95,6 +112,9 @@ export async function PUT(
           },
         }),
       ]);
+      if (instructorEmail) {
+        sendPayoutProcessedEmail(instructorEmail, instructorName, amountStr).catch(() => null);
+      }
     }
 
     return NextResponse.json({ message: `Payout request ${action.toLowerCase()}d.` });

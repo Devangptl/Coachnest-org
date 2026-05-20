@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, BookOpen, Users, BarChart3,
-  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle,
+  LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
+  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,8 @@ const navItems = [
   { label: "Overview",      href: "/instructor",              icon: LayoutDashboard, exact: true },
   { label: "My Courses",    href: "/instructor/courses",      icon: BookOpen },
   { label: "New Course",    href: "/instructor/courses/new",  icon: PlusCircle },
+  { label: "My Classes",    href: "/instructor/classes",      icon: GraduationCap },
+  { label: "Course Lists",  href: "/instructor/playlists",    icon: ListVideo },
   { label: "My Students",   href: "/instructor/students",     icon: Users },
   { label: "Analytics",     href: "/instructor/analytics",    icon: BarChart3 },
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
@@ -36,7 +38,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm font-medium transition-all",
               isActive
                 ? "bg-amber-500/10 text-foreground border border-amber-400/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -64,7 +66,7 @@ export default function InstructorSidebar() {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20 pt-6">
+      <aside className="hidden lg:block w-56 flex-shrink-0 self-start sticky top-16 pt-6">
         <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Instructor Panel

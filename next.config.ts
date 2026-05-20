@@ -18,6 +18,13 @@ const nextConfig: NextConfig = {
   // ─── PDF generation — keep out of webpack bundle ──────────────────
   serverExternalPackages: ["@react-pdf/renderer", "pdf-parse", "pdfjs-dist"],
 
+  // ─── Bundle Prisma schema + migration files into the admin migration
+  //     API routes so they're readable at runtime in serverless builds ──
+  outputFileTracingIncludes: {
+    "/api/admin/migrations": ["./prisma/schema.prisma", "./prisma/migrations/**/*"],
+    "/api/admin/migrations/deploy": ["./prisma/schema.prisma", "./prisma/migrations/**/*"],
+  },
+
   // ─── Tree-shake heavy barrel-export packages ──────────────────────
   experimental: {
     optimizePackageImports: [

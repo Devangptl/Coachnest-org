@@ -8,8 +8,8 @@ import { useTheme } from "@/components/ThemeProvider";
  * down, left, right). Subtle by design — minimum highlight.
  */
 export default function HeroBackground() {
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   const baseLine = isLight ? "rgba(15, 23, 42, 0.03)" : "rgba(255, 255, 255, 0.03)";
   const gridSize = "56px 56px";

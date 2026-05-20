@@ -2,8 +2,9 @@
 
 import { useCallback, useState } from "react";
 import { Activity, Clock, MessageSquare, Users, Award, BookOpen, Star } from "lucide-react";
-import { useRealtimeChannel, usePostgresChanges } from "@/hooks/useRealtimeChannel";
-import { channels, events } from "@/lib/realtime/channels";
+import { usePostgresChanges } from "@/hooks/useRealtimeChannel";
+import { FeedItemSkeleton } from "@/components/ui/Skeleton";
+import Avatar from "@/components/Avatar";
 
 interface FeedEvent {
   id: string;
@@ -57,9 +58,8 @@ export default function FeedClient({
     else setHasNewActivity(true);
   }, [page, load]);
 
-  // Broadcast (server-emitted)
-  useRealtimeChannel(channels.activityFeed(), events.activityCreated, onNewActivity);
-  // Postgres Changes (direct DB — catches any write path)
+  // Postgres Changes catches any write path — broadcast subscription was
+  // redundant since both fire from the same INSERT.
   usePostgresChanges("activity_feed_events", onNewActivity, { event: "INSERT" });
 
   function getRelativeTime(dateStr: string) {
@@ -75,9 +75,9 @@ export default function FeedClient({
   }
 
   return (
-    <div className="py-8 space-y-6">
+    <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Activity Feed</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Activity Feed</h1>
         <p className="text-muted-foreground text-sm mt-1">See what&apos;s happening across the community.</p>
       </div>
 
@@ -91,11 +91,7 @@ export default function FeedClient({
       )}
 
       {loading ? (
-        <div className="space-y-3">
-          {[1,2,3,4,5,6].map(i => (
-            <div key={i} className="h-16 rounded-lg bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <FeedItemSkeleton rows={8} />
       ) : feedEvents.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <Activity className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
@@ -111,30 +107,32 @@ export default function FeedClient({
               return (
                 <div
                   key={e.id}
-                  className="flex items-center gap-4 p-4 rounded-md border border-border bg-card hover:bg-secondary/30 transition-all"
+                  className="flex items-center gap-3 sm:gap-4 p-3 sm:p-4 rounded-md border border-border bg-card hover:bg-secondary/30 transition-all"
                 >
                   {/* Avatar */}
-                  <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-foreground text-sm font-bold flex-shrink-0">
-                    {e.user.avatar ? (
-                      <img src={e.user.avatar} alt="" className="w-full h-full rounded-full object-cover" />
-                    ) : e.user.name.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar
+                    name={e.user.name}
+                    avatar={e.user.avatar}
+                    seed={e.user.id}
+                    size="w-10 h-10"
+                    className="flex-shrink-0"
+                  />
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-sm">
+                    <p className="text-foreground text-sm truncate">
                       <span className="font-medium">{e.user.name}</span>
                     </p>
                     <p className="text-muted-foreground text-xs mt-0.5 truncate">{e.title}</p>
                   </div>
 
-                  {/* Type Badge */}
-                  <div className={`w-8 h-8 rounded-lg ${config.bg} flex items-center justify-center flex-shrink-0`}>
+                  {/* Type Badge — hide on small screens, time is more useful */}
+                  <div className={`hidden sm:flex w-8 h-8 rounded-lg ${config.bg} items-center justify-center flex-shrink-0`}>
                     <Icon className={`w-4 h-4 ${config.color}`} />
                   </div>
 
                   {/* Time */}
-                  <span className="text-muted-foreground/50 text-xs flex items-center gap-1 flex-shrink-0 min-w-[60px] justify-end">
+                  <span className="text-muted-foreground/50 text-[11px] sm:text-xs flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
                     <Clock className="w-3 h-3" />
                     {getRelativeTime(e.createdAt)}
                   </span>
@@ -145,12 +143,12 @@ export default function FeedClient({
 
           {/* Pagination */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 pt-4">
+            <div className="flex items-center justify-center gap-2 pt-4 flex-wrap">
               {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
                 <button
                   key={p}
                   onClick={() => load(p)}
-                  className={`w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                  className={`w-9 h-9 sm:w-8 sm:h-8 rounded-lg text-xs font-medium transition-all ${
                     p === page
                       ? "bg-emerald-600 text-white"
                       : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"

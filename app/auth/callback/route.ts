@@ -41,7 +41,18 @@ export async function GET(req: NextRequest) {
   }
 
   if (role === "INSTRUCTOR") {
-    return NextResponse.redirect(new URL(next ?? "/instructor", req.url));
+    if (next) {
+      return NextResponse.redirect(new URL(next, req.url));
+    }
+    const profile = await prisma.user.findUnique({
+      where:  { id: data.user.id },
+      select: { hasCompletedInstructorOnboarding: true, instructorStatus: true },
+    });
+    if (!profile?.hasCompletedInstructorOnboarding) {
+      return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
+    }
+    const destination = profile.instructorStatus === "APPROVED" ? "/instructor" : "/instructor/pending";
+    return NextResponse.redirect(new URL(destination, req.url));
   }
 
   if (role === "ADMIN") {

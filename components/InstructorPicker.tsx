@@ -7,8 +7,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Search, Check, BookOpen, Users, Loader2 } from "lucide-react";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
+import Avatar from "./Avatar";
 
 export interface InstructorData {
   id:           string;
@@ -126,13 +126,6 @@ function InstructorCard({
   selected:   boolean;
   onToggle:   (id: string) => void;
 }) {
-  const initials = instructor.name
-    .split(" ")
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
   return (
     <div className={cn(
       "flex items-center gap-3 px-4 py-3.5 rounded-xl border transition-all",
@@ -141,22 +134,13 @@ function InstructorCard({
         : "bg-secondary border-border"
     )}>
       {/* Avatar */}
-      <div className="relative flex-shrink-0 w-11 h-11 rounded-full overflow-hidden bg-muted">
-        {instructor.avatar ? (
-          <Image
-            src={instructor.avatar}
-            alt={instructor.name}
-            fill
-            className="object-cover"
-            sizes="44px"
-            unoptimized
-          />
-        ) : (
-          <span className="flex h-full w-full items-center justify-center text-sm font-semibold text-muted-foreground">
-            {initials}
-          </span>
-        )}
-      </div>
+      <Avatar
+        name={instructor.name}
+        avatar={instructor.avatar}
+        seed={instructor.id}
+        size="w-11 h-11"
+        className="flex-shrink-0"
+      />
 
       {/* Info */}
       <div className="flex-1 min-w-0">

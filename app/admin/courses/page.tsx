@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import GlassCard from "@/components/GlassCard";
 import DeleteCourseButton from "./DeleteCourseButton";
+import SeedPromptEngineeringCourseButton from "./SeedPromptEngineeringCourseButton";
 import { PlusCircle, BookOpen, Edit2, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -28,12 +29,15 @@ export default async function AdminCoursesPage() {
             {courses.length} course{courses.length !== 1 ? "s" : ""} total
           </p>
         </div>
-        <Link
-          href="/admin/courses/new"
-          className="btn-primary flex items-center gap-2 text-sm"
-        >
-          <PlusCircle className="w-4 h-4" /> New Course
-        </Link>
+        <div className="flex items-center gap-2">
+          <SeedPromptEngineeringCourseButton />
+          <Link
+            href="/admin/courses/new"
+            className="btn-primary flex items-center gap-2 text-sm"
+          >
+            <PlusCircle className="w-4 h-4" /> New Course
+          </Link>
+        </div>
       </div>
 
       {courses.length === 0 ? (

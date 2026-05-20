@@ -7,7 +7,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Reorder, useDragControls } from "framer-motion";
+import { Reorder, useDragControls, AnimatePresence, motion } from "framer-motion";
 import GlassCard from "@/components/GlassCard";
 import MarkdownEditor from "@/components/MarkdownEditor";
 import {
@@ -16,6 +16,7 @@ import {
   ChevronDown, CloudUpload, CloudOff, BookOpen, FileUp,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { processContentImages } from "@/lib/uploadImages";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -164,12 +165,14 @@ export default function LessonsManager({
       const snap = { ...editForm };
       setAutosaveStatus("saving");
       try {
+        const content = snap.type === "QUIZ" ? null
+          : await processContentImages(snap.content || "", "courses");
         const res = await fetch(`/api/lessons/${editingId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             title: snap.title, type: snap.type,
-            content: snap.type === "QUIZ" ? null : snap.content,
+            content,
             duration: snap.type === "VIDEO" ? Number(snap.duration) || null : null,
             isFree: snap.isFree,
           }),
@@ -211,7 +214,8 @@ export default function LessonsManager({
       try {
         const payload = {
           title: snap.title, type: snap.type,
-          content: snap.type === "QUIZ" ? null : snap.content,
+          content: snap.type === "QUIZ" ? null
+            : await processContentImages(snap.content || "", "courses"),
           duration: snap.type === "VIDEO" ? Number(snap.duration) || null : null,
           isFree: snap.isFree,
         };
@@ -408,11 +412,12 @@ export default function LessonsManager({
       if (dirty) {
         setSubmitting(true);
         try {
+          const content = await processContentImages(form.content || "", "courses");
           const res = await fetch(`/api/lessons/${draftLessonId}`, {
             method: "PATCH",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
-              title: form.title, type: form.type, content: form.content,
+              title: form.title, type: form.type, content,
               duration: form.type === "VIDEO" ? Number(form.duration) || null : null,
               isFree: form.isFree,
             }),
@@ -435,13 +440,15 @@ export default function LessonsManager({
 
     setSubmitting(true);
     try {
+      const content = form.type === "QUIZ" ? null
+        : await processContentImages(form.content || "", "courses");
       const res = await fetch("/api/lessons", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           courseId, sectionId: resolvedSectionId,
           title: form.title, type: form.type,
-          content: form.type === "QUIZ" ? null : form.content,
+          content,
           duration: form.type === "VIDEO" ? Number(form.duration) || null : null,
           isFree: form.isFree,
         }),
@@ -567,12 +574,14 @@ export default function LessonsManager({
     cancelAutosave();
     setSaving(true);
     try {
+      const content = editForm.type === "QUIZ" ? null
+        : await processContentImages(editForm.content || "", "courses");
       const res = await fetch(`/api/lessons/${editingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: editForm.title, type: editForm.type,
-          content: editForm.type === "QUIZ" ? null : editForm.content,
+          content,
           duration: editForm.type === "VIDEO" ? Number(editForm.duration) || null : null,
           isFree: editForm.isFree,
         }),
@@ -608,7 +617,7 @@ export default function LessonsManager({
     return lessons.map((lesson) => {
       if (editingId === lesson.id) {
         return (
-          <Reorder.Item key={lesson.id} value={lesson} as="div" dragListener={false}>
+          <Reorder.Item key={lesson.id} value={lesson} as="div" layout={"position"} dragListener={false}>
             <GlassCard className="space-y-4">
               <div className="flex items-center justify-between gap-2">
                 <h3 className="text-foreground font-semibold text-sm flex items-center gap-2">
@@ -748,45 +757,42 @@ export default function LessonsManager({
                   sectionLessonsRef.current[section.id] = reordered;
                 }}
               >
-                {/* Lesson rows */}
-                {!isCollapsed && (
-                  <>
-                    <Reorder.Group
-                      axis="y"
-                      values={section.lessons}
-                      onReorder={(reordered) => {
-                        setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, lessons: reordered } : s));
-                        sectionLessonsRef.current[section.id] = reordered;
-                      }}
-                      as="div"
-                      className="space-y-2"
-                    >
-                      {renderLessonRows(section.lessons, section.id)}
-                    </Reorder.Group>
+                {/* Lesson rows — always passed; SectionBlock animates visibility */}
+                <Reorder.Group
+                  axis="y"
+                  values={section.lessons}
+                  onReorder={(reordered) => {
+                    setSections((prev) => prev.map((s) => s.id === section.id ? { ...s, lessons: reordered } : s));
+                    sectionLessonsRef.current[section.id] = reordered;
+                  }}
+                  as="div"
+                  layout={"position"}
+                  className="space-y-2"
+                >
+                  {renderLessonRows(section.lessons, section.id)}
+                </Reorder.Group>
+                
+                {section.lessons.length === 0 && addingToSectionId !== section.id && (
+                  <p className="text-muted-foreground/50 text-xs text-center py-4">No lessons yet — add one below.</p>
+                )}
 
-                    {section.lessons.length === 0 && addingToSectionId !== section.id && (
-                      <p className="text-muted-foreground/50 text-xs text-center py-4">No lessons yet — add one below.</p>
-                    )}
+                {/* Inline add lesson form */}
+                {renderAddLessonForm(section.id)}
 
-                    {/* Inline add lesson form */}
-                    {renderAddLessonForm(section.id)}
+                {/* Add lesson button */}
+                {addingToSectionId !== section.id && !editingId && (
+                  <button
+                    onClick={() => openAddLessonForm(section.id)}
+                    className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-white/30 hover:bg-secondary/40 transition-all text-sm"
+                  >
+                    <PlusCircle className="w-3.5 h-3.5" /> Add Lesson
+                  </button>
+                )}
 
-                    {/* Add lesson button */}
-                    {addingToSectionId !== section.id && !editingId && (
-                      <button
-                        onClick={() => openAddLessonForm(section.id)}
-                        className="mt-2 w-full flex items-center justify-center gap-2 py-2.5 rounded-md border border-dashed border-border/60 text-muted-foreground hover:text-foreground hover:border-white/30 hover:bg-secondary/40 transition-all text-sm"
-                      >
-                        <PlusCircle className="w-3.5 h-3.5" /> Add Lesson
-                      </button>
-                    )}
-
-                    {reordering && (
-                      <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
-                        <Loader2 className="w-3 h-3 animate-spin" /> Saving order…
-                      </p>
-                    )}
-                  </>
+                {reordering && (
+                  <p className="text-xs text-muted-foreground flex items-center gap-1.5 mt-1">
+                    <Loader2 className="w-3 h-3 animate-spin" /> Saving order…
+                  </p>
                 )}
               </SectionBlock>
             );
@@ -807,6 +813,7 @@ export default function LessonsManager({
             values={ungroupedLessons}
             onReorder={(reordered) => { setUngroupedLessons(reordered); ungroupedRef.current = reordered; }}
             as="div"
+            layout={"position"}
             className="space-y-2"
           >
             {renderLessonRows(ungroupedLessons, "ungrouped")}
@@ -890,6 +897,7 @@ function SectionBlock({
       as="div"
       dragControls={controls}
       dragListener={false}
+      layout={"position"}
       whileDrag={{ scale: 1.01, boxShadow: "0 8px 32px rgba(0,0,0,0.3)" }}
     >
       <div className="rounded-xl border border-border bg-card/60 overflow-hidden">
@@ -943,19 +951,30 @@ function SectionBlock({
                   {isDeleting ? <Loader2 className="w-3 h-3 animate-spin" /> : <Trash2 className="w-3 h-3" />}
                 </button>
                 <button onClick={onToggleCollapse} className="p-1.5 text-muted-foreground/40 hover:text-muted-foreground transition-colors" title={isCollapsed ? "Expand" : "Collapse"}>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isCollapsed ? "-rotate-90" : ""}`} />
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-300 ease-in-out ${isCollapsed ? "-rotate-90" : "rotate-0"}`} />
                 </button>
               </>
             )}
           </div>
         </div>
 
-        {/* Lessons area */}
-        {!isCollapsed && (
-          <div className="p-3 space-y-2">
-            {children}
-          </div>
-        )}
+        {/* Lessons area — animated collapse */}
+        <AnimatePresence initial={false}>
+          {!isCollapsed && (
+            <motion.div
+              key="section-content"
+              initial={{ height: 0, opacity: 0 }}
+              animate={{ height: "auto", opacity: 1 }}
+              exit={{ height: 0, opacity: 0 }}
+              transition={{ duration: 0.25, ease: [0.4, 0, 0.2, 1] }}
+              style={{ overflow: "hidden" }}
+            >
+              <div className="p-3 space-y-2">
+                {children}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </Reorder.Item>
   );

@@ -1,112 +1,99 @@
 /**
  * Instructor → Analytics
  */
+import dynamic from "next/dynamic";
+import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import GlassCard from "@/components/GlassCard";
-import { BookOpen, Users, Star, TrendingUp } from "lucide-react";
+import {
+  getInstructorMonthlyEnrollments,
+  getInstructorCourseProgressStats,
+  getInstructorQuizStats,
+} from "@/services/analytics.service";
+
+const InstructorAnalyticsDashboard = dynamic(
+  () => import("./InstructorAnalyticsDashboard"),
+  {
+    loading: () => (
+      <div className="space-y-6 animate-pulse">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-28 rounded-lg bg-secondary" />
+          ))}
+        </div>
+        <div className="h-80 rounded-lg bg-secondary" />
+        <div className="h-64 rounded-lg bg-secondary" />
+      </div>
+    ),
+  }
+);
 
 async function getAnalytics(userId: string) {
   const [courses, totalStudents, reviews] = await Promise.all([
     prisma.course.findMany({
-      where:   { createdById: userId },
-      include: { _count: { select: { enrollments: true, lessons: true, reviews: true } }, reviews: { select: { rating: true } } },
+      where: { createdById: userId },
+      include: {
+        _count: { select: { enrollments: true, reviews: true } },
+        reviews: { select: { rating: true } },
+        orders: { where: { status: "PAID" }, select: { amount: true } },
+      },
       orderBy: { createdAt: "desc" },
     }),
     prisma.enrollment.count({ where: { course: { createdById: userId } } }),
-    prisma.review.findMany({ where: { course: { createdById: userId } }, select: { rating: true } }),
+    prisma.review.findMany({
+      where: { course: { createdById: userId } },
+      select: { rating: true },
+    }),
   ]);
 
-  const avgRating = reviews.length
-    ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
-    : 0;
+  const totalRevenue = courses.reduce(
+    (sum, c) => sum + c.orders.reduce((s, o) => s + Number(o.amount), 0),
+    0
+  );
+  const avgRating =
+    reviews.length
+      ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
+      : 0;
 
-  return { courses, totalStudents, avgRating };
+  return {
+    courses: courses.map((c) => ({
+      id: c.id,
+      title: c.title,
+      enrollments: c._count.enrollments,
+      revenue: c.orders.reduce((s, o) => s + Number(o.amount), 0),
+      avgRating: c.reviews.length
+        ? Number((c.reviews.reduce((s, r) => s + r.rating, 0) / c.reviews.length).toFixed(1))
+        : 0,
+    })),
+    totalCourses: courses.length,
+    totalStudents,
+    totalRevenue,
+    avgRating,
+  };
 }
 
 export default async function InstructorAnalyticsPage() {
   const session = await getSession();
-  const { courses, totalStudents, avgRating } = await getAnalytics(session!.userId);
+  if (!session) redirect("/login");
 
-  const stats = [
-    { label: "Total Courses",    value: courses.length,                     icon: BookOpen, color: "text-blue-400",   bg: "bg-blue-500/10"   },
-    { label: "Published",        value: courses.filter(c => c.status === "PUBLISHED").length, icon: TrendingUp, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-    { label: "Total Students",   value: totalStudents,                      icon: Users,    color: "text-purple-400", bg: "bg-purple-500/10" },
-    { label: "Avg Rating",       value: avgRating ? `${avgRating.toFixed(1)} ★` : "—", icon: Star, color: "text-amber-400", bg: "bg-amber-500/10" },
-  ];
+  const [analytics, monthlyEnrollments, courseProgressStats, quizStats] =
+    await Promise.all([
+      getAnalytics(session.userId),
+      getInstructorMonthlyEnrollments(session.userId, 6),
+      getInstructorCourseProgressStats(session.userId),
+      getInstructorQuizStats(session.userId),
+    ]);
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-        <p className="text-muted-foreground text-sm mt-0.5">Performance overview of your courses</p>
-      </div>
-
-      {/* Summary cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        {stats.map((s) => {
-          const Icon = s.icon;
-          return (
-            <GlassCard key={s.label} className="flex flex-col gap-3">
-              <div className={`w-10 h-10 rounded-md ${s.bg} flex items-center justify-center`}>
-                <Icon className={`w-5 h-5 ${s.color}`} />
-              </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                <p className="text-muted-foreground text-sm">{s.label}</p>
-              </div>
-            </GlassCard>
-          );
-        })}
-      </div>
-
-      {/* Per-course breakdown */}
-      <div>
-        <h2 className="text-lg font-semibold text-foreground mb-4">Course Breakdown</h2>
-        {courses.length === 0 ? (
-          <GlassCard className="text-center py-12">
-            <BookOpen className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-            <p className="text-muted-foreground">No courses yet. Create your first course to see analytics.</p>
-          </GlassCard>
-        ) : (
-          <GlassCard padding="sm">
-            <div className="grid grid-cols-12 gap-3 px-4 py-2.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/60 border-b border-border">
-              <div className="col-span-5">Course</div>
-              <div className="col-span-2 text-center">Students</div>
-              <div className="col-span-2 text-center">Lessons</div>
-              <div className="col-span-2 text-center">Reviews</div>
-              <div className="col-span-1 text-center">Rating</div>
-            </div>
-            <div className="divide-y divide-border/50">
-              {courses.map((course) => {
-                const courseAvg = course.reviews.length
-                  ? course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length
-                  : null;
-                return (
-                  <div key={course.id} className="grid grid-cols-12 gap-3 px-4 py-3.5 items-center  transition-colors">
-                    <div className="col-span-5 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{course.title}</p>
-                      <span className={`inline-flex items-center gap-1 text-[10px] font-semibold px-1.5 py-0.5 rounded-full border mt-0.5 ${
-                        course.status === "PUBLISHED"
-                          ? "bg-emerald-500/10 border-emerald-400/25 text-emerald-400"
-                          : "bg-amber-500/10 border-amber-400/25 text-amber-400"
-                      }`}>
-                        {course.status === "PUBLISHED" ? "Live" : "Draft"}
-                      </span>
-                    </div>
-                    <div className="col-span-2 text-center text-sm font-semibold text-foreground">{course._count.enrollments}</div>
-                    <div className="col-span-2 text-center text-sm text-muted-foreground">{course._count.lessons}</div>
-                    <div className="col-span-2 text-center text-sm text-muted-foreground">{course._count.reviews}</div>
-                    <div className="col-span-1 text-center text-sm font-medium text-amber-400">
-                      {courseAvg ? courseAvg.toFixed(1) : "—"}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </GlassCard>
-        )}
-      </div>
-    </div>
+    <InstructorAnalyticsDashboard
+      totalCourses={analytics.totalCourses}
+      totalStudents={analytics.totalStudents}
+      totalRevenue={analytics.totalRevenue}
+      avgRating={analytics.avgRating}
+      courses={analytics.courses}
+      monthlyEnrollments={monthlyEnrollments}
+      courseProgressStats={courseProgressStats}
+      quizStats={quizStats}
+    />
   );
 }

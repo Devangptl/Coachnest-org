@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import CommunityAccessNotice from "@/components/CommunityAccessNotice";
+import { CardGridSkeleton } from "@/components/ui/Skeleton";
 
 interface Group {
   id: string;
@@ -175,26 +176,26 @@ export default function GroupsClient({
   );
 
   return (
-    <div className="py-8 space-y-6">
+    <div className="py-6 sm:py-8 space-y-5 sm:space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Study Groups</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Study Groups</h1>
           <p className="text-muted-foreground text-sm mt-1">Find or create groups to learn with peers.</p>
         </div>
 
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex flex-row items-stretch sm:items-center gap-2 flex-shrink-0">
           {hasCommunityAccess ? (
             <>
               <button
                 onClick={() => setShowJoinCode(true)}
-                className="flex items-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground border border-border text-sm font-medium px-4 py-2.5 rounded-lg transition-colors"
               >
                 <Key className="w-4 h-4" /> Join with Code
               </button>
               <button
                 onClick={() => setShowCreate(true)}
-                className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold px-4 py-2.5 rounded-lg transition-colors"
               >
                 <Plus className="w-4 h-4" /> Create Group
               </button>
@@ -203,14 +204,14 @@ export default function GroupsClient({
             <>
               <button
                 onClick={handleLockedClick}
-                className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-medium px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-medium px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
                 title="Requires Community Access add-on"
               >
                 <Lock className="w-3.5 h-3.5" /> Join with Code
               </button>
               <button
                 onClick={handleLockedClick}
-                className="flex items-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
+                className="flex-1 sm:flex-initial flex items-center justify-center gap-2 bg-secondary border border-border text-muted-foreground text-sm font-semibold px-4 py-2.5 rounded-lg cursor-not-allowed opacity-60"
                 title="Requires Community Access add-on"
               >
                 <Lock className="w-3.5 h-3.5" /> Create Group
@@ -237,11 +238,7 @@ export default function GroupsClient({
 
       {/* Groups grid */}
       {loading ? (
-        <div className="grid sm:grid-cols-2 gap-4">
-          {[1,2,3,4].map(i => (
-            <div key={i} className="h-36 rounded-md bg-secondary/50 animate-pulse" />
-          ))}
-        </div>
+        <CardGridSkeleton count={6} />
       ) : filtered.length === 0 ? (
         <div className="rounded-md border border-border bg-card p-12 text-center">
           <Users className="w-10 h-10 text-muted-foreground mx-auto mb-3 opacity-40" />
@@ -250,7 +247,7 @@ export default function GroupsClient({
           </p>
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
           {filtered.map((g) => {
             const isMember = !!myMemberships[g.id];
             const requestStatus = myRequests[g.id]; // PENDING | APPROVED | REJECTED | undefined
@@ -262,7 +259,7 @@ export default function GroupsClient({
             return (
               <div
                 key={g.id}
-                className="rounded-md border border-border bg-card p-5 transition-all group hover:-translate-y-0.5"
+                className="rounded-md border border-border bg-card p-4 sm:p-5 transition-all group hover:-translate-y-0.5"
               >
                 <Link href={`/community/groups/${g.id}`} className="block">
                   <div className="flex items-start justify-between mb-3">
@@ -350,11 +347,11 @@ export default function GroupsClient({
 
       {/* Join with Code Modal */}
       {showJoinCode && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowJoinCode(false)} />
-          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-[400px] shadow-2xl">
-            <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
-              <Key className="w-5 h-5 text-emerald-500" /> Join with Code
+          <div className="relative bg-card border border-border rounded-md p-4 sm:p-6 w-full max-w-[400px] shadow-2xl my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+            <h2 className="text-base sm:text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <Key className="w-5 h-5 text-emerald-500 flex-shrink-0" /> Join with Code
             </h2>
             <div className="space-y-4">
               <div>
@@ -387,10 +384,10 @@ export default function GroupsClient({
 
       {/* Create Group Modal */}
       {showCreate && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowCreate(false)} />
-          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-lg shadow-2xl">
-            <h2 className="text-lg font-bold text-foreground mb-4">Create Study Group</h2>
+          <div className="relative bg-card border border-border rounded-md p-4 sm:p-6 w-full max-w-lg shadow-2xl my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+            <h2 className="text-base sm:text-lg font-bold text-foreground mb-4">Create Study Group</h2>
             <div className="space-y-4">
               <div>
                 <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Group Name</label>
@@ -465,11 +462,11 @@ export default function GroupsClient({
 
       {/* Request to Join Modal */}
       {showRequestModal && requestGroupId && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => { setShowRequestModal(false); setRequestGroupId(null); }} />
-          <div className="relative bg-card border border-border rounded-md p-6 w-full max-w-[420px] shadow-2xl">
-            <h2 className="text-lg font-bold text-foreground mb-1 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-amber-400" /> Request to Join
+          <div className="relative bg-card border border-border rounded-md p-4 sm:p-6 w-full max-w-[420px] shadow-2xl my-auto max-h-[calc(100vh-2rem)] overflow-y-auto">
+            <h2 className="text-base sm:text-lg font-bold text-foreground mb-1 flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-amber-400 flex-shrink-0" /> Request to Join
             </h2>
             <p className="text-muted-foreground text-xs mb-4">
               This group requires admin approval. Optionally add a message to introduce yourself.

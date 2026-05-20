@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { generateCertificatePDF } from "@/lib/pdf";
 import { sendCertificateEmail } from "@/lib/email";
 
-/** Check if a student has completed all lessons in a course. */
+/** Check if a student has completed ≥90% of lessons in a course. */
 export async function isCourseCompleted(userId: string, courseId: string): Promise<boolean> {
   const [totalLessons, completedLessons] = await Promise.all([
     prisma.lesson.count({ where: { courseId } }),
@@ -13,7 +13,7 @@ export async function isCourseCompleted(userId: string, courseId: string): Promi
       where: { userId, completed: true, lesson: { courseId } },
     }),
   ]);
-  return totalLessons > 0 && completedLessons >= totalLessons;
+  return totalLessons > 0 && completedLessons >= totalLessons * 0.9;
 }
 
 /** Generate a PDF buffer for a certificate (works for both new and existing certs). */

@@ -5,6 +5,7 @@
 import { prisma } from "@/lib/prisma";
 import { startOfMonth, subMonths, format, parseISO, startOfDay, endOfDay } from "date-fns";
 import { OrderStatus } from "@prisma/client";
+import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
 
 // ─── Orders List with Filters ────────────────────────────────────────────
 
@@ -16,7 +17,20 @@ export async function getOrdersList(filters?: {
   maxAmount?: number;
   courseId?: string;
   search?: string;
-}) {
+} & PaginationParams): Promise<Paginated<{
+  id: string;
+  studentName: string;
+  studentEmail: string;
+  courseTitle: string;
+  amount: number;
+  currency: string;
+  status: OrderStatus;
+  couponCode?: string;
+  discountAmount: number;
+  createdAt: Date;
+  updatedAt: Date;
+}>> {
+  const { page, pageSize, skip, take } = parsePagination(filters);
   const where: any = {};
 
   if (filters?.status) {
@@ -44,29 +58,32 @@ export async function getOrdersList(filters?: {
     where.courseId = filters.courseId;
   }
 
-  const orders = await prisma.order.findMany({
-    where,
-    include: {
-      user: { select: { id: true, name: true, email: true } },
-      course: { select: { id: true, title: true } },
-      coupon: { select: { code: true } },
-    },
-    orderBy: { createdAt: "desc" },
-  });
-
-  // Filter by search (order ID, student name/email) on the client side after fetch
-  let filtered = orders;
+  // Search by order ID / student name / email — pushed into the query so
+  // pagination and the total count stay correct.
   if (filters?.search) {
-    const q = filters.search.toLowerCase();
-    filtered = orders.filter(
-      (o) =>
-        o.id.toLowerCase().includes(q) ||
-        o.user.name.toLowerCase().includes(q) ||
-        o.user.email.toLowerCase().includes(q)
-    );
+    where.OR = [
+      { id: { contains: filters.search, mode: "insensitive" } },
+      { user: { name: { contains: filters.search, mode: "insensitive" } } },
+      { user: { email: { contains: filters.search, mode: "insensitive" } } },
+    ];
   }
 
-  return filtered.map((order) => ({
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true, email: true } },
+        course: { select: { id: true, title: true } },
+        coupon: { select: { code: true } },
+      },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.order.count({ where }),
+  ]);
+
+  const data = orders.map((order) => ({
     id: order.id,
     studentName: order.user.name,
     studentEmail: order.user.email,
@@ -79,6 +96,8 @@ export async function getOrdersList(filters?: {
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
   }));
+
+  return buildPaginated(data, total, page, pageSize);
 }
 
 // ─── Single Order Details ────────────────────────────────────────────────

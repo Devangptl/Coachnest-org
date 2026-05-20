@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { sendFreeEnrollmentEmail } from "@/lib/email";
 
 // ─── GET — list my enrollments ────────────────────────────────────────────────
 export async function GET() {
@@ -75,11 +76,11 @@ export async function POST(req: NextRequest) {
     }
 
     // Verify user exists (session may reference a deleted user after DB reset)
-    const userExists = await prisma.user.findUnique({
+    const user = await prisma.user.findUnique({
       where: { id: session.userId },
-      select: { id: true },
+      select: { id: true, name: true, email: true },
     });
-    if (!userExists) {
+    if (!user) {
       return NextResponse.json(
         { error: "User not found. Please log out and log back in." },
         { status: 401 }
@@ -110,12 +111,23 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Upsert avoids duplicate enrollment errors
+    // Detect existing enrollment before upsert so we only email on first enroll
+    const alreadyEnrolled = await prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId: session.userId, courseId } },
+      select: { id: true },
+    });
+
     const enrollment = await prisma.enrollment.upsert({
       where: { userId_courseId: { userId: session.userId, courseId } },
       update: {},
       create: { userId: session.userId, courseId },
     });
+
+    // Fire-and-forget enrollment confirmation email for new free-course sign-ups
+    if (!alreadyEnrolled && !isPaid) {
+      sendFreeEnrollmentEmail(user.email, user.name ?? "there", course.title, courseId)
+        .catch((e) => console.error("[email] free-enrollment:", e));
+    }
 
     return NextResponse.json({ enrollment }, { status: 201 });
   } catch (error) {

@@ -61,7 +61,7 @@ function stripMarkdown(text: string): string {
     .trim();
 }
 
-function parseContent(raw: string): Block[] {
+function parseMdContent(raw: string): Block[] {
   const lines = raw.split("\n");
   const blocks: Block[] = [];
   let i = 0;
@@ -204,6 +204,180 @@ function wrapText(text: string, maxWidth: number, font: any, fontSize: number): 
   return lines;
 }
 
+// ─── HTML content pipeline ────────────────────────────────────────────────────
+// Quill editor saves content as HTML (starts with "<"). These helpers mirror
+// the markdown pipeline so the PDF renders Quill content with identical fidelity.
+
+function isHtmlContent(s: string): boolean {
+  return typeof s === "string" && s.trimStart().startsWith("<");
+}
+
+function decodeEntities(s: string): string {
+  return s
+    .replace(/&nbsp;/g, " ").replace(/ /g, " ")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (_: string, n: string) => String.fromCharCode(Number(n)));
+}
+
+function stripHtmlTags(html: string): string {
+  return sanitize(
+    decodeEntities(html.replace(/<br\s*\/?>/gi, " ").replace(/<[^>]+>/g, ""))
+  ).trim();
+}
+
+// Convert inner HTML of a Quill block element → Span[] (bold / italic / code / link).
+function parseHtmlInline(html: string): Span[] {
+  const spans: Span[] = [];
+  html = html.replace(/&nbsp;/g, " ").replace(/ /g, " ");
+  const parts = html.split(/(<[^>]+?>)/g);
+  const st = { bold: false, italic: false, code: false, link: null as string | null };
+  for (const part of parts) {
+    if (!part) continue;
+    if (part.startsWith("<")) {
+      const isClose   = part.startsWith("</");
+      const nameMatch = part.match(/^<\/?([a-z][a-z0-9]*)/i);
+      if (!nameMatch) continue;
+      const tag = nameMatch[1].toLowerCase();
+      if      (tag === "strong" || tag === "b") st.bold   = !isClose;
+      else if (tag === "em"     || tag === "i") st.italic = !isClose;
+      else if (tag === "code")                  st.code   = !isClose;
+      else if (tag === "a" && !isClose) {
+        const m = part.match(/href="([^"]*)"/i) || part.match(/href='([^']*)'/i);
+        st.link = m ? m[1] : null;
+      }
+      else if (tag === "a")  st.link = null;
+      else if (tag === "br") spans.push({ text: " " });
+    } else {
+      const text = sanitize(decodeEntities(part));
+      if (!text) continue;
+      const span: Span = { text };
+      if (st.bold)   span.bold   = true;
+      if (st.italic) span.italic = true;
+      if (st.code)   span.code   = true;
+      if (st.link)   span.link   = st.link;
+      spans.push(span);
+    }
+  }
+  return spans.filter((s) => s.text);
+}
+
+// Parse Quill HTML → Block[]. block.text holds raw inner HTML so inline
+// formatting survives into the PDF via parseHtmlInline().
+function parseHtml(raw: string): Block[] {
+  const blocks: Block[] = [];
+  let i = 0;
+  const len = raw.length;
+
+  // Read inner content up to the matching close tag, updating outer i.
+  const readUntilClose = (tag: string): string => {
+    const closeTag = `</${tag}>`;
+    const openRe   = new RegExp(`<${tag}[\\s>]`, "gi");
+    let depth = 1, pos = i;
+    while (pos < len && depth > 0) {
+      const nc = raw.toLowerCase().indexOf(closeTag.toLowerCase(), pos);
+      if (nc < 0) { i = len; return ""; }
+      depth += (raw.slice(pos, nc).match(openRe) || []).length;
+      depth--;
+      if (depth === 0) { const c = raw.slice(i, nc); i = nc + closeTag.length; return c; }
+      pos = nc + closeTag.length;
+    }
+    i = len;
+    return "";
+  };
+
+  while (i < len) {
+    while (i < len && /\s/.test(raw[i])) i++;
+    if (i >= len) break;
+
+    if (raw[i] !== "<") {
+      const end  = raw.indexOf("<", i);
+      const text = sanitize(decodeEntities(raw.slice(i, end < 0 ? len : end).trim()));
+      if (text) blocks.push({ type: "paragraph", text });
+      i = end < 0 ? len : end;
+      continue;
+    }
+
+    const tagEnd    = raw.indexOf(">", i);
+    if (tagEnd < 0) break;
+    const openTag   = raw.slice(i, tagEnd + 1);
+    const nameMatch = openTag.match(/^<([a-z][a-z0-9]*)/i);
+    if (!nameMatch || openTag.startsWith("</")) { i = tagEnd + 1; continue; }
+
+    const tag = nameMatch[1].toLowerCase();
+    if (openTag.endsWith("/>") || tag === "hr" || tag === "br" || tag === "img") {
+      if (tag === "hr") blocks.push({ type: "hr" });
+      i = tagEnd + 1;
+      continue;
+    }
+
+    i = tagEnd + 1;
+    const inner = readUntilClose(tag);
+
+    switch (tag) {
+      case "h1": { const t = stripHtmlTags(inner); if (t) blocks.push({ type: "h1", text: inner.trim() }); break; }
+      case "h2": { const t = stripHtmlTags(inner); if (t) blocks.push({ type: "h2", text: inner.trim() }); break; }
+      case "h3":
+      case "h4": { const t = stripHtmlTags(inner); if (t) blocks.push({ type: "h3", text: inner.trim() }); break; }
+      case "p": {
+        if (stripHtmlTags(inner)) blocks.push({ type: "paragraph", text: inner.trim() });
+        break;
+      }
+      case "blockquote": {
+        if (stripHtmlTags(inner)) blocks.push({ type: "blockquote", text: inner.trim() });
+        break;
+      }
+      case "pre": {
+        const code = sanitize(decodeEntities(inner.replace(/<[^>]+>/g, "")));
+        if (code.trim()) blocks.push({ type: "code", lang: "code", code: code.trim() });
+        break;
+      }
+      case "ul": {
+        const items: string[] = [];
+        const liRe = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let m: RegExpExecArray | null;
+        while ((m = liRe.exec(inner)) !== null) {
+          if (stripHtmlTags(m[1])) items.push(m[1].trim());
+        }
+        if (items.length) blocks.push({ type: "list", items });
+        break;
+      }
+      case "ol": {
+        const items: string[] = [];
+        const liRe = /<li[^>]*>([\s\S]*?)<\/li>/gi;
+        let m: RegExpExecArray | null;
+        while ((m = liRe.exec(inner)) !== null) {
+          if (stripHtmlTags(m[1])) items.push(m[1].trim());
+        }
+        if (items.length) blocks.push({ type: "numlist", items });
+        break;
+      }
+      default: {
+        const text = stripHtmlTags(inner);
+        if (text) blocks.push({ type: "paragraph", text });
+        break;
+      }
+    }
+  }
+  return blocks;
+}
+
+// Route to the correct inline parser based on content type.
+// isHtmlContent() only checks the first character, so also detect HTML tags
+// or entities anywhere in the string (e.g. Quill inner HTML like
+// "When&nbsp;higher..." or "Some <strong>bold</strong> text").
+function getSpans(text: string): Span[] {
+  if (/<[a-z]/i.test(text) || /&(?:[a-z]+|#\d+);/.test(text)) {
+    return parseHtmlInline(text);
+  }
+  return parseInline(text);
+}
+
+// Unified block parser — dispatches to HTML or Markdown pipeline.
+function parseContent(raw: string): Block[] {
+  return isHtmlContent(raw) ? parseHtml(raw) : parseMdContent(raw);
+}
+
 async function generateCoursePDF(course: any) {
   // Normalize every user-supplied string up front so no draw call ever sees
   // a character outside WinAnsi (CP-1252). Avoids "WinAnsi cannot encode"
@@ -222,7 +396,30 @@ async function generateCoursePDF(course: any) {
       title:   sanitize(l.title),
       content: l.content == null ? l.content : sanitize(l.content),
     })),
+    sections: (course.sections || []).map((s: any) => ({
+      ...s,
+      title: sanitize(s.title),
+    })),
   };
+
+  // ── Build chapter list from sections ──────────────────────────────────────
+  // Each chapter = one Section with its member lessons, ordered correctly.
+  // Lessons without a sectionId are grouped under a trailing chapter.
+  type Chapter = { title: string | null; lessons: (typeof course.lessons)[number][] };
+  const chapters: Chapter[] = [];
+
+  if (course.sections.length > 0) {
+    for (const section of course.sections) {
+      const sectionLessons = course.lessons.filter((l: any) => l.sectionId === section.id);
+      if (sectionLessons.length > 0) chapters.push({ title: section.title, lessons: sectionLessons });
+    }
+    const unsectioned = course.lessons.filter((l: any) => !l.sectionId);
+    if (unsectioned.length > 0) chapters.push({ title: "Other Lessons", lessons: unsectioned });
+  } else {
+    // No sections defined — flat list (backward compatible)
+    chapters.push({ title: null, lessons: course.lessons });
+  }
+  const totalLessons = course.lessons.length;
 
   const doc = await PDFDocument.create();
 
@@ -309,7 +506,9 @@ async function generateCoursePDF(course: any) {
 
   // Description (strip markdown for clean cover display)
   if (course.description) {
-    const plainDesc = sanitize(stripMarkdown(course.description));
+    const plainDesc = isHtmlContent(course.description)
+      ? stripHtmlTags(course.description)
+      : sanitize(stripMarkdown(course.description));
     const descLines = wrapText(plainDesc, usableW - 12, font, 11);
     for (const line of descLines.slice(0, 6)) {
       cover.drawText(line, { x: margin + 12, y: coverY, size: 11, font, color: textMid });
@@ -319,7 +518,7 @@ async function generateCoursePDF(course: any) {
   }
 
   // Meta chips
-  const metaParts: string[] = [`${course.lessons.length} Lessons`];
+  const metaParts: string[] = [`${totalLessons} Lesson${totalLessons !== 1 ? "s" : ""}${chapters.length > 1 && course.sections.length > 0 ? ` · ${chapters.length} Chapters` : ""}`];
   if (course.level)    metaParts.push(course.level.charAt(0).toUpperCase() + course.level.slice(1) + " Level");
   if (course.language) metaParts.push(course.language);
   cover.drawText(metaParts.join("  ·  "), { x: margin + 12, y: coverY, size: 9.5, font, color: textMid });
@@ -331,26 +530,11 @@ async function generateCoursePDF(course: any) {
   cover.drawText("INSTRUCTOR", { x: margin + 12, y: 114, size: 7.5, font: fontBold, color: textMid });
   cover.drawText(instructorName, { x: margin + 12, y: 92, size: 15, font: fontBold, color: textDark });
 
-  // Site logo (replaces former "LearnHub" wordmark)
-  if (logoImage) {
-    const { width: logoW, height: logoH } = logoSize(28);
-    cover.drawImage(logoImage, {
-      x: pageWidth - margin - logoW,
-      y: 88,
-      width: logoW,
-      height: logoH,
-      opacity: 0.95,
-    });
-  }
-  const subW = font.widthOfTextAtSize("Learning Platform", 8.5);
-  cover.drawText("Learning Platform", { x: pageWidth - margin - subW, y: 75, size: 8.5, font, color: rgb(0.38, 0.38, 0.44) });
-
   // Generated date
   const genDate = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
   cover.drawText(`Generated ${genDate}`, { x: margin + 12, y: 50, size: 8, font, color: textMid });
 
   // ─── CONTENT PAGES ────────────────────────────────────────────────────────
-  const lessonPageIndices: number[] = [];
 
   let page = doc.addPage([pageWidth, pageHeight]);
   let y = contentTop;
@@ -487,28 +671,28 @@ async function generateCoursePDF(course: any) {
       switch (block.type) {
         case "h1":
           y -= SP.beforeH1; ensureSpace(28);
-          drawRichSpans(parseInline(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
+          drawRichSpans(getSpans(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
           y -= SP.afterHeading;
           break;
         case "h2":
           y -= SP.beforeH2; ensureSpace(24);
-          drawRichSpans(parseInline(block.text), fontBold, 13, textDark);
+          drawRichSpans(getSpans(block.text), fontBold, 13, textDark);
           y -= SP.afterHeading;
           break;
         case "h3":
           y -= SP.beforeH3; ensureSpace(20);
-          drawRichSpans(parseInline(block.text), fontBold, 11, textMid);
+          drawRichSpans(getSpans(block.text), fontBold, 11, textMid);
           y -= SP.afterHeading;
           break;
         case "paragraph":
-          drawRichSpans(parseInline(block.text), font, 10.5, textDark);
+          drawRichSpans(getSpans(block.text), font, 10.5, textDark);
           y -= SP.afterPara;
           break;
         case "blockquote": {
           y -= SP.beforeQuote; ensureSpace(24);
           const quoteIndent = 18;
           const startY = y + 4;
-          drawRichSpans(parseInline(block.text), fontOblique, 10.5, textMid, quoteIndent);
+          drawRichSpans(getSpans(block.text), fontOblique, 10.5, textMid, quoteIndent);
           const endY = y + 4;
           page.drawRectangle({ x: margin + 4, y: endY, width: 2, height: Math.max(startY - endY, 12), color: orange, opacity: 0.7 });
           y -= SP.afterQuote;
@@ -549,7 +733,7 @@ async function generateCoursePDF(course: any) {
           for (const item of block.items) {
             ensureSpace(20);
             page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           }
           y -= SP.afterList - SP.listItemGap;
@@ -558,7 +742,7 @@ async function generateCoursePDF(course: any) {
           block.items.forEach((item, idx) => {
             ensureSpace(20);
             page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           });
           y -= SP.afterList - SP.listItemGap;
@@ -569,38 +753,81 @@ async function generateCoursePDF(course: any) {
     y -= SP.lessonGap;
   }
 
-  // ── Lessons ──────────────────────────────────────────────────────────────
-  const headerH = 38;
-  for (let i = 0; i < course.lessons.length; i++) {
-    const lesson = course.lessons[i];
+  // ── Chapters + Lessons ───────────────────────────────────────────────────
+  const headerH  = 38;
+  const chapterH = 48; // height of a chapter banner
+  let globalLessonIdx = 0; // running 1-based lesson number across all chapters
 
-    // Reserve a comfortable amount of room so a lesson header doesn't strand
-    // alone at the bottom of a page.
-    ensureSpace(headerH + SP.afterLessonHeader + 60);
-    lessonPageIndices.push(doc.getPageCount() - 1);
+  // Flat records for the TOC (filled as we render)
+  type TocEntry =
+    | { kind: "chapter"; title: string; pageIdx: number }
+    | { kind: "lesson";  title: string; pageIdx: number; num: number };
+  const tocEntries: TocEntry[] = [];
 
-    if (lessonPageIndices[i] !== doc.getPageCount() - 1) {
-      lessonPageIndices[i] = doc.getPageCount() - 1;
+  for (let ci = 0; ci < chapters.length; ci++) {
+    const chapter = chapters[ci];
+
+    // ── Chapter banner ───────────────────────────────────────────────────
+    if (chapter.title) {
+      ensureSpace(chapterH + 60);
+      tocEntries.push({ kind: "chapter", title: chapter.title, pageIdx: doc.getPageCount() - 1 });
+
+      // Full-width dark orange band
+      page.drawRectangle({ x: margin - 4, y: y - chapterH + 4, width: usableW + 8, height: chapterH - 4, color: rgb(0.14, 0.09, 0.04) });
+      page.drawRectangle({ x: margin - 4, y: y - chapterH + 4, width: 4, height: chapterH - 4, color: orange });
+      // "CHAPTER N" label
+      const chLabel = `CHAPTER ${ci + 1}`;
+      page.drawText(chLabel, { x: margin + 8, y: y - 11, size: 7, font: fontBold, color: orange });
+      // Chapter title
+      const chTitleLines = wrapText(chapter.title, usableW - 16, fontBold, 13);
+      let chTY = y - 22;
+      for (const line of chTitleLines) {
+        page.drawText(line, { x: margin + 8, y: chTY, size: 13, font: fontBold, color: white });
+        chTY -= 17;
+      }
+      y -= chapterH;
+      page.drawRectangle({ x: margin - 4, y, width: usableW + 8, height: 0.5, color: orange });
+      y -= SP.afterLessonHeader + 4;
     }
 
-    // Light accent background for lesson header
-    page.drawRectangle({ x: margin, y: y - headerH + 4, width: usableW, height: headerH - 4, color: rgb(0.97, 0.97, 0.99) });
-    page.drawRectangle({ x: margin, y: y - headerH + 4, width: 3, height: headerH - 4, color: orange });
-    page.drawRectangle({ x: margin, y: y - headerH + 3, width: usableW, height: 0.5, color: divider });
+    // ── Lessons in this chapter ──────────────────────────────────────────
+    for (let li = 0; li < chapter.lessons.length; li++) {
+      const lesson = chapter.lessons[li];
+      globalLessonIdx++;
 
-    // Lesson number badge
-    const numStr = String(i + 1).padStart(2, "0");
-    page.drawText(numStr, { x: margin + 10, y: y - 11, size: 10, font: fontBold, color: orange });
+      // Compute lines first so we can size the band dynamically
+      const ltLines = wrapText(lesson.title, usableW - 48, fontBold, 13);
+      const ltLineH = 17;
+      const minBandH = 34; // inner height (headerH - 4)
+      const titleBlockH = ltLines.length * ltLineH - (ltLineH - 13); // ascent of last line doesn't need full gap
+      const bandH = Math.max(minBandH, titleBlockH + 12); // 6pt padding top+bottom
+      const dynHeaderH = bandH + 4; // +4 for the top offset used below
 
-    // Lesson title
-    const ltLines = wrapText(lesson.title, usableW - 48, fontBold, 13);
-    let ltY = y - 8;
-    for (const ltLine of ltLines) {
-      page.drawText(ltLine, { x: margin + 36, y: ltY, size: 13, font: fontBold, color: textDark });
-      ltY -= 17;
-    }
+      ensureSpace(dynHeaderH + SP.afterLessonHeader + 60);
+      tocEntries.push({ kind: "lesson", title: lesson.title, pageIdx: doc.getPageCount() - 1, num: globalLessonIdx });
 
-    y -= headerH;
+      // Light accent background for lesson header
+      page.drawRectangle({ x: margin, y: y - dynHeaderH + 4, width: usableW, height: bandH, color: rgb(0.97, 0.97, 0.99) });
+      page.drawRectangle({ x: margin, y: y - dynHeaderH + 4, width: 3, height: bandH, color: orange });
+      page.drawRectangle({ x: margin, y: y - dynHeaderH + 3, width: usableW, height: 0.5, color: divider });
+
+      // Vertically centre content within the band
+      // Band top = y, band bottom = y - dynHeaderH + 4; centre = y - dynHeaderH/2 + 2
+      const bandCenterY = y - dynHeaderH / 2 + 2;
+
+      // Lesson number badge — centred vertically (font size 10, descend ~3pt)
+      const numStr = String(globalLessonIdx).padStart(2, "0");
+      page.drawText(numStr, { x: margin + 10, y: bandCenterY - 5, size: 10, font: fontBold, color: orange });
+
+      // Lesson title — block centred vertically
+      const totalTitleH = (ltLines.length - 1) * ltLineH + 13; // height from top baseline to bottom of last line
+      let ltY = bandCenterY + totalTitleH / 2 - 13 * 0.75; // align top baseline
+      for (const ltLine of ltLines) {
+        page.drawText(ltLine, { x: margin + 36, y: ltY, size: 13, font: fontBold, color: textDark });
+        ltY -= ltLineH;
+      }
+
+      y -= dynHeaderH;
 
     // Separator + breathing room before the lesson body
     page.drawRectangle({ x: margin, y, width: usableW, height: 0.5, color: divider });
@@ -618,28 +845,28 @@ async function generateCoursePDF(course: any) {
       switch (block.type) {
         case "h1":
           y -= SP.beforeH1; ensureSpace(28);
-          drawRichSpans(parseInline(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
+          drawRichSpans(getSpans(block.text), fontBold, 15, rgb(0.05, 0.05, 0.10));
           y -= SP.afterHeading;
           break;
         case "h2":
           y -= SP.beforeH2; ensureSpace(24);
-          drawRichSpans(parseInline(block.text), fontBold, 13, textDark);
+          drawRichSpans(getSpans(block.text), fontBold, 13, textDark);
           y -= SP.afterHeading;
           break;
         case "h3":
           y -= SP.beforeH3; ensureSpace(20);
-          drawRichSpans(parseInline(block.text), fontBold, 11, textMid);
+          drawRichSpans(getSpans(block.text), fontBold, 11, textMid);
           y -= SP.afterHeading;
           break;
         case "paragraph":
-          drawRichSpans(parseInline(block.text), font, 10.5, textDark);
+          drawRichSpans(getSpans(block.text), font, 10.5, textDark);
           y -= SP.afterPara;
           break;
         case "blockquote": {
           y -= SP.beforeQuote; ensureSpace(24);
           const quoteIndent = 18;
           const startY = y + 4;
-          drawRichSpans(parseInline(block.text), fontOblique, 10.5, textMid, quoteIndent);
+          drawRichSpans(getSpans(block.text), fontOblique, 10.5, textMid, quoteIndent);
           // Left orange bar spanning the rendered block
           const endY = y + 4;
           page.drawRectangle({
@@ -695,7 +922,7 @@ async function generateCoursePDF(course: any) {
           for (const item of block.items) {
             ensureSpace(20);
             page.drawText("•", { x: margin + 10, y, size: 10, font, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           }
           y -= SP.afterList - SP.listItemGap;
@@ -704,7 +931,7 @@ async function generateCoursePDF(course: any) {
           block.items.forEach((item, idx) => {
             ensureSpace(20);
             page.drawText(`${idx + 1}.`, { x: margin + 8, y, size: 10.5, font: fontBold, color: orange });
-            drawRichSpans(parseInline(item), font, 10.5, textDark, 22);
+            drawRichSpans(getSpans(item), font, 10.5, textDark, 22);
             y -= SP.listItemGap;
           });
           y -= SP.afterList - SP.listItemGap;
@@ -712,13 +939,12 @@ async function generateCoursePDF(course: any) {
       }
     }
 
-    y -= SP.lessonGap;
-  }
+      y -= SP.lessonGap;
+    } // end lesson loop
+  } // end chapter loop
 
   // ─── TABLE OF CONTENTS (inserted at page index 1) ─────────────────────────
-  // Content pages are currently: cover=0, content=1+
-  // After inserting TOC at 1: cover=0, toc=1, content=2+
-  // So lessonPageIndices[i] + 2 = 1-based page number for TOC display.
+  // cover=0, toc=1 (inserted), content=2+  →  displayed page = pageIdx + 2.
 
   const tocPage = doc.insertPage(1, [pageWidth, pageHeight]);
 
@@ -728,52 +954,58 @@ async function generateCoursePDF(course: any) {
   tocPage.drawRectangle({ x: 0, y: pageHeight - 62, width: pageWidth, height: 0.5, color: divider });
   tocPage.drawText("Table of Contents", { x: margin, y: pageHeight - 36, size: 19, font: fontBold, color: textDark });
   tocPage.drawText(course.title, { x: margin, y: pageHeight - 54, size: 9, font, color: textMid });
-  if (logoImage) {
-    const { width: tocLogoW, height: tocLogoH } = logoSize(18);
-    tocPage.drawImage(logoImage, {
-      x: pageWidth - margin - tocLogoW,
-      y: pageHeight - 42,
-      width: tocLogoW,
-      height: tocLogoH,
-    });
-  }
 
-  // TOC rows
-  let tocY    = pageHeight - 84;
-  const rowH  = 25;
-  const tocBt = FOOTER_H + 18;
+  // TOC rows — chapter banners + indented lessons
+  let tocY       = pageHeight - 84;
+  const lessonRowH  = 22;
+  const chapterRowH = 28;
+  const tocBt    = FOOTER_H + 18;
+  const pgNumX   = pageWidth - margin - 26;
 
-  course.lessons.forEach((lesson: any, i: number) => {
-    if (tocY < tocBt) return;
-
-    if (i % 2 === 0) {
-      tocPage.drawRectangle({ x: margin - 8, y: tocY - 8, width: usableW + 16, height: rowH, color: rgb(0.975, 0.975, 0.985) });
-    }
-
-    // Lesson number
-    tocPage.drawText(String(i + 1).padStart(2, "0"), { x: margin, y: tocY + 5, size: 9, font: fontBold, color: orange });
-
-    // Lesson title
-    const maxTitleW  = usableW - 60;
-    const truncTitle = lesson.title.length > 68 ? lesson.title.slice(0, 65) + "…" : lesson.title;
-    tocPage.drawText(truncTitle, { x: margin + 28, y: tocY + 5, size: 9.5, font, color: textDark });
-
-    // Dot leaders
-    const titleEndX = margin + 28 + font.widthOfTextAtSize(truncTitle, 9.5);
-    const pgNumX    = pageWidth - margin - 26;
-    let dotX = titleEndX + 6;
+  const drawDots = (fromX: number, atY: number) => {
+    let dotX = fromX + 6;
     while (dotX + 5 < pgNumX - 8) {
-      tocPage.drawText(".", { x: dotX, y: tocY + 5, size: 9, font, color: rgb(0.76, 0.76, 0.80) });
+      tocPage.drawText(".", { x: dotX, y: atY, size: 9, font, color: rgb(0.76, 0.76, 0.80) });
       dotX += 5.5;
     }
+  };
 
-    // Page number
-    const pgNum  = String(lessonPageIndices[i] + 2);
-    const pgNumW = fontBold.widthOfTextAtSize(pgNum, 9);
-    tocPage.drawText(pgNum, { x: pageWidth - margin - pgNumW, y: tocY + 5, size: 9, font: fontBold, color: textDark });
+  const drawPageNum = (pageIdx: number, atY: number, f = font) => {
+    const pgNum  = String(pageIdx + 2); // +2: cover + TOC inserted before
+    const pgNumW = f.widthOfTextAtSize(pgNum, 9);
+    tocPage.drawText(pgNum, { x: pageWidth - margin - pgNumW, y: atY, size: 9, font: f, color: textDark });
+  };
 
-    tocY -= rowH;
-  });
+  let tocRowIdx = 0;
+  for (const entry of tocEntries) {
+    if (tocY < tocBt) break;
+
+    if (entry.kind === "chapter") {
+      // Chapter row — full-width dark band
+      tocPage.drawRectangle({ x: margin - 8, y: tocY - 6, width: usableW + 16, height: chapterRowH, color: rgb(0.14, 0.09, 0.04) });
+      tocPage.drawRectangle({ x: margin - 8, y: tocY - 6, width: 3, height: chapterRowH, color: orange });
+      const chTrunc = entry.title.length > 62 ? entry.title.slice(0, 59) + "…" : entry.title;
+      tocPage.drawText(chTrunc, { x: margin + 4, y: tocY + 7, size: 10, font: fontBold, color: white });
+      drawDots(margin + 4 + fontBold.widthOfTextAtSize(chTrunc, 10), tocY + 7);
+      drawPageNum(entry.pageIdx, tocY + 7, fontBold);
+      tocY -= chapterRowH + 2;
+    } else {
+      // Lesson row — indented
+      const indent = chapters.length > 1 && course.sections.length > 0 ? 18 : 0;
+      if (tocRowIdx % 2 === 0) {
+        tocPage.drawRectangle({ x: margin - 8, y: tocY - 4, width: usableW + 16, height: lessonRowH, color: rgb(0.975, 0.975, 0.985) });
+      }
+      tocPage.drawText(String(entry.num).padStart(2, "0"), { x: margin + indent, y: tocY + 4, size: 8.5, font: fontBold, color: orange });
+      const maxW    = usableW - indent - 60;
+      const maxChars = Math.floor(maxW / 5.5);
+      const trunc   = entry.title.length > maxChars ? entry.title.slice(0, maxChars - 3) + "…" : entry.title;
+      tocPage.drawText(trunc, { x: margin + indent + 22, y: tocY + 4, size: 9, font, color: textDark });
+      drawDots(margin + indent + 22 + font.widthOfTextAtSize(trunc, 9), tocY + 4);
+      drawPageNum(entry.pageIdx, tocY + 4);
+      tocY -= lessonRowH + 2;
+      tocRowIdx++;
+    }
+  }
 
   // ─── WATERMARK + HEADERS + FOOTERS (all pages) ────────────────────────────
   // Use the site logo as a faint diagonal watermark to match the website
@@ -818,15 +1050,6 @@ async function generateCoursePDF(course: any) {
       p.drawRectangle({ x: 0, y: pageHeight - HEADER_H, width: 3, height: HEADER_H, color: orange });
       const hTitle = course.title.length > 60 ? course.title.slice(0, 57) + "…" : course.title;
       p.drawText(hTitle, { x: margin, y: pageHeight - HEADER_H + 13, size: 9, font, color: textMid });
-      if (logoImage) {
-        const { width: hdrLogoW, height: hdrLogoH } = logoSize(14);
-        p.drawImage(logoImage, {
-          x: pageWidth - margin - hdrLogoW,
-          y: pageHeight - HEADER_H + 11,
-          width: hdrLogoW,
-          height: hdrLogoH,
-        });
-      }
     }
   });
 
@@ -847,6 +1070,7 @@ export async function GET(
     const course = await prisma.course.findUnique({
       where: { id: courseId },
       include: {
+        sections:  { orderBy: { order: "asc" } },
         lessons:   { orderBy: { order: "asc" } },
         createdBy: { select: { name: true } },
       },

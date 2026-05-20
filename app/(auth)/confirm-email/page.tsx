@@ -3,15 +3,16 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Mail, ArrowRight, CheckCircle2, Loader2, RefreshCw } from "lucide-react";
+import { Mail, ArrowRight, CheckCircle2, Loader2, RefreshCw, Clock } from "lucide-react";
 import { supabaseClient as supabase } from "@/lib/supabase/client";
 import { Suspense } from "react";
 
 // ── Inner component (needs useSearchParams) ─────────────────────────────────
 
 function ConfirmEmailContent() {
-  const searchParams = useSearchParams();
-  const email = searchParams.get("email") ?? "";
+  const searchParams   = useSearchParams();
+  const email          = searchParams.get("email") ?? "";
+  const isPendingInstructor = searchParams.get("pending") === "instructor";
 
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [cooldown, setCooldown]         = useState(0);
@@ -79,9 +80,22 @@ function ConfirmEmailContent() {
           {email && (
             <p className="text-foreground font-medium text-sm mb-4 break-all">{email}</p>
           )}
-          <p className="text-muted-foreground text-sm leading-relaxed mb-8">
+          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
             Click the link in the email to activate your account. The link expires in&nbsp;24&nbsp;hours.
           </p>
+
+          {isPendingInstructor && (
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3.5 text-left mb-6">
+              <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-amber-400 font-semibold text-sm">Application pending approval</p>
+                <p className="text-amber-400/70 text-xs mt-0.5 leading-relaxed">
+                  After confirming your email, your instructor application will be reviewed by our team.
+                  You&apos;ll receive an email once approved.
+                </p>
+              </div>
+            </div>
+          )}
 
           {/* Resend section */}
           <div className="space-y-3">

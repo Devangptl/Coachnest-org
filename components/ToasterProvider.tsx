@@ -3,8 +3,8 @@ import { Toaster } from "react-hot-toast";
 import { useTheme } from "@/components/ThemeProvider";
 
 export function ToasterProvider() {
-  const { theme } = useTheme();
-  const dark = theme === "dark";
+  const { resolvedTheme } = useTheme();
+  const dark = resolvedTheme === "dark";
 
   return (
     <Toaster

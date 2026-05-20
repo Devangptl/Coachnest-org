@@ -23,15 +23,54 @@ import {
   GraduationCap,
   Map,
   BookOpen,
+  Sun,
+  Moon,
+  Monitor,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
 import ThemeToggle from "./ThemeToggle";
+import InstructorAvatar from "./InstructorAvatar";
+import { useTheme, type Theme } from "./ThemeProvider";
 import { cn } from "@/lib/utils";
+
+const THEME_OPTIONS: { value: Theme; icon: React.ElementType; label: string }[] = [
+  { value: "system", icon: Monitor, label: "System" },
+  { value: "light",  icon: Sun,     label: "Light"  },
+  { value: "dark",   icon: Moon,    label: "Dark"   },
+];
 
 interface Props {
   session: SessionPayload | null;
+}
+
+/**
+ * Navbar avatar — shows the user's photo, or a stable DiceBear cartoon
+ * dummy avatar when no real photo exists or the image fails to load.
+ * Uses the shared InstructorAvatar so the navbar matches the rest of
+ * the app instead of rendering a broken image / blank circle.
+ */
+function NavAvatar({
+  name,
+  avatar,
+  seed,
+  className,
+}: {
+  name: string;
+  avatar?: string | null;
+  seed: string;
+  className?: string;
+}) {
+  return (
+    <InstructorAvatar
+      name={name}
+      avatar={avatar}
+      seed={seed}
+      size="w-7 h-7"
+      className={cn("ring-0 dark:ring-0", className)}
+    />
+  );
 }
 
 // Role-based dropdown menu items
@@ -66,6 +105,7 @@ const ROLE_LABELS: Record<string, { label: string; color: string }> = {
 export default function NavbarClient({ session }: Props) {
   const pathname = usePathname();
   const router = useRouter();
+  const { theme: currentTheme, setTheme } = useTheme();
   const [scrolled,     setScrolled]     = useState(false);
   const [mobileOpen,   setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
@@ -118,20 +158,12 @@ export default function NavbarClient({ session }: Props) {
 
   const dropdownLinks = session ? DROPDOWN_LINKS[session.role] : [];
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
-  const initials = session
-    ? session.name
-      .split(" ")
-      .map((w) => w[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2)
-    : "";
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-4 sm:px-6 lg:px-8 py-2">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 lg:px-7 py-1.5">
       <div
         className={cn(
-          "mx-auto flex items-center justify-between rounded-lg px-4 sm:px-6 py-2 transition-all duration-300 border",
+          "mx-auto flex items-center justify-between rounded-lg px-3 sm:px-5 py-1.5 transition-all duration-300 border",
           "bg-card border-border shadow-glass"
         )}
       >
@@ -158,10 +190,12 @@ export default function NavbarClient({ session }: Props) {
             </kbd>
           </button>
 
-          {/* Theme toggle — desktop */}
-          <div className="hidden lg:block">
-            <ThemeToggle />
-          </div>
+          {/* Theme toggle — desktop, only when NOT logged in */}
+          {!session && (
+            <div className="hidden lg:block">
+              <ThemeToggle />
+            </div>
+          )}
 
           {session ? (
             <>
@@ -181,13 +215,7 @@ export default function NavbarClient({ session }: Props) {
                   )}
                 >
                   {/* Avatar */}
-                  {session.avatar ? (
-                    <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                  ) : (
-                    <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                      {initials}
-                    </div>
-                  )}
+                  <NavAvatar name={session.name} avatar={session.avatar} seed={session.userId} />
                   <div className="hidden sm:flex flex-col items-start">
                     <span className="text-foreground text-xs font-medium leading-tight">
                       {session.name.split(" ")[0]}
@@ -219,13 +247,7 @@ export default function NavbarClient({ session }: Props) {
                       {/* User info header */}
                       <div className="px-3 py-2.5 border-b border-border">
                         <div className="flex items-center gap-2.5">
-                          {session.avatar ? (
-                            <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                          ) : (
-                            <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                              {initials}
-                            </div>
-                          )}
+                          <NavAvatar name={session.name} avatar={session.avatar} seed={session.userId} />
                           <div className="flex-1 min-w-0">
                             <p className="text-foreground text-sm font-semibold truncate">{session.name}</p>
                             <p className="text-muted-foreground text-xs truncate">{session.email}</p>
@@ -269,6 +291,30 @@ export default function NavbarClient({ session }: Props) {
                             </Link>
                           );
                         })}
+                      </div>
+
+                      {/* Theme switcher */}
+                      <div className="border-t border-border px-3 py-2 flex items-center justify-between gap-2">
+                        <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                          Theme
+                        </span>
+                        <div className="flex items-center gap-0.5 bg-secondary rounded-md p-0.5">
+                          {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+                            <button
+                              key={value}
+                              onClick={() => setTheme(value)}
+                              aria-label={label}
+                              className={cn(
+                                "w-7 h-7 flex items-center justify-center rounded transition-all",
+                                currentTheme === value
+                                  ? "bg-card text-[#d97757] shadow-sm"
+                                  : "text-muted-foreground hover:text-foreground"
+                              )}
+                            >
+                              <Icon className="w-3.5 h-3.5" />
+                            </button>
+                          ))}
+                        </div>
                       </div>
 
                       {/* Restart Tour */}
@@ -370,13 +416,7 @@ export default function NavbarClient({ session }: Props) {
                 <>
                   <div className="border-t border-border my-2" />
                   <div className="px-4 py-2 flex items-center gap-3">
-                    {session.avatar ? (
-                      <img src={session.avatar} alt="Avatar" className="w-7 h-7 rounded-full object-cover" />
-                    ) : (
-                      <div className="w-7 h-7 rounded-full bg-primary flex items-center justify-center text-[#ffffff] text-xs font-bold">
-                        {initials}
-                      </div>
-                    )}
+                    <NavAvatar name={session.name} avatar={session.avatar} seed={session.userId} />
                     <div>
                       <p className="text-foreground text-sm font-medium">{session.name}</p>
                       <p className="text-muted-foreground text-xs">{session.email}</p>
@@ -407,6 +447,30 @@ export default function NavbarClient({ session }: Props) {
                     );
                   })}
                   <div className="border-t border-border my-2" />
+                  {/* Theme switcher — mobile */}
+                  <div className="px-4 py-2 flex items-center justify-between gap-2">
+                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                      Theme
+                    </span>
+                    <div className="flex items-center gap-0.5 bg-secondary rounded-md p-0.5">
+                      {THEME_OPTIONS.map(({ value, icon: Icon, label }) => (
+                        <button
+                          key={value}
+                          onClick={() => setTheme(value)}
+                          aria-label={label}
+                          className={cn(
+                            "w-7 h-7 flex items-center justify-center rounded transition-all",
+                            currentTheme === value
+                              ? "bg-card text-[#d97757] shadow-sm"
+                              : "text-muted-foreground hover:text-foreground"
+                          )}
+                        >
+                          <Icon className="w-3.5 h-3.5" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="border-t border-border my-2" />
                   <button
                     onClick={() => {
                       setMobileOpen(false);
@@ -433,9 +497,6 @@ export default function NavbarClient({ session }: Props) {
                     <Map className="w-4 h-4" />
                     Restart Tour
                   </button>
-                  <div className="px-2 py-1">
-                    <ThemeToggle />
-                  </div>
                   <button
                     onClick={handleLogout}
                     className="flex items-center gap-3 w-full px-4 py-2.5 rounded-lg text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all"

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { Eye, RotateCcw } from "lucide-react";
 import OrderDetailsModal from "./OrderDetailsModal";
+import Avatar from "@/components/Avatar";
 
 const STATUS_STYLES: Record<string, string> = {
   PAID:     "bg-emerald-500/10 border-emerald-400/25 text-emerald-400",
@@ -18,20 +19,6 @@ const STATUS_DOT: Record<string, string> = {
   FAILED:   "bg-red-400",
   REFUNDED: "bg-zinc-400",
 };
-
-function Avatar({ name }: { name: string }) {
-  const initials = name
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-  return (
-    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
-      {initials}
-    </div>
-  );
-}
 
 export default function OrderTable({ orders }: { orders: any[] }) {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
@@ -56,7 +43,7 @@ export default function OrderTable({ orders }: { orders: any[] }) {
 
             {/* Student */}
             <div className="col-span-3 flex items-center gap-2.5 min-w-0">
-              <Avatar name={order.studentName} />
+              <Avatar name={order.studentName} seed={order.studentName} size="w-8 h-8" className="flex-shrink-0" />
               <div className="min-w-0">
                 <p className="text-sm font-medium text-foreground truncate leading-tight">
                   {order.studentName}

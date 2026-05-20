@@ -12,11 +12,11 @@
  * Supports:
  *   • YouTube embed / watch / youtu.be URLs  → YouTube IFrame API
  *   • Direct video files (.mp4 / .webm / .ogg / .mov) → HTML5 <video>
- *   • Any other URL → plain iframe (no tracking, banner shown instead)
+ *   • Any other URL → plain iframe (manual-complete button shown)
  */
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { CheckCircle2, Eye, PlayCircle } from "lucide-react";
+import { CheckCircle2, PlayCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -99,29 +99,61 @@ function loadYouTubeAPI(cb: YTCallback) {
 
 // ─── Watch progress bar ───────────────────────────────────────────────────────
 
-function WatchProgressBar({ pct, completed }: { pct: number; completed: boolean }) {
-  const pctRound = Math.round(pct);
+interface WatchProgressBarProps {
+  pct:       number;
+  completed: boolean;
+}
+
+function WatchProgressBar({ pct, completed }: WatchProgressBarProps) {
+  // Always show 100% fill width when completed, regardless of tracked pct
+  const fillWidth = completed ? 100 : Math.round(pct);
+
   return (
-    <div className="flex items-center gap-3 px-4 py-2.5 bg-black/70 border-t border-white/5 select-none">
-      <Eye className="w-3.5 h-3.5 text-white/30 flex-shrink-0" />
-      <div className="flex-1 bg-white/10 rounded-full h-1.5 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-700 ease-out"
-          style={{
-            width: `${pctRound}%`,
-            background: completed ? "#22c55e" : pct >= 50 ? "#f97316" : "#f97316bb",
-          }}
-        />
+    <div className="px-4 py-3 bg-card border-t border-border flex flex-col gap-2">
+      {/* Bar + label row */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 bg-secondary rounded-full h-2 overflow-hidden">
+          <div
+            className={cn(
+              "h-full rounded-full transition-all duration-700 ease-out",
+              completed ? "bg-emerald-500" : pct >= COMPLETE_THRESHOLD ? "bg-emerald-500" : "bg-[#d97757]"
+            )}
+            style={{ width: `${fillWidth}%` }}
+          />
+        </div>
+
+        {completed ? (
+          <span className="flex items-center gap-1.5 text-xs font-semibold text-emerald-400 whitespace-nowrap flex-shrink-0">
+            <CheckCircle2 className="w-3.5 h-3.5" />
+            Lesson Complete
+          </span>
+        ) : (
+          <span className="text-[11px] text-muted-foreground/50 whitespace-nowrap flex-shrink-0 tabular-nums">
+            {Math.round(pct)}%
+          </span>
+        )}
       </div>
-      {completed ? (
-        <span className="flex items-center gap-1 text-[11px] font-semibold text-green-400 whitespace-nowrap">
-          <CheckCircle2 className="w-3 h-3" /> Watched
-        </span>
-      ) : (
-        <span className="text-[11px] text-white/35 whitespace-nowrap">
-          {pctRound}% watched — {COMPLETE_THRESHOLD}% to auto-complete
-        </span>
+
+      {/* Hint row */}
+      {!completed && (
+        <p className="text-[11px] text-muted-foreground/40 leading-snug">
+          Watch at least <span className="font-semibold text-[#d97757]/70">{COMPLETE_THRESHOLD}%</span> of the video to auto-complete this lesson.
+        </p>
       )}
+    </div>
+  );
+}
+
+// ─── Completion overlay (brief flash on screen when newly completed) ───────────
+
+function CompletionOverlay({ show }: { show: boolean }) {
+  if (!show) return null;
+  return (
+    <div className="absolute inset-0 flex items-center justify-center z-10 pointer-events-none">
+      <div className="flex items-center gap-2 bg-emerald-500/90 text-white font-semibold text-sm px-5 py-3 rounded-full shadow-lg shadow-emerald-500/30 animate-in fade-in zoom-in-95 duration-300">
+        <CheckCircle2 className="w-4 h-4" />
+        Lesson Complete!
+      </div>
     </div>
   );
 }
@@ -142,7 +174,6 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
   const lastTimeRef  = useRef(0);
   const tickRef      = useRef<ReturnType<typeof setInterval> | null>(null);
   const durRef       = useRef(0);
-  // Keep stable ref so the tick closure doesn't become stale
   const onPctRef     = useRef(onPctChange);
   useEffect(() => { onPctRef.current = onPctChange; });
 
@@ -157,14 +188,12 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
       const d: number = p.getDuration();
       if (d > 0) durRef.current = d;
 
-      // ── Forward-scrub detection ───────────────────────────────────────────
       const delta = t - lastTimeRef.current;
       if (delta > SCRUB_THRESHOLD && segStartRef.current !== null) {
-        // Time jumped more than expected: close segment at last stable time
         if (lastTimeRef.current > segStartRef.current) {
           segsRef.current.push([segStartRef.current, lastTimeRef.current]);
         }
-        segStartRef.current = t;  // New segment starts at scrub destination
+        segStartRef.current = t;
       }
       lastTimeRef.current = t;
 
@@ -175,7 +204,6 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    // Stable div ID for this player instance
     const elId = `yt-${videoId}`;
     const div  = document.createElement("div");
     div.id     = elId;
@@ -197,7 +225,6 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
             if (d > 0) durRef.current = d;
 
             if (e.data === YT.PlayerState.PLAYING) {
-              // Begin or resume segment
               if (segStartRef.current === null) {
                 segStartRef.current = t;
                 lastTimeRef.current = t;
@@ -206,9 +233,6 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
             } else if (e.data === YT.PlayerState.PAUSED || e.data === YT.PlayerState.ENDED) {
               stopTick();
               if (segStartRef.current !== null) {
-                // Use Math.min(lastTimeRef, t) to guard against seek-then-pause:
-                // if the user seeked forward and immediately paused, lastTimeRef still
-                // holds the pre-scrub position, which is the correct segment end.
                 const segEnd = (lastTimeRef.current > 0 && t - lastTimeRef.current > SCRUB_THRESHOLD)
                   ? lastTimeRef.current
                   : t;
@@ -220,8 +244,6 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
               const pct = calcWatchedPct(segsRef.current, durRef.current);
               onPctRef.current(pct);
             }
-            // BUFFERING (3) — don't close segment; tick is stopped and will detect
-            // any large jump when PLAYING fires again.
           },
         },
       });
@@ -280,14 +302,12 @@ function HTML5VideoPlayer({ url, onPctChange }: HTML5SubProps) {
         onPctRef.current(calcWatchedPct(segsRef.current, e.currentTarget.duration));
       }}
       onSeeking={() => {
-        // Close segment at last GENUINE play position before seek
         seekingRef.current = true;
         finishSegment(prevTimeRef.current);
       }}
       onSeeked={(e) => {
         const v = e.currentTarget;
         seekingRef.current = false;
-        // If playing was happening before the seek, restart segment at new position
         if (!v.paused) segStartRef.current = v.currentTime;
         prevTimeRef.current = v.currentTime;
       }}
@@ -303,29 +323,72 @@ function HTML5VideoPlayer({ url, onPctChange }: HTML5SubProps) {
 
 // ─── Generic iframe fallback ─────────────────────────────────────────────────
 
-function IframePlayer({ url }: { url: string }) {
+interface IframePlayerProps {
+  url:               string;
+  alreadyCompleted:  boolean;
+  onManualComplete?: () => void;
+  markingComplete:   boolean;
+}
+
+function IframePlayer({ url, alreadyCompleted, onManualComplete, markingComplete }: IframePlayerProps) {
   return (
-    <iframe
-      src={url}
-      title="Video Lesson"
-      className="absolute inset-0 w-full h-full"
-      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-      allowFullScreen
-    />
+    <>
+      <iframe
+        src={url}
+        title="Video Lesson"
+        className="absolute inset-0 w-full h-full"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowFullScreen
+      />
+      {/* Manual-complete overlay button pinned to bottom-right of video */}
+      {onManualComplete && (
+        <div className="absolute bottom-3 right-3 z-10">
+          {alreadyCompleted ? (
+            <div className="flex items-center gap-1.5 bg-emerald-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg">
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              Completed
+            </div>
+          ) : (
+            <button
+              onClick={onManualComplete}
+              disabled={markingComplete}
+              className="flex items-center gap-1.5 bg-[#d97757] hover:bg-orange-500 disabled:opacity-60 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg transition-colors"
+            >
+              {markingComplete ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CheckCircle2 className="w-3.5 h-3.5" />
+              )}
+              {markingComplete ? "Saving…" : "Mark Complete"}
+            </button>
+          )}
+        </div>
+      )}
+    </>
   );
 }
 
 // ─── Public component ─────────────────────────────────────────────────────────
 
 interface VideoLessonPlayerProps {
-  url:              string;
-  alreadyCompleted: boolean;
-  onComplete:       () => void;
+  url:               string;
+  alreadyCompleted:  boolean;
+  onComplete:        () => void;
+  /** Shown only for non-trackable (iframe) videos; uses same handler */
+  onManualComplete?: () => void;
 }
 
-export default function VideoLessonPlayer({ url, alreadyCompleted, onComplete }: VideoLessonPlayerProps) {
-  const [watchedPct, setWatchedPct] = useState(alreadyCompleted ? COMPLETE_THRESHOLD : 0);
-  const [completed,  setCompleted]  = useState(alreadyCompleted);
+export default function VideoLessonPlayer({
+  url,
+  alreadyCompleted,
+  onComplete,
+  onManualComplete,
+}: VideoLessonPlayerProps) {
+  // Bug fix: use 100 (not COMPLETE_THRESHOLD) so the bar fills to 100% when already done
+  const [watchedPct,      setWatchedPct]      = useState(alreadyCompleted ? 100 : 0);
+  const [completed,       setCompleted]       = useState(alreadyCompleted);
+  const [showOverlay,     setShowOverlay]     = useState(false);
+  const [markingComplete, setMarkingComplete] = useState(false);
   const firedRef = useRef(alreadyCompleted);
 
   const handlePctChange = useCallback((pct: number) => {
@@ -334,6 +397,9 @@ export default function VideoLessonPlayer({ url, alreadyCompleted, onComplete }:
       if (next >= COMPLETE_THRESHOLD && !firedRef.current) {
         firedRef.current = true;
         setCompleted(true);
+        // Brief completion overlay
+        setShowOverlay(true);
+        setTimeout(() => setShowOverlay(false), 2500);
         // Fire async to avoid state update during render
         setTimeout(onComplete, 0);
       }
@@ -341,30 +407,64 @@ export default function VideoLessonPlayer({ url, alreadyCompleted, onComplete }:
     });
   }, [onComplete]);
 
+  const handleManualComplete = useCallback(async () => {
+    if (markingComplete || completed) return;
+    setMarkingComplete(true);
+    try {
+      onManualComplete?.();
+      // Small delay so the parent can process; then reflect locally
+      await new Promise((r) => setTimeout(r, 400));
+      setCompleted(true);
+      setShowOverlay(true);
+      setTimeout(() => setShowOverlay(false), 2500);
+    } finally {
+      setMarkingComplete(false);
+    }
+  }, [markingComplete, completed, onManualComplete]);
+
   const youtubeId = getYouTubeId(url);
   const isVidFile = !youtubeId && isVideoFile(url);
   const trackable = !!(youtubeId || isVidFile);
 
   return (
     <div className="flex flex-col">
+      {/* ── Video area ──────────────────────────────────────────────────── */}
       <div className="relative aspect-video bg-black overflow-hidden">
         {youtubeId ? (
           <YouTubePlayer videoId={youtubeId} onPctChange={handlePctChange} />
         ) : isVidFile ? (
           <HTML5VideoPlayer url={url} onPctChange={handlePctChange} />
         ) : (
-          <IframePlayer url={url} />
+          <IframePlayer
+            url={url}
+            alreadyCompleted={completed}
+            onManualComplete={onManualComplete ? handleManualComplete : undefined}
+            markingComplete={markingComplete}
+          />
+        )}
+
+        {/* Completion flash overlay */}
+        <CompletionOverlay show={showOverlay} />
+
+        {/* "Already completed" badge — shown when opening a done lesson */}
+        {alreadyCompleted && !showOverlay && (
+          <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5 bg-emerald-500/80 backdrop-blur-sm text-white text-[11px] font-semibold px-2.5 py-1 rounded-full shadow">
+            <CheckCircle2 className="w-3 h-3" />
+            Completed
+          </div>
         )}
       </div>
 
+      {/* ── Progress bar (trackable videos only) ────────────────────────── */}
       {trackable && (
         <WatchProgressBar pct={watchedPct} completed={completed} />
       )}
 
-      {!trackable && (
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-black/40 border-t border-white/5 text-[11px] text-white/30">
-          <PlayCircle className="w-3.5 h-3.5" />
-          Watch the video, then mark complete manually above.
+      {/* ── Non-trackable hint (no manual button here; button is in the iframe overlay) ── */}
+      {!trackable && !onManualComplete && (
+        <div className="flex items-center gap-2 px-4 py-3 bg-card border-t border-border text-[11px] text-muted-foreground/50">
+          <PlayCircle className="w-3.5 h-3.5 flex-shrink-0" />
+          Watch the video, then mark it complete using the button on the video.
         </div>
       )}
     </div>

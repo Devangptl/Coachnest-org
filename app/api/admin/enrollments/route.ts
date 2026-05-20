@@ -18,16 +18,20 @@ export async function GET(req: Request) {
     const dateFrom = url.searchParams.get("dateFrom") || undefined;
     const dateTo = url.searchParams.get("dateTo") || undefined;
     const search = url.searchParams.get("search") || undefined;
+    const page = Number(url.searchParams.get("page")) || undefined;
+    const pageSize = Number(url.searchParams.get("pageSize")) || undefined;
 
-    const enrollments = await getEnrollmentsList({
+    const result = await getEnrollmentsList({
       courseId,
       status,
       dateFrom,
       dateTo,
       search,
+      page,
+      pageSize,
     });
 
-    return NextResponse.json({ data: enrollments }, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
     console.error("[GET /api/admin/enrollments]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

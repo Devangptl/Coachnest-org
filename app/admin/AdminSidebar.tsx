@@ -11,7 +11,8 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
-  Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle,
+  Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
+  Mail, ScrollText, ListVideo, Database,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -19,7 +20,9 @@ const adminNav = [
   { label: "Overview",      href: "/admin",                 icon: LayoutDashboard },
   { label: "Analytics",     href: "/admin/analytics",       icon: BarChart3 },
   { label: "All Courses",   href: "/admin/courses",         icon: BookOpen },
+  { label: "Course Lists",  href: "/admin/playlists",       icon: ListVideo },
   { label: "Instructors",   href: "/admin/instructors",     icon: UserCog },
+  { label: "Approvals",    href: "/admin/instructors/approvals", icon: UserCheck },
   { label: "Students",      href: "/admin/students",        icon: Users },
   { label: "Enrollments",   href: "/admin/enrollments",     icon: GraduationCap },
   { label: "Coupons",       href: "/admin/coupons",         icon: Ticket },
@@ -29,9 +32,12 @@ const adminNav = [
   { label: "Quizzes",       href: "/admin/quizzes",         icon: HelpCircle },
   { label: "Blog Posts",    href: "/admin/blogs",           icon: FileText },
   { label: "Certificates",  href: "/admin/certificates",    icon: Award },
-  { label: "Messages",      href: "/admin/messages",        icon: MessageSquare },
-  { label: "Professions",   href: "/admin/professions",     icon: Briefcase     },
-  { label: "My Profile",   href: "/admin/profile",         icon: UserCircle    },
+  { label: "Messages",      href: "/admin/messages",          icon: MessageSquare },
+  { label: "Email Templates", href: "/admin/email-templates", icon: Mail          },
+  { label: "Email Logs",    href: "/admin/email-logs",        icon: ScrollText    },
+  { label: "Professions",   href: "/admin/professions",       icon: Briefcase     },
+  { label: "Migrations",    href: "/admin/migrations",        icon: Database      },
+  { label: "My Profile",   href: "/admin/profile",           icon: UserCircle    },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -50,7 +56,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
+              "flex items-center gap-3 px-2.5 py-2 rounded-lg text-sm font-medium transition-all",
               isActive
                 ? "bg-orange-500/10 text-foreground border border-[#d97757]/20"
                 : "text-muted-foreground hover:text-foreground hover:bg-secondary"
@@ -92,7 +98,7 @@ export default function AdminSidebar() {
   return (
     <>
       {/* ── Desktop sidebar (unchanged) ─────────────────────────────── */}
-      <aside className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20 mt-4">
+      <aside className="hidden lg:block w-56 flex-shrink-0 self-start sticky top-16 mt-3">
         <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Admin Panel

@@ -20,6 +20,11 @@
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
 import { getStripe } from "@/lib/stripe";
+import {
+  sendRefundSubmittedEmail,
+  sendRefundProcessedEmail,
+  sendRefundRejectedEmail,
+} from "@/lib/email";
 
 const MAX_REFUND_PROGRESS_PCT = 80; // ≥ 80 % → ineligible
 
@@ -127,10 +132,16 @@ export async function createRefundRequest(
     instructorLoss, platformLoss,
   } = eligibility;
 
-  const order = await prisma.order.findUnique({
-    where:  { id: orderId },
-    select: { courseId: true },
-  });
+  const [order, user] = await Promise.all([
+    prisma.order.findUnique({
+      where:  { id: orderId },
+      select: { courseId: true, course: { select: { title: true } } },
+    }),
+    prisma.user.findUnique({
+      where:  { id: userId },
+      select: { name: true, email: true },
+    }),
+  ]);
   if (!order?.courseId) throw new Error("Course not found on order.");
 
   // Serializable transaction — prevents two concurrent requests for the same order
@@ -157,6 +168,17 @@ export async function createRefundRequest(
     });
   });
 
+  // Notify student by email (fire-and-forget)
+  if (user?.email) {
+    sendRefundSubmittedEmail(
+      user.email,
+      user.name ?? "Student",
+      order.course?.title ?? "your course",
+      parseFloat(refundAmount.toString()).toLocaleString("en-IN"),
+      parseFloat(progressPercent.toString()).toFixed(0),
+    ).catch(() => null);
+  }
+
   return refundRequest;
 }
 
@@ -172,6 +194,7 @@ export async function approveAndProcessRefund(
     include: {
       order:  true,
       course: { select: { createdById: true, title: true } },
+      user:   { select: { name: true, email: true } },
     },
   });
 
@@ -328,6 +351,16 @@ export async function approveAndProcessRefund(
     },
   }).catch(() => null);
 
+  // Email the student (fire-and-forget)
+  if (rr.user?.email) {
+    sendRefundProcessedEmail(
+      rr.user.email,
+      rr.user.name ?? "Student",
+      rr.course.title,
+      refundAmount.toLocaleString("en-IN"),
+    ).catch(() => null);
+  }
+
   return { success: true, refundAmount, stripeRefundId };
 }
 
@@ -340,7 +373,13 @@ export async function rejectRefundRequest(
 ) {
   const rr = await prisma.refundRequest.findUnique({
     where:  { id: refundRequestId },
-    select: { status: true, userId: true, refundAmount: true },
+    select: {
+      status:   true,
+      userId:   true,
+      refundAmount: true,
+      course:   { select: { title: true } },
+      user:     { select: { name: true, email: true } },
+    },
   });
 
   if (!rr)                     throw new Error("Refund request not found.");
@@ -351,7 +390,7 @@ export async function rejectRefundRequest(
     data:  { status: "REJECTED", adminId, adminNotes, reviewedAt: new Date() },
   });
 
-  // Notify student
+  // In-app notification
   createNotification({
     data: {
       userId: rr.userId,
@@ -361,6 +400,16 @@ export async function rejectRefundRequest(
       link:   "/dashboard/orders",
     },
   }).catch(() => null);
+
+  // Email the student (fire-and-forget)
+  if (rr.user?.email) {
+    sendRefundRejectedEmail(
+      rr.user.email,
+      rr.user.name ?? "Student",
+      rr.course?.title ?? "your course",
+      adminNotes,
+    ).catch(() => null);
+  }
 
   return { success: true };
 }

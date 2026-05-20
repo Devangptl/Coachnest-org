@@ -23,14 +23,25 @@ export async function GET(req: NextRequest) {
     const filter: InstructorListFilter = {
       search: searchParams.get("search")?.trim() || "",
       sort: (searchParams.get("sort") as InstructorListFilter["sort"]) || "newest",
+      page: Number(searchParams.get("page")) || undefined,
+      pageSize: Number(searchParams.get("pageSize")) || undefined,
     };
 
-    const [instructors, stats] = await Promise.all([
+    const [result, stats] = await Promise.all([
       getInstructorsList(filter),
       getInstructorStats(),
     ]);
 
-    return NextResponse.json({ instructors, stats });
+    return NextResponse.json({
+      instructors: result.data,
+      stats,
+      pagination: {
+        total: result.total,
+        page: result.page,
+        pageSize: result.pageSize,
+        totalPages: result.totalPages,
+      },
+    });
   } catch (error) {
     console.error("[GET /api/admin/instructors]", error);
     return NextResponse.json({ error: "Internal server error." }, { status: 500 });

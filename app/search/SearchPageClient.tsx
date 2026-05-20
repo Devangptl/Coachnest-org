@@ -2,15 +2,15 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import SearchBar from "@/components/SearchBar";
+import Link from "next/link";
 import CourseCard from "@/components/CourseCard";
+import PlaylistCard, { type PlaylistCardData } from "@/components/playlists/PlaylistCard";
 import { CourseCardSkeleton } from "@/components/ui/Skeleton";
 import {
-  Filter, SlidersHorizontal, X, BookOpen,
-  AlertCircle, ChevronLeft, ChevronRight,
+  Filter, SlidersHorizontal, X, BookOpen, Search, ArrowUpDown,
+  AlertCircle, ChevronLeft, ChevronRight, ListVideo, ArrowRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { Select } from "@/components/ui/Select";
 import { cn } from "@/lib/utils";
 
 const LEVELS = ["beginner", "intermediate", "advanced"];
@@ -29,109 +29,70 @@ interface Course {
   category: { name: string; slug: string } | null;
 }
 
-interface Category {
-  id: string; name: string; slug: string; icon: string | null;
-  _count: { courses: number };
-}
-
 // ─── Filter panel content (shared by sidebar + drawer) ─────────────────────
 function FilterContent({
   level, setLevel,
-  category, setCategory,
-  categories,
+  sort, setSort,
   hasActiveFilters,
   clearFilters,
   isMobile = false,
 }: {
   level: string; setLevel: (v: string) => void;
-  category: string; setCategory: (v: string) => void;
-  categories: Category[];
+  sort: string;  setSort:  (v: string) => void;
   hasActiveFilters: boolean;
   clearFilters: () => void;
   isMobile?: boolean;
 }) {
+  const optionCls = (active: boolean) => cn(
+    "w-full text-left px-3 py-2.5 rounded-lg text-sm transition-all border",
+    isMobile && "text-center",
+    active
+      ? "bg-orange-500/15 text-[#d97757] border-[#d97757]/25 font-medium"
+      : "border-transparent text-muted-foreground hover:text-foreground hover:bg-secondary/70"
+  );
+
   return (
     <div className={cn("space-y-6", isMobile && "pb-4")}>
-      {/* Level filter */}
+      {/* Sort by */}
       <div>
-        <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
+        <h4 className="text-muted-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
+          <ArrowUpDown className="w-3 h-3" /> Sort by
+        </h4>
+        <div className={cn("gap-1.5", isMobile ? "grid grid-cols-2" : "space-y-1")}>
+          {SORT_OPT.map((opt) => (
+            <button key={opt.value} onClick={() => setSort(opt.value)} className={optionCls(sort === opt.value)}>
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Divider */}
+      <div className="h-px bg-border/50" />
+
+      {/* Level */}
+      <div>
+        <h4 className="text-muted-foreground/60 text-[10px] font-bold uppercase tracking-widest mb-2.5 flex items-center gap-1.5">
           <Filter className="w-3 h-3" /> Level
         </h4>
-        <div className={cn("gap-2", isMobile ? "grid grid-cols-2" : "space-y-1")}>
+        <div className={cn("gap-1.5", isMobile ? "grid grid-cols-2" : "space-y-1")}>
           {["", ...LEVELS].map((l) => (
-            <button
-              key={l}
-              onClick={() => setLevel(l)}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-sm capitalize transition-all",
-                isMobile && "text-center",
-                level === l
-                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
+            <button key={l} onClick={() => setLevel(l)} className={optionCls(level === l)}>
               {l || "All levels"}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Category filter */}
-      {categories.length > 0 && (
-        <div>
-          <h4 className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-3 flex items-center gap-1.5">
-            <BookOpen className="w-3 h-3" /> Category
-          </h4>
-          <div className={cn(
-            "space-y-1",
-            !isMobile && "max-h-48 overflow-y-auto pr-1 scrollbar-hide",
-          )}>
-            <button
-              onClick={() => setCategory("")}
-              className={cn(
-                "w-full text-left px-3 py-2 rounded-lg text-sm transition-all",
-                category === ""
-                  ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
-                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-              )}
-            >
-              All categories
-            </button>
-            {categories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setCategory(cat.slug)}
-                className={cn(
-                  "w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center justify-between gap-2",
-                  category === cat.slug
-                    ? "bg-orange-500/15 text-[#d97757] border border-[#d97757]/25"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                )}
-              >
-                <span className="flex items-center gap-1.5 truncate">
-                  {cat.icon && <span>{cat.icon}</span>}
-                  <span className="truncate">{cat.name}</span>
-                </span>
-                <span className="text-xs text-muted-foreground/50 flex-shrink-0">
-                  {cat._count.courses}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Clear */}
+      {/* Clear all */}
       {hasActiveFilters && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full text-muted-foreground hover:text-foreground"
+        <button
           onClick={clearFilters}
+          className="w-full flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg text-sm text-muted-foreground/60 hover:text-foreground hover:bg-secondary/60 transition-all border border-dashed border-border/60 hover:border-border"
         >
-          <X className="w-3.5 h-3.5 mr-1" />
+          <X className="w-3.5 h-3.5" />
           Clear all filters
-        </Button>
+        </button>
       )}
     </div>
   );
@@ -145,18 +106,18 @@ export default function SearchPageClient() {
   const [query,      setQuery]      = useState(sp.get("q")        ?? "");
   const [level,      setLevel]      = useState(sp.get("level")    ?? "");
   const [sort,       setSort]       = useState(sp.get("sort")     ?? "popular");
-  const [category,   setCategory]   = useState(sp.get("category") ?? "");
   const [page,       setPage]       = useState(1);
   const [courses,    setCourses]    = useState<Course[]>([]);
+  const [playlists,  setPlaylists]  = useState<PlaylistCardData[]>([]);
   const [total,      setTotal]      = useState(0);
   const [pages,      setPages]      = useState(1);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState<string | null>(null);
   const [sideOpen,   setSideOpen]   = useState(false);
-  const [categories, setCategories] = useState<Category[]>([]);
   const [isMobile,   setIsMobile]   = useState(false);
 
-  const abortRef = useRef<AbortController | null>(null);
+  const abortRef    = useRef<AbortController | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Track viewport for mobile/desktop filter treatment
   useEffect(() => {
@@ -180,15 +141,7 @@ export default function SearchPageClient() {
     return () => { document.body.style.overflow = ""; };
   }, [isMobile, sideOpen]);
 
-  // Fetch categories once
-  useEffect(() => {
-    fetch("/api/categories")
-      .then((r) => r.json())
-      .then((data) => Array.isArray(data) && setCategories(data))
-      .catch(() => {});
-  }, []);
-
-  const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: number } = {}) => {
+const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: number } = {}) => {
     const { reset = false, q = query, pg = reset ? 1 : page } = opts;
 
     abortRef.current?.abort();
@@ -199,19 +152,17 @@ export default function SearchPageClient() {
     setError(null);
 
     const params = new URLSearchParams({
-      ...(q        && { q }),
-      ...(level    && { level }),
-      ...(category && { category }),
+      ...(q     && { q }),
+      ...(level && { level }),
       sort,
       page:  String(pg),
       limit: "12",
     });
 
     const urlParams = new URLSearchParams();
-    if (q)                  urlParams.set("q",        q);
-    if (level)              urlParams.set("level",    level);
-    if (category)           urlParams.set("category", category);
-    if (sort !== "popular") urlParams.set("sort",     sort);
+    if (q)                  urlParams.set("q",     q);
+    if (level)              urlParams.set("level", level);
+    if (sort !== "popular") urlParams.set("sort",  sort);
     router.replace(`/search?${urlParams}`, { scroll: false });
 
     try {
@@ -219,18 +170,20 @@ export default function SearchPageClient() {
       if (!res.ok) throw new Error(`Search failed (${res.status})`);
       const data = await res.json();
       setCourses(data.courses ?? []);
+      setPlaylists(data.playlists ?? []);
       setTotal(data.total   ?? 0);
       setPages(data.totalPages ?? 1);
     } catch (err) {
       if ((err as Error).name === "AbortError") return;
       setError("Something went wrong. Please try again.");
       setCourses([]);
+      setPlaylists([]);
       setTotal(0);
       setPages(1);
     } finally {
       setLoading(false);
     }
-  }, [query, level, sort, category, page, router]);
+  }, [query, level, sort, page, router]);
 
   const mountedRef = useRef(false);
   useEffect(() => {
@@ -241,15 +194,15 @@ export default function SearchPageClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const prevFiltersRef = useRef({ level, sort, category });
+  const prevFiltersRef = useRef({ level, sort });
   useEffect(() => {
     const prev = prevFiltersRef.current;
-    if (prev.level !== level || prev.sort !== sort || prev.category !== category) {
-      prevFiltersRef.current = { level, sort, category };
+    if (prev.level !== level || prev.sort !== sort) {
+      prevFiltersRef.current = { level, sort };
       search({ reset: true });
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [level, sort, category]);
+  }, [level, sort]);
 
   const prevPageRef = useRef(page);
   useEffect(() => {
@@ -260,90 +213,72 @@ export default function SearchPageClient() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
 
-  const hasActiveFilters = level !== "" || category !== "" || sort !== "popular";
-  const activeFilterCount = [level, category, sort !== "popular"].filter(Boolean).length;
+  const hasActiveFilters = level !== "" || sort !== "popular";
+  const activeFilterCount = [level, sort !== "popular"].filter(Boolean).length;
 
   function clearFilters() {
     setLevel("");
-    setCategory("");
     setSort("popular");
   }
 
+  function handleQueryChange(q: string) {
+    setQuery(q);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => search({ reset: true, q }), 350);
+  }
+
   const filterProps = {
-    level, setLevel, category, setCategory,
-    categories, hasActiveFilters, clearFilters,
+    level, setLevel, sort, setSort, hasActiveFilters, clearFilters,
   };
 
   return (
-    <div className="pt-6 pb-16">
-      {/* ── Top bar ───────────────────────────────────────────────────────
-           Mobile  : [Search — full width]
-                     [Filters btn] [Sort — flex-1]
-           Tablet+ : [Filters btn] [Search — flex-1] [Sort — fixed]
-      ──────────────────────────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        {/* Filters button — left on all sizes */}
-        <Button
-          variant="secondary"
-          size="md"
-          onClick={() => setSideOpen((o) => !o)}
-          className={cn(
-            "flex-shrink-0",
-            sideOpen && "border-[#d97757]/40 bg-orange-500/10 text-[#d97757]"
-          )}
-        >
-          <SlidersHorizontal className="w-4 h-4" />
-          <span className="hidden xs:inline sm:inline">Filters</span>
-          {activeFilterCount > 0 && (
-            <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
-              {activeFilterCount}
-            </span>
-          )}
-        </Button>
-
-        {/* Sort — right of Filters on mobile, right-end on desktop */}
-        <Select
-          value={sort}
-          onValueChange={setSort}
-          options={SORT_OPT}
-          className="flex-1 sm:flex-none sm:w-auto sm:min-w-[150px]"
-        />
-
-        {/* Search — full width below on mobile, flex-1 middle on desktop */}
-        <SearchBar
-          initialValue={query}
-          onSearch={(q) => { setQuery(q); search({ reset: true, q }); }}
-          navigateTo={false}
-          className="order-last w-full sm:order-none sm:flex-1 sm:min-w-0 sm:w-auto"
-          placeholder="Search courses..."
-        />
+    <div className="pt-4 pb-32">
+      {/* ── Page header ──────────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <h1 className="text-xl font-bold text-foreground tracking-tight">
+          {query
+            ? <><span className="text-muted-foreground/50 font-medium">Results for </span><span className="text-[#d97757]">"{query}"</span></>
+            : "Browse Courses"
+          }
+        </h1>
+        <p className="text-sm text-muted-foreground/50 mt-0.5">
+          {loading
+            ? "Searching…"
+            : error
+              ? "Something went wrong"
+              : `${total.toLocaleString()} course${total !== 1 ? "s" : ""} found`}
+        </p>
       </div>
+
 
       {/* ── Active filter chips ──────────────────────────────────────────── */}
       <AnimatePresence>
-        {(level || category) && (
+        {(level || sort !== "popular") && (
           <motion.div
             initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className="flex items-center gap-2 flex-wrap mb-4 overflow-hidden"
           >
+            <span className="text-[11px] text-muted-foreground/40 font-medium">Active:</span>
+            {sort !== "popular" && (
+              <motion.button
+                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
+                onClick={() => setSort("popular")}
+                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
+              >
+                <ArrowUpDown className="w-2.5 h-2.5" />
+                {SORT_OPT.find((o) => o.value === sort)?.label}
+                <X className="w-3 h-3" />
+              </motion.button>
+            )}
             {level && (
               <motion.button
                 initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
                 onClick={() => setLevel("")}
                 className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
               >
+                <Filter className="w-2.5 h-2.5" />
                 <span className="capitalize">{level}</span>
-                <X className="w-3 h-3" />
-              </motion.button>
-            )}
-            {category && (
-              <motion.button
-                initial={{ opacity: 0, scale: 0.85 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.85 }}
-                onClick={() => setCategory("")}
-                className="flex items-center gap-1 text-xs bg-orange-500/10 text-[#d97757] border border-[#d97757]/20 rounded-full px-2.5 py-1 hover:bg-orange-500/20 transition-colors"
-              >
-                <span>{categories.find((c) => c.slug === category)?.name ?? category}</span>
                 <X className="w-3 h-3" />
               </motion.button>
             )}
@@ -359,12 +294,28 @@ export default function SearchPageClient() {
           {sideOpen && !isMobile && (
             <motion.aside
               initial={{ opacity: 0, x: -16, width: 0 }}
-              animate={{ opacity: 1, x: 0, width: 260 }}
+              animate={{ opacity: 1, x: 0, width: 240 }}
               exit={{ opacity: 0, x: -16, width: 0 }}
               transition={{ duration: 0.2 }}
               className="hidden lg:block flex-shrink-0 overflow-hidden"
             >
-              <div className="glass p-5 w-[260px] sticky top-20">
+              <div className="rounded-xl border border-border/60 bg-card p-4 w-[240px] sticky top-20">
+                <div className="flex items-center justify-between mb-3.5">
+                  <div className="flex items-center gap-1.5">
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-muted-foreground/50" />
+                    <h3 className="text-sm font-semibold text-foreground/80">Filters</h3>
+                  </div>
+                  {hasActiveFilters && (
+                    <button
+                      onClick={clearFilters}
+                      className="text-[11px] text-muted-foreground/40 hover:text-[#d97757] transition-colors font-medium flex items-center gap-1"
+                    >
+                      <X className="w-3 h-3" />
+                      Reset
+                    </button>
+                  )}
+                </div>
+                <div className="h-px bg-border/50 mb-3.5" />
                 <FilterContent {...filterProps} />
               </div>
             </motion.aside>
@@ -373,15 +324,6 @@ export default function SearchPageClient() {
 
         {/* Results column */}
         <div className="flex-1 min-w-0">
-          {/* Result count */}
-          <p className="text-muted-foreground/70 text-sm mb-4">
-            {loading
-              ? "Searching…"
-              : error
-                ? "Search error"
-                : `${total.toLocaleString()} course${total !== 1 ? "s" : ""} found`}
-          </p>
-
           {/* Error banner */}
           {error && !loading && (
             <div className="flex items-center gap-3 p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 mb-5">
@@ -392,6 +334,34 @@ export default function SearchPageClient() {
                 Retry
               </Button>
             </div>
+          )}
+
+          {/* Matching course lists (playlists) — first page only */}
+          {!loading && !error && page === 1 && playlists.length > 0 && (
+            <section className="mb-8">
+              <div className="flex items-center justify-between mb-3">
+                <h2 className="text-base font-semibold flex items-center gap-2">
+                  <ListVideo className="w-4 h-4 text-orange-500" />
+                  Course lists
+                </h2>
+                <Link
+                  href="/playlists"
+                  className="text-xs font-medium text-orange-500 hover:text-orange-400 inline-flex items-center gap-1"
+                >
+                  View all <ArrowRight className="w-3 h-3" />
+                </Link>
+              </div>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                {playlists.map((p) => (
+                  <PlaylistCard
+                    key={p.id}
+                    href={`/playlists/${p.slug}`}
+                    playlist={p}
+                    compact
+                  />
+                ))}
+              </div>
+            </section>
           )}
 
           {/* Grid — adapts columns based on sidebar open state */}
@@ -437,12 +407,14 @@ export default function SearchPageClient() {
               animate={{ opacity: 1, y: 0 }}
               className="text-center py-16 sm:py-20"
             >
-              <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-secondary mb-4">
-                <BookOpen className="w-6 h-6 sm:w-7 sm:h-7 text-muted-foreground/40" />
+              <div className="w-16 h-16 rounded-2xl bg-secondary border border-border/60 flex items-center justify-center mb-5">
+                <BookOpen className="w-7 h-7 text-muted-foreground/30" />
               </div>
-              <p className="text-base sm:text-lg font-medium text-foreground mb-2">No courses found</p>
-              <p className="text-sm text-muted-foreground mb-6">
-                Try different keywords or adjust your filters
+              <h3 className="text-base font-semibold text-foreground/70 mb-1.5">No courses found</h3>
+              <p className="text-sm text-muted-foreground/50 max-w-sm mb-6">
+                {query
+                  ? `We couldn't find any courses matching "${query}". Try different keywords or adjust your filters.`
+                  : "No courses match your current filters. Try adjusting or clearing them."}
               </p>
               {hasActiveFilters && (
                 <Button variant="secondary" size="sm" onClick={clearFilters}>
@@ -458,9 +430,10 @@ export default function SearchPageClient() {
               <button
                 onClick={() => setPage((p) => Math.max(1, p - 1))}
                 disabled={page === 1}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-3 h-9 rounded-lg text-sm font-medium text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed border border-border/50"
               >
                 <ChevronLeft className="w-4 h-4" />
+                <span className="hidden sm:inline">Prev</span>
               </button>
 
               {Array.from({ length: pages }, (_, i) => i + 1)
@@ -480,10 +453,10 @@ export default function SearchPageClient() {
                       key={p}
                       onClick={() => setPage(p)}
                       className={cn(
-                        "w-8 h-8 sm:w-9 sm:h-9 rounded-md text-sm font-medium transition-all",
+                        "w-9 h-9 rounded-lg text-sm font-medium transition-all border",
                         page === p
-                          ? "bg-orange-500 text-white shadow-md shadow-orange-500/25"
-                          : "bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground"
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm shadow-orange-500/25"
+                          : "border-border/50 text-muted-foreground hover:bg-secondary hover:text-foreground"
                       )}
                     >
                       {p}
@@ -494,13 +467,79 @@ export default function SearchPageClient() {
               <button
                 onClick={() => setPage((p) => Math.min(pages, p + 1))}
                 disabled={page === pages}
-                className="w-8 h-8 sm:w-9 sm:h-9 rounded-md flex items-center justify-center text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed"
+                className="flex items-center gap-1 px-3 h-9 rounded-lg text-sm font-medium text-muted-foreground disabled:opacity-30 hover:bg-secondary hover:text-foreground transition-all disabled:cursor-not-allowed border border-border/50"
               >
+                <span className="hidden sm:inline">Next</span>
                 <ChevronRight className="w-4 h-4" />
               </button>
             </div>
           )}
         </div>
+      </div>
+
+      {/* ── Floating search + filter bar ──────────────────────────────────── */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none w-[calc(100%-2rem)] max-w-3xl">
+        <motion.div
+          initial={{ y: 28, opacity: 0, scale: 0.96 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          className="w-full flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.28)] rounded-full p-1.5 pointer-events-auto"
+        >
+          {/* Search input */}
+          <div className="flex items-center gap-2 flex-1 px-4 min-w-0">
+            {loading
+              ? <div className="w-4 h-4 border-2 border-[#d97757]/40 border-t-[#d97757] rounded-full animate-spin flex-shrink-0" />
+              : <Search className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
+            }
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => handleQueryChange(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  search({ reset: true });
+                }
+              }}
+              placeholder="Search courses, topics, instructors…"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/35 focus:outline-none min-w-0 py-2"
+            />
+            {query && (
+              <button
+                onClick={() => {
+                  if (debounceRef.current) clearTimeout(debounceRef.current);
+                  setQuery("");
+                  search({ reset: true, q: "" });
+                }}
+                className="text-muted-foreground/40 hover:text-foreground transition-colors flex-shrink-0"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+
+          {/* Divider */}
+          <div className="w-px h-5 bg-border/50 mx-0.5 flex-shrink-0" />
+
+          {/* Filters button */}
+          <button
+            onClick={() => setSideOpen((v) => !v)}
+            className={cn(
+              "flex items-center gap-1.5 pl-3 pr-4 py-2.5 rounded-full text-sm font-medium transition-colors flex-shrink-0 select-none",
+              sideOpen
+                ? "bg-orange-500/15 text-[#d97757]"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <SlidersHorizontal className="w-4 h-4" />
+            <span className="hidden sm:inline">Filters</span>
+            {activeFilterCount > 0 && (
+              <span className="inline-flex items-center justify-center w-4 h-4 rounded-full bg-orange-500 text-white text-[10px] font-bold leading-none">
+                {activeFilterCount}
+              </span>
+            )}
+          </button>
+        </motion.div>
       </div>
 
       {/* ── Mobile filter bottom sheet ───────────────────────────────────── */}
@@ -513,7 +552,7 @@ export default function SearchPageClient() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm"
+              className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
               onClick={() => setSideOpen(false)}
             />
 
@@ -523,7 +562,7 @@ export default function SearchPageClient() {
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border rounded-t-2xl shadow-2xl max-h-[85dvh] flex flex-col"
+              className="fixed bottom-0 left-0 right-0 z-[55] bg-card border-t border-border rounded-t-2xl shadow-2xl max-h-[85dvh] flex flex-col"
             >
               {/* Drag handle + header */}
               <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-border flex-shrink-0">

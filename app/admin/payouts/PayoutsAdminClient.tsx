@@ -12,6 +12,7 @@ import {
   Users, TrendingUp, ArrowDownToLine, Filter,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import Avatar from "@/components/Avatar";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -163,13 +164,13 @@ function PayoutRow({
         {/* Instructor */}
         <td className="py-3 px-4">
           <div className="flex items-center gap-3">
-            {req.instructor.avatar ? (
-              <img src={req.instructor.avatar} alt="" className="w-8 h-8 rounded-full object-cover" />
-            ) : (
-              <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold text-muted-foreground">
-                {req.instructor.name?.charAt(0).toUpperCase()}
-              </div>
-            )}
+            <Avatar
+              name={req.instructor.name}
+              avatar={req.instructor.avatar}
+              seed={req.instructor.id}
+              size="w-8 h-8"
+              className="flex-shrink-0"
+            />
             <div className="min-w-0">
               <p className="text-sm font-medium text-foreground truncate">{req.instructor.name}</p>
               <p className="text-xs text-muted-foreground truncate">{req.instructor.email}</p>

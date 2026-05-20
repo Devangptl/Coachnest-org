@@ -56,8 +56,8 @@ export default function HeroShowcase() {
   const [selectedContext, setSelectedContext] = useState<string>("course");
   const [steps, setSteps] = useState(PROGRESS_STEPS);
   const [hoveredCourse, setHoveredCourse] = useState<string | null>(null);
-  const { theme } = useTheme();
-  const isLight = theme === "light";
+  const { resolvedTheme } = useTheme();
+  const isLight = resolvedTheme === "light";
 
   // Replaces rgba(255,255,255,X) with warm-dark equivalent in light mode
   const aw = (opacity: number) =>
