@@ -512,7 +512,7 @@ function ContentImage({ src, alt }: { src: string; alt: string }) {
 
 function TableWrapper({ children }: { children: ReactNode }) {
   return (
-    <div className="my-6 rounded-xl border border-border/25 overflow-hidden">
+    <div className="my-6 rounded-xl overflow-hidden">
       <div className="overflow-x-auto">
         <table className="w-full text-sm border-collapse">{children}</table>
       </div>
@@ -805,7 +805,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
 
     // ── Tables ─────────────────────────────────────────────────────────────────
     table:  ({ children })          => <TableWrapper>{children}</TableWrapper>,
-    thead:  ({ children })          => <thead className="bg-secondary/[0.15] border-b border-border/25">{children}</thead>,
+    thead:  ({ children })          => <thead className="bg-secondary/[0.15] border-b border-border/[0.15]">{children}</thead>,
     tbody:  ({ children })          => <tbody>{children}</tbody>,
     tr:     ({ children })          => <tr className="border-b border-border/20 last:border-b-0 hover:bg-[#d97757]/[0.03] transition-colors duration-100">
         {children}

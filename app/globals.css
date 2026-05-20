@@ -1229,8 +1229,8 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   margin: 1.25rem 0;
   font-size: 0.875em;
   background: transparent;
-  border: 1px solid hsl(var(--border) / 0.35);
-  border-radius: 0.75rem;
+  border: none;
+  border-radius: 0;
 }
 /* Thin scrollbar so the scroll handle doesn't distract */
 .quill-content table::-webkit-scrollbar { height: 4px; }
