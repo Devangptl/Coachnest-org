@@ -67,26 +67,16 @@ export default function MarkdownEditor({
   }, [mode, value, onChange]);
 
   return (
-    <div className="md-editor-wrapper">
-      {/* ── Mode toggle + preview toggle bar ─────────────────────────────── */}
-      <div className="flex items-center justify-between mb-2">
-        {/* Left: Rich Text / Markdown toggle */}
-        <div
-          className="inline-flex items-center gap-0.5 rounded-lg p-0.5 bg-[hsl(var(--secondary))] border border-[hsl(var(--border))]"
-          role="tablist"
-          aria-label="Editor mode"
-        >
+    <div className="rte-shell">
+      {/* ── Header: mode tabs + preview toggle ───────────────────────────── */}
+      <div className="rte-header-bar">
+        <div className="rte-tabs" role="tablist" aria-label="Editor mode">
           <button
             type="button"
             role="tab"
             aria-selected={mode === "rich-text"}
             onClick={switchToRichText}
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all",
-              mode === "rich-text"
-                ? "bg-[hsl(var(--primary))] text-white shadow-sm"
-                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]",
-            )}
+            className={cn("rte-tab", mode === "rich-text" && "rte-tab--active")}
           >
             <Type className="w-3.5 h-3.5" />
             Rich Text
@@ -96,12 +86,7 @@ export default function MarkdownEditor({
             role="tab"
             aria-selected={mode === "markdown"}
             onClick={switchToMarkdown}
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium transition-all",
-              mode === "markdown"
-                ? "bg-[hsl(var(--primary))] text-white shadow-sm"
-                : "text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))]",
-            )}
+            className={cn("rte-tab", mode === "markdown" && "rte-tab--active")}
           >
             <FileCode2 className="w-3.5 h-3.5" />
             Markdown
@@ -114,10 +99,8 @@ export default function MarkdownEditor({
             type="button"
             onClick={() => setShowPreview((p) => !p)}
             className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-xs font-medium border transition-all",
-              showPreview
-                ? "border-[hsl(var(--primary)/0.5)] text-[hsl(var(--primary))] bg-[hsl(var(--primary)/0.1)]"
-                : "border-[hsl(var(--border))] text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:border-[hsl(var(--border))]",
+              "rte-preview-toggle",
+              showPreview && "rte-preview-toggle--active",
             )}
           >
             {showPreview ? (
@@ -155,15 +138,6 @@ export default function MarkdownEditor({
           onPickImage={onPickImage}
         />
       )}
-
-      {/* ── Mode hint ─────────────────────────────────────────────────────── */}
-      <p className="text-[11px] text-[hsl(var(--muted-foreground)/0.6)] mt-1.5 leading-snug">
-        {mode === "rich-text"
-          ? "Rich Text mode — use the toolbar or Markdown shortcuts (# space, ** etc.)"
-          : showPreview
-          ? "Previewing rendered Markdown — click Edit to continue writing"
-          : "Markdown mode — format with # headings, **bold**, *italic*, ``` code ``` and more"}
-      </p>
     </div>
   );
 }

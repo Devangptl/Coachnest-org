@@ -162,19 +162,19 @@ export default function MarkdownTextEditor({
   ] as const;
 
   return (
-    <div className="md-editor-root border border-[hsl(var(--border))] rounded-[calc(var(--radius)-2px)] overflow-hidden">
+    <div className="md-editor-root">
       {/* Toolbar */}
-      <div className="md-editor-toolbar flex flex-wrap items-center gap-0.5 px-2 py-1.5 bg-[hsl(var(--secondary))] border-b border-[hsl(var(--border))]">
+      <div className="md-editor-toolbar flex flex-wrap items-center gap-0.5 px-2.5 py-2 bg-[hsl(var(--secondary))] border-b border-[hsl(var(--border))]">
         {toolbarButtons.map((btn, i) =>
           btn === null ? (
-            <span key={`sep-${i}`} className="w-px h-4 bg-[hsl(var(--border))] mx-1 shrink-0" />
+            <span key={`sep-${i}`} className="w-px h-5 bg-[hsl(var(--border)/0.8)] mx-1.5 shrink-0" />
           ) : (
             <button
               key={btn.title}
               type="button"
               title={btn.title}
               onMouseDown={(e) => { e.preventDefault(); btn.action(); }}
-              className="inline-flex items-center justify-center w-7 h-7 rounded text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--primary))] hover:bg-white/5 transition-colors text-xs font-mono font-bold"
+              className="inline-flex items-center justify-center w-7 h-7 rounded-md text-[hsl(var(--muted-foreground))] hover:text-[hsl(var(--foreground))] hover:bg-[hsl(var(--foreground)/0.07)] active:bg-[hsl(var(--foreground)/0.12)] transition-all text-xs font-mono font-bold"
             >
               {"label" in btn && btn.label
                 ? btn.label
