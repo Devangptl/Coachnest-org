@@ -1,7 +1,7 @@
 "use client";
 
 import {
-  Shield, Share2, CheckCircle2, Edit3,
+  Shield, CheckCircle2, Edit3,
   BookOpen, Clock, Globe, Award, Smartphone, Download,
   Infinity, PlayCircle, Trophy, Sparkles, Zap, Play, Signal,
 } from "lucide-react";
@@ -9,6 +9,7 @@ import { useState } from "react";
 import Image from "next/image";
 import EnrollButton from "./EnrollButton";
 import WishlistButton from "@/components/WishlistButton";
+import ShareCourseModal from "@/components/ShareCourseModal";
 import Link from "next/link";
 import toast from "react-hot-toast";
 
@@ -44,7 +45,6 @@ export default function CourseEnrollBar({
   thumbnail,
   title,
 }: Props) {
-  const [copied,          setCopied]          = useState(false);
   const [downloadingCert, setDownloadingCert] = useState(false);
 
   async function downloadCertificate() {
@@ -83,17 +83,6 @@ export default function CourseEnrollBar({
     ? `${Math.floor(totalDuration / 60)}h ${totalDuration % 60}m`
     : totalDuration > 0 ? `${totalDuration}m` : null;
 
-  async function handleCopyLink() {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      setCopied(true);
-      toast.success("Link copied!");
-      setTimeout(() => setCopied(false), 2000);
-    } catch {
-      toast.error("Failed to copy");
-    }
-  }
-
   const ActionButtons = () => (
     <div className="flex items-center gap-1.5">
       {isLoggedIn && (
@@ -103,15 +92,12 @@ export default function CourseEnrollBar({
           className="!w-9 !h-9 flex items-center justify-center"
         />
       )}
-      <button
-        onClick={handleCopyLink}
-        className="w-9 h-9 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-        title="Share this course"
-      >
-        {copied
-          ? <CheckCircle2 className="w-4 h-4 text-green-500" />
-          : <Share2 className="w-4 h-4" />}
-      </button>
+      <ShareCourseModal
+        courseId={courseId}
+        title={title}
+        thumbnail={thumbnail}
+        iconOnly
+      />
     </div>
   );
 
