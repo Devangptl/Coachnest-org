@@ -39,6 +39,13 @@ export default function ShareCourseModal({
   const [copied, setCopied] = useState(false);
   const inputRef            = useRef<HTMLInputElement>(null);
 
+  // Derive a human-readable content type from the path
+  const kind = path?.startsWith("/blog")        ? "blog post"
+             : path?.startsWith("/playlists")   ? "playlist"
+             : path?.startsWith("/instructors") ? "instructor profile"
+             : path?.includes("/lessons/")      ? "lesson"
+             : "course";
+
   function getCourseUrl() {
     const base = typeof window !== "undefined" ? window.location.origin : "";
     if (path) return `${base}${path}`;
@@ -67,7 +74,7 @@ export default function ShareCourseModal({
       color: "text-green-500",
       bg: "hover:bg-green-500/10",
       href: (url: string) =>
-        `https://wa.me/?text=${encodeURIComponent(`Check out this course: ${url}`)}`,
+        `https://wa.me/?text=${encodeURIComponent(`Check out this ${kind}: ${url}`)}`,
     },
     {
       label: "Telegram",
@@ -83,7 +90,7 @@ export default function ShareCourseModal({
       color: "text-foreground dark:text-white",
       bg: "hover:bg-secondary",
       href: (url: string) =>
-        `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out "${title}" on CoachNest`)}`,
+        `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out this ${kind} — "${title}" on CoachNest`)}`,
     },
     {
       label: "LinkedIn",
@@ -99,7 +106,7 @@ export default function ShareCourseModal({
       color: "text-orange-400",
       bg: "hover:bg-orange-500/10",
       href: (url: string) =>
-        `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`I found this course for you: ${url}`)}`,
+        `mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(`I found this ${kind} for you: ${url}`)}`,
     },
   ] as const;
 
@@ -112,7 +119,7 @@ export default function ShareCourseModal({
               "w-9 h-9 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",
               triggerClassName,
             )}
-            title="Share this course"
+            title={`Share this ${kind}`}
           >
             <Share2 className="w-4 h-4" />
           </button>
@@ -131,7 +138,7 @@ export default function ShareCourseModal({
 
       <DialogContent className={cn("max-w-md", className)}>
         <DialogHeader>
-          <DialogTitle>Share this course</DialogTitle>
+          <DialogTitle className="capitalize">Share this {kind}</DialogTitle>
         </DialogHeader>
 
         {/* Course preview strip */}
