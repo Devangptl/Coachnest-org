@@ -6,7 +6,7 @@ import { Sparkles } from "lucide-react";
 import toast from "react-hot-toast";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
 
-export default function SeedPromptEngineeringCourseButton() {
+export default function SeedNextjsCourseButton() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -15,9 +15,9 @@ export default function SeedPromptEngineeringCourseButton() {
   const handleSeed = async () => {
     if (
       !(await confirm(
-        "This creates the full 'Prompt Engineering Mastery' course (5 modules, 25 lessons, 5 quizzes). If it already exists, its curriculum is rebuilt — existing enrollments are kept.",
+        "This creates the full 'Next.js 16: The Complete Developer Guide' course (10 chapters, 59 lessons, 10 quizzes). If it already exists, its curriculum is rebuilt — existing enrollments are kept.",
         {
-          title: "Seed the Prompt Engineering course?",
+          title: "Seed the Next.js 16 course?",
           confirmText: "Seed Course",
           variant: "info",
         }
@@ -26,10 +26,10 @@ export default function SeedPromptEngineeringCourseButton() {
       return;
 
     setLoading(true);
-    const tid = toast.loading("Seeding Prompt Engineering course…");
+    const tid = toast.loading("Seeding Next.js 16 course…");
 
     try {
-      const res = await fetch("/api/admin/courses/seed-prompt-engineering", {
+      const res = await fetch("/api/admin/courses/seed-nextjs", {
         method: "POST",
       });
 
@@ -53,11 +53,11 @@ export default function SeedPromptEngineeringCourseButton() {
     <button
       onClick={handleSeed}
       disabled={loading}
-      title="Seed the full Prompt Engineering course (rebuilds curriculum if it exists)"
+      title="Seed the full Next.js 16 course (rebuilds curriculum if it exists)"
       className="flex items-center gap-2 text-sm px-3 py-2 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <Sparkles className="w-4 h-4" />
-      {loading ? "Seeding…" : "Seed Prompt Engineering Course"}
+      {loading ? "Seeding…" : "Seed Next.js 16 Course"}
     </button>
   );
 }
