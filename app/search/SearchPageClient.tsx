@@ -483,7 +483,7 @@ const search = useCallback(async (opts: { reset?: boolean; q?: string; pg?: numb
           initial={{ y: 28, opacity: 0, scale: 0.96 }}
           animate={{ y: 0, opacity: 1, scale: 1 }}
           transition={{ type: "spring", stiffness: 320, damping: 28 }}
-          className="w-full flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.28)] rounded-full p-1.5 pointer-events-auto"
+          className="w-full flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_2px_12px_rgba(0,0,0,0.12)] rounded-full p-1.5 pointer-events-auto"
         >
           {/* Search input */}
           <div className="flex items-center gap-2 flex-1 px-4 min-w-0">

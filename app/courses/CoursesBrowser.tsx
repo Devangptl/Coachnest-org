@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, BookOpen } from "lucide-react";
+import { motion } from "framer-motion";
+import { Search, BookOpen, X } from "lucide-react";
 import CourseCard from "@/components/CourseCard";
 import GlassCard from "@/components/GlassCard";
 
@@ -39,8 +40,8 @@ export default function CoursesBrowser({ courses }: { courses: CourseVM[] }) {
   }, [q, courses]);
 
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-5">
+    <div className="pb-28">
+      <div className="mb-5">
         <p className="text-muted-foreground text-sm">
           {filtered.length} course{filtered.length !== 1 ? "s" : ""}
           {q.trim() && (
@@ -50,16 +51,6 @@ export default function CoursesBrowser({ courses }: { courses: CourseVM[] }) {
             </>
           )}
         </p>
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            className="input-glass pl-9 w-full"
-            placeholder="Search courses or instructors…"
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            aria-label="Search courses or instructors"
-          />
-        </div>
       </div>
 
       {filtered.length > 0 ? (
@@ -99,6 +90,37 @@ export default function CoursesBrowser({ courses }: { courses: CourseVM[] }) {
           </p>
         </GlassCard>
       )}
+
+      {/* ── Floating search bar ─────────────────────────────────────────── */}
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none w-[calc(100%-2rem)] max-w-3xl">
+        <motion.div
+          initial={{ y: 28, opacity: 0, scale: 0.96 }}
+          animate={{ y: 0, opacity: 1, scale: 1 }}
+          transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          className="w-full flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_2px_12px_rgba(0,0,0,0.12)] rounded-full p-1.5 pointer-events-auto"
+        >
+          <div className="flex items-center gap-2 flex-1 px-4 min-w-0">
+            <Search className="w-4 h-4 text-muted-foreground/50 flex-shrink-0" />
+            <input
+              type="text"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search courses or instructors…"
+              aria-label="Search courses or instructors"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/35 focus:outline-none min-w-0 py-2"
+            />
+            {q && (
+              <button
+                onClick={() => setQ("")}
+                className="text-muted-foreground/40 hover:text-foreground transition-colors flex-shrink-0"
+                aria-label="Clear search"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
+        </motion.div>
+      </div>
     </div>
   );
 }

@@ -35,7 +35,7 @@ export default function CourseTabs({
             animate={{ y: 0, opacity: 1, scale: 1 }}
             exit={{ y: 28, opacity: 0, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 320, damping: 28 }}
-            className="flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_8px_32px_rgba(0,0,0,0.28)] rounded-full p-1.5 gap-1 pointer-events-auto"
+            className="flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_2px_12px_rgba(0,0,0,0.12)] rounded-full p-1.5 gap-1 pointer-events-auto"
           >
             {TABS.map((tab) => {
               const isActive = activeTab === tab.id;
