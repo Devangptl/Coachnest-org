@@ -36,6 +36,7 @@ const getCourseById = unstable_cache(
           select: {
             id:     true,
             name:   true,
+            avatar: true,
             _count: { select: { followers: true } },
           },
         },
@@ -284,6 +285,7 @@ export default async function CourseDetailPage({ params }: Props) {
         categoryName={course.category?.name ?? null}
         instructorName={course.createdBy.name}
         instructorId={course.createdBy.id}
+        instructorAvatar={course.createdBy.avatar}
         lessonCount={allFlatLessons.length}
         totalDuration={totalDuration}
         enrollmentCount={course._count.enrollments}

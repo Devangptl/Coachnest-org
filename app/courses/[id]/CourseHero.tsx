@@ -17,6 +17,7 @@ interface Props {
   categoryName: string | null;
   instructorName: string;
   instructorId: string;
+  instructorAvatar?: string | null;
   lessonCount: number;
   totalDuration: number;
   enrollmentCount: number;
@@ -48,6 +49,7 @@ export default function CourseHero({
   categoryName,
   instructorName,
   instructorId,
+  instructorAvatar,
   lessonCount,
   totalDuration,
   enrollmentCount,
@@ -193,7 +195,7 @@ export default function CourseHero({
             >
               {/* Avatar */}
               <div className="relative flex-shrink-0">
-                <InstructorAvatar name={instructorName} seed={instructorId} />
+                <InstructorAvatar name={instructorName} avatar={instructorAvatar} seed={instructorId} />
                 <div className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 rounded-full bg-green-500 border-2 border-[#f8ebe0] dark:border-[#0f0f0f]" />
               </div>
 
