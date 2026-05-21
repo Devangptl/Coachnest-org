@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { MessageSquare, Plus, Search, CheckCircle, Lock, Bookmark } from "lucide-react";
 import MentionTextarea from "@/components/MentionTextarea";
+import LinkPreviewCard from "@/components/LinkPreviewCard";
+import { useLinkPreview } from "@/hooks/useLinkPreview";
 import { stripMentionTokens } from "@/lib/mentions";
 import { ThreadListSkeleton } from "@/components/community/CommunitySkeletons";
 import toast from "react-hot-toast";
@@ -49,6 +51,9 @@ export default function ForumsClient({
   const [creating, setCreating] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(initialTotalPages);
+
+  // Live link preview for the new-thread composer.
+  const newThreadPreview = useLinkPreview(newBody);
 
   async function load(p = 1, s = sort, query = search, saved = savedOnly) {
     setLoading(true);
@@ -278,6 +283,14 @@ export default function ForumsClient({
                   placeholder="Describe your question — Markdown supported, @ to mention"
                   className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
                 />
+                {newThreadPreview.activeUrl && (
+                  <div className="mt-2.5">
+                    <LinkPreviewCard
+                      url={newThreadPreview.activeUrl}
+                      onDismiss={() => newThreadPreview.dismiss(newThreadPreview.activeUrl!)}
+                    />
+                  </div>
+                )}
               </div>
               <div className="flex items-center justify-end gap-3">
                 <button
