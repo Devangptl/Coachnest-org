@@ -21,6 +21,8 @@ interface ThumbnailProps {
   sizes?: string;
   className?: string;
   onClick?: () => void;
+  /** Custom overlays (badges, chips, etc.) rendered above the image and gradient. */
+  children?: React.ReactNode;
 }
 
 /**
@@ -41,6 +43,7 @@ export default function Thumbnail({
   sizes = "(min-width: 1280px) 25vw, (min-width: 768px) 33vw, 100vw",
   className,
   onClick,
+  children,
 }: ThumbnailProps) {
   const content = (
     <div
@@ -100,6 +103,8 @@ export default function Thumbnail({
           {title}
         </h3>
       )}
+
+      {children}
     </div>
   );
 
