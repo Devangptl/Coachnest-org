@@ -304,7 +304,7 @@ export default function CourseEnrollBar({
           )}
           {(userRole === "ADMIN" || userRole === "INSTRUCTOR") && (
             <Link
-              href={`/admin/courses/${courseId}/edit`}
+              href={`/${userRole == "ADMIN" ? "admin" : "instructor"}/courses/${courseId}/edit`}
               className="btn-primary inline-flex w-full items-center justify-center gap-2 px-5 py-2.5 text-sm font-semibold"
             >
               <Edit3 className="w-3.5 h-3.5" /> Edit Course
