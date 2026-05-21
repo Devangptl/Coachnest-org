@@ -1,162 +1,204 @@
 /**
- * Course detail page loading skeleton — matches redesigned layout.
+ * Course detail page loading skeleton — mirrors the live layout:
+ * full-bleed hero on top, then a two-column grid with main content
+ * on the left and a sticky enroll/info card on the right.
  */
 import { Skeleton } from "@/components/ui/Skeleton";
 
 export default function CourseDetailLoading() {
   return (
     <div className="pb-10">
-      {/* ── Hero ───────────────────────────────────────────────────────────── */}
-      <div className="relative overflow-hidden">
-        <div className="relative pt-5 pb-6">
+      {/* ── Hero (full-bleed) ─────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden -mx-3 sm:-mx-5 lg:-mx-7">
+        <div className="relative px-3 sm:px-5 lg:px-7 pt-7 pb-10 animate-pulse">
           {/* Breadcrumb */}
-          <div className="flex items-center gap-2 mb-4 animate-pulse">
-            <Skeleton h="h-3" w="w-10" />
-            <Skeleton h="h-3" w="w-3" />
-            <Skeleton h="h-3" w="w-16" />
-            <Skeleton h="h-3" w="w-3" />
+          <div className="flex items-center gap-1.5 mb-5">
+            <Skeleton h="h-3" w="w-8" />
+            <Skeleton className="h-3 w-3 rounded-full" />
+            <Skeleton h="h-3" w="w-14" />
+            <Skeleton className="h-3 w-3 rounded-full" />
             <Skeleton h="h-3" w="w-20" />
           </div>
 
-          <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
-            {/* Left info */}
-            <div className="flex-1 min-w-0 animate-pulse">
-              {/* Badges */}
-              <div className="flex flex-wrap gap-1.5 mb-3">
-                <Skeleton className="h-5 w-20 rounded-md" />
-                <Skeleton className="h-5 w-16 rounded-md" />
-                <Skeleton className="h-5 w-16 rounded-md" />
-              </div>
+          {/* Badges */}
+          <div className="flex flex-wrap gap-2 mb-4">
+            <Skeleton className="h-5 w-20 rounded-full" />
+            <Skeleton className="h-5 w-24 rounded-full" />
+            <Skeleton className="h-5 w-12 rounded-full" />
+            <Skeleton className="h-5 w-20 rounded-full" />
+          </div>
 
-              {/* Title */}
-              <Skeleton className="h-10 w-full max-w-lg rounded-md mb-2" />
-              <Skeleton className="h-10 w-2/3 max-w-md rounded-md mb-4" />
+          {/* Title */}
+          <Skeleton className="h-9 sm:h-10 lg:h-12 w-full max-w-2xl rounded-md mb-3" />
+          <Skeleton className="h-9 sm:h-10 lg:h-12 w-3/4 max-w-xl rounded-md mb-5" />
 
-              {/* Description */}
-              <div className="space-y-2 mb-4">
-                <Skeleton h="h-4" w="w-full" className="max-w-2xl" />
-                <Skeleton h="h-4" w="w-5/6" className="max-w-xl" />
-                <Skeleton h="h-4" w="w-4/6" className="max-w-lg" />
-              </div>
+          {/* Description */}
+          <div className="space-y-2 mb-7">
+            <Skeleton h="h-4" w="w-full" className="max-w-3xl" />
+            <Skeleton h="h-4" w="w-11/12" className="max-w-2xl" />
+            <Skeleton h="h-4" w="w-4/6" className="max-w-xl" />
+          </div>
 
-              {/* Rating + meta */}
-              <div className="flex items-center gap-3 mb-4">
-                <Skeleton className="h-6 w-32 rounded-lg" />
-                <Skeleton className="h-5 w-24 rounded-lg" />
-              </div>
-
-              {/* Instructor */}
-              <div className="flex items-center gap-2.5 mt-2">
-                <Skeleton className="w-8 h-8 rounded-full flex-shrink-0" />
-                <div className="space-y-1.5">
-                  <Skeleton h="h-2" w="w-16" />
-                  <Skeleton h="h-3" w="w-24" />
-                </div>
-              </div>
-            </div>
-
-            {/* Right thumbnail */}
-            <div className="lg:w-[360px] flex-shrink-0 animate-pulse">
-              <Skeleton className="aspect-video w-full rounded-md" />
-              <div className="grid grid-cols-3 gap-2 mt-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="bg-secondary border border-border rounded-lg px-2 py-2 flex flex-col items-center gap-1.5"
-                  >
-                    <Skeleton className="h-3.5 w-3.5 rounded" />
-                    <Skeleton h="h-3" w="w-8" className="mt-0.5" />
-                    <Skeleton h="h-2" w="w-12" />
-                  </div>
+          {/* Stats row */}
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-3 mb-7">
+            <div className="flex items-center gap-2">
+              <Skeleton h="h-5" w="w-8" />
+              <div className="flex gap-0.5">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="w-4 h-4 rounded" />
                 ))}
               </div>
+              <Skeleton h="h-3" w="w-12" />
+            </div>
+            <div className="hidden sm:block w-px h-4 bg-border flex-shrink-0" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-3.5 h-3.5 rounded" />
+              <Skeleton h="h-3.5" w="w-24" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-3.5 h-3.5 rounded" />
+              <Skeleton h="h-3.5" w="w-20" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Skeleton className="w-3.5 h-3.5 rounded" />
+              <Skeleton h="h-3.5" w="w-20" />
             </div>
           </div>
+
+          {/* Instructor strip */}
+          <div className="flex items-center gap-4 flex-wrap pt-5 border-t border-border">
+            <div className="flex items-center gap-3">
+              <Skeleton className="w-10 h-10 rounded-full flex-shrink-0" />
+              <div className="space-y-1.5">
+                <Skeleton h="h-2.5" w="w-16" />
+                <Skeleton h="h-3.5" w="w-32" />
+              </div>
+            </div>
+            <Skeleton className="h-8 w-24 rounded-md" />
+          </div>
         </div>
-        <div className="h-px bg-border" />
+        <div className="h-px bg-gradient-to-r from-transparent via-border to-transparent" />
       </div>
 
-      {/* ── Enroll bar + tabs ──────────────────────────────────────────────── */}
-      <div className="mt-5">
-        {/*
-          Enroll bar skeleton — neutral shape that fits both the enrolled
-          (Continue Learning + progress) and non-enrolled (price + Enroll)
-          layouts so the swap-in doesn't jarringly resize the page.
-        */}
-        <div className="mb-6 bg-card border border-border rounded-md overflow-hidden animate-pulse">
-          <div className="px-4 py-4 sm:px-5 sm:py-5 border-b border-border flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6">
-            {/* Status / title / progress area */}
-            <div className="flex-1 min-w-0 space-y-2.5">
-              <div className="flex items-center gap-2">
-                <Skeleton className="h-4 w-20 rounded-full" />
-                <Skeleton h="h-3" w="w-24" />
-              </div>
-              <Skeleton className="h-5 w-2/3 max-w-[260px] rounded-md" />
-              <Skeleton h="h-3" w="w-1/2" className="max-w-[200px]" />
-              <div className="flex items-center gap-3 pt-1">
-                <Skeleton className="h-2 flex-1 rounded-full" />
-                <Skeleton h="h-4" w="w-10" />
-              </div>
-            </div>
+      {/* ── Two-column body ───────────────────────────────────────────────── */}
+      <div className="mt-6">
+        <div className="flex flex-col lg:grid lg:grid-cols-[1fr_360px] xl:grid-cols-[1fr_380px] lg:items-start lg:gap-8">
 
-            {/* CTA + action icons */}
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 lg:flex-shrink-0">
-              <Skeleton className="h-[46px] w-full sm:w-40 rounded-md" />
-              <div className="flex gap-2">
-                <Skeleton className="h-[46px] w-[46px] rounded-md" />
-                <Skeleton className="h-[46px] w-[46px] rounded-md" />
-              </div>
-            </div>
-          </div>
+          {/* ── Right sidebar (enroll/info card) ── */}
+          <div className="lg:col-start-2 lg:row-start-1 lg:sticky lg:top-20 mb-6 lg:mb-0 animate-pulse">
+            <div className="border border-border rounded-md overflow-hidden">
+              {/* Thumbnail */}
+              <Skeleton className="aspect-video w-full rounded-none" />
 
-          {/* Resources / Course-includes grid */}
-          <div className="px-4 py-3 sm:px-5 sm:py-3.5">
-            <Skeleton h="h-4" w="w-32" className="mb-4" />
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-3">
-                  <Skeleton className="w-7 h-7 rounded-lg flex-shrink-0" />
-                  <Skeleton h="h-3.5" w="w-24" />
+              {/* Progress / CTA block */}
+              <div className="p-4 space-y-3">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <Skeleton h="h-3" w="w-20" />
                 </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Tab bar */}
-        <div className="flex gap-2 p-1.5 bg-secondary/30 rounded-md w-max border border-border/50 animate-pulse mb-6">
-          <Skeleton className="h-9 w-24 rounded-lg" />
-          <Skeleton className="h-9 w-24 rounded-lg" />
-          <Skeleton className="h-9 w-24 rounded-lg" />
-        </div>
-
-        <div className="space-y-6 animate-pulse">
-          {/* About */}
-          <div className="bg-secondary border border-border rounded-lg p-4 sm:p-6 space-y-3">
-            <div className="flex items-center gap-2">
-              <Skeleton className="w-5 h-5 rounded-md" />
-              <Skeleton h="h-6" w="w-48" />
-            </div>
-            <Skeleton h="h-4" w="w-full" />
-            <Skeleton h="h-4" w="w-full" />
-            <Skeleton h="h-4" w="w-3/4" />
-          </div>
-
-          {/* What you'll learn */}
-          <div className="bg-secondary border border-border rounded-lg p-4 sm:p-6 space-y-4">
-            <div className="flex items-center gap-2">
-              <Skeleton className="w-5 h-5 rounded-md" />
-              <Skeleton h="h-6" w="w-48" />
-            </div>
-            <div className="grid sm:grid-cols-2 gap-4 mt-2">
-              {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="flex gap-2.5 items-center">
-                  <Skeleton className="w-4 h-4 rounded flex-shrink-0" />
-                  <Skeleton h="h-3.5" w="w-full" />
+                <Skeleton h="h-3" w="w-3/4" />
+                <div className="flex items-center gap-3">
+                  <Skeleton className="h-2 flex-1 rounded-full" />
+                  <Skeleton h="h-3" w="w-9" />
                 </div>
-              ))}
+                <div className="flex items-center gap-2 pt-1">
+                  <Skeleton className="h-10 flex-1 rounded-md" />
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                  <Skeleton className="h-9 w-9 rounded-md" />
+                </div>
+              </div>
+
+              {/* Course includes */}
+              <div className="border-t border-border px-4 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <Skeleton h="h-3.5" w="w-32" />
+                  <Skeleton h="h-3" w="w-10" />
+                </div>
+                <div className="grid grid-cols-2 gap-y-2.5 gap-x-3">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <Skeleton className="w-5 h-5 rounded-md flex-shrink-0" />
+                      <Skeleton h="h-3" w="w-full" className="max-w-[110px]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
+
+          {/* ── Left main content (overview tab) ── */}
+          <div className="lg:col-start-1 lg:row-start-1 min-w-0">
+            <div className="space-y-8 animate-pulse">
+
+              {/* About this course */}
+              <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Skeleton className="w-5 h-5 rounded-md" />
+                  <Skeleton h="h-5" w="w-48" />
+                </div>
+                <div className="space-y-2">
+                  <Skeleton h="h-4" w="w-full" />
+                  <Skeleton h="h-4" w="w-11/12" />
+                  <Skeleton h="h-4" w="w-10/12" />
+                  <Skeleton h="h-4" w="w-3/4" />
+                </div>
+              </div>
+
+              {/* What you'll learn */}
+              <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-4">
+                  <Skeleton className="w-5 h-5 rounded-md" />
+                  <Skeleton h="h-5" w="w-44" />
+                </div>
+                <div className="grid sm:grid-cols-2 gap-3">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="flex items-start gap-2.5">
+                      <Skeleton className="w-4 h-4 rounded-full flex-shrink-0 mt-0.5" />
+                      <Skeleton h="h-3.5" w="w-full" className="max-w-[220px]" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Course content (curriculum preview) */}
+              <div className="bg-secondary border border-border rounded-md p-4 sm:p-6">
+                <div className="flex items-center gap-2 mb-1">
+                  <Skeleton className="w-5 h-5 rounded-md" />
+                  <Skeleton h="h-5" w="w-40" />
+                </div>
+                <Skeleton h="h-3" w="w-32" className="mb-4" />
+                <div className="space-y-1.5">
+                  {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="rounded-md border border-border/60 overflow-hidden">
+                      {/* Chapter header */}
+                      <div className="flex items-center gap-3 px-3 py-2.5 bg-secondary/40">
+                        <Skeleton className="w-5 h-5 rounded flex-shrink-0" />
+                        <div className="flex-1 space-y-1.5">
+                          <Skeleton h="h-3.5" w="w-1/2" className="max-w-[180px]" />
+                          <Skeleton h="h-2.5" w="w-1/3" className="max-w-[100px]" />
+                        </div>
+                        <Skeleton className="w-3.5 h-3.5 rounded flex-shrink-0" />
+                      </div>
+                      {/* Lesson rows */}
+                      <div className="px-2 py-1 space-y-0.5 border-t border-border/40 bg-background/20">
+                        {Array.from({ length: 3 }).map((_, j) => (
+                          <div key={j} className="flex items-center gap-3 px-3 py-2.5">
+                            <Skeleton h="h-3" w="w-4" />
+                            <Skeleton className="w-4 h-4 rounded-full flex-shrink-0" />
+                            <Skeleton className="w-4 h-4 rounded flex-shrink-0" />
+                            <Skeleton h="h-3.5" w="w-full" className="max-w-[260px] flex-1" />
+                            <Skeleton h="h-3" w="w-10" />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
