@@ -95,7 +95,7 @@ export default function CourseHero({
           )}
         </motion.nav>
 
-        <div className="max-w-3xl">
+        <div className="">
 
           {/* ── Badges ── */}
           <motion.div {...fadeUp(0.04)} className="flex flex-wrap gap-2 mb-4">
