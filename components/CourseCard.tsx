@@ -5,6 +5,7 @@ import { Badge } from "./ui/Badge";
 import InstructorHoverCard from "./InstructorHoverCard";
 import InstructorAvatar from "./InstructorAvatar";
 import Thumbnail from "./Thumbnail";
+import ShareCourseModal from "./ShareCourseModal";
 
 interface CourseCardProps {
   id:               string;
@@ -45,7 +46,8 @@ export default function CourseCard({
     : 0;
 
   return (
-    <Link href={`/courses/${id}`} className="group block h-full">
+    <div className="relative group block h-full">
+      <Link href={`/courses/${id}`} className="block h-full">
       <div className="relative bg-card border border-border/60 rounded-md overflow-hidden transition-colors duration-300 group-hover:border-orange-500/30 h-full flex flex-col">
 
         {/* Top orange accent line */}
@@ -187,6 +189,14 @@ export default function CourseCard({
           )}
         </div>
       </div>
-    </Link>
+      </Link>
+
+      {/* Share button — non-compact, shown on card hover, outside Link so it doesn't navigate */}
+      {!compact && (
+        <div className="absolute bottom-[3.75rem] right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <ShareCourseModal courseId={id} title={title} thumbnail={thumbnail} iconOnly triggerClassName="!w-7 !h-7 shadow-md bg-card/90 backdrop-blur-sm" />
+        </div>
+      )}
+    </div>
   );
 }

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Clock, User, Calendar, ArrowRight } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import ShareCourseModal from "./ShareCourseModal";
 
 interface Props {
   slug: string;
@@ -32,10 +33,11 @@ export default function BlogCard({
     <motion.div
       whileHover={{ y: -4 }}
       transition={{ duration: 0.2 }}
+      className="relative group"
     >
       <Link
         href={`/blog/${slug}`}
-        className="group flex flex-col h-[340px] backdrop-blur-lg bg-white/[0.06] border border-border rounded-md overflow-hidden shadow-lg hover:bg-white/[0.1] hover:border-border transition-all duration-300"
+        className="flex flex-col h-[340px] backdrop-blur-lg bg-white/[0.06] border border-border rounded-md overflow-hidden shadow-lg hover:bg-white/[0.1] hover:border-border transition-all duration-300"
       >
         {/* Thumbnail */}
         {thumbnail ? (
@@ -101,6 +103,17 @@ export default function BlogCard({
           </div>
         </div>
       </Link>
+
+      {/* Share button — outside Link so it doesn't navigate */}
+      <div className="absolute top-2 right-2 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <ShareCourseModal
+          path={`/blog/${slug}`}
+          title={title}
+          thumbnail={thumbnail}
+          iconOnly
+          triggerClassName="!w-7 !h-7 shadow-md bg-card/90 backdrop-blur-sm"
+        />
+      </div>
     </motion.div>
   );
 }
