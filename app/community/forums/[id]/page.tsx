@@ -12,6 +12,8 @@ import CommunityAccessNotice from "@/components/CommunityAccessNotice";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import AuthorActionsMenu from "@/components/AuthorActionsMenu";
 import MentionTextarea from "@/components/MentionTextarea";
+import LinkPreviewCard from "@/components/LinkPreviewCard";
+import { useLinkPreview } from "@/hooks/useLinkPreview";
 import { ThreadDetailSkeleton } from "@/components/community/CommunitySkeletons";
 import { usePostgresChanges } from "@/hooks/useRealtimeChannel";
 
@@ -68,6 +70,12 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [replyDraft, setReplyDraft] = useState("");
   const [savingReply, setSavingReply] = useState(false);
+
+  // Auto link previews — watch the active composer (new reply, thread edit,
+  // or reply edit) and surface the first http(s) URL as a rich card.
+  const replyPreview = useLinkPreview(replyBody);
+  const threadEditPreview = useLinkPreview(threadDraft.body);
+  const replyEditPreview = useLinkPreview(replyDraft);
 
   async function loadThread() {
     try {
@@ -316,6 +324,12 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
               className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
               placeholder="Body — Markdown supported, @ to mention"
             />
+            {threadEditPreview.activeUrl && (
+              <LinkPreviewCard
+                url={threadEditPreview.activeUrl}
+                onDismiss={() => threadEditPreview.dismiss(threadEditPreview.activeUrl!)}
+              />
+            )}
             <div className="flex items-center justify-end gap-2">
               <button
                 onClick={() => setEditingThread(false)}
@@ -418,6 +432,12 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
                             className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
                             placeholder="Edit your reply — Markdown supported, @ to mention"
                           />
+                          {replyEditPreview.activeUrl && (
+                            <LinkPreviewCard
+                              url={replyEditPreview.activeUrl}
+                              onDismiss={() => replyEditPreview.dismiss(replyEditPreview.activeUrl!)}
+                            />
+                          )}
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => { setEditingReplyId(null); setReplyDraft(""); }}
@@ -539,6 +559,14 @@ export default function ThreadDetailPage({ params }: { params: Promise<{ id: str
             placeholder="Write your reply — Markdown supported, @ to mention someone"
             className="w-full px-3 py-2.5 rounded-lg bg-secondary border border-border text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500/50 resize-none"
           />
+          {replyPreview.activeUrl && (
+            <div className="mt-3">
+              <LinkPreviewCard
+                url={replyPreview.activeUrl}
+                onDismiss={() => replyPreview.dismiss(replyPreview.activeUrl!)}
+              />
+            </div>
+          )}
           <div className="flex justify-end mt-3">
             <button
               onClick={handleReply}
