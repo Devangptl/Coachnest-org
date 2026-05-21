@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ListVideo, BookOpen, Clock, Bookmark, Lock } from "lucide-react";
 import { formatMinutes, truncate } from "@/lib/utils";
+import ShareCourseModal from "@/components/ShareCourseModal";
 
 export interface PlaylistCardData {
   id: string;
@@ -26,7 +27,8 @@ export default function PlaylistCard({
   const count = playlist._count.items;
 
   return (
-    <Link href={href} className="group block h-full">
+    <div className="relative group block h-full">
+      <Link href={href} className="block h-full">
       <div className="relative bg-card border border-border/60 rounded-md overflow-hidden transition-colors duration-300 group-hover:border-orange-500/30 h-full flex flex-col">
         {/* Top orange accent line */}
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
@@ -116,6 +118,20 @@ export default function PlaylistCard({
           </div>
         </div>
       </div>
-    </Link>
+      </Link>
+
+      {/* Share button for public playlists — non-compact, outside Link */}
+      {!compact && playlist.visibility === "PUBLIC" && (
+        <div className="absolute bottom-[3.25rem] right-3 z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <ShareCourseModal
+            path={`/playlists/${playlist.slug}`}
+            title={playlist.title}
+            thumbnail={playlist.coverImage}
+            iconOnly
+            triggerClassName="!w-7 !h-7 shadow-md bg-card/90 backdrop-blur-sm"
+          />
+        </div>
+      )}
+    </div>
   );
 }

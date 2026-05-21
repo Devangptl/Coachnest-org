@@ -15,6 +15,7 @@ import TextHighlighter from "@/components/TextHighlighter";
 import LessonAudioPlayer from "@/components/LessonAudioPlayer";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import VideoLessonPlayer from "@/components/VideoLessonPlayer";
+import ShareCourseModal from "@/components/ShareCourseModal";
 import { useReadingProgress, SCROLL_THRESHOLD, TIME_THRESHOLD } from "@/hooks/useReadingProgress";
 import { useLessonContext } from "../LessonProvider";
 import toast from "react-hot-toast";
@@ -200,6 +201,13 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                 <span>{showAudioPlayer ? "Audio Mode" : "Listen"}</span>
               </button>
             )}
+
+            {/* Share lesson link */}
+            <ShareCourseModal
+              path={`/courses/${courseId}/lessons/${lesson.id}`}
+              title={lesson.title}
+              triggerClassName="!px-2.5 !py-1.5 !text-xs"
+            />
 
             {/* Status / progress hint — right-aligned */}
             <div className="ml-auto flex items-center gap-2">

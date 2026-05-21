@@ -7,6 +7,7 @@ import Image from "next/image";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
+import ShareCourseModal from "@/components/ShareCourseModal";
 import { Heart, BookOpen, Users, Star } from "lucide-react";
 
 async function getWishlist(userId: string) {
@@ -97,26 +98,28 @@ export default async function WishlistPage() {
                     )}
                   </div>
 
-                  {/* Price */}
-                  <div className="flex flex-col items-end shrink-0">
-                    {c.isFree ? (
-                      <span className="text-emerald-500 font-bold text-sm">Free</span>
-                    ) : c.discountPrice != null && c.price != null ? (
-                      <>
+                  {/* Share + Price */}
+                  <div className="flex items-center gap-2 shrink-0">
+                    <ShareCourseModal courseId={c.id} title={c.title} thumbnail={c.thumbnail} iconOnly />
+                    <div className="flex flex-col items-end">
+                      {c.isFree ? (
+                        <span className="text-emerald-500 font-bold text-sm">Free</span>
+                      ) : c.discountPrice != null && c.price != null ? (
+                        <>
+                          <span className="text-foreground font-bold text-base leading-none">
+                            ₹{c.discountPrice.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-muted-foreground/50 text-xs line-through mt-0.5">
+                            ₹{c.price.toLocaleString("en-IN")}
+                          </span>
+                        </>
+                      ) : c.price != null ? (
                         <span className="text-foreground font-bold text-base leading-none">
-                          ₹{c.discountPrice.toLocaleString("en-IN")}
-                        </span>
-                        <span className="text-muted-foreground/50 text-xs line-through mt-0.5">
                           ₹{c.price.toLocaleString("en-IN")}
                         </span>
-                      </>
-                    ) : c.price != null ? (
-                      <span className="text-foreground font-bold text-base leading-none">
-                        ₹{c.price.toLocaleString("en-IN")}
-                      </span>
-                    ) : null}
+                      ) : null}
+                    </div>
                   </div>
-                </div>
 
                 {/* Description */}
                 <p className="text-muted-foreground/65 text-xs leading-relaxed line-clamp-2 mt-1.5 flex-1">

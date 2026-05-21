@@ -8,6 +8,7 @@ import MarkdownRenderer from "@/components/MarkdownRenderer";
 import FollowInstructorButton from "@/components/FollowInstructorButton";
 import InstructorHoverCard from "@/components/InstructorHoverCard";
 import InstructorAvatar from "@/components/InstructorAvatar";
+import ShareCourseModal from "@/components/ShareCourseModal";
 
 interface Props {
   title: string;
@@ -15,6 +16,8 @@ interface Props {
   level: string;
   language: string;
   categoryName: string | null;
+  courseId: string;
+  thumbnail?: string | null;
   instructorName: string;
   instructorId: string;
   instructorAvatar?: string | null;
@@ -47,6 +50,8 @@ export default function CourseHero({
   level,
   language,
   categoryName,
+  courseId,
+  thumbnail,
   instructorName,
   instructorId,
   instructorAvatar,
@@ -216,6 +221,13 @@ export default function CourseHero({
               initialCount={instructorFollowerCount}
               isLoggedIn={isLoggedIn}
               showCount
+            />
+
+            <ShareCourseModal
+              courseId={courseId}
+              title={title}
+              thumbnail={thumbnail}
+              triggerClassName="!px-3 !py-1.5 !text-xs"
             />
           </motion.div>
 

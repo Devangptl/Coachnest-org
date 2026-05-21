@@ -283,6 +283,8 @@ export default async function CourseDetailPage({ params }: Props) {
         level={course.level}
         language={course.language}
         categoryName={course.category?.name ?? null}
+        courseId={course.id}
+        thumbnail={course.thumbnail}
         instructorName={course.createdBy.name}
         instructorId={course.createdBy.id}
         instructorAvatar={course.createdBy.avatar}

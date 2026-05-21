@@ -16,6 +16,7 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import InstructorAvatar from "@/components/InstructorAvatar";
 import FollowInstructorButton from "@/components/FollowInstructorButton";
+import ShareCourseModal from "@/components/ShareCourseModal";
 import CourseCard from "@/components/CourseCard";
 import PlaylistCard from "@/components/playlists/PlaylistCard";
 
@@ -153,13 +154,19 @@ export default async function InstructorPage({ params }: Params) {
               )}
             </div>
 
-            <div className="flex items-center gap-2.5 sm:pb-1">
+            <div className="flex items-center gap-2.5 sm:pb-1 flex-wrap">
               <FollowInstructorButton
                 instructorId={profile.id}
                 initialIsFollowing={Boolean(followRecord)}
                 initialCount={followerCount}
                 isLoggedIn={Boolean(session)}
                 showCount
+              />
+              <ShareCourseModal
+                path={`/instructors/${profile.id}`}
+                title={profile.name}
+                thumbnail={profile.avatar}
+                triggerClassName="!px-3 !py-1.5 !text-xs"
               />
               {profile.website && (
                 <a

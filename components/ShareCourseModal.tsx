@@ -16,7 +16,10 @@ import {
 interface Props {
   title: string;
   thumbnail?: string | null;
-  courseId: string;
+  /** Used to build the default share URL: /courses/{courseId} */
+  courseId?: string;
+  /** Override the share path directly (e.g. /courses/x/lessons/y, /instructors/z) */
+  path?: string;
   className?: string;
   triggerClassName?: string;
   /** Render as icon-only button (used in enroll bar action row) */
@@ -27,6 +30,7 @@ export default function ShareCourseModal({
   title,
   thumbnail,
   courseId,
+  path,
   className,
   triggerClassName,
   iconOnly = false,
@@ -36,7 +40,9 @@ export default function ShareCourseModal({
   const inputRef            = useRef<HTMLInputElement>(null);
 
   function getCourseUrl() {
-    return `${window.location.origin}/courses/${courseId}`;
+    const base = typeof window !== "undefined" ? window.location.origin : "";
+    if (path) return `${base}${path}`;
+    return `${base}/courses/${courseId}`;
   }
 
   async function copyLink() {
