@@ -11,6 +11,7 @@ import type { Metadata } from "next";
 import { ArrowLeft, Clock, User, Calendar, Tag } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
+import ShareCourseModal from "@/components/ShareCourseModal";
 
 export const revalidate = 300;
 
@@ -214,6 +215,12 @@ export default async function BlogDetailPage({ params }: Props) {
             {blog.readTime} min read
           </span>
         )}
+        <ShareCourseModal
+          path={`/blog/${slug}`}
+          title={blog.title}
+          thumbnail={blog.thumbnail}
+          triggerClassName="ml-auto !px-3 !py-1.5 !text-xs"
+        />
       </div>
 
       {/* Excerpt — styled callout */}
