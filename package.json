@@ -14,6 +14,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:seed:blogs": "tsx prisma/seed-blogs.ts",
     "db:seed:emails": "tsx prisma/seed-email-templates.ts",
+    "db:seed:nextjs": "tsx prisma/seed-nextjs-course.ts",
     "db:migrate": "prisma migrate dev"
   },
   "prisma": {
