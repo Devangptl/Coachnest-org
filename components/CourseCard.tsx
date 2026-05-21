@@ -1,10 +1,10 @@
 import Link from "next/link";
-import Image from "next/image";
-import { BookOpen, Users, Star, Clock } from "lucide-react";
+import { Users, Star, Clock } from "lucide-react";
 import { truncate } from "@/lib/utils";
 import { Badge } from "./ui/Badge";
 import InstructorHoverCard from "./InstructorHoverCard";
 import InstructorAvatar from "./InstructorAvatar";
+import Thumbnail from "./Thumbnail";
 
 interface CourseCardProps {
   id:               string;
@@ -52,21 +52,12 @@ export default function CourseCard({
         <div className="absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
 
         {/* ── Thumbnail ─────────────────────────────────────── */}
-        <div className={`relative ${compact ? "h-[100px]" : "h-44"} bg-secondary overflow-hidden flex-shrink-0`}>
-          {thumbnail ? (
-            <Image
-              src={thumbnail}
-              alt={title}
-              fill
-              className="object-cover"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-orange-500/20 via-orange-600/15 to-amber-500/20 flex items-center justify-center">
-              <BookOpen className={`${compact ? "w-7 h-7" : "w-12 h-12"} text-orange-500/25`} />
-            </div>
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent transition-opacity duration-500 group-hover:opacity-80" />
-
+        <Thumbnail
+          src={thumbnail ?? undefined}
+          alt={title}
+          className="rounded-none ring-0 shadow-none hover:shadow-none hover:ring-0 hover:translate-y-0"
+          sizes={compact ? "200px" : "(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"}
+        >
           {/* Top-left: level badge */}
           {level && !compact && (
             <div className="absolute top-2 left-2">
@@ -114,7 +105,7 @@ export default function CourseCard({
               )}
             </div>
           )}
-        </div>
+        </Thumbnail>
 
         {/* ── Content ───────────────────────────────────────── */}
         <div className={`${compact ? "p-2" : "p-4"} flex-1 flex flex-col`}>
