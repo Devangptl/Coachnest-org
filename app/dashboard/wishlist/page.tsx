@@ -86,6 +86,7 @@ export default async function WishlistPage() {
 
               {/* Content */}
               <div className="flex-1 min-w-0 flex flex-col py-0.5">
+                {/* Top row: title + share + price */}
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <Link href={`/courses/${c.id}`}>
@@ -120,6 +121,7 @@ export default async function WishlistPage() {
                       ) : null}
                     </div>
                   </div>
+                </div>
 
                 {/* Description */}
                 <p className="text-muted-foreground/65 text-xs leading-relaxed line-clamp-2 mt-1.5 flex-1">
