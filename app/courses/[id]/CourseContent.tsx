@@ -108,7 +108,7 @@ export default function CourseContent({
   const liveUngrouped = ungroupedLessons?.map((l) => ({ ...l, completed: completedMap[l.id] ?? l.completed }));
 
   return (
-    <div ref={sectionRef} className="space-y-4 sm:space-y-6">
+    <div ref={sectionRef} className="">
       {/* Floating bottom tab bar — appears only while this section is in view */}
       <CourseTabs
         visible={tabsVisible}
