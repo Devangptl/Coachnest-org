@@ -58,6 +58,21 @@ export const metadata: Metadata = {
     title: "CoachNest — Learn to Code, Design & Build Your Career",
     description:
       "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "CoachNest — Learn to Code, Design & Build Your Career",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "CoachNest — Learn to Code, Design & Build Your Career",
+    description:
+      "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
+    images: ["/og-image.png"],
   },
 };
 
