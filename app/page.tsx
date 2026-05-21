@@ -61,9 +61,10 @@ export const metadata: Metadata = {
     images: [
       {
         url: "/og-image.png",
-        width: 1200,
-        height: 630,
+        width: 1366,
+        height: 654,
         alt: "CoachNest — Learn to Code, Design & Build Your Career",
+        type: "image/png",
       },
     ],
   },
