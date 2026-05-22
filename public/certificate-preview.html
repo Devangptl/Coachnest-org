@@ -12,63 +12,74 @@
 
 body {
   min-height: 100vh;
-  background: #d8d8d8;
+  background: #c8c8c8;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 32px 16px;
+  padding: 40px 20px;
   font-family: 'Montserrat', sans-serif;
 }
 
-/* ───────────────────────────────────────────────
-   Outer wrapper (A4 landscape proportions ~297×210)
-─────────────────────────────────────────────── */
+/* ── Outer shell — A4 landscape (297 × 210 mm → 1.4143 : 1) ── */
 .cert-outer {
-  width: min(820px, 100%);
-  aspect-ratio: 1.414 / 1;         /* A4 landscape */
+  width: min(900px, 100%);
+  aspect-ratio: 1.4143 / 1;
+  filter: drop-shadow(0 24px 56px rgba(0,0,0,0.45));
   position: relative;
-  filter: drop-shadow(0 20px 50px rgba(0,0,0,0.40));
 }
 
-/* ── Main card ───────────────────────────────── */
+/* ── White card ── */
 .cert {
-  width: 100%; height: 100%;
+  width: 100%;
+  height: 100%;
   background: #ffffff;
   position: relative;
   overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  /* Three rows: main body | footer | cert-id strip */
+  display: grid;
+  grid-template-rows: 1fr 22% 5%;
 }
 
-/* ── Outer gold frame ────────────────────────── */
-.frame-outer {
+/* ════════════════════════════════════════════════
+   DECORATIVE FRAME  (position: absolute overlays)
+════════════════════════════════════════════════ */
+
+/* Outer gold border */
+.frame {
   position: absolute;
-  inset: 9px;
+  inset: 11px;
   border: 1.8px solid #c9a84c;
   pointer-events: none;
   z-index: 10;
 }
-/* thin inner line */
-.frame-outer::before {
+/* Inner hairline */
+.frame::after {
   content: '';
   position: absolute;
-  inset: 4px;
-  border: 0.6px solid rgba(201,168,76,0.50);
+  inset: 5px;
+  border: 0.55px solid rgba(201,168,76,0.45);
 }
 
-/* ── Corner ornaments ────────────────────────── */
-.corner { position: absolute; width: 40px; height: 40px; z-index: 11; }
+/* L-shaped corner ornaments */
+.corner {
+  position: absolute;
+  width: 38px;
+  height: 38px;
+  z-index: 11;
+}
 .corner::before, .corner::after {
-  content: ''; position: absolute; background: #c9a84c;
+  content: '';
+  position: absolute;
+  background: #c9a84c;
 }
-.corner::before { top: 0; left: 0; height: 2px; width: 100%; }
+.corner::before { top: 0; left: 0; width: 100%; height: 2px; }
 .corner::after  { top: 0; left: 0; width: 2px; height: 100%; }
-.corner.tl { top: 9px;  left: 9px; }
-.corner.tr { top: 9px;  right: 9px;  transform: scaleX(-1); }
-.corner.bl { bottom: 9px; left: 9px;  transform: scaleY(-1); }
-.corner.br { bottom: 9px; right: 9px; transform: scale(-1); }
+.corner.tl { top: 11px;    left: 11px; }
+.corner.tr { top: 11px;    right: 11px;   transform: scaleX(-1); }
+.corner.bl { bottom: 11px; left: 11px;    transform: scaleY(-1); }
+.corner.br { bottom: 11px; right: 11px;   transform: scale(-1);  }
 
-/* Diamond at each corner */
+/* Diamond dots at each corner */
 .c-dot {
   position: absolute;
   width: 7px; height: 7px;
@@ -76,207 +87,223 @@ body {
   transform: rotate(45deg);
   z-index: 12;
 }
-.c-dot.tl { top: 5.5px;  left: 5.5px;  }
-.c-dot.tr { top: 5.5px;  right: 5.5px; }
-.c-dot.bl { bottom: 5.5px; left: 5.5px; }
-.c-dot.br { bottom: 5.5px; right: 5.5px; }
+.c-dot.tl { top: 7.5px;    left: 7.5px;  }
+.c-dot.tr { top: 7.5px;    right: 7.5px; }
+.c-dot.bl { bottom: 7.5px; left: 7.5px;  }
+.c-dot.br { bottom: 7.5px; right: 7.5px; }
 
-/* ── Top-left navy triangle accent ──────────── */
-.triangle-accent {
+/* Navy triangle — top-left corner accent */
+.triangle {
   position: absolute;
   top: 0; left: 0;
   width: 0; height: 0;
   border-style: solid;
-  border-width: 72px 72px 0 0;
+  border-width: 76px 76px 0 0;
   border-color: #1a2a5e transparent transparent transparent;
   z-index: 5;
 }
-/* Small gold line on the triangle edge */
-.triangle-accent::after {
+.triangle::after {
   content: '';
   position: absolute;
-  top: -70px; left: 4px;
-  width: 90px; height: 1.5px;
-  background: #c9a84c;
+  top: -74px; left: 5px;
+  width: 96px; height: 1.5px;
+  background: linear-gradient(90deg, #c9a84c 60%, transparent);
   transform-origin: 0 50%;
   transform: rotate(-45deg);
 }
 
-/* ── Top-right badge ─────────────────────────── */
+/* Guilloche watermark */
+.guilloche {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -53%);
+  width: 58%; height: 72%;
+  background:
+    repeating-conic-gradient(from 0deg at 50% 50%,
+      rgba(26,42,94,0.028) 0deg 6deg,
+      transparent 6deg 18deg),
+    radial-gradient(ellipse 85% 70% at 50% 50%,
+      transparent 55%, rgba(26,42,94,0.04) 100%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ════════════════════════════════════════════════
+   BADGE  (top-right, partly above the frame line)
+════════════════════════════════════════════════ */
 .badge-wrap {
   position: absolute;
-  top: -4px; right: 38px;
+  top: 6px;
+  right: clamp(28px, 4.5%, 44px);
   z-index: 20;
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: clamp(70px, 11%, 92px);
+  width: clamp(82px, 12%, 108px);
 }
 
-/* Ribbon tails hanging above the circle */
-.badge-ribbon {
-  width: 58%;
+/* Two navy ribbon tails above the circle */
+.badge-ribbons {
   display: flex;
   justify-content: center;
-  gap: 3px;
-  margin-bottom: -6px;
+  gap: 4px;
+  width: 52%;
+  margin-bottom: -8px; /* ribbon overlaps top of circle */
   position: relative;
   z-index: 19;
 }
-.ribbon-strip {
-  width: 32%;
-  height: clamp(22px, 4.5%, 36px);
-  background: linear-gradient(180deg, #1a2a5e, #122060);
-  clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+.ribbon-tail {
+  width: 44%;
+  height: clamp(26px, 5%, 38px);
+  background: linear-gradient(175deg, #1e3070 0%, #122060 100%);
+  clip-path: polygon(0 0, 100% 0, 100% 78%, 50% 100%, 0 78%);
+  box-shadow: inset -1px 0 0 rgba(255,255,255,0.08);
 }
 
-/* Sunburst ring */
-.badge-circle {
+/* Sunburst disc */
+.badge-disc {
   width: 100%;
   aspect-ratio: 1;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .sunburst {
   position: absolute;
   inset: 0;
   border-radius: 50%;
   background: repeating-conic-gradient(
-    #e8c96a 0deg 8deg,
-    #c9a84c 8deg 16deg
+    #e8c96a 0deg 7deg,
+    #c9a84c 7deg 14deg
   );
+  box-shadow: 0 3px 10px rgba(0,0,0,0.28);
 }
-.badge-outer-ring {
+.badge-ring {
   position: absolute;
-  inset: 6%;
+  inset: 7%;
   border-radius: 50%;
   background: #1a2a5e;
-  border: 2px solid #e8c96a;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.badge-inner-ring {
-  position: absolute;
-  inset: 11%;
-  border-radius: 50%;
-  border: 1px solid rgba(232,201,106,0.55);
-}
-.badge-text-top {
-  position: absolute;
-  top: 17%;
-  left: 50%; transform: translateX(-50%);
-  font-size: clamp(4.5px, 0.9vw, 6.5px);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #e8c96a;
-  white-space: nowrap;
-  text-align: center;
-  font-family: 'Montserrat', sans-serif;
-}
-.badge-text-bot {
-  position: absolute;
-  bottom: 17%;
-  left: 50%; transform: translateX(-50%);
-  font-size: clamp(4.5px, 0.9vw, 6.5px);
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  color: #e8c96a;
-  white-space: nowrap;
-  text-align: center;
-  font-family: 'Montserrat', sans-serif;
-}
-.badge-stars {
-  display: flex;
-  gap: 2px;
-  position: absolute;
-  bottom: 24%;
-  left: 50%; transform: translateX(-50%);
-}
-.badge-stars span {
-  color: #e8c96a;
-  font-size: clamp(5px, 0.8vw, 7px);
-  line-height: 1;
-}
-.badge-letter {
-  font-family: 'EB Garamond', serif;
-  font-weight: 800;
-  font-size: clamp(14px, 3vw, 24px);
-  color: #e8c96a;
-  line-height: 1;
-  position: relative;
-  z-index: 2;
-  margin-top: -4%;
-}
-
-/* ── Content body ────────────────────────────── */
-.cert-body {
-  flex: 1;
+  border: 2.5px solid #e8c96a;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: flex-start;
-  padding: 4.5% 8% 0;
-  position: relative;
-  z-index: 3;
-  text-align: center;
+  justify-content: center;
+  gap: 0;
+}
+.badge-ring::before {
+  content: '';
+  position: absolute;
+  inset: 8%;
+  border-radius: 50%;
+  border: 1px solid rgba(232,201,106,0.40);
+  pointer-events: none;
+}
+.badge-label {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  color: #e8c96a;
+  line-height: 1;
+  font-size: clamp(4px, 0.85vw, 6.5px);
+  position: relative; z-index: 1;
+}
+.badge-label.top { margin-top: 18%; }
+.badge-label.bot { margin-bottom: 18%; }
+.badge-check {
+  font-family: 'EB Garamond', serif;
+  font-weight: 800;
+  font-size: clamp(16px, 3.2vw, 26px);
+  color: #e8c96a;
+  line-height: 1;
+  position: relative; z-index: 1;
+}
+.badge-stars {
+  display: flex;
+  gap: clamp(1px, 0.2vw, 2px);
+  line-height: 1;
+  position: relative; z-index: 1;
+}
+.badge-stars span {
+  font-size: clamp(4px, 0.7vw, 6px);
+  color: #e8c96a;
 }
 
-/* Top decorative ornament */
-.top-ornament {
+/* ════════════════════════════════════════════════
+   ROW 1 — MAIN BODY
+════════════════════════════════════════════════ */
+.cert-body {
+  grid-row: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;          /* vertically centre all content */
+  text-align: center;
+  padding: 5% 10% 0;               /* top breathing room, wide side margins */
+  gap: clamp(4px, 0.65vw, 6px);    /* uniform base gap between every child */
+  position: relative;
+  z-index: 3;
+}
+
+/* Top ornament row */
+.ornament-row {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 0.8%;
+  gap: 5px;
+  width: 40%;
+  margin-bottom: clamp(1px, 0.2vw, 2px);
 }
 .orn-line {
-  flex: 1; max-width: 30px;
+  flex: 1;
   height: 1px;
-  background: #c9a84c;
+  background: linear-gradient(90deg, transparent, #c9a84c);
 }
+.orn-line.r { background: linear-gradient(90deg, #c9a84c, transparent); }
 .orn-diamond {
-  width: 6px; height: 6px;
+  width: 5px; height: 5px;
   background: #c9a84c;
   transform: rotate(45deg);
   flex-shrink: 0;
 }
-.orn-dot { width: 3px; height: 3px; background: #c9a84c; border-radius: 50%; flex-shrink: 0; }
-
-/* Big CERTIFICATE word */
-.word-certificate {
-  font-family: 'EB Garamond', serif;
-  font-weight: 800;
-  font-size: clamp(32px, 7.8vw, 64px);
-  color: #1a2a5e;
-  letter-spacing: 0.06em;
-  line-height: 1;
-  margin-bottom: 0.3%;
-  text-transform: uppercase;
+.orn-dot {
+  width: 2.5px; height: 2.5px;
+  border-radius: 50%;
+  background: #c9a84c;
+  flex-shrink: 0;
 }
 
-/* "OF COMPLETION" bar */
+/* CERTIFICATE heading */
+.word-cert {
+  font-family: 'EB Garamond', serif;
+  font-weight: 800;
+  font-size: clamp(36px, 8vw, 68px);
+  color: #1a2a5e;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  text-transform: uppercase;
+  margin-bottom: clamp(1px, 0.15vw, 2px); /* tight before OF COMPLETION */
+}
+
+/* "OF COMPLETION" gold bar */
 .of-completion {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 3%;
-  width: 100%;
   justify-content: center;
+  gap: 10px;
+  width: 90%;
+  margin-bottom: clamp(4px, 0.7vw, 7px); /* more room before certify label */
 }
-.gold-bar {
-  flex: 1; max-width: 22%;
+.gold-rule {
+  flex: 1;
+  max-width: 25%;
   height: 1.5px;
   background: linear-gradient(90deg, transparent, #c9a84c);
 }
-.gold-bar.right { background: linear-gradient(90deg, #c9a84c, transparent); }
-.completion-text {
+.gold-rule.r { background: linear-gradient(90deg, #c9a84c, transparent); }
+.of-text {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(8px, 1.6vw, 13px);
-  font-weight: 600;
+  font-weight: 700;
+  font-size: clamp(8px, 1.55vw, 13px);
   color: #c9a84c;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.28em;
   text-transform: uppercase;
   white-space: nowrap;
 }
@@ -284,160 +311,176 @@ body {
 /* "THIS IS TO CERTIFY THAT" */
 .certify-label {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(7px, 1.1vw, 9px);
   font-weight: 400;
-  color: #888;
-  letter-spacing: 0.16em;
+  font-size: clamp(6.5px, 1vw, 8.5px);
+  color: #999;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  margin-bottom: 1.5%;
+  margin-bottom: clamp(2px, 0.35vw, 4px);
 }
 
 /* Recipient name */
-.recipient-name {
+.name {
   font-family: 'Dancing Script', cursive;
   font-weight: 700;
-  font-size: clamp(26px, 5.8vw, 48px);
+  font-size: clamp(28px, 6vw, 52px);
   color: #1a2a5e;
-  line-height: 1.1;
-  margin-bottom: 3%;
-  padding: 0 4%;
+  line-height: 1.05;
+  /* extra breathing room around the name */
+  margin-top: clamp(1px, 0.2vw, 3px);
+  margin-bottom: clamp(4px, 0.7vw, 8px);
 }
 
-/* body text rows */
-.body-row {
+/* "has successfully completed the course" */
+.completed-label {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(7px, 1.1vw, 9.5px);
-  color: #555;
-  line-height: 1.6;
-  margin-bottom: 0.4%;
-  letter-spacing: 0.02em;
+  font-size: clamp(6.5px, 1vw, 8.5px);
+  color: #666;
+  letter-spacing: 0.04em;
+  margin-bottom: clamp(2px, 0.3vw, 3px);
 }
-.course-name {
+
+/* Course title */
+.course-title {
   font-family: 'EB Garamond', serif;
   font-weight: 700;
-  font-size: clamp(12px, 2.2vw, 18px);
+  font-size: clamp(13px, 2.3vw, 20px);
   color: #1a2a5e;
   letter-spacing: 0.04em;
-  margin-bottom: 0.3%;
-  line-height: 1.25;
-}
-.offered-by {
-  font-family: 'Montserrat', sans-serif;
-  font-size: clamp(6.5px, 0.95vw, 8.5px);
-  color: #777;
-  letter-spacing: 0.06em;
-  margin-bottom: 0.5%;
-}
-.issue-date {
-  font-family: 'Montserrat', sans-serif;
-  font-size: clamp(6.5px, 0.95vw, 8.5px);
-  color: #777;
-  letter-spacing: 0.06em;
+  line-height: 1.2;
+  margin-bottom: clamp(2px, 0.3vw, 3px);
 }
 
-/* ── Footer ──────────────────────────────────── */
+/* "offered by …" + "Issued on …" */
+.meta-line {
+  font-family: 'Montserrat', sans-serif;
+  font-size: clamp(6px, 0.9vw, 8px);
+  color: #888;
+  letter-spacing: 0.05em;
+  line-height: 1.7;
+}
+
+/* ════════════════════════════════════════════════
+   ROW 2 — FOOTER  (signatures + academy seal)
+════════════════════════════════════════════════ */
 .cert-footer {
-  padding: 2% 6% 3%;
+  grid-row: 2;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
-  align-items: end;
-  gap: 2%;
+  align-items: center;
+  padding: 0 7%;
+  border-top: 1px solid rgba(201,168,76,0.30);
   position: relative;
   z-index: 3;
+  gap: 4%;
 }
 
-/* Signature block */
-.sig-block { display: flex; flex-direction: column; }
-.sig-block.right { align-items: flex-end; }
+/* Signature blocks */
+.sig {
+  display: flex;
+  flex-direction: column;
+}
+.sig.right { align-items: flex-end; }
 
 .sig-script {
   font-family: 'Dancing Script', cursive;
   font-weight: 600;
-  font-size: clamp(14px, 2.5vw, 20px);
+  font-size: clamp(15px, 2.6vw, 22px);
   color: #1a2a5e;
-  line-height: 1.1;
-  margin-bottom: 1px;
+  line-height: 1.15;
+  margin-bottom: 2px;
 }
-.sig-rule {
-  width: 85%;
+.sig-line {
+  width: 100%;
   height: 0.8px;
-  background: #aaa;
-  margin-bottom: 3px;
+  background: #ccc;
+  margin-bottom: 5px;
 }
-.sig-block.right .sig-rule { margin-left: auto; }
 .sig-name {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(6.5px, 0.95vw, 8.5px);
   font-weight: 700;
+  font-size: clamp(6px, 0.9vw, 8px);
   color: #222;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
+  margin-bottom: 2px;
 }
 .sig-role {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(5.5px, 0.8vw, 7.5px);
-  color: #777;
+  font-size: clamp(5.5px, 0.78vw, 7px);
+  color: #888;
   letter-spacing: 0.06em;
 }
 
-/* Center academy seal */
+/* Academy seal (center) */
 .academy-seal {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
+  flex-shrink: 0;
 }
-.seal-emblem {
-  width: clamp(38px, 7%, 58px);
+.seal-disc {
+  width: clamp(44px, 7.5vw, 64px);
   aspect-ratio: 1;
-  background: #1a2a5e;
   border-radius: 50%;
+  background: #1a2a5e;
   border: 2px solid #c9a84c;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  flex-shrink: 0;
 }
-.seal-emblem::before {
+.seal-disc::before {
   content: '';
   position: absolute;
-  inset: 3px;
+  inset: 4px;
   border-radius: 50%;
-  border: 1px solid rgba(201,168,76,0.45);
+  border: 0.8px solid rgba(201,168,76,0.40);
 }
-.seal-emblem-letter {
+.seal-letter {
   font-family: 'EB Garamond', serif;
   font-weight: 800;
-  font-size: clamp(14px, 2.5vw, 22px);
+  font-size: clamp(16px, 2.8vw, 24px);
   color: #c9a84c;
+  position: relative; z-index: 1;
 }
 .academy-name {
   font-family: 'Montserrat', sans-serif;
   font-weight: 700;
-  font-size: clamp(7px, 1.1vw, 10px);
+  font-size: clamp(6px, 1vw, 9px);
   color: #1a2a5e;
-  letter-spacing: 0.16em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   text-align: center;
+  white-space: nowrap;
 }
 .academy-tagline {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(5.5px, 0.75vw, 7px);
-  color: #888;
-  letter-spacing: 0.08em;
+  font-size: clamp(5px, 0.72vw, 6.5px);
+  color: #999;
+  letter-spacing: 0.07em;
   text-align: center;
+  white-space: nowrap;
 }
 
-/* ── Bottom cert ID bar ──────────────────────── */
+/* ════════════════════════════════════════════════
+   ROW 3 — CERT ID STRIP
+════════════════════════════════════════════════ */
 .cert-id-bar {
-  padding: 0 6% 1.5%;
-  z-index: 3;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  padding: 0 7%;
+  border-top: 1px solid rgba(201,168,76,0.18);
   position: relative;
+  z-index: 3;
 }
 .cert-id-text {
   font-family: 'Montserrat', sans-serif;
-  font-size: clamp(5.5px, 0.75vw, 7px);
-  color: #aaa;
-  letter-spacing: 0.08em;
+  font-size: clamp(5px, 0.7vw, 6.5px);
+  color: #bbb;
+  letter-spacing: 0.10em;
 }
 </style>
 </head>
@@ -446,107 +489,107 @@ body {
 <div class="cert-outer">
 <div class="cert">
 
-  <!-- Decorative frame -->
-  <div class="frame-outer"></div>
-  <div class="corner tl"></div>
-  <div class="corner tr"></div>
-  <div class="corner bl"></div>
-  <div class="corner br"></div>
-  <div class="c-dot tl"></div>
-  <div class="c-dot tr"></div>
-  <div class="c-dot bl"></div>
-  <div class="c-dot br"></div>
+  <!-- ── Decorative overlays ── -->
+  <div class="guilloche"></div>
+  <div class="frame"></div>
+  <div class="corner tl"></div><div class="corner tr"></div>
+  <div class="corner bl"></div><div class="corner br"></div>
+  <div class="c-dot tl"></div><div class="c-dot tr"></div>
+  <div class="c-dot bl"></div><div class="c-dot br"></div>
+  <div class="triangle"></div>
 
-  <!-- Navy triangle top-left -->
-  <div class="triangle-accent"></div>
-
-  <!-- Top-right badge -->
+  <!-- ── Badge (top-right) ── -->
   <div class="badge-wrap">
-    <div class="badge-ribbon">
-      <div class="ribbon-strip"></div>
-      <div class="ribbon-strip"></div>
+    <div class="badge-ribbons">
+      <div class="ribbon-tail"></div>
+      <div class="ribbon-tail"></div>
     </div>
-    <div class="badge-circle">
+    <div class="badge-disc">
       <div class="sunburst"></div>
-      <div class="badge-outer-ring">
-        <div class="badge-inner-ring"></div>
-        <div class="badge-text-top">COURSE</div>
-        <div class="badge-letter">✓</div>
+      <div class="badge-ring">
+        <div class="badge-label top">COURSE</div>
+        <div class="badge-check">✓</div>
         <div class="badge-stars">
           <span>★</span><span>★</span><span>★</span>
         </div>
-        <div class="badge-text-bot">COMPLETED</div>
+        <div class="badge-label bot">COMPLETED</div>
       </div>
     </div>
   </div>
 
-  <!-- Main content -->
+  <!-- ══════════════════════════════════
+       ROW 1 — MAIN BODY
+  ══════════════════════════════════ -->
   <div class="cert-body">
 
     <!-- Top ornament -->
-    <div class="top-ornament">
+    <div class="ornament-row">
       <div class="orn-line"></div>
       <div class="orn-dot"></div>
       <div class="orn-diamond"></div>
       <div class="orn-dot"></div>
-      <div class="orn-line" style="background:linear-gradient(90deg,#c9a84c,transparent)"></div>
+      <div class="orn-line r"></div>
     </div>
 
     <!-- CERTIFICATE -->
-    <div class="word-certificate">Certificate</div>
+    <div class="word-cert">Certificate</div>
 
     <!-- OF COMPLETION -->
     <div class="of-completion">
-      <div class="gold-bar"></div>
-      <div class="completion-text">of completion</div>
-      <div class="gold-bar right"></div>
+      <div class="gold-rule"></div>
+      <div class="of-text">of completion</div>
+      <div class="gold-rule r"></div>
     </div>
 
-    <!-- Certify label -->
+    <!-- THIS IS TO CERTIFY THAT -->
     <div class="certify-label">This is to certify that</div>
 
-    <!-- Name -->
-    <div class="recipient-name" id="recipientName">John Doe</div>
+    <!-- Recipient name -->
+    <div class="name" id="recipientName">John Doe</div>
 
-    <!-- Body text -->
-    <div class="body-row">has successfully completed the course</div>
-    <div class="course-name" id="courseTitle">Full Stack Web Development</div>
-    <div class="offered-by" id="offeredBy">offered by Tech Academy</div>
-    <div class="issue-date" id="issueDate">Issued on May 20, 2024</div>
+    <!-- Body text cluster -->
+    <div class="completed-label">has successfully completed the course</div>
+    <div class="course-title" id="courseTitle">Full Stack Web Development</div>
+    <div class="meta-line" id="offeredBy">offered by Tech Academy</div>
+    <div class="meta-line" id="issueDate">Issued on May 20, 2024</div>
 
-  </div><!-- /cert-body -->
+  </div>
 
-  <!-- Footer -->
+  <!-- ══════════════════════════════════
+       ROW 2 — FOOTER
+  ══════════════════════════════════ -->
   <div class="cert-footer">
 
-    <!-- Left signature -->
-    <div class="sig-block">
-      <div class="sig-script" id="instrScript">A. Sharma</div>
-      <div class="sig-rule"></div>
-      <div class="sig-name" id="instrName">Amit Sharma</div>
+    <!-- Left sig -->
+    <div class="sig">
+      <div class="sig-script">A. Sharma</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">Amit Sharma</div>
       <div class="sig-role">Instructor</div>
     </div>
 
-    <!-- Center seal -->
+    <!-- Centre academy seal -->
     <div class="academy-seal">
-      <div class="seal-emblem">
-        <div class="seal-emblem-letter">T</div>
+      <div class="seal-disc">
+        <div class="seal-letter">T</div>
       </div>
       <div class="academy-name">Tech Academy</div>
       <div class="academy-tagline">Empowering Careers, Building Futures</div>
     </div>
 
-    <!-- Right signature -->
-    <div class="sig-block right">
-      <div class="sig-script" id="dirScript">P. Verma</div>
-      <div class="sig-rule"></div>
-      <div class="sig-name" id="dirName">Priya Verma</div>
+    <!-- Right sig -->
+    <div class="sig right">
+      <div class="sig-script">P. Verma</div>
+      <div class="sig-line"></div>
+      <div class="sig-name">Priya Verma</div>
       <div class="sig-role">Program Director</div>
     </div>
 
-  </div><!-- /cert-footer -->
+  </div>
 
-  <!-- Cert ID -->
+  <!-- ══════════════════════════════════
+       ROW 3 — CERT ID STRIP
+  ══════════════════════════════════ -->
   <div class="cert-id-bar">
     <div class="cert-id-text" id="certId">Certificate ID: TA20240520-12345</div>
   </div>
