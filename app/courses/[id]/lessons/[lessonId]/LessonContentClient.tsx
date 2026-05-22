@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +16,7 @@ import LessonAudioPlayer from "@/components/LessonAudioPlayer";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
 import VideoLessonPlayer from "@/components/VideoLessonPlayer";
 import ShareCourseModal from "@/components/ShareCourseModal";
+import CourseCompletionConfetti from "@/components/CourseCompletionConfetti";
 import { useReadingProgress, SCROLL_THRESHOLD, TIME_THRESHOLD } from "@/hooks/useReadingProgress";
 import { useLessonContext } from "../LessonProvider";
 import toast from "react-hot-toast";
@@ -56,6 +57,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   const [showAudioPlayer,  setShowAudioPlayer]  = useState(false);
   const [isAudioPlaying,   setIsAudioPlaying]   = useState(false);
   const [downloadingCert,  setDownloadingCert]  = useState(false);
+  const [showConfetti,     setShowConfetti]     = useState(false);
 
   const config   = typeConfig[lesson.type] ?? typeConfig.TEXT;
   const TypeIcon = config.icon;
@@ -66,6 +68,20 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
   const progressPct     = totalLessons > 0 ? completedCount / totalLessons : 0;
   const eligibleForCert = !loading && isEnrolled && progressPct >= 0.9;
   const courseFinished  = progressPct >= 1;
+
+  // ── Confetti: fire only when courseFinished transitions false→true post-load ─
+  const initialLoadDone   = useRef(false);
+  const prevFinished      = useRef(false);
+  useEffect(() => {
+    if (loading) return;
+    if (!initialLoadDone.current) {
+      initialLoadDone.current = true;
+      prevFinished.current    = courseFinished;
+      return;
+    }
+    if (courseFinished && !prevFinished.current) setShowConfetti(true);
+    prevFinished.current = courseFinished;
+  }, [courseFinished, loading]);
 
   // ── Keyboard navigation ──────────────────────────────────────────────────
   useEffect(() => {
@@ -137,6 +153,9 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
 
   return (
     <div className="mx-auto px-0 sm:px-4 lg:px-6 py-4 sm:py-8 lg:py-10">
+
+      {/* ── Course completion confetti overlay ───────────────────────────── */}
+      <CourseCompletionConfetti show={showConfetti} onClose={() => setShowConfetti(false)} />
 
       {/* ── Lesson header ────────────────────────────────────────────────── */}
       <div className="mb-4 sm:mb-6">
