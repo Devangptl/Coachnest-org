@@ -606,6 +606,7 @@ function renderInlineExtra(raw: string): ReactNode | null {
 // ─── Main renderer ─────────────────────────────────────────────────────────────
 
 const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = false, className }: Props) {
+  if (!content) return null;
   if (isHtml(content)) {
     const normalized = content.replace(/&nbsp;/g, " ").replace(/ /g, " ");
     return (
