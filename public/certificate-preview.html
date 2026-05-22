@@ -49,21 +49,8 @@ body {
    ABSOLUTE DECORATIVE LAYERS  (z ≤ 5, never block text)
 ───────────────────────────────────────────────────── */
 
-/* Guilloche watermark */
 .guilloche {
-  position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -55%);
-  width: 520px; height: 370px;
-  background:
-    repeating-conic-gradient(from 0deg at 50% 50%,
-      rgba(26,42,94,0.030) 0deg 5.5deg,
-      transparent 5.5deg 17deg),
-    radial-gradient(ellipse 82% 70% at 50% 50%,
-      transparent 55%, rgba(26,42,94,0.045) 100%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 1;
+  display: none;
 }
 
 /* Outer gold border */
