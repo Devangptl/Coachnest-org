@@ -167,7 +167,7 @@ export default function BlogForm({ mode, initial }: BlogFormProps) {
           slug: slug || undefined,
           excerpt: excerpt.trim() || undefined,
           content: savedContent,
-          thumbnail: thumbnail || undefined,
+          thumbnail: thumbnail || null,
           tags: joinTags(finalTags) || undefined,
           published,
         }),
