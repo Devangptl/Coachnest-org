@@ -103,12 +103,10 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 export default async function BlogDetailPage({ params }: Props) {
   const { slug } = await params;
 
-  const [blog, related] = await Promise.all([
-    getBlog(slug),
-    getBlog(slug).then((b) => (b ? getRelatedBlogs(b.id, b.tags) : [])),
-  ]);
-
+  const blog = await getBlog(slug);
   if (!blog || blog.status !== "PUBLISHED") notFound();
+
+  const related = await getRelatedBlogs(blog.id, blog.tags);
 
   const tagList = blog.tags?.split(",").map((t) => t.trim()).filter(Boolean) ?? [];
 
@@ -123,7 +121,7 @@ export default async function BlogDetailPage({ params }: Props) {
     dateModified: blog.updatedAt ? new Date(blog.updatedAt).toISOString() : new Date(blog.createdAt).toISOString(),
     author: {
       "@type": "Person",
-      name: blog.author.name,
+      name: blog.author?.name ?? "",
     },
     publisher: {
       "@type": "Organization",
@@ -203,7 +201,7 @@ export default async function BlogDetailPage({ params }: Props) {
       <div className="flex flex-wrap items-center gap-3 sm:gap-5 text-muted-foreground/60 text-sm mb-6 pb-6 border-b border-border">
         <span className="flex items-center gap-1.5">
           <User className="w-3.5 h-3.5" />
-          {blog.author.name}
+          {blog.author?.name}
         </span>
         <span className="flex items-center gap-1.5">
           <Calendar className="w-3.5 h-3.5" />
@@ -232,7 +230,7 @@ export default async function BlogDetailPage({ params }: Props) {
 
       {/* ── Markdown content ── */}
       <article>
-        <MarkdownRenderer content={blog.content} />
+        <MarkdownRenderer content={blog.content ?? ""} />
       </article>
 
       {/* Related posts */}
