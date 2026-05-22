@@ -96,12 +96,12 @@ function drawCorner(page: PDFPage, x: number, y: number, flipX: boolean, flipY: 
 
 // ─── Guilloche watermark ───────────────────────────────────────────────────────
 function drawGuilloche(page: PDFPage, cx: number, cy: number) {
-  for (let i = 0; i < 16; i++) {
+  for (let i = 0; i < 10; i++) {
     page.drawEllipse({
       x: cx, y: cy,
-      xScale: 210 - i * 8, yScale: 140 - i * 5.5,
-      borderColor: C.navy, borderWidth: 0.25, borderOpacity: 0.07,
-      rotate: degrees(i * 11),
+      xScale: 200 - i * 12, yScale: 130 - i * 8,
+      borderColor: C.navy, borderWidth: 0.3, borderOpacity: 0.04,
+      rotate: degrees(i * 18),
       color: C.white, opacity: 0,
     });
   }
@@ -186,7 +186,7 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: C.white });
 
   // ── Guilloche watermark ────────────────────────────────────────────────────────
-  drawGuilloche(page, W * 0.5, H * 0.52);
+  drawGuilloche(page, W * 0.5, H * 0.48);
 
   // ── Double gold border frame ───────────────────────────────────────────────────
   const bm = 12;
@@ -226,33 +226,24 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   }
   drawBadge(page, badgeCx, badgeCy, badgeR, bold, helvBold);
 
-  // ── Logo (optional) ────────────────────────────────────────────────────────────
-  try {
-    const logoBytes = await fs.readFile(path.join(process.cwd(), "public", "logo.png"));
-    const logo = await doc.embedPng(logoBytes);
-    const lh = 28; const lw2 = (logo.width / logo.height) * lh;
-    page.drawImage(logo, { x: 22, y: H - 22 - lh, width: lw2, height: lh });
-  } catch { /* skip if missing */ }
-
   // ── Content vertical layout ────────────────────────────────────────────────────
-  // Work top-down from a starting Y
-  let y = H - 44;
-  const cx = W / 2;  // center X for centred text
+  // Start below badge ribbon tails (ribbons end at H-77pt from top)
+  let y = H - 82;
+  const cx = W / 2;
 
   // Top small ornament row (diamond + lines)
-  const oDiag = 5; const oLineLen = 22;
+  const oDiag = 5; const oLineLen = 24;
   page.drawRectangle({ x: cx - oDiag / 2, y: y - oDiag / 2, width: oDiag, height: oDiag, color: C.gold, rotate: degrees(45) });
   page.drawLine({ start: { x: cx - oDiag / 2 - oLineLen, y: y }, end: { x: cx - oDiag / 2 - 2, y: y }, thickness: 0.8, color: C.gold });
   page.drawLine({ start: { x: cx + oDiag / 2 + 2, y: y }, end: { x: cx + oDiag / 2 + oLineLen, y: y }, thickness: 0.8, color: C.gold });
-
-  y -= 14;
+  y -= 16;
 
   // "CERTIFICATE" — largest element
   const certWord = "CERTIFICATE";
-  const certSize = 60;
+  const certSize = 52;
   const certW = bold.widthOfTextAtSize(certWord, certSize);
   page.drawText(certWord, { x: cx - certW / 2, y, size: certSize, font: bold, color: C.navy });
-  y -= certSize + 2;
+  y -= certSize + 8;
 
   // "OF COMPLETION" with gold lines
   const ofStr = "OF  COMPLETION";
@@ -262,28 +253,28 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   page.drawLine({ start: { x: cx - ofW / 2 - lineGap - lineLen, y: y + ofSize * 0.4 }, end: { x: cx - ofW / 2 - lineGap, y: y + ofSize * 0.4 }, thickness: 1, color: C.gold });
   page.drawText(ofStr, { x: cx - ofW / 2, y, size: ofSize, font: helvBold, color: C.gold });
   page.drawLine({ start: { x: cx + ofW / 2 + lineGap, y: y + ofSize * 0.4 }, end: { x: cx + ofW / 2 + lineGap + lineLen, y: y + ofSize * 0.4 }, thickness: 1, color: C.gold });
-  y -= ofSize + 18;
+  y -= ofSize + 28;
 
   // "THIS IS TO CERTIFY THAT"
   const certifyStr = "THIS IS TO CERTIFY THAT";
   const csiz = 8;
   const certifyW = helv.widthOfTextAtSize(certifyStr, csiz);
   page.drawText(certifyStr, { x: cx - certifyW / 2, y, size: csiz, font: helv, color: C.ink4 });
-  y -= csiz + 14;
+  y -= csiz + 22;
 
   // Recipient name (large italic)
   const nameMax = W * 0.72;
   const nameSize = fitSize(data.recipientName, nameMax, 44, 24, italic);
   const nameW = italic.widthOfTextAtSize(data.recipientName, nameSize);
   page.drawText(data.recipientName, { x: cx - nameW / 2, y, size: nameSize, font: italic, color: C.navy });
-  y -= nameSize + 16;
+  y -= nameSize + 24;
 
   // "has successfully completed the course"
   const bodyStr = "has successfully completed the course";
   const bsiz = 9;
   const bodyW2 = regular.widthOfTextAtSize(bodyStr, bsiz);
   page.drawText(bodyStr, { x: cx - bodyW2 / 2, y, size: bsiz, font: regular, color: C.ink3 });
-  y -= bsiz + 8;
+  y -= bsiz + 14;
 
   // Course title
   const courseMaxW = W * 0.66;
@@ -292,7 +283,7 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   for (const line of courseLines) {
     const lw3 = bold.widthOfTextAtSize(line, courseSize);
     page.drawText(line, { x: cx - lw3 / 2, y, size: courseSize, font: bold, color: C.navy });
-    y -= courseSize + 4;
+    y -= courseSize + 8;
   }
 
   // "offered by …"
@@ -300,18 +291,25 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   const offSiz = 8.5;
   const offW = regular.widthOfTextAtSize(offStr, offSiz);
   page.drawText(offStr, { x: cx - offW / 2, y, size: offSiz, font: regular, color: C.ink4 });
-  y -= offSiz + 5;
+  y -= offSiz + 10;
 
   // Issue date
   const dateStr = `Issued on ${new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(data.issuedAt)}`;
   const dateSiz = 8.5;
   const dateW2 = regular.widthOfTextAtSize(dateStr, dateSiz);
   page.drawText(dateStr, { x: cx - dateW2 / 2, y, size: dateSiz, font: regular, color: C.ink4 });
+  y -= dateSiz + 4;
 
-  // ── Footer ─────────────────────────────────────────────────────────────────────
-  const footerY   = 80;
-  const sigLineY  = footerY + 26;
-  const sigNameY  = footerY + 12;
+  // Subtle gold divider between content and footer
+  const divLen = W * 0.38;
+  const divY = Math.round((y + bm + 68) / 2); // midpoint between content bottom and footer area
+  page.drawLine({ start: { x: cx - divLen / 2, y: divY }, end: { x: cx + divLen / 2, y: divY }, thickness: 0.6, color: C.gold, opacity: 0.35 });
+
+  // ── Footer — positioned dynamically below content ─────────────────────────────
+  // Target: footer sigLine sits ~68pt below content bottom, min 30pt above border
+  const footerY   = Math.max(y - 68, bm + 44);
+  const sigLineY  = footerY + 30;
+  const sigNameY  = footerY + 14;
   const sigRoleY  = footerY;
   const sigW      = W * 0.25;
   const sigLeftX  = bm + 38;
