@@ -135,10 +135,9 @@ function drawBadge(page: PDFPage, cx: number, cy: number, r: number, bold: PDFFo
   const csW = helv.widthOfTextAtSize(courseStr, 5.5);
   page.drawText(courseStr, { x: cx - csW / 2, y: cy + r * 0.42, size: 5.5, font: helv, color: C.goldLt });
 
-  // Checkmark / star cluster center
-  const star = "★"; // ★
-  const stW = bold.widthOfTextAtSize(star, 18);
-  page.drawText(star, { x: cx - stW / 2, y: cy - 6, size: 18, font: bold, color: C.goldLt });
+  // Center badge emblem — drawn circles (avoids WinAnsi encoding limits)
+  page.drawCircle({ x: cx, y: cy + 2, size: 7, color: C.goldLt });
+  page.drawCircle({ x: cx, y: cy + 2, size: 4.5, color: C.navyDark });
 
   // Three small star dots
   const dotStr = "* * *";
