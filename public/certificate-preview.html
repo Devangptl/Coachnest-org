@@ -245,36 +245,6 @@ body {
   overflow: hidden;
 }
 
-/* Oval glow + faint gold ring behind the content block */
-.cert-body::before {
-  content: '';
-  position: absolute;
-  top: 54%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 82%;
-  height: 78%;
-  background: radial-gradient(ellipse at center,
-    rgba(255, 252, 235, 1)    0%,
-    rgba(255, 251, 228, 0.85) 38%,
-    rgba(255, 250, 220, 0.35) 65%,
-    transparent               100%);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
-/* Thin gold ellipse ring */
-.cert-body::after {
-  content: '';
-  position: absolute;
-  top: 54%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 82%;
-  height: 78%;
-  border: 0.8px solid rgba(201, 168, 76, 0.28);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 0;
-}
 
 /* tiny gap between every direct child; specific elements add margin */
 .cert-body > * + * { margin-top: 3px; }
