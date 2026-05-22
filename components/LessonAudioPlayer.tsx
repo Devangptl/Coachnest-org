@@ -20,6 +20,12 @@ type Speed = typeof SPEEDS[number];
 
 type Status = "idle" | "loading" | "playing" | "paused";
 
+// Keeping every spoken utterance short avoids Chrome's ~15-second speech
+// cutoff bug entirely — far more reliable than the pause/resume keep-alive
+// hack, which itself sometimes stalls playback.
+const MIN_CHUNK = 60;
+const MAX_CHUNK = 130;
+
 // ─── Strip markdown to plain text ────────────────────────────────────────────
 
 function markdownToPlain(md: string): string {
@@ -54,6 +60,32 @@ function wordsOf(p: string): WordToken[] {
   let m: RegExpExecArray | null;
   while ((m = re.exec(p)) !== null) out.push({ w: m[0], start: m.index });
   return out;
+}
+
+// A chunk is a short slice of a paragraph that gets spoken as one utterance.
+// `offset` is the chunk's start position within its paragraph, used to map
+// per-utterance boundary events back to paragraph-relative word positions.
+interface Chunk { paraIdx: number; text: string; offset: number }
+
+function buildChunks(paras: string[]): Chunk[] {
+  const chunks: Chunk[] = [];
+  paras.forEach((p, paraIdx) => {
+    const words = wordsOf(p);
+    if (words.length === 0) return;
+    let startWord = 0;
+    for (let i = 0; i < words.length; i++) {
+      const chunkStart = words[startWord].start;
+      const wordEnd = words[i].start + words[i].w.length;
+      const len = wordEnd - chunkStart;
+      const endsSentence = /[.!?:;]["')\]]?$/.test(words[i].w);
+      const atLast = i === words.length - 1;
+      if (atLast || len >= MAX_CHUNK || (endsSentence && len >= MIN_CHUNK)) {
+        chunks.push({ paraIdx, text: p.slice(chunkStart, wordEnd), offset: chunkStart });
+        startWord = i + 1;
+      }
+    }
+  });
+  return chunks;
 }
 
 // ─── Waveform ─────────────────────────────────────────────────────────────────
@@ -98,22 +130,21 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
   const total = paragraphs.current.length;
   const useSegmented = total <= 20;
 
-  // Per-paragraph word tokens — used for karaoke-style word highlighting.
+  // Per-paragraph word tokens (karaoke highlight) + flat list of speech chunks.
   const wordsByPara = useRef<WordToken[][]>(paragraphs.current.map(wordsOf));
+  const chunks = useRef<Chunk[]>(buildChunks(paragraphs.current));
 
   // Render state
   const [status, setStatus] = useState<Status>("loading");
   const [para,   setPara]   = useState(0);
   const [speed,  setSpeed]  = useState<Speed>(1);
-  const [charIdx, setCharIdx] = useState(-1); // char offset of word being spoken
+  const [charIdx, setCharIdx] = useState(-1); // char offset (paragraph-relative) of spoken word
 
   // Refs — always up-to-date inside callbacks (avoids stale closures)
   const statusRef = useRef<Status>("loading");
   const paraRef   = useRef(0);
   const speedRef  = useRef<Speed>(1);
-
-  // Keep-alive timer (fixes Chrome ≤ ~15-second speech cutoff bug)
-  const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const chunkRef  = useRef(0); // index into chunks.current
 
   // Transcript scroll container + active-paragraph element
   const transcriptRef = useRef<HTMLDivElement | null>(null);
@@ -137,22 +168,10 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     setSpeed(s);
   }, []);
 
-  // ── Keep-alive: pause+resume every 14 s to beat Chrome's timer ─────────────
-  const startKeepAlive = useCallback(() => {
-    if (keepAliveRef.current) clearInterval(keepAliveRef.current);
-    keepAliveRef.current = setInterval(() => {
-      if (typeof window !== "undefined" && window.speechSynthesis.speaking) {
-        window.speechSynthesis.pause();
-        window.speechSynthesis.resume();
-      }
-    }, 14000);
-  }, []);
-
-  const stopKeepAlive = useCallback(() => {
-    if (keepAliveRef.current) {
-      clearInterval(keepAliveRef.current);
-      keepAliveRef.current = null;
-    }
+  // ── First chunk index belonging to a given paragraph ───────────────────────
+  const firstChunkOfPara = useCallback((paraIdx: number) => {
+    const idx = chunks.current.findIndex((c) => c.paraIdx >= paraIdx);
+    return idx < 0 ? chunks.current.length : idx;
   }, []);
 
   // ── Voice readiness — retry up to 2 s across all browsers ─────────────────
@@ -187,11 +206,8 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
 
   // ── Cancel + cleanup on unmount ────────────────────────────────────────────
   useEffect(() => {
-    return () => {
-      window.speechSynthesis?.cancel();
-      stopKeepAlive();
-    };
-  }, [stopKeepAlive]);
+    return () => { window.speechSynthesis?.cancel(); };
+  }, []);
 
   // ── Keep the active paragraph centred in the transcript panel ──────────────
   useEffect(() => {
@@ -202,27 +218,25 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     container.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
   }, [para]);
 
-  // ── Core speak function ────────────────────────────────────────────────────
-  const speakPara = useCallback(
-    (index: number, rate: number) => {
+  // ── Core speak function — speaks one chunk, then chains to the next ────────
+  const speak = useCallback(
+    (chunkIndex: number, rate: number, immediate: boolean) => {
       if (typeof window === "undefined" || !window.speechSynthesis) return;
 
-      if (index >= total) {
-        // Finished all paragraphs
+      if (chunkIndex >= chunks.current.length) {
+        // Finished the whole lesson
         updStatus("idle");
         updPara(0);
-        stopKeepAlive();
+        chunkRef.current = 0;
         return;
       }
 
-      // Cancel any existing speech, then wait 50 ms for Chrome to clean up
-      window.speechSynthesis.cancel();
-
-      setTimeout(() => {
-        // Guard: user may have paused/stopped during the 50 ms delay
+      const doSpeak = () => {
+        // Guard: user may have paused/stopped during the delay
         if (statusRef.current === "paused" || statusRef.current === "idle") return;
 
-        const utt = new SpeechSynthesisUtterance(paragraphs.current[index]);
+        const chunk = chunks.current[chunkIndex];
+        const utt = new SpeechSynthesisUtterance(chunk.text);
         utt.rate  = rate;
         utt.pitch = 1;
 
@@ -234,88 +248,96 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         if (preferred) utt.voice = preferred;
 
         utt.onstart = () => {
-          updPara(index);
+          chunkRef.current = chunkIndex;
+          if (paraRef.current !== chunk.paraIdx) updPara(chunk.paraIdx);
+          setCharIdx(chunk.offset);
           updStatus("playing");
-          startKeepAlive();
         };
 
         // Word-level boundary events drive the karaoke highlight.
         utt.onboundary = (e) => {
           if (e.name === "word" || e.name === undefined) {
-            setCharIdx(e.charIndex);
+            setCharIdx(chunk.offset + e.charIndex);
           }
         };
 
         utt.onend = () => {
-          // Only advance if still playing (not manually stopped/paused)
+          // Advance to the next chunk only if still playing
           if (statusRef.current === "playing") {
-            speakPara(index + 1, speedRef.current);
+            speak(chunkIndex + 1, speedRef.current, true);
           }
         };
 
         utt.onerror = (e) => {
-          // "interrupted" / "cancelled" just means we cancelled it ourselves — not an error
+          // "interrupted" / "canceled" just means we cancelled it ourselves
           if (e.error !== "interrupted" && e.error !== "canceled") {
             updStatus("idle");
-            stopKeepAlive();
           }
         };
 
         window.speechSynthesis.speak(utt);
-      }, 50);
+      };
+
+      if (immediate) {
+        // Chaining from onend — break out of the event handler before speaking
+        setTimeout(doSpeak, 0);
+      } else {
+        // Fresh start / seek — clear the queue first, then let Chrome settle
+        window.speechSynthesis.cancel();
+        setTimeout(doSpeak, 60);
+      }
     },
-    [total, updStatus, updPara, startKeepAlive, stopKeepAlive]
+    [updStatus, updPara]
   );
 
   // ── Controls ───────────────────────────────────────────────────────────────
 
   function handlePlay() {
-    if (statusRef.current === "loading") return;
-    // Use ref values to avoid stale closures
-    const startIdx = statusRef.current === "idle" ? 0 : paraRef.current;
+    if (statusRef.current === "loading" || total === 0) return;
+    const startChunk = statusRef.current === "idle" ? 0 : chunkRef.current;
     updStatus("playing"); // optimistic — onstart will confirm
-    speakPara(startIdx, speedRef.current);
+    speak(startChunk, speedRef.current, false);
   }
 
   function handlePause() {
     if (statusRef.current !== "playing") return;
     // Cancel is reliable; native pause() is not (Chrome bug)
     window.speechSynthesis.cancel();
-    stopKeepAlive();
     updStatus("paused");
-    // paraRef.current already holds the current paragraph position
+    // chunkRef.current already holds the current chunk position
   }
 
   function handleStop() {
     window.speechSynthesis.cancel();
-    stopKeepAlive();
     updStatus("idle");
     updPara(0);
+    chunkRef.current = 0;
   }
 
-  function jumpTo(target: number) {
+  function jumpToPara(target: number) {
     const clamped = Math.max(0, Math.min(total - 1, target));
+    const chunkIndex = firstChunkOfPara(clamped);
+    chunkRef.current = chunkIndex;
     if (statusRef.current === "playing" || statusRef.current === "paused") {
       updStatus("playing");
-      speakPara(clamped, speedRef.current);
+      speak(chunkIndex, speedRef.current, false);
     } else {
       updPara(clamped);
     }
   }
 
-  function handlePrev() { jumpTo(paraRef.current - 1); }
-  function handleNext() { jumpTo(paraRef.current + 1); }
+  function handlePrev() { jumpToPara(paraRef.current - 1); }
+  function handleNext() { jumpToPara(paraRef.current + 1); }
 
   function handleSpeedChange(s: Speed) {
     updSpeed(s);
     if (statusRef.current === "playing") {
-      speakPara(paraRef.current, s);
+      speak(chunkRef.current, s, false);
     }
   }
 
   function handleClose() {
     window.speechSynthesis.cancel();
-    stopKeepAlive();
     onClose();
   }
 
@@ -353,16 +375,16 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.97 }}
       transition={{ type: "spring", stiffness: 340, damping: 26 }}
-      className="overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-card to-card shadow-xl shadow-emerald-950/20"
+      className="w-full overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-card to-card shadow-xl shadow-emerald-950/20"
     >
       {/* Top glow line */}
       <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
-      <div className="p-4 sm:p-5">
+      <div className="p-3.5 sm:p-5">
         {/* Header row */}
-        <div className="flex items-center justify-between mb-4 gap-2">
+        <div className="flex items-center justify-between gap-2 mb-4">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
               <Headphones className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="min-w-0">
@@ -373,15 +395,15 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             </div>
           </div>
 
-          <div className="flex items-center gap-2 flex-shrink-0">
-            {/* Speed selector */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+            {/* Speed selector — wide screens */}
             <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-lg bg-white/5 border border-white/[0.08]">
               {SPEEDS.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleSpeedChange(s)}
                   className={cn(
-                    "px-1.5 sm:px-2 py-1 text-[11px] font-semibold rounded-md transition-all",
+                    "px-2 py-1 text-[11px] font-semibold rounded-md transition-all",
                     speed === s
                       ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
                       : "text-muted-foreground/40 hover:text-muted-foreground"
@@ -395,7 +417,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             {/* Close */}
             <button
               onClick={handleClose}
-              className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground/50 hover:text-foreground flex items-center justify-center transition-all"
+              className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground/50 hover:text-foreground flex items-center justify-center transition-all flex-shrink-0"
               aria-label="Close audio player"
             >
               <X className="w-3.5 h-3.5" />
@@ -405,13 +427,13 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
 
         {/* Waveform + controls row */}
         <div className="flex items-center gap-3 sm:gap-4 mb-4">
-          {/* Waveform */}
+          {/* Waveform — hidden on small screens to save width */}
           <div className="flex-shrink-0 hidden sm:block">
             <Waveform playing={isPlaying} loading={isLoading} />
           </div>
 
-          {/* Controls */}
-          <div className="flex items-center gap-2 flex-shrink-0">
+          {/* Transport controls */}
+          <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
             {/* Prev */}
             <button
               onClick={handlePrev}
@@ -428,7 +450,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
               disabled={isLoading}
               whileTap={{ scale: 0.92 }}
               className={cn(
-                "relative w-12 h-12 rounded-xl flex items-center justify-center transition-all overflow-hidden",
+                "relative w-11 h-11 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center transition-all overflow-hidden",
                 "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-600/30",
                 "hover:from-emerald-400 hover:to-emerald-500",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
@@ -478,14 +500,14 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             </button>
 
             {/* Stop — visible only when active */}
-            <AnimatePresence>
+            <AnimatePresence initial={false}>
               {(isPlaying || status === "paused") && (
                 <motion.button
-                  initial={{ opacity: 0, scale: 0.7, width: 0 }}
-                  animate={{ opacity: 1, scale: 1, width: 36 }}
-                  exit={{ opacity: 0, scale: 0.7, width: 0 }}
+                  initial={{ opacity: 0, scale: 0.7 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.7 }}
                   onClick={handleStop}
-                  className="h-9 rounded-lg bg-white/5 hover:bg-red-500/15 border border-white/[0.08] hover:border-red-500/30 text-muted-foreground/50 hover:text-red-400 flex items-center justify-center transition-colors flex-shrink-0"
+                  className="w-9 h-9 rounded-lg bg-white/5 hover:bg-red-500/15 border border-white/[0.08] hover:border-red-500/30 text-muted-foreground/50 hover:text-red-400 flex items-center justify-center transition-colors flex-shrink-0"
                   title="Stop"
                 >
                   <Square className="w-3.5 h-3.5" />
@@ -494,25 +516,26 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             </AnimatePresence>
           </div>
 
-          {/* Speed selector — compact, shown on very small screens */}
-          <div className="flex sm:hidden items-center gap-0.5 p-0.5 rounded-lg bg-white/5 border border-white/[0.08] ml-auto">
-            {SPEEDS.map((s) => (
-              <button
-                key={s}
-                onClick={() => handleSpeedChange(s)}
-                className={cn(
-                  "px-1.5 py-1 text-[10px] font-semibold rounded-md transition-all",
-                  speed === s
-                    ? "bg-emerald-500/20 text-emerald-400"
-                    : "text-muted-foreground/40"
-                )}
-              >
-                {s}×
-              </button>
-            ))}
+          {/* Right side: speed selector (small screens) / volume icon */}
+          <div className="flex items-center justify-end flex-1 min-w-0">
+            <div className="flex sm:hidden items-center gap-0.5 p-0.5 rounded-lg bg-white/5 border border-white/[0.08]">
+              {SPEEDS.map((s) => (
+                <button
+                  key={s}
+                  onClick={() => handleSpeedChange(s)}
+                  className={cn(
+                    "px-1.5 py-1 text-[10px] font-semibold rounded-md transition-all",
+                    speed === s
+                      ? "bg-emerald-500/20 text-emerald-400"
+                      : "text-muted-foreground/40"
+                  )}
+                >
+                  {s}×
+                </button>
+              ))}
+            </div>
+            <Volume2 className="w-4 h-4 text-emerald-400/50 flex-shrink-0 hidden sm:block" />
           </div>
-
-          <Volume2 className="w-4 h-4 text-emerald-400/50 flex-shrink-0 ml-auto hidden sm:block" />
         </div>
 
         {/* Progress bar */}
@@ -523,7 +546,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
               {paragraphs.current.map((_, i) => (
                 <motion.button
                   key={i}
-                  onClick={() => jumpTo(i)}
+                  onClick={() => jumpToPara(i)}
                   className={cn(
                     "flex-1 h-full rounded-full transition-colors cursor-pointer",
                     i < para
@@ -540,11 +563,11 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
           ) : (
             /* Smooth continuous bar with click-to-seek (>20 paragraphs) */
             <div
-              className="relative h-1.5 rounded-full bg-white/10 overflow-hidden group cursor-pointer"
+              className="relative h-2 rounded-full bg-white/10 overflow-hidden group cursor-pointer"
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
                 const target = Math.floor(((e.clientX - rect.left) / rect.width) * total);
-                jumpTo(target);
+                jumpToPara(target);
               }}
             >
               <div
@@ -565,9 +588,9 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             </div>
           )}
 
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground/40 text-[10px]">{statusLabel}</span>
-            <span className="text-emerald-400/60 text-[10px] font-semibold">{progress}%</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-muted-foreground/40 text-[10px] truncate">{statusLabel}</span>
+            <span className="text-emerald-400/60 text-[10px] font-semibold flex-shrink-0">{progress}%</span>
           </div>
         </div>
 
@@ -575,12 +598,12 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         {total > 0 && (
           <div className="mt-3 pt-3 border-t border-white/[0.06]">
             <p className="text-muted-foreground/40 text-[10px] uppercase tracking-wider mb-2 font-medium flex items-center gap-1.5">
-              <span className={cn("w-1.5 h-1.5 rounded-full", isPlaying ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground/30")} />
+              <span className={cn("w-1.5 h-1.5 rounded-full flex-shrink-0", isPlaying ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground/30")} />
               Transcript · tap any line to jump
             </p>
             <div
               ref={transcriptRef}
-              className="max-h-[260px] overflow-y-auto pr-1.5 space-y-1 select-none scroll-smooth"
+              className="max-h-[180px] sm:max-h-[280px] overflow-y-auto pr-1 sm:pr-1.5 space-y-1 select-none scroll-smooth overscroll-contain"
             >
               {paragraphs.current.map((p, i) => {
                 const isActive = i === para;
@@ -588,17 +611,17 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
                   <button
                     key={i}
                     ref={isActive ? activeParaRef : undefined}
-                    onClick={() => jumpTo(i)}
+                    onClick={() => jumpToPara(i)}
                     className={cn(
-                      "block w-full text-left rounded-lg px-3 py-2 transition-colors",
+                      "block w-full text-left rounded-lg px-2.5 sm:px-3 py-2 transition-colors",
                       isActive
                         ? "bg-emerald-500/10 ring-1 ring-emerald-500/25"
-                        : "hover:bg-white/[0.03]"
+                        : "hover:bg-white/[0.03] active:bg-white/[0.05]"
                     )}
                   >
                     <span
                       className={cn(
-                        "text-[13px] leading-relaxed",
+                        "text-[12px] sm:text-[13px] leading-relaxed break-words",
                         isActive
                           ? "text-foreground"
                           : i < para
