@@ -1,19 +1,19 @@
 /**
  * Certificate PDF generation using pdf-lib.
  *
- * Design: Navy blue + white + gold luxury landscape certificate.
- *   - Deep navy header/footer bands
- *   - Subtle guilloche pattern in the white body
- *   - Gold decorative corner ornaments and double border frame
- *   - "CERTIFICATE OF COMPLETION" in bold serif, letter-spaced
- *   - Recipient name in large italic (simulated script)
- *   - Course title in bold serif, navy
- *   - Two signature blocks (instructor + director) with ruled lines
- *   - Gold vertical ribbon on right edge with "COURSE COMPLETED" rotated text + seal
- *   - QR-style cert ID block bottom-right
- *   - Logo embedded top-left inside header
- *
- * Landscape A4: 841.89 × 595.28 pt
+ * Design matches the reference UI:
+ *   - A4 landscape (841.89 × 595.28 pt)
+ *   - Navy (#1a2a5e) + white + gold (#c9a84c) palette
+ *   - Double gold border frame with L-corner ornaments + diamond dots
+ *   - Navy triangle accent top-left
+ *   - Sunburst circular badge top-right with "COURSE COMPLETED" + ribbon tails
+ *   - Large "CERTIFICATE" serif heading
+ *   - "OF COMPLETION" flanked by gold rules
+ *   - Recipient name in large italic (script-style)
+ *   - Course title in bold serif
+ *   - Three-column footer: left sig | academy seal | right sig
+ *   - Certificate ID at very bottom
+ *   - Guilloche ellipse watermark behind body
  */
 import { promises as fs } from "node:fs";
 import path from "node:path";
@@ -26,44 +26,39 @@ interface CertificateData {
   issuedAt:        Date;
   certificateId:   string;
   directorName?:   string;
+  organizationName?: string;
 }
 
-// ─── Color palette ─────────────────────────────────────────────────────────────
+// ─── Palette ───────────────────────────────────────────────────────────────────
 const C = {
-  navy:      rgb(0.071, 0.133, 0.259),   // #122244 deep navy
-  navyMid:   rgb(0.102, 0.180, 0.345),   // #1a2e58 mid navy
-  navyLight: rgb(0.161, 0.247, 0.431),   // #293f6e light navy
-  gold:      rgb(0.800, 0.663, 0.298),   // #ccaa4c gold
-  goldLight: rgb(0.918, 0.792, 0.502),   // #eca980 light gold
-  goldDark:  rgb(0.600, 0.471, 0.161),   // #997829 dark gold
-  white:     rgb(1, 1, 1),
-  offWhite:  rgb(0.980, 0.976, 0.965),   // warm off-white body
-  inkDark:   rgb(0.071, 0.133, 0.259),   // same as navy for text
-  inkMid:    rgb(0.200, 0.240, 0.320),
-  inkLight:  rgb(0.400, 0.440, 0.510),
-  cream:     rgb(0.996, 0.988, 0.957),   // #fef9f4 parchment
+  navy:     rgb(0.102, 0.165, 0.369),  // #1a2a5e
+  navyDark: rgb(0.071, 0.125, 0.376),  // #122060
+  gold:     rgb(0.788, 0.659, 0.298),  // #c9a84c
+  goldLt:   rgb(0.910, 0.788, 0.416),  // #e8c96a
+  white:    rgb(1, 1, 1),
+  offWhite: rgb(0.980, 0.976, 0.965),
+  ink:      rgb(0.133, 0.133, 0.133),
+  ink2:     rgb(0.333, 0.333, 0.333),
+  ink3:     rgb(0.533, 0.533, 0.533),
+  ink4:     rgb(0.667, 0.667, 0.667),
 };
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function fitSize(text: string, maxWidth: number, maxSize: number, minSize: number, font: PDFFont): number {
-  let size = maxSize;
-  while (font.widthOfTextAtSize(text, size) > maxWidth && size > minSize) size -= 0.5;
-  return size;
+function fitSize(text: string, maxWidth: number, max: number, min: number, font: PDFFont): number {
+  let s = max;
+  while (font.widthOfTextAtSize(text, s) > maxWidth && s > min) s -= 0.5;
+  return s;
 }
 
 function wrapText(text: string, maxWidth: number, size: number, font: PDFFont): string[] {
   const words = text.split(" ");
   const lines: string[] = [];
   let line = "";
-  for (const word of words) {
-    const test = line ? `${line} ${word}` : word;
-    if (font.widthOfTextAtSize(test, size) > maxWidth && line) {
-      lines.push(line);
-      line = word;
-    } else {
-      line = test;
-    }
+  for (const w of words) {
+    const t = line ? `${line} ${w}` : w;
+    if (font.widthOfTextAtSize(t, size) > maxWidth && line) { lines.push(line); line = w; }
+    else line = t;
   }
   if (line) lines.push(line);
   return lines;
@@ -74,95 +69,102 @@ function qrCells(seed: string): boolean[] {
   const cells: boolean[] = new Array(SIZE * SIZE);
   let h = 0;
   for (let i = 0; i < seed.length; i++) h = (h * 31 + seed.charCodeAt(i)) >>> 0;
-  for (let i = 0; i < cells.length; i++) {
-    h = (h * 1664525 + 1013904223) >>> 0;
-    cells[i] = (h & 1) === 1;
-  }
+  for (let i = 0; i < cells.length; i++) { h = (h * 1664525 + 1013904223) >>> 0; cells[i] = (h & 1) === 1; }
   const corners: [number, number][] = [[0, 0], [0, SIZE - 1], [SIZE - 1, 0]];
   for (const [cx, cy] of corners) {
-    for (let dy = 0; dy < 3; dy++) {
-      for (let dx = 0; dx < 3; dx++) {
-        const x = cx === 0 ? dx : cx - 2 + dx;
-        const y = cy === 0 ? dy : cy - 2 + dy;
-        const edge = dx === 0 || dy === 0 || dx === 2 || dy === 2;
-        cells[y * SIZE + x] = edge;
-      }
+    for (let dy = 0; dy < 3; dy++) for (let dx = 0; dx < 3; dx++) {
+      const x = cx === 0 ? dx : cx - 2 + dx;
+      const y = cy === 0 ? dy : cy - 2 + dy;
+      cells[y * SIZE + x] = dx === 0 || dy === 0 || dx === 2 || dy === 2;
     }
   }
   return cells;
 }
 
-// ─── Decorative corner ornament (L-shaped gold lines + diamond dot) ────────────
-function drawCorner(
-  page: PDFPage,
-  x: number, y: number,
-  flipX: boolean, flipY: boolean,
-) {
-  const armLen = 28;
-  const sx = flipX ? -1 : 1;
-  const sy = flipY ? -1 : 1;
-  const lw = 0.8;
-
-  // Outer L
-  page.drawLine({ start: { x, y }, end: { x: x + sx * armLen, y }, thickness: lw, color: C.gold });
-  page.drawLine({ start: { x, y }, end: { x, y: y + sy * armLen }, thickness: lw, color: C.gold });
-
-  // Inner L (offset 5pt)
-  const ox = x + sx * 5;
-  const oy = y + sy * 5;
-  page.drawLine({ start: { x: ox, y: oy }, end: { x: ox + sx * (armLen - 8), y: oy }, thickness: lw * 0.7, color: C.goldDark });
-  page.drawLine({ start: { x: ox, y: oy }, end: { x: ox, y: oy + sy * (armLen - 8) }, thickness: lw * 0.7, color: C.goldDark });
-
-  // Diamond at corner
-  const ds = 3;
-  page.drawRectangle({
-    x: x - ds * 0.5,
-    y: y - ds * 0.5,
-    width: ds, height: ds,
-    color: C.gold,
-    rotate: degrees(45),
-  });
+// ─── Corner ornament (L-shape + diamond) ──────────────────────────────────────
+function drawCorner(page: PDFPage, x: number, y: number, flipX: boolean, flipY: boolean) {
+  const len = 32; const lw = 1.8;
+  const sx = flipX ? -1 : 1; const sy = flipY ? -1 : 1;
+  page.drawLine({ start: { x, y }, end: { x: x + sx * len, y }, thickness: lw, color: C.gold });
+  page.drawLine({ start: { x, y }, end: { x, y: y + sy * len }, thickness: lw, color: C.gold });
+  const ox = x + sx * 5; const oy = y + sy * 5;
+  page.drawLine({ start: { x: ox, y: oy }, end: { x: ox + sx * (len - 9), y: oy }, thickness: 0.5, color: C.gold, opacity: 0.55 });
+  page.drawLine({ start: { x: ox, y: oy }, end: { x: ox, y: oy + sy * (len - 9) }, thickness: 0.5, color: C.gold, opacity: 0.55 });
+  const ds = 4;
+  page.drawRectangle({ x: x - ds * 0.5, y: y - ds * 0.5, width: ds, height: ds, color: C.gold, rotate: degrees(45) });
 }
 
-// ─── Guilloche background watermark ───────────────────────────────────────────
+// ─── Guilloche watermark ───────────────────────────────────────────────────────
 function drawGuilloche(page: PDFPage, cx: number, cy: number) {
-  for (let i = 0; i < 18; i++) {
+  for (let i = 0; i < 16; i++) {
     page.drawEllipse({
       x: cx, y: cy,
-      xScale: 200 - i * 7,
-      yScale: 130 - i * 4.5,
-      borderColor: C.navyLight,
-      borderWidth: 0.35,
-      borderOpacity: 0.10,
-      rotate: degrees(i * 10),
-      color: C.cream,
-      opacity: 0,
+      xScale: 210 - i * 8, yScale: 140 - i * 5.5,
+      borderColor: C.navy, borderWidth: 0.25, borderOpacity: 0.07,
+      rotate: degrees(i * 11),
+      color: C.white, opacity: 0,
     });
   }
 }
 
-// ─── Gold seal on ribbon ────────────────────────────────────────────────────────
-function drawSeal(page: PDFPage, cx: number, cy: number, bold: PDFFont) {
-  // Outer gold ring
-  page.drawCircle({ x: cx, y: cy, size: 26, color: C.gold, borderColor: C.goldDark, borderWidth: 1.2 });
-  // Inner white ring
-  page.drawCircle({ x: cx, y: cy, size: 20, color: C.white, borderColor: C.goldDark, borderWidth: 0.8 });
-  // Star points
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2;
-    page.drawCircle({ x: cx + Math.cos(a) * 23, y: cy + Math.sin(a) * 23, size: 1.2, color: C.goldDark });
+// ─── Sunburst badge ────────────────────────────────────────────────────────────
+function drawBadge(page: PDFPage, cx: number, cy: number, r: number, bold: PDFFont, helv: PDFFont) {
+  // Sunburst rays (alternating gold shades)
+  const rays = 28;
+  for (let i = 0; i < rays; i++) {
+    const a1 = (i / rays) * Math.PI * 2;
+    const a2 = ((i + 0.5) / rays) * Math.PI * 2;
+    const aColor = i % 2 === 0 ? C.goldLt : C.gold;
+    const pts = [
+      { x: cx, y: cy },
+      { x: cx + Math.cos(a1) * r, y: cy + Math.sin(a1) * r },
+      { x: cx + Math.cos(a2) * r, y: cy + Math.sin(a2) * r },
+    ];
+    // Draw thin wedge approximation as a very thin triangle via lines
+    page.drawLine({ start: { x: cx, y: cy }, end: pts[1], thickness: 0.9, color: aColor });
+    page.drawLine({ start: { x: cx, y: cy }, end: pts[2], thickness: 0.9, color: aColor });
   }
-  // Navy monogram "L" for LearnHub / academy
-  const ltr = "L";
-  const lw = bold.widthOfTextAtSize(ltr, 22);
-  page.drawText(ltr, { x: cx - lw / 2, y: cy - 7, size: 22, font: bold, color: C.navy });
+
+  // Outer ring fill
+  page.drawCircle({ x: cx, y: cy, size: r * 0.88, color: C.navyDark, borderColor: C.goldLt, borderWidth: 1.4 });
+  // Inner ring line
+  page.drawCircle({ x: cx, y: cy, size: r * 0.76, color: C.navyDark, borderColor: C.gold, borderWidth: 0.5, borderOpacity: 0.55 });
+
+  // "COURSE" top
+  const courseStr = "COURSE";
+  const csW = helv.widthOfTextAtSize(courseStr, 5.5);
+  page.drawText(courseStr, { x: cx - csW / 2, y: cy + r * 0.42, size: 5.5, font: helv, color: C.goldLt });
+
+  // Checkmark / star cluster center
+  const star = "★"; // ★
+  const stW = bold.widthOfTextAtSize(star, 18);
+  page.drawText(star, { x: cx - stW / 2, y: cy - 6, size: 18, font: bold, color: C.goldLt });
+
+  // Three small star dots
+  const dotStr = "* * *";
+  const dotW = helv.widthOfTextAtSize(dotStr, 5);
+  page.drawText(dotStr, { x: cx - dotW / 2, y: cy - r * 0.38, size: 5, font: helv, color: C.gold });
+
+  // "COMPLETED" bottom
+  const compStr = "COMPLETED";
+  const compW = helv.widthOfTextAtSize(compStr, 5.5);
+  page.drawText(compStr, { x: cx - compW / 2, y: cy - r * 0.56, size: 5.5, font: helv, color: C.goldLt });
 }
 
-// ─── Thin gold divider line with center diamond ────────────────────────────────
-function drawDivider(page: PDFPage, x: number, y: number, width: number) {
-  page.drawLine({ start: { x, y }, end: { x: x + width, y }, thickness: 0.5, color: C.gold, opacity: 0.7 });
-  const ds = 3.5;
-  page.drawRectangle({ x: x + width / 2 - ds * 0.5, y: y - ds * 0.5, width: ds, height: ds, color: C.gold, rotate: degrees(45) });
+// ─── Academy seal (center footer) ─────────────────────────────────────────────
+function drawAcademySeal(page: PDFPage, cx: number, cy: number, bold: PDFFont, regular: PDFFont, orgName: string) {
+  page.drawCircle({ x: cx, y: cy, size: 20, color: C.navy, borderColor: C.gold, borderWidth: 1.2 });
+  page.drawCircle({ x: cx, y: cy, size: 16, color: C.navy, borderColor: C.gold, borderWidth: 0.4, borderOpacity: 0.45 });
+  const letter = orgName.charAt(0).toUpperCase();
+  const lw = bold.widthOfTextAtSize(letter, 18);
+  page.drawText(letter, { x: cx - lw / 2, y: cy - 6, size: 18, font: bold, color: C.gold });
+
+  const nameStr = orgName.toUpperCase();
+  const nw = bold.widthOfTextAtSize(nameStr, 6);
+  page.drawText(nameStr, { x: cx - nw / 2, y: cy - 26, size: 6, font: bold, color: C.navy });
+  const sub = "Empowering Careers, Building Futures";
+  const sw = regular.widthOfTextAtSize(sub, 5);
+  page.drawText(sub, { x: cx - sw / 2, y: cy - 35, size: 5, font: regular, color: C.ink4 });
 }
 
 // ─── Main generator ────────────────────────────────────────────────────────────
@@ -170,8 +172,8 @@ function drawDivider(page: PDFPage, x: number, y: number, width: number) {
 export async function generateCertificatePDF(data: CertificateData): Promise<Buffer> {
   const doc  = await PDFDocument.create();
   const page = doc.addPage([841.89, 595.28]);
-  const W = page.getWidth();   // 841.89
-  const H = page.getHeight();  // 595.28
+  const W = page.getWidth();
+  const H = page.getHeight();
 
   const regular  = await doc.embedFont(StandardFonts.TimesRoman);
   const bold     = await doc.embedFont(StandardFonts.TimesRomanBold);
@@ -179,309 +181,180 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   const helv     = await doc.embedFont(StandardFonts.Helvetica);
   const helvBold = await doc.embedFont(StandardFonts.HelveticaBold);
 
-  const ribbonW  = 72;   // gold ribbon on the right
-  const bodyW    = W - ribbonW;
-  const padX     = 48;
-  const headerH  = 70;
-  const footerH  = 52;
+  const org = data.organizationName ?? "Tech Academy";
 
-  // ── Parchment body background ────────────────────────────────────────────────
-  page.drawRectangle({ x: 0, y: 0, width: bodyW, height: H, color: C.cream });
+  // ── White background ──────────────────────────────────────────────────────────
+  page.drawRectangle({ x: 0, y: 0, width: W, height: H, color: C.white });
 
-  // ── Navy header band ─────────────────────────────────────────────────────────
-  page.drawRectangle({ x: 0, y: H - headerH, width: bodyW, height: headerH, color: C.navy });
+  // ── Guilloche watermark ────────────────────────────────────────────────────────
+  drawGuilloche(page, W * 0.5, H * 0.52);
 
-  // ── Navy footer band ─────────────────────────────────────────────────────────
-  page.drawRectangle({ x: 0, y: 0, width: bodyW, height: footerH, color: C.navy });
+  // ── Double gold border frame ───────────────────────────────────────────────────
+  const bm = 12;
+  page.drawRectangle({ x: bm, y: bm, width: W - bm * 2, height: H - bm * 2, color: C.white, opacity: 0, borderColor: C.gold, borderWidth: 1.8 });
+  page.drawRectangle({ x: bm + 5, y: bm + 5, width: W - (bm + 5) * 2, height: H - (bm + 5) * 2, color: C.white, opacity: 0, borderColor: C.gold, borderWidth: 0.5, borderOpacity: 0.5 });
 
-  // ── Gold ribbon panel (right side) ───────────────────────────────────────────
-  page.drawRectangle({ x: bodyW, y: 0, width: ribbonW, height: H, color: C.navy });
-  // Gold inner strip
-  page.drawRectangle({ x: bodyW + 6, y: 0, width: ribbonW - 12, height: H, color: C.gold });
-  // Darker gold center stripe
-  page.drawRectangle({ x: bodyW + 18, y: 0, width: ribbonW - 36, height: H, color: C.goldDark, opacity: 0.35 });
+  // ── Corner ornaments ───────────────────────────────────────────────────────────
+  const co = bm + 2;
+  drawCorner(page, co,     H - co, false, false);
+  drawCorner(page, W - co, H - co, true,  false);
+  drawCorner(page, co,     co,     false, true);
+  drawCorner(page, W - co, co,     true,  true);
 
-  // ── Guilloche watermark centered in body ──────────────────────────────────────
-  drawGuilloche(page, bodyW * 0.5, H * 0.5);
-
-  // ── Outer gold border frame (inside body, excluding ribbon) ──────────────────
-  const bm = 12; // border margin from edge of body
-  page.drawRectangle({
-    x: bm, y: bm,
-    width: bodyW - bm * 2, height: H - bm * 2,
-    color: C.cream, opacity: 0,
-    borderColor: C.gold, borderWidth: 1.2,
-  });
-  // Inner border
-  const bm2 = 17;
-  page.drawRectangle({
-    x: bm2, y: bm2,
-    width: bodyW - bm2 * 2, height: H - bm2 * 2,
-    color: C.cream, opacity: 0,
-    borderColor: C.gold, borderWidth: 0.4, borderOpacity: 0.6,
+  // ── Navy triangle top-left ─────────────────────────────────────────────────────
+  // Drawn as SVG path
+  const triSize = 68;
+  page.drawSvgPath(`M 0 ${triSize} L 0 0 L ${triSize} 0 Z`, { x: 0, y: H - triSize, color: C.navyDark });
+  // Gold diagonal line across the triangle hypotenuse
+  page.drawLine({
+    start: { x: 6,          y: H - triSize + 3 },
+    end:   { x: triSize - 3, y: H - 6 },
+    thickness: 1.2, color: C.gold,
   });
 
-  // ── Corner ornaments ──────────────────────────────────────────────────────────
-  const co = bm + 4;
-  drawCorner(page, co,         H - co,         false, false);
-  drawCorner(page, bodyW - co, H - co,         true,  false);
-  drawCorner(page, co,         co,              false, true);
-  drawCorner(page, bodyW - co, co,              true,  true);
+  // ── Sunburst badge top-right ───────────────────────────────────────────────────
+  const badgeR  = 36;
+  const badgeCx = W - 78;
+  const badgeCy = H - 14;   // partially above the page → clipped naturally at top
+  // Ribbon tails (two small navy chevron-tipped strips)
+  for (let i = 0; i < 2; i++) {
+    const rx = badgeCx - 8 + i * 14;
+    const ry = badgeCy - badgeR - 1;
+    const rh = 26;
+    const rw = 10;
+    page.drawRectangle({ x: rx, y: ry - rh, width: rw, height: rh, color: C.navyDark });
+    page.drawSvgPath(`M 0 0 L ${rw} 0 L ${rw / 2} -7 Z`, { x: rx, y: ry - rh, color: C.navy });
+  }
+  drawBadge(page, badgeCx, badgeCy, badgeR, bold, helvBold);
 
-  // ── Header: logo + academy name ───────────────────────────────────────────────
+  // ── Logo (optional) ────────────────────────────────────────────────────────────
   try {
     const logoBytes = await fs.readFile(path.join(process.cwd(), "public", "logo.png"));
     const logo = await doc.embedPng(logoBytes);
-    const logoH = 38;
-    const logoW = (logo.width / logo.height) * logoH;
-    page.drawImage(logo, { x: padX, y: H - headerH / 2 - logoH / 2, width: logoW, height: logoH });
-  } catch {
-    // logo missing — skip silently
-  }
+    const lh = 28; const lw2 = (logo.width / logo.height) * lh;
+    page.drawImage(logo, { x: 22, y: H - 22 - lh, width: lw2, height: lh });
+  } catch { /* skip if missing */ }
 
-  // Academy name right-aligned in header
-  const acad = "LearnHub Academy";
-  const acadW = helvBold.widthOfTextAtSize(acad, 11);
-  page.drawText(acad, {
-    x: bodyW - padX - acadW, y: H - headerH / 2 + 5,
-    size: 11, font: helvBold, color: C.gold,
-  });
-  const tagline = "Excellence in Online Education";
-  const tagW = helv.widthOfTextAtSize(tagline, 7.5);
-  page.drawText(tagline, {
-    x: bodyW - padX - tagW, y: H - headerH / 2 - 7,
-    size: 7.5, font: helv, color: C.goldLight, opacity: 0.85,
-  });
+  // ── Content vertical layout ────────────────────────────────────────────────────
+  // Work top-down from a starting Y
+  let y = H - 44;
+  const cx = W / 2;  // center X for centred text
 
-  // ── Thin gold header underline ────────────────────────────────────────────────
-  page.drawLine({
-    start: { x: bm + 2, y: H - headerH },
-    end:   { x: bodyW - bm - 2, y: H - headerH },
-    thickness: 1, color: C.gold,
-  });
+  // Top small ornament row (diamond + lines)
+  const oDiag = 5; const oLineLen = 22;
+  page.drawRectangle({ x: cx - oDiag / 2, y: y - oDiag / 2, width: oDiag, height: oDiag, color: C.gold, rotate: degrees(45) });
+  page.drawLine({ start: { x: cx - oDiag / 2 - oLineLen, y: y }, end: { x: cx - oDiag / 2 - 2, y: y }, thickness: 0.8, color: C.gold });
+  page.drawLine({ start: { x: cx + oDiag / 2 + 2, y: y }, end: { x: cx + oDiag / 2 + oLineLen, y: y }, thickness: 0.8, color: C.gold });
 
-  // ── Main content area setup ───────────────────────────────────────────────────
-  const contentTop = H - headerH - 18;
-  const contentX   = padX;
-  const contentW   = bodyW - padX * 2;
+  y -= 14;
 
-  // ── "CERTIFICATE OF COMPLETION" title ────────────────────────────────────────
-  const title = "CERTIFICATE  OF  COMPLETION";
-  const titleSize = 26;
-  const titleW = bold.widthOfTextAtSize(title, titleSize);
-  const titleX = contentX + (contentW - titleW) / 2;
-  const titleY = contentTop - 28;
-  page.drawText(title, { x: titleX, y: titleY, size: titleSize, font: bold, color: C.navy });
+  // "CERTIFICATE" — largest element
+  const certWord = "CERTIFICATE";
+  const certSize = 60;
+  const certW = bold.widthOfTextAtSize(certWord, certSize);
+  page.drawText(certWord, { x: cx - certW / 2, y, size: certSize, font: bold, color: C.navy });
+  y -= certSize + 2;
 
-  // Gold underline beneath title
-  page.drawLine({
-    start: { x: titleX + 4,          y: titleY - 5 },
-    end:   { x: titleX + titleW - 4, y: titleY - 5 },
-    thickness: 0.8, color: C.gold,
-  });
+  // "OF COMPLETION" with gold lines
+  const ofStr = "OF  COMPLETION";
+  const ofSize = 11;
+  const ofW = helvBold.widthOfTextAtSize(ofStr, ofSize);
+  const lineGap = 10; const lineLen = (W * 0.36 - ofW / 2 - lineGap);
+  page.drawLine({ start: { x: cx - ofW / 2 - lineGap - lineLen, y: y + ofSize * 0.4 }, end: { x: cx - ofW / 2 - lineGap, y: y + ofSize * 0.4 }, thickness: 1, color: C.gold });
+  page.drawText(ofStr, { x: cx - ofW / 2, y, size: ofSize, font: helvBold, color: C.gold });
+  page.drawLine({ start: { x: cx + ofW / 2 + lineGap, y: y + ofSize * 0.4 }, end: { x: cx + ofW / 2 + lineGap + lineLen, y: y + ofSize * 0.4 }, thickness: 1, color: C.gold });
+  y -= ofSize + 18;
 
-  // ── "Presented to" label ──────────────────────────────────────────────────────
-  const presLabel = "This is to certify that";
-  const presW = regular.widthOfTextAtSize(presLabel, 10);
-  page.drawText(presLabel, {
-    x: contentX + (contentW - presW) / 2,
-    y: titleY - 28,
-    size: 10, font: regular, color: C.inkLight,
-  });
+  // "THIS IS TO CERTIFY THAT"
+  const certifyStr = "THIS IS TO CERTIFY THAT";
+  const csiz = 8;
+  const certifyW = helv.widthOfTextAtSize(certifyStr, csiz);
+  page.drawText(certifyStr, { x: cx - certifyW / 2, y, size: csiz, font: helv, color: C.ink4 });
+  y -= csiz + 14;
 
-  // ── Recipient name (large italic) ─────────────────────────────────────────────
-  const nameMaxW = contentW * 0.84;
-  const nameSize = fitSize(data.recipientName, nameMaxW, 42, 24, italic);
-  const nameW    = italic.widthOfTextAtSize(data.recipientName, nameSize);
-  const nameY    = titleY - 70;
-  page.drawText(data.recipientName, {
-    x: contentX + (contentW - nameW) / 2,
-    y: nameY,
-    size: nameSize, font: italic, color: C.navy,
-  });
+  // Recipient name (large italic)
+  const nameMax = W * 0.72;
+  const nameSize = fitSize(data.recipientName, nameMax, 44, 24, italic);
+  const nameW = italic.widthOfTextAtSize(data.recipientName, nameSize);
+  page.drawText(data.recipientName, { x: cx - nameW / 2, y, size: nameSize, font: italic, color: C.navy });
+  y -= nameSize + 16;
 
-  // Gold underline beneath name
-  const nameUnderX = contentX + (contentW - nameW) / 2;
-  drawDivider(page, nameUnderX, nameY - 6, nameW);
+  // "has successfully completed the course"
+  const bodyStr = "has successfully completed the course";
+  const bsiz = 9;
+  const bodyW2 = regular.widthOfTextAtSize(bodyStr, bsiz);
+  page.drawText(bodyStr, { x: cx - bodyW2 / 2, y, size: bsiz, font: regular, color: C.ink3 });
+  y -= bsiz + 8;
 
-  // ── Body text ─────────────────────────────────────────────────────────────────
-  const bodyText = "has successfully completed the online course";
-  const btW = regular.widthOfTextAtSize(bodyText, 10.5);
-  page.drawText(bodyText, {
-    x: contentX + (contentW - btW) / 2,
-    y: nameY - 26,
-    size: 10.5, font: regular, color: C.inkMid,
-  });
-
-  // ── Course title ──────────────────────────────────────────────────────────────
-  const courseMaxW = contentW * 0.86;
-  const courseSize = fitSize(data.courseTitle, courseMaxW, 20, 12, bold);
+  // Course title
+  const courseMaxW = W * 0.66;
+  const courseSize = fitSize(data.courseTitle, courseMaxW, 18, 11, bold);
   const courseLines = wrapText(data.courseTitle, courseMaxW, courseSize, bold).slice(0, 2);
-  let courseY = nameY - 54;
   for (const line of courseLines) {
-    const lw = bold.widthOfTextAtSize(line, courseSize);
-    page.drawText(line, {
-      x: contentX + (contentW - lw) / 2,
-      y: courseY,
-      size: courseSize, font: bold, color: C.navy,
-    });
-    courseY -= courseSize + 5;
+    const lw3 = bold.widthOfTextAtSize(line, courseSize);
+    page.drawText(line, { x: cx - lw3 / 2, y, size: courseSize, font: bold, color: C.navy });
+    y -= courseSize + 4;
   }
 
-  // Gold side decorators for course title
-  const firstLineW = bold.widthOfTextAtSize(courseLines[0] ?? "", courseSize);
-  const firstLineX = contentX + (contentW - firstLineW) / 2;
-  const courseTitleY = nameY - 54;
-  const dot = 2.8;
-  // Left ornament
-  page.drawRectangle({ x: firstLineX - 12, y: courseTitleY + courseSize * 0.4 - dot / 2, width: dot, height: dot, color: C.gold, rotate: degrees(45) });
-  page.drawLine({ start: { x: firstLineX - 9, y: courseTitleY + courseSize * 0.4 }, end: { x: firstLineX - 4, y: courseTitleY + courseSize * 0.4 }, thickness: 0.6, color: C.gold });
-  // Right ornament
-  const lastLineW = bold.widthOfTextAtSize(courseLines[courseLines.length - 1] ?? "", courseSize);
-  const lastLineX = contentX + (contentW - lastLineW) / 2;
-  page.drawRectangle({ x: lastLineX + lastLineW + 9, y: courseTitleY + courseSize * 0.4 - dot / 2, width: dot, height: dot, color: C.gold, rotate: degrees(45) });
-  page.drawLine({ start: { x: lastLineX + lastLineW + 4, y: courseTitleY + courseSize * 0.4 }, end: { x: lastLineX + lastLineW + 9, y: courseTitleY + courseSize * 0.4 }, thickness: 0.6, color: C.gold });
+  // "offered by …"
+  const offStr = `offered by ${org}`;
+  const offSiz = 8.5;
+  const offW = regular.widthOfTextAtSize(offStr, offSiz);
+  page.drawText(offStr, { x: cx - offW / 2, y, size: offSiz, font: regular, color: C.ink4 });
+  y -= offSiz + 5;
 
-  // ── Date and issuer info ───────────────────────────────────────────────────────
-  const formattedDate = new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(data.issuedAt);
-  const dateText = `Issued on ${formattedDate}`;
-  const dateW = regular.widthOfTextAtSize(dateText, 9);
-  page.drawText(dateText, {
-    x: contentX + (contentW - dateW) / 2,
-    y: courseY - 8,
-    size: 9, font: regular, color: C.inkLight,
-  });
+  // Issue date
+  const dateStr = `Issued on ${new Intl.DateTimeFormat("en-US", { month: "long", day: "numeric", year: "numeric" }).format(data.issuedAt)}`;
+  const dateSiz = 8.5;
+  const dateW2 = regular.widthOfTextAtSize(dateStr, dateSiz);
+  page.drawText(dateStr, { x: cx - dateW2 / 2, y, size: dateSiz, font: regular, color: C.ink4 });
 
-  // ── Horizontal divider across full content width ──────────────────────────────
-  const divY = footerH + 62;
-  drawDivider(page, contentX, divY, contentW);
+  // ── Footer ─────────────────────────────────────────────────────────────────────
+  const footerY   = 80;
+  const sigLineY  = footerY + 26;
+  const sigNameY  = footerY + 12;
+  const sigRoleY  = footerY;
+  const sigW      = W * 0.25;
+  const sigLeftX  = bm + 38;
+  const sigRightX = W - bm - 38 - sigW;
 
-  // ── Two signature blocks ───────────────────────────────────────────────────────
-  const sigW      = contentW * 0.36;
-  const sigLeftX  = contentX;
-  const sigRightX = contentX + contentW - sigW;
-  const sigLineY  = footerH + 36;
-  const sigNameY  = sigLineY - 14;
-  const sigRoleY  = sigNameY - 13;
+  // Left sig
+  const instrFlourish = data.instructorName.split(" ").map(p => p.charAt(0).toUpperCase() + ".").join(" ");
+  const ifSz = fitSize(instrFlourish, sigW, 20, 12, italic);
+  page.drawText(instrFlourish, { x: sigLeftX, y: sigLineY + 4, size: ifSz, font: italic, color: C.navy, opacity: 0.80 });
+  page.drawLine({ start: { x: sigLeftX, y: sigLineY }, end: { x: sigLeftX + sigW * 0.9, y: sigLineY }, thickness: 0.7, color: C.ink4 });
+  const iNameSz = 8.5;
+  page.drawText(data.instructorName, { x: sigLeftX, y: sigNameY, size: iNameSz, font: helvBold, color: C.ink });
+  page.drawText("Instructor", { x: sigLeftX, y: sigRoleY, size: 7.5, font: helv, color: C.ink4 });
 
-  // Instructor signature
-  const instrFlourishSize = fitSize(data.instructorName, sigW, 18, 12, italic);
-  const instrFlourishW    = italic.widthOfTextAtSize(data.instructorName, instrFlourishSize);
-  page.drawText(data.instructorName, {
-    x: sigLeftX, y: sigLineY + 3,
-    size: instrFlourishSize, font: italic, color: C.navy, opacity: 0.75,
-  });
-  page.drawLine({
-    start: { x: sigLeftX, y: sigLineY },
-    end:   { x: sigLeftX + Math.max(instrFlourishW + 10, sigW * 0.85), y: sigLineY },
-    thickness: 0.6, color: C.gold,
-  });
-  page.drawText(data.instructorName, {
-    x: sigLeftX, y: sigNameY,
-    size: 9.5, font: bold, color: C.inkDark,
-  });
-  page.drawText("Course Instructor", {
-    x: sigLeftX, y: sigRoleY,
-    size: 8, font: helv, color: C.inkLight,
-  });
+  // Right sig
+  const dirName = data.directorName ?? "Program Director";
+  const dirFlourish = dirName.split(" ").map(p => p.charAt(0).toUpperCase() + ".").join(" ");
+  const dfSz = fitSize(dirFlourish, sigW, 20, 12, italic);
+  const dfW  = italic.widthOfTextAtSize(dirFlourish, dfSz);
+  page.drawText(dirFlourish, { x: sigRightX + sigW - dfW, y: sigLineY + 4, size: dfSz, font: italic, color: C.navy, opacity: 0.80 });
+  page.drawLine({ start: { x: sigRightX + sigW * 0.1, y: sigLineY }, end: { x: sigRightX + sigW, y: sigLineY }, thickness: 0.7, color: C.ink4 });
+  const dNameW = helvBold.widthOfTextAtSize(dirName, 8.5);
+  page.drawText(dirName, { x: sigRightX + sigW - dNameW, y: sigNameY, size: 8.5, font: helvBold, color: C.ink });
+  const dRole = "Program Director";
+  const dRoleW = helv.widthOfTextAtSize(dRole, 7.5);
+  page.drawText(dRole, { x: sigRightX + sigW - dRoleW, y: sigRoleY, size: 7.5, font: helv, color: C.ink4 });
 
-  // Director signature
-  const dirName = data.directorName ?? "Dr. Alex Morgan";
-  const dirFlourishSize = fitSize(dirName, sigW, 18, 12, italic);
-  const dirFlourishW    = italic.widthOfTextAtSize(dirName, dirFlourishSize);
-  page.drawText(dirName, {
-    x: sigRightX, y: sigLineY + 3,
-    size: dirFlourishSize, font: italic, color: C.navy, opacity: 0.75,
-  });
-  page.drawLine({
-    start: { x: sigRightX, y: sigLineY },
-    end:   { x: sigRightX + Math.max(dirFlourishW + 10, sigW * 0.85), y: sigLineY },
-    thickness: 0.6, color: C.gold,
-  });
-  page.drawText(dirName, {
-    x: sigRightX, y: sigNameY,
-    size: 9.5, font: bold, color: C.inkDark,
-  });
-  page.drawText("Director, LearnHub Academy", {
-    x: sigRightX, y: sigRoleY,
-    size: 8, font: helv, color: C.inkLight,
-  });
+  // Center academy seal
+  drawAcademySeal(page, cx, footerY + 14, helvBold, regular, org);
 
-  // ── Footer band content ────────────────────────────────────────────────────────
-  // Cert ID in footer
-  const certIdText = `CERTIFICATE ID: ${data.certificateId.slice(0, 16).toUpperCase()}`;
-  page.drawText(certIdText, {
-    x: contentX, y: footerH / 2 - 5,
-    size: 7.5, font: helvBold, color: C.gold, opacity: 0.9,
-  });
+  // ── Certificate ID bottom-left ────────────────────────────────────────────────
+  const certIdStr = `Certificate ID: ${data.certificateId.slice(0, 16).toUpperCase()}`;
+  page.drawText(certIdStr, { x: bm + 14, y: bm + 6, size: 6.5, font: helv, color: C.ink4 });
 
-  // Footer tagline centered
-  const ftag = "This certificate is issued by LearnHub Academy and validates the holder's successful course completion.";
-  const ftagW = helv.widthOfTextAtSize(ftag, 6.5);
-  const ftagX = contentX + (contentW - ftagW) / 2;
-  if (ftagX > contentX) {
-    page.drawText(ftag, {
-      x: ftagX, y: footerH / 2 - 5,
-      size: 6.5, font: helv, color: C.goldLight, opacity: 0.7,
-    });
-  }
-
-  // Tiny QR-style pattern bottom-right (inside footer)
-  const qrSize = 34;
-  const qrX    = bodyW - padX - qrSize;
-  const qrY    = 9;
-  const cells  = qrCells(data.certificateId);
-  const cell   = qrSize / 9;
+  // ── Mini QR bottom-right ───────────────────────────────────────────────────────
+  const qrSz = 28; const qrX = W - bm - 14 - qrSz; const qrY2 = bm + 6;
+  const cells = qrCells(data.certificateId);
+  const cell  = qrSz / 9;
   for (let i = 0; i < 81; i++) {
     if (!cells[i]) continue;
-    const cx2 = qrX + (i % 9) * cell;
-    const cy2 = qrY + (8 - Math.floor(i / 9)) * cell;
-    page.drawRectangle({ x: cx2, y: cy2, width: cell - 0.3, height: cell - 0.3, color: C.gold });
+    page.drawRectangle({ x: qrX + (i % 9) * cell, y: qrY2 + (8 - Math.floor(i / 9)) * cell, width: cell - 0.2, height: cell - 0.2, color: C.navy });
   }
 
-  // ── Ribbon: "COURSE COMPLETED" rotated text + seal ────────────────────────────
-  const rCx = bodyW + ribbonW / 2;
-
-  // Seal centered at 72% ribbon height
-  const sealCy = H * 0.72;
-  drawSeal(page, rCx, sealCy, helvBold);
-
-  // Rotated "COURSE" above seal
-  const course1 = "COURSE";
-  const c1W = helvBold.widthOfTextAtSize(course1, 9);
-  page.drawText(course1, {
-    x: rCx - c1W / 2, y: sealCy + 46,
-    size: 9, font: helvBold, color: C.navy,
-    rotate: degrees(0),
-  });
-
-  // Rotated "COMPLETED" below seal
-  const course2 = "COMPLETED";
-  const c2W = helvBold.widthOfTextAtSize(course2, 9);
-  page.drawText(course2, {
-    x: rCx - c2W / 2, y: sealCy - 54,
-    size: 9, font: helvBold, color: C.navy,
-  });
-
-  // Small gold stars between text and seal
-  for (const sy of [sealCy + 35, sealCy - 42]) {
-    page.drawCircle({ x: rCx, y: sy, size: 1.5, color: C.navy });
-    page.drawCircle({ x: rCx - 6, y: sy, size: 1, color: C.navy });
-    page.drawCircle({ x: rCx + 6, y: sy, size: 1, color: C.navy });
-  }
-
-  // Thin vertical gold lines framing ribbon text
-  page.drawLine({
-    start: { x: bodyW + 10, y: H * 0.22 },
-    end:   { x: bodyW + 10, y: H * 0.88 },
-    thickness: 0.4, color: C.goldDark, opacity: 0.5,
-  });
-  page.drawLine({
-    start: { x: W - 10, y: H * 0.22 },
-    end:   { x: W - 10, y: H * 0.88 },
-    thickness: 0.4, color: C.goldDark, opacity: 0.5,
-  });
-
-  const pdfBytes = await doc.save();
-  return Buffer.from(pdfBytes);
+  return Buffer.from(await doc.save());
 }
