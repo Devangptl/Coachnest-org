@@ -35,10 +35,57 @@ const DEFAULT_CHARS_PER_SEC = 14.5; // at rate 1.0, before calibration
 
 // ─── Strip markdown to plain text ────────────────────────────────────────────
 
+// Convert markdown tables into readable sentences. Each data row becomes a
+// "Header: value, Header: value." line so it both reads naturally aloud and
+// shows as a tidy line in the transcript, instead of leaking raw `|` pipes.
+function convertTables(md: string): string {
+  const lines = md.split("\n");
+  const cellsOf = (l: string) =>
+    l.trim().replace(/^\||\|$/g, "").split("|").map((c) => c.trim());
+  const isRow = (l: string) => l.includes("|") && l.trim().length > 0;
+  const isSep = (l: string) => {
+    if (!l.includes("-")) return false;
+    const cells = cellsOf(l);
+    return cells.length > 0 && cells.every((c) => /^:?-{1,}:?$/.test(c));
+  };
+
+  const out: string[] = [];
+  let i = 0;
+  while (i < lines.length) {
+    // A table = a row line immediately followed by a separator line.
+    if (isRow(lines[i]) && i + 1 < lines.length && isSep(lines[i + 1])) {
+      const header = cellsOf(lines[i]);
+      i += 2; // skip header + separator rows
+      const rows: string[] = [];
+      while (i < lines.length && isRow(lines[i]) && !isSep(lines[i])) {
+        const cells = cellsOf(lines[i]);
+        const parts = cells
+          .map((c, idx) => {
+            if (!c) return "";
+            const h = header[idx];
+            return h ? `${h}: ${c}` : c;
+          })
+          .filter(Boolean);
+        if (parts.length) rows.push(parts.join(", ") + ".");
+        i++;
+      }
+      out.push("");
+      out.push(rows.length ? rows.join("\n\n") : header.filter(Boolean).join(", ") + ".");
+      out.push("");
+      continue;
+    }
+    out.push(lines[i]);
+    i++;
+  }
+  return out.join("\n");
+}
+
 function markdownToPlain(md: string): string {
-  return md
-    .replace(/```[\s\S]*?```/g, "")
-    .replace(/`[^`]+`/g, "")
+  return convertTables(
+    md
+      .replace(/```[\s\S]*?```/g, "")
+      .replace(/`[^`]+`/g, "")
+  )
     .replace(/#{1,6}\s+/g, "")
     .replace(/[*_]{1,3}([^*_]+)[*_]{1,3}/g, "$1")
     .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
