@@ -26,6 +26,13 @@ type Status = "idle" | "loading" | "playing" | "paused";
 const MIN_CHUNK = 60;
 const MAX_CHUNK = 130;
 
+// Many Chrome voices (notably remote Google voices) never fire `onboundary`
+// events, so the karaoke highlight cannot rely on them alone. A timing
+// estimator drives the highlight for those voices and auto-calibrates from
+// each chunk's measured duration. When real boundary events do arrive, they
+// re-anchor the estimator for exact accuracy.
+const DEFAULT_CHARS_PER_SEC = 14.5; // at rate 1.0, before calibration
+
 // ─── Strip markdown to plain text ────────────────────────────────────────────
 
 function markdownToPlain(md: string): string {
@@ -146,6 +153,14 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
   const speedRef  = useRef<Speed>(1);
   const chunkRef  = useRef(0); // index into chunks.current
 
+  // Word-timing estimator state
+  const estimatorRef   = useRef<ReturnType<typeof setInterval> | null>(null);
+  const currentChunkRef = useRef<Chunk | null>(null);
+  const anchorCharRef  = useRef(0);   // chunk-relative char position of last known word
+  const anchorTimeRef  = useRef(0);   // performance.now() of that anchor
+  const speakStartRef  = useRef(0);   // performance.now() the chunk started speaking
+  const charsPerSecRef = useRef(DEFAULT_CHARS_PER_SEC); // calibrated, rate-normalised
+
   // Transcript scroll container + active-paragraph element
   const transcriptRef = useRef<HTMLDivElement | null>(null);
   const activeParaRef = useRef<HTMLButtonElement | null>(null);
@@ -173,6 +188,27 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     const idx = chunks.current.findIndex((c) => c.paraIdx >= paraIdx);
     return idx < 0 ? chunks.current.length : idx;
   }, []);
+
+  // ── Word-timing estimator ──────────────────────────────────────────────────
+  const stopEstimator = useCallback(() => {
+    if (estimatorRef.current) {
+      clearInterval(estimatorRef.current);
+      estimatorRef.current = null;
+    }
+  }, []);
+
+  const startEstimator = useCallback(() => {
+    stopEstimator();
+    estimatorRef.current = setInterval(() => {
+      if (statusRef.current !== "playing") return;
+      const chunk = currentChunkRef.current;
+      if (!chunk) return;
+      const elapsed = (performance.now() - anchorTimeRef.current) / 1000;
+      const est = anchorCharRef.current + elapsed * charsPerSecRef.current * speedRef.current;
+      const maxChar = Math.max(0, chunk.text.length - 1);
+      setCharIdx(chunk.offset + Math.min(est, maxChar));
+    }, 70);
+  }, [stopEstimator]);
 
   // ── Voice readiness — retry up to 2 s across all browsers ─────────────────
   useEffect(() => {
@@ -206,8 +242,11 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
 
   // ── Cancel + cleanup on unmount ────────────────────────────────────────────
   useEffect(() => {
-    return () => { window.speechSynthesis?.cancel(); };
-  }, []);
+    return () => {
+      window.speechSynthesis?.cancel();
+      stopEstimator();
+    };
+  }, [stopEstimator]);
 
   // ── Keep the active paragraph centred in the transcript panel ──────────────
   useEffect(() => {
@@ -225,6 +264,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
 
       if (chunkIndex >= chunks.current.length) {
         // Finished the whole lesson
+        stopEstimator();
         updStatus("idle");
         updPara(0);
         chunkRef.current = 0;
@@ -236,6 +276,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         if (statusRef.current === "paused" || statusRef.current === "idle") return;
 
         const chunk = chunks.current[chunkIndex];
+        currentChunkRef.current = chunk;
         const utt = new SpeechSynthesisUtterance(chunk.text);
         utt.rate  = rate;
         utt.pitch = 1;
@@ -250,18 +291,33 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         utt.onstart = () => {
           chunkRef.current = chunkIndex;
           if (paraRef.current !== chunk.paraIdx) updPara(chunk.paraIdx);
+          // Anchor the estimator at the start of this chunk.
+          anchorCharRef.current = 0;
+          anchorTimeRef.current = performance.now();
+          speakStartRef.current = anchorTimeRef.current;
           setCharIdx(chunk.offset);
           updStatus("playing");
+          startEstimator();
         };
 
-        // Word-level boundary events drive the karaoke highlight.
+        // Real word-boundary events (local voices) re-anchor the estimator
+        // for exact accuracy; remote voices simply never fire these.
         utt.onboundary = (e) => {
           if (e.name === "word" || e.name === undefined) {
+            anchorCharRef.current = e.charIndex;
+            anchorTimeRef.current = performance.now();
             setCharIdx(chunk.offset + e.charIndex);
           }
         };
 
         utt.onend = () => {
+          stopEstimator();
+          // Calibrate speaking rate from this chunk's measured duration.
+          const dur = (performance.now() - speakStartRef.current) / 1000;
+          if (dur > 0.4) {
+            const measured = chunk.text.length / dur / rate;
+            charsPerSecRef.current = charsPerSecRef.current * 0.4 + measured * 0.6;
+          }
           // Advance to the next chunk only if still playing
           if (statusRef.current === "playing") {
             speak(chunkIndex + 1, speedRef.current, true);
@@ -271,6 +327,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         utt.onerror = (e) => {
           // "interrupted" / "canceled" just means we cancelled it ourselves
           if (e.error !== "interrupted" && e.error !== "canceled") {
+            stopEstimator();
             updStatus("idle");
           }
         };
@@ -287,7 +344,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         setTimeout(doSpeak, 60);
       }
     },
-    [updStatus, updPara]
+    [updStatus, updPara, startEstimator, stopEstimator]
   );
 
   // ── Controls ───────────────────────────────────────────────────────────────
@@ -303,12 +360,14 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     if (statusRef.current !== "playing") return;
     // Cancel is reliable; native pause() is not (Chrome bug)
     window.speechSynthesis.cancel();
+    stopEstimator();
     updStatus("paused");
     // chunkRef.current already holds the current chunk position
   }
 
   function handleStop() {
     window.speechSynthesis.cancel();
+    stopEstimator();
     updStatus("idle");
     updPara(0);
     chunkRef.current = 0;
@@ -338,6 +397,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
 
   function handleClose() {
     window.speechSynthesis.cancel();
+    stopEstimator();
     onClose();
   }
 
