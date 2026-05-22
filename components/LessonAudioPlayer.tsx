@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Pause, Square, ChevronLeft, ChevronRight,
@@ -42,6 +42,18 @@ function toParagraphs(plain: string): string[] {
     .split(/\n\n+/)
     .map((p) => p.replace(/\n/g, " ").trim())
     .filter((p) => p.length > 10); // skip very short fragments
+}
+
+// Split a paragraph into words, keeping each word's character offset so
+// SpeechSynthesis `onboundary` charIndex events can be mapped to a word.
+interface WordToken { w: string; start: number }
+
+function wordsOf(p: string): WordToken[] {
+  const out: WordToken[] = [];
+  const re = /\S+/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(p)) !== null) out.push({ w: m[0], start: m.index });
+  return out;
 }
 
 // ─── Waveform ─────────────────────────────────────────────────────────────────
@@ -86,10 +98,14 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
   const total = paragraphs.current.length;
   const useSegmented = total <= 20;
 
+  // Per-paragraph word tokens — used for karaoke-style word highlighting.
+  const wordsByPara = useRef<WordToken[][]>(paragraphs.current.map(wordsOf));
+
   // Render state
   const [status, setStatus] = useState<Status>("loading");
   const [para,   setPara]   = useState(0);
   const [speed,  setSpeed]  = useState<Speed>(1);
+  const [charIdx, setCharIdx] = useState(-1); // char offset of word being spoken
 
   // Refs — always up-to-date inside callbacks (avoids stale closures)
   const statusRef = useRef<Status>("loading");
@@ -98,6 +114,10 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
 
   // Keep-alive timer (fixes Chrome ≤ ~15-second speech cutoff bug)
   const keepAliveRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Transcript scroll container + active-paragraph element
+  const transcriptRef = useRef<HTMLDivElement | null>(null);
+  const activeParaRef = useRef<HTMLButtonElement | null>(null);
 
   // ── Helpers to update both state + ref atomically ──────────────────────────
   const updStatus = useCallback((s: Status) => {
@@ -109,6 +129,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
   const updPara = useCallback((p: number) => {
     paraRef.current = p;
     setPara(p);
+    setCharIdx(-1);
   }, []);
 
   const updSpeed = useCallback((s: Speed) => {
@@ -172,6 +193,15 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     };
   }, [stopKeepAlive]);
 
+  // ── Keep the active paragraph centred in the transcript panel ──────────────
+  useEffect(() => {
+    const el = activeParaRef.current;
+    const container = transcriptRef.current;
+    if (!el || !container) return;
+    const top = el.offsetTop - container.clientHeight / 2 + el.clientHeight / 2;
+    container.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+  }, [para]);
+
   // ── Core speak function ────────────────────────────────────────────────────
   const speakPara = useCallback(
     (index: number, rate: number) => {
@@ -207,6 +237,13 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
           updPara(index);
           updStatus("playing");
           startKeepAlive();
+        };
+
+        // Word-level boundary events drive the karaoke highlight.
+        utt.onboundary = (e) => {
+          if (e.name === "word" || e.name === undefined) {
+            setCharIdx(e.charIndex);
+          }
         };
 
         utt.onend = () => {
@@ -256,25 +293,18 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     updPara(0);
   }
 
-  function handlePrev() {
-    const target = Math.max(0, paraRef.current - 1);
+  function jumpTo(target: number) {
+    const clamped = Math.max(0, Math.min(total - 1, target));
     if (statusRef.current === "playing" || statusRef.current === "paused") {
       updStatus("playing");
-      speakPara(target, speedRef.current);
+      speakPara(clamped, speedRef.current);
     } else {
-      updPara(target);
+      updPara(clamped);
     }
   }
 
-  function handleNext() {
-    const target = Math.min(total - 1, paraRef.current + 1);
-    if (statusRef.current === "playing" || statusRef.current === "paused") {
-      updStatus("playing");
-      speakPara(target, speedRef.current);
-    } else {
-      updPara(target);
-    }
-  }
+  function handlePrev() { jumpTo(paraRef.current - 1); }
+  function handleNext() { jumpTo(paraRef.current + 1); }
 
   function handleSpeedChange(s: Speed) {
     updSpeed(s);
@@ -294,6 +324,18 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
   const isLoading = status === "loading";
   const progress  = total > 0 ? Math.round(((para + (isPlaying ? 0.5 : 0)) / total) * 100) : 0;
 
+  // Index of the word currently being spoken in the active paragraph.
+  const curWordIdx = useMemo(() => {
+    if (charIdx < 0) return -1;
+    const words = wordsByPara.current[para] ?? [];
+    let idx = -1;
+    for (let i = 0; i < words.length; i++) {
+      if (words[i].start <= charIdx) idx = i;
+      else break;
+    }
+    return idx;
+  }, [charIdx, para]);
+
   const statusLabel = isLoading
     ? "Loading voices…"
     : isPlaying
@@ -311,39 +353,38 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, y: 20, scale: 0.97 }}
       transition={{ type: "spring", stiffness: 340, damping: 26 }}
-      className=" overflow-hidden"
+      className="overflow-hidden rounded-xl border border-emerald-500/20 bg-gradient-to-br from-emerald-950/40 via-card to-card shadow-xl shadow-emerald-950/20"
     >
-      {/* rounded-md border border-emerald-500/25 bg-gradient-to-br from-emerald-950/80 via-card/95 to-card/95 backdrop-blur-xl shadow-2xl shadow-emerald-900/30 */}
       {/* Top glow line */}
-      {/* <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" /> */}
+      <div className="h-px w-full bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
-      <div className="p-5">
+      <div className="p-4 sm:p-5">
         {/* Header row */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-md bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
+        <div className="flex items-center justify-between mb-4 gap-2">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-9 h-9 rounded-lg bg-emerald-500/15 border border-emerald-500/25 flex items-center justify-center flex-shrink-0">
               <Headphones className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="min-w-0">
-              <p className="text-white text-sm font-semibold leading-tight">Audio Mode</p>
-              {lessonTitle && (
-                <p className="text-emerald-400/70 text-[11px] truncate max-w-[200px]">{lessonTitle}</p>
-              )}
+              <p className="text-foreground text-sm font-semibold leading-tight">Read Along</p>
+              <p className="text-emerald-400/70 text-[11px] truncate">
+                {lessonTitle || "Listen & follow the text"}
+              </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-shrink-0">
             {/* Speed selector */}
-            <div className="flex items-center gap-0.5 p-0.5 rounded-lg bg-white/5 border border-white/[0.08]">
+            <div className="hidden sm:flex items-center gap-0.5 p-0.5 rounded-lg bg-white/5 border border-white/[0.08]">
               {SPEEDS.map((s) => (
                 <button
                   key={s}
                   onClick={() => handleSpeedChange(s)}
                   className={cn(
-                    "px-2 py-1 text-[11px] font-semibold rounded-md transition-all",
+                    "px-1.5 sm:px-2 py-1 text-[11px] font-semibold rounded-md transition-all",
                     speed === s
                       ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                      : "text-white/30 hover:text-white/60"
+                      : "text-muted-foreground/40 hover:text-muted-foreground"
                   )}
                 >
                   {s}×
@@ -354,7 +395,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             {/* Close */}
             <button
               onClick={handleClose}
-              className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-white/40 hover:text-white/70 flex items-center justify-center transition-all"
+              className="w-8 h-8 rounded-lg bg-white/5 hover:bg-white/10 text-muted-foreground/50 hover:text-foreground flex items-center justify-center transition-all"
               aria-label="Close audio player"
             >
               <X className="w-3.5 h-3.5" />
@@ -363,9 +404,9 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         </div>
 
         {/* Waveform + controls row */}
-        <div className="flex items-center gap-4 mb-5">
+        <div className="flex items-center gap-3 sm:gap-4 mb-4">
           {/* Waveform */}
-          <div className="flex-shrink-0">
+          <div className="flex-shrink-0 hidden sm:block">
             <Waveform playing={isPlaying} loading={isLoading} />
           </div>
 
@@ -375,7 +416,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             <button
               onClick={handlePrev}
               disabled={para === 0 || isLoading}
-              className="w-9 h-9 rounded-md bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white/80 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-muted-foreground/60 hover:text-foreground flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               title="Previous section"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -387,7 +428,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
               disabled={isLoading}
               whileTap={{ scale: 0.92 }}
               className={cn(
-                "relative w-12 h-12 rounded-md flex items-center justify-center transition-all overflow-hidden",
+                "relative w-12 h-12 rounded-xl flex items-center justify-center transition-all overflow-hidden",
                 "bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg shadow-emerald-600/30",
                 "hover:from-emerald-400 hover:to-emerald-500",
                 "disabled:opacity-50 disabled:cursor-not-allowed"
@@ -396,7 +437,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             >
               {isPlaying && (
                 <motion.div
-                  className="absolute inset-0 rounded-md border-2 border-emerald-400"
+                  className="absolute inset-0 rounded-xl border-2 border-emerald-400"
                   animate={{ scale: [1, 1.18], opacity: [0.6, 0] }}
                   transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
                 />
@@ -430,7 +471,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             <button
               onClick={handleNext}
               disabled={para >= total - 1 || isLoading}
-              className="w-9 h-9 rounded-md bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-white/50 hover:text-white/80 flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              className="w-9 h-9 rounded-lg bg-white/5 hover:bg-white/10 border border-white/[0.08] hover:border-white/[0.15] text-muted-foreground/60 hover:text-foreground flex items-center justify-center transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               title="Next section"
             >
               <ChevronRight className="w-4 h-4" />
@@ -440,11 +481,11 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             <AnimatePresence>
               {(isPlaying || status === "paused") && (
                 <motion.button
-                  initial={{ opacity: 0, scale: 0.7 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.7 }}
+                  initial={{ opacity: 0, scale: 0.7, width: 0 }}
+                  animate={{ opacity: 1, scale: 1, width: 36 }}
+                  exit={{ opacity: 0, scale: 0.7, width: 0 }}
                   onClick={handleStop}
-                  className="w-9 h-9 rounded-md bg-white/5 hover:bg-red-500/15 border border-white/[0.08] hover:border-red-500/30 text-white/40 hover:text-red-400 flex items-center justify-center transition-all"
+                  className="h-9 rounded-lg bg-white/5 hover:bg-red-500/15 border border-white/[0.08] hover:border-red-500/30 text-muted-foreground/50 hover:text-red-400 flex items-center justify-center transition-colors flex-shrink-0"
                   title="Stop"
                 >
                   <Square className="w-3.5 h-3.5" />
@@ -453,7 +494,25 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
             </AnimatePresence>
           </div>
 
-          <Volume2 className="w-4 h-4 text-emerald-400/50 flex-shrink-0 ml-auto" />
+          {/* Speed selector — compact, shown on very small screens */}
+          <div className="flex sm:hidden items-center gap-0.5 p-0.5 rounded-lg bg-white/5 border border-white/[0.08] ml-auto">
+            {SPEEDS.map((s) => (
+              <button
+                key={s}
+                onClick={() => handleSpeedChange(s)}
+                className={cn(
+                  "px-1.5 py-1 text-[10px] font-semibold rounded-md transition-all",
+                  speed === s
+                    ? "bg-emerald-500/20 text-emerald-400"
+                    : "text-muted-foreground/40"
+                )}
+              >
+                {s}×
+              </button>
+            ))}
+          </div>
+
+          <Volume2 className="w-4 h-4 text-emerald-400/50 flex-shrink-0 ml-auto hidden sm:block" />
         </div>
 
         {/* Progress bar */}
@@ -464,14 +523,7 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
               {paragraphs.current.map((_, i) => (
                 <motion.button
                   key={i}
-                  onClick={() => {
-                    if (statusRef.current === "playing" || statusRef.current === "paused") {
-                      updStatus("playing");
-                      speakPara(i, speedRef.current);
-                    } else {
-                      updPara(i);
-                    }
-                  }}
+                  onClick={() => jumpTo(i)}
                   className={cn(
                     "flex-1 h-full rounded-full transition-colors cursor-pointer",
                     i < para
@@ -491,13 +543,8 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
               className="relative h-1.5 rounded-full bg-white/10 overflow-hidden group cursor-pointer"
               onClick={(e) => {
                 const rect = e.currentTarget.getBoundingClientRect();
-                const target = Math.min(total - 1, Math.floor(((e.clientX - rect.left) / rect.width) * total));
-                if (statusRef.current === "playing" || statusRef.current === "paused") {
-                  updStatus("playing");
-                  speakPara(target, speedRef.current);
-                } else {
-                  updPara(target);
-                }
+                const target = Math.floor(((e.clientX - rect.left) / rect.width) * total);
+                jumpTo(target);
               }}
             >
               <div
@@ -519,35 +566,91 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
           )}
 
           <div className="flex items-center justify-between">
-            <span className="text-white/30 text-[10px]">{statusLabel}</span>
+            <span className="text-muted-foreground/40 text-[10px]">{statusLabel}</span>
             <span className="text-emerald-400/60 text-[10px] font-semibold">{progress}%</span>
           </div>
         </div>
 
-        {/* Current paragraph preview */}
-        <AnimatePresence mode="wait">
-          {paragraphs.current[para] && (
-            <motion.div
-              key={para}
-              initial={{ opacity: 0, y: 6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="mt-3 pt-3 border-t border-white/[0.06]"
+        {/* ── Synced read-along transcript ─────────────────────────────────── */}
+        {total > 0 && (
+          <div className="mt-3 pt-3 border-t border-white/[0.06]">
+            <p className="text-muted-foreground/40 text-[10px] uppercase tracking-wider mb-2 font-medium flex items-center gap-1.5">
+              <span className={cn("w-1.5 h-1.5 rounded-full", isPlaying ? "bg-emerald-400 animate-pulse" : "bg-muted-foreground/30")} />
+              Transcript · tap any line to jump
+            </p>
+            <div
+              ref={transcriptRef}
+              className="max-h-[260px] overflow-y-auto pr-1.5 space-y-1 select-none scroll-smooth"
             >
-              {status === "idle" && (
-                <p className="text-white/30 text-[10px] uppercase tracking-wider mb-1 font-medium">
-                  First section preview
-                </p>
-              )}
-              <p className="text-white/60 text-[12px] leading-relaxed line-clamp-2 italic">
-                &ldquo;{paragraphs.current[para].slice(0, 150)}
-                {paragraphs.current[para].length > 150 ? "…" : ""}&rdquo;
-              </p>
-            </motion.div>
-          )}
-        </AnimatePresence>
+              {paragraphs.current.map((p, i) => {
+                const isActive = i === para;
+                return (
+                  <button
+                    key={i}
+                    ref={isActive ? activeParaRef : undefined}
+                    onClick={() => jumpTo(i)}
+                    className={cn(
+                      "block w-full text-left rounded-lg px-3 py-2 transition-colors",
+                      isActive
+                        ? "bg-emerald-500/10 ring-1 ring-emerald-500/25"
+                        : "hover:bg-white/[0.03]"
+                    )}
+                  >
+                    <span
+                      className={cn(
+                        "text-[13px] leading-relaxed",
+                        isActive
+                          ? "text-foreground"
+                          : i < para
+                          ? "text-muted-foreground/45"
+                          : "text-muted-foreground/70"
+                      )}
+                    >
+                      {isActive ? (
+                        // Karaoke word highlighting for the paragraph being read.
+                        <ActiveParagraph
+                          words={wordsByPara.current[i]}
+                          curWordIdx={curWordIdx}
+                        />
+                      ) : (
+                        p
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </div>
     </motion.div>
+  );
+}
+
+// ─── Active paragraph with karaoke word highlighting ──────────────────────────
+
+function ActiveParagraph({ words, curWordIdx }: { words: WordToken[]; curWordIdx: number }) {
+  return (
+    <>
+      {words.map((token, i) => {
+        const isCurrent = i === curWordIdx;
+        const isPast = curWordIdx >= 0 && i < curWordIdx;
+        return (
+          <span
+            key={i}
+            className={cn(
+              "transition-colors duration-150",
+              isCurrent
+                ? "rounded bg-emerald-400/25 text-emerald-200 font-medium px-0.5"
+                : isPast
+                ? "text-emerald-400/70"
+                : "text-foreground/85"
+            )}
+          >
+            {token.w}{i < words.length - 1 ? " " : ""}
+          </span>
+        );
+      })}
+    </>
   );
 }
