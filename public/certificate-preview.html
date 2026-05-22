@@ -21,21 +21,21 @@ body {
 
 /*
  * SCALER — keeps the cert's aspect ratio in the page flow.
- * The inner .cert is fixed 900 × 560 px and is CSS-scaled to fit.
+ * The inner .cert is fixed 900 × 520 px and is CSS-scaled to fit.
  */
 .cert-scaler {
   width: min(900px, calc(100vw - 40px));
-  aspect-ratio: 900 / 560;
+  aspect-ratio: 900 / 520;
   position: relative;
   filter: drop-shadow(0 20px 52px rgba(0,0,0,0.42));
 }
 
-/* Fixed internal canvas — everything sized for exactly 900 × 560 px */
+/* Fixed internal canvas — everything sized for exactly 900 × 520 px */
 .cert {
   position: absolute;
   top: 0; left: 0;
   width: 900px;
-  height: 560px;
+  height: 520px;
   transform-origin: top left;
   background: #ffffff;
   overflow: hidden;
@@ -239,7 +239,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 20px 80px 20px;
+  padding: 32px 80px 10px;
   position: relative;
   z-index: 2;
   overflow: hidden;
@@ -546,7 +546,7 @@ body {
 </div><!-- /cert-scaler -->
 
 <script>
-  /* Scale the fixed 900×560 cert to fit any screen width */
+  /* Scale the fixed 900×520 cert to fit any screen width */
   (function () {
     var scaler = document.querySelector('.cert-scaler');
     var cert   = document.querySelector('.cert');
