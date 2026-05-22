@@ -253,8 +253,18 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     const el = activeParaRef.current;
     const container = transcriptRef.current;
     if (!el || !container) return;
-    const top = el.offsetTop - container.clientHeight / 2 + el.clientHeight / 2;
-    container.scrollTo({ top: Math.max(0, top), behavior: "smooth" });
+    // Measure via bounding rects so the result is independent of which
+    // ancestor happens to be the element's offsetParent.
+    const elRect = el.getBoundingClientRect();
+    const cRect = container.getBoundingClientRect();
+    const target =
+      container.scrollTop + (elRect.top - cRect.top)
+      - container.clientHeight / 2 + el.clientHeight / 2;
+    const max = container.scrollHeight - container.clientHeight;
+    container.scrollTo({
+      top: Math.max(0, Math.min(target, max)),
+      behavior: "smooth",
+    });
   }, [para]);
 
   // ── Core speak function — speaks one chunk, then chains to the next ────────
