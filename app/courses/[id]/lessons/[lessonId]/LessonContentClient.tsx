@@ -126,6 +126,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
 
   // ── Reading progress (TEXT lessons only) ─────────────────────────────────
   const { scrollPct, activeSecs, scrollDone, timeDone } = useReadingProgress({
+    lessonId:         lesson.id,
     isEnrolled:       isEnrolled && lesson.type === "TEXT",
     alreadyCompleted: done,
     onComplete:       handleAutoComplete,
