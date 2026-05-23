@@ -30,6 +30,37 @@ const MAX_CHUNK = 130;
 // each chunk's measured duration. Real boundary events re-anchor it.
 const DEFAULT_CHARS_PER_SEC = 14.5; // at rate 1.0, before calibration
 
+// ─── Language detection ──────────────────────────────────────────────────────
+// Picks a BCP-47 language tag from the script of the text. Without this the
+// speech engine pronounces Gujarati/Hindi script with English phonetics.
+
+const GU_RE = /[઀-૿]/; // Gujarati block
+const HI_RE = /[ऀ-ॿ]/; // Devanagari block (Hindi / Marathi)
+
+function detectLang(text: string): "gu-IN" | "hi-IN" | "en-US" {
+  if (GU_RE.test(text)) return "gu-IN";
+  if (HI_RE.test(text)) return "hi-IN";
+  return "en-US";
+}
+
+/** Choose the best available voice for a target BCP-47 language. */
+function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | undefined {
+  if (!voices.length) return undefined;
+  const base = lang.split("-")[0];
+  return (
+    voices.find((v) => v.lang.toLowerCase() === lang.toLowerCase() && /google/i.test(v.name)) ||
+    voices.find((v) => v.lang.toLowerCase() === lang.toLowerCase()) ||
+    voices.find((v) => v.lang.toLowerCase().startsWith(base + "-")) ||
+    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ||
+    // Indic fallback: Hindi voices generally read Gujarati script better than
+    // an English voice would, even if pronunciation isn't perfect.
+    (base === "gu" ? voices.find((v) => v.lang.toLowerCase().startsWith("hi")) : undefined) ||
+    voices.find((v) => v.lang.startsWith("en") && /google/i.test(v.name)) ||
+    voices.find((v) => v.lang.startsWith("en")) ||
+    voices[0]
+  );
+}
+
 // ─── Section model ───────────────────────────────────────────────────────────
 // Lesson content is parsed into ordered sections. Text sections drive
 // word-level karaoke highlighting; table sections render as a real table with
@@ -171,7 +202,10 @@ function buildChunks(sections: Section[]): Chunk[] {
       const chunkStart = words[startWord].start;
       const wordEnd = words[i].start + words[i].w.length;
       const len = wordEnd - chunkStart;
-      const endsSentence = /[.!?:;]["')\]]?$/.test(words[i].w);
+      // Include Indic sentence terminators (। danda, ॥ double danda) so
+      // Gujarati/Hindi paragraphs chunk at sentence boundaries instead of
+      // hitting MAX_CHUNK mid-phrase.
+      const endsSentence = /[.!?:;।॥]["')\]]?$/.test(words[i].w);
       const atLast = i === words.length - 1;
       if (atLast || len >= MAX_CHUNK || (endsSentence && len >= MIN_CHUNK)) {
         chunks.push({ sectionIdx, text: text.slice(chunkStart, wordEnd), offset: chunkStart });
@@ -365,12 +399,14 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         utt.rate  = rate;
         utt.pitch = 1;
 
+        // Pick voice + lang based on the script of *this* chunk so mixed-
+        // language lessons (e.g. Gujarati paragraph followed by an English
+        // code sample) read each part correctly.
+        const lang = detectLang(chunk.text);
         const voices = window.speechSynthesis.getVoices();
-        const preferred =
-          voices.find((v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("google")) ||
-          voices.find((v) => v.lang.startsWith("en")) ||
-          voices[0];
+        const preferred = pickVoice(voices, lang);
         if (preferred) utt.voice = preferred;
+        utt.lang = preferred?.lang || lang;
 
         utt.onstart = () => {
           chunkRef.current = chunkIndex;
