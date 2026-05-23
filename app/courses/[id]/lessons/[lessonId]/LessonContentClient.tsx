@@ -10,6 +10,7 @@ import {
   Download, Headphones, ArrowLeft, BookOpen, Trophy,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { gujaratiFontClass } from "@/lib/gujarati-font";
 import QuizPlayer from "@/components/QuizPlayer";
 import TextHighlighter from "@/components/TextHighlighter";
 import LessonAudioPlayer from "@/components/LessonAudioPlayer";
@@ -381,7 +382,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         ) : lesson.content ? (
           // TEXT: markdown content — scroll + time tracked by useReadingProgress
           <div
-            className="px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-hidden select-none"
+            className={cn("px-3 sm:px-6 lg:px-8 py-5 sm:py-8 overflow-x-hidden select-none", gujaratiFontClass(lesson.content))}
             onCopy={(e) => {
               e.preventDefault();
               toast("🔒 Content is protected. Use the highlight feature to save passages.", { duration: 3000 });
