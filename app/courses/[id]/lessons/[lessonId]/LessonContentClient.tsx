@@ -17,6 +17,7 @@ import MarkdownRenderer from "@/components/MarkdownRenderer";
 import VideoLessonPlayer from "@/components/VideoLessonPlayer";
 import ShareCourseModal from "@/components/ShareCourseModal";
 import CourseCompletionConfetti from "@/components/CourseCompletionConfetti";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useReadingProgress, SCROLL_THRESHOLD, TIME_THRESHOLD } from "@/hooks/useReadingProgress";
 import { useLessonContext } from "../LessonProvider";
 import toast from "react-hot-toast";
@@ -293,28 +294,31 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
         {isEnrolled && lesson.type !== "QUIZ" && (
           <div className="flex items-center gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-border">
             {lesson.type === "TEXT" && lesson.content && (
-              <button
-                onClick={() => setShowAudioPlayer((v) => !v)}
-                className={cn(
-                  "flex items-center gap-1.5 text-xs px-2.5 sm:px-3 py-1.5 sm:py-2 rounded-md border transition-all font-medium",
-                  showAudioPlayer
-                    ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
-                    : "bg-secondary border-border text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {isAudioPlaying && (
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse flex-shrink-0" />
-                )}
-                <Headphones className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span>{showAudioPlayer ? "Audio Mode" : "Listen"}</span>
-              </button>
+              <Tooltip label={showAudioPlayer ? "Hide audio player" : "Listen to this lesson"}>
+                <button
+                  aria-label={showAudioPlayer ? "Hide audio player" : "Listen to this lesson"}
+                  onClick={() => setShowAudioPlayer((v) => !v)}
+                  className={cn(
+                    "relative w-9 h-9 flex items-center justify-center rounded-md border transition-colors",
+                    showAudioPlayer
+                      ? "bg-emerald-500/20 border-emerald-400/30 text-emerald-400"
+                      : "bg-secondary border-border text-muted-foreground hover:text-foreground hover:bg-secondary",
+                  )}
+                >
+                  <Headphones className="w-4 h-4" />
+                  {isAudioPlaying && (
+                    <span className="absolute top-1 right-1 w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  )}
+                </button>
+              </Tooltip>
             )}
 
             {/* Share lesson link */}
             <ShareCourseModal
               path={`/courses/${courseId}/lessons/${lesson.id}`}
               title={lesson.title}
-              triggerClassName="!px-2.5 !py-1.5 !text-xs"
+              iconOnly
+              tooltip="Share this lesson"
             />
 
             {/* Status / progress hint — right-aligned */}

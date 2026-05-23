@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/Dialog";
+import { TooltipProvider, TooltipRoot, TooltipTrigger, TooltipContent } from "@/components/ui/Tooltip";
 
 interface Props {
   title: string;
@@ -24,6 +25,8 @@ interface Props {
   triggerClassName?: string;
   /** Render as icon-only button (used in enroll bar action row) */
   iconOnly?: boolean;
+  /** Show a hover tooltip with this label on the trigger */
+  tooltip?: string;
 }
 
 export default function ShareCourseModal({
@@ -34,6 +37,7 @@ export default function ShareCourseModal({
   className,
   triggerClassName,
   iconOnly = false,
+  tooltip,
 }: Props) {
   const [open,   setOpen]   = useState(false);
   const [copied, setCopied] = useState(false);
@@ -110,31 +114,42 @@ export default function ShareCourseModal({
     },
   ] as const;
 
+  const triggerButton = iconOnly ? (
+    <button
+      aria-label={tooltip ?? `Share this ${kind}`}
+      className={cn(
+        "w-9 h-9 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",
+        triggerClassName,
+      )}
+    >
+      <Share2 className="w-4 h-4" />
+    </button>
+  ) : (
+    <button
+      className={cn(
+        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-secondary text-muted-foreground hover:text-foreground hover:border-[#d97757]/50 transition-all",
+        triggerClassName,
+      )}
+    >
+      <Share2 className="w-3.5 h-3.5" />
+      <span>Share</span>
+    </button>
+  );
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        {iconOnly ? (
-          <button
-            className={cn(
-              "w-9 h-9 flex items-center justify-center rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors",
-              triggerClassName,
-            )}
-            title={`Share this ${kind}`}
-          >
-            <Share2 className="w-4 h-4" />
-          </button>
-        ) : (
-          <button
-            className={cn(
-              "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-border bg-secondary text-muted-foreground hover:text-foreground hover:border-[#d97757]/50 transition-all",
-              triggerClassName,
-            )}
-          >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>Share</span>
-          </button>
-        )}
-      </DialogTrigger>
+      {tooltip ? (
+        <TooltipProvider delayDuration={150} skipDelayDuration={100}>
+          <TooltipRoot>
+            <TooltipTrigger asChild>
+              <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+            </TooltipTrigger>
+            <TooltipContent side="top">{tooltip}</TooltipContent>
+          </TooltipRoot>
+        </TooltipProvider>
+      ) : (
+        <DialogTrigger asChild>{triggerButton}</DialogTrigger>
+      )}
 
       <DialogContent className={cn("max-w-md", className)}>
         <DialogHeader>
