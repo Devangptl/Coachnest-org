@@ -14,6 +14,7 @@ type Block =
   | { type: "numlist"; items: string[] }
   | { type: "paragraph"; text: string }
   | { type: "blockquote"; text: string }
+  | { type: "table"; headers: string[]; rows: string[][] }
   | { type: "hr" };
 
 type Span = {
@@ -85,6 +86,25 @@ function parseMdContent(raw: string): Block[] {
     if (line.startsWith("### ")) { blocks.push({ type: "h3", text: line.slice(4).trim() }); i++; continue; }
     if (line.startsWith("## "))  { blocks.push({ type: "h2", text: line.slice(3).trim() }); i++; continue; }
     if (line.startsWith("# "))   { blocks.push({ type: "h1", text: line.slice(2).trim() }); i++; continue; }
+
+    // Markdown pipe table: header row "| a | b |", divider "| --- | --- |", then body rows
+    if (
+      line.includes("|") &&
+      i + 1 < lines.length &&
+      /^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?\s*$/.test(lines[i + 1])
+    ) {
+      const splitRow = (s: string): string[] =>
+        s.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((c) => c.trim());
+      const headers = splitRow(line);
+      i += 2; // skip header + divider
+      const rows: string[][] = [];
+      while (i < lines.length && lines[i].includes("|") && lines[i].trim() !== "") {
+        rows.push(splitRow(lines[i]));
+        i++;
+      }
+      blocks.push({ type: "table", headers, rows });
+      continue;
+    }
 
     // Horizontal rule: ---, ***, ___ (3+ chars on a line by themselves)
     if (/^(-{3,}|\*{3,}|_{3,})$/.test(line.trim())) {
@@ -350,6 +370,39 @@ function parseHtml(raw: string): Block[] {
           if (stripHtmlTags(m[1])) items.push(m[1].trim());
         }
         if (items.length) blocks.push({ type: "numlist", items });
+        break;
+      }
+      case "table": {
+        // Extract every <tr>, then split into <th>/<td> cells. The first row
+        // containing any <th> becomes the header; if none, use the first row.
+        const rowRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi;
+        const cellRe = /<(th|td)[^>]*>([\s\S]*?)<\/\1>/gi;
+        const allRows: { isHeader: boolean; cells: string[] }[] = [];
+        let rm: RegExpExecArray | null;
+        while ((rm = rowRe.exec(inner)) !== null) {
+          const cells: string[] = [];
+          let hasTh = false;
+          let cm: RegExpExecArray | null;
+          cellRe.lastIndex = 0;
+          while ((cm = cellRe.exec(rm[1])) !== null) {
+            if (cm[1].toLowerCase() === "th") hasTh = true;
+            cells.push(cm[2].trim());
+          }
+          if (cells.length) allRows.push({ isHeader: hasTh, cells });
+        }
+        if (allRows.length) {
+          let headers: string[] = [];
+          let bodyRows: string[][] = [];
+          const firstThIdx = allRows.findIndex((r) => r.isHeader);
+          if (firstThIdx >= 0) {
+            headers  = allRows[firstThIdx].cells;
+            bodyRows = allRows.filter((_, i) => i !== firstThIdx).map((r) => r.cells);
+          } else {
+            headers  = allRows[0].cells;
+            bodyRows = allRows.slice(1).map((r) => r.cells);
+          }
+          blocks.push({ type: "table", headers, rows: bodyRows });
+        }
         break;
       }
       default: {
@@ -653,6 +706,81 @@ async function generateCoursePDF(course: any) {
     if (lineToks.length > 0) flushLine();
   };
 
+  // Render an HTML/Markdown table as a bordered grid with a tinted header row,
+  // alternating body rows, and per-row pagination (header repeats on overflow).
+  const drawTable = (headers: string[], rows: string[][]) => {
+    const colCount = Math.max(headers.length, ...rows.map((r) => r.length), 0);
+    if (colCount === 0) return;
+
+    const padHeaders = headers.slice();
+    while (padHeaders.length < colCount) padHeaders.push("");
+    const padRows = rows.map((r) => {
+      const c = r.slice();
+      while (c.length < colCount) c.push("");
+      return c;
+    });
+
+    const padX = 6, padY = 5;
+    const fs = 9.5;
+    const lineH = fs + 3;
+    const colW = usableW / colCount;
+
+    const toPlain = (s: string) =>
+      (/<[a-z]/i.test(s) || /&(?:[a-z]+|#\d+);/.test(s))
+        ? stripHtmlTags(s)
+        : sanitize(s);
+
+    const wrapRow = (cells: string[], f: any) =>
+      cells.map((c) => wrapText(toPlain(c) || " ", colW - padX * 2, f, fs));
+    const rowHeight = (wrapped: string[][]) =>
+      Math.max(...wrapped.map((w) => w.length)) * lineH + padY * 2;
+
+    const drawRowBg = (rowY: number, h: number, color: any) =>
+      page.drawRectangle({ x: margin, y: rowY - h, width: usableW, height: h, color });
+    const drawCellText = (wrapped: string[][], rowY: number, f: any) => {
+      for (let ci = 0; ci < colCount; ci++) {
+        const cx = margin + ci * colW;
+        let ty = rowY - padY - fs;
+        for (const ln of wrapped[ci]) {
+          page.drawText(ln, { x: cx + padX, y: ty, size: fs, font: f, color: textDark });
+          ty -= lineH;
+        }
+      }
+    };
+    const drawGrid = (rowY: number, h: number) => {
+      page.drawRectangle({ x: margin,           y: rowY - h, width: 0.4,     height: h, color: divider });
+      page.drawRectangle({ x: margin + usableW, y: rowY - h, width: 0.4,     height: h, color: divider });
+      for (let ci = 1; ci < colCount; ci++) {
+        page.drawRectangle({ x: margin + ci * colW, y: rowY - h, width: 0.4, height: h, color: divider });
+      }
+      page.drawRectangle({ x: margin, y: rowY - h, width: usableW, height: 0.4, color: divider });
+    };
+
+    const renderHeader = () => {
+      const wrapped = wrapRow(padHeaders, fontBold);
+      const h = rowHeight(wrapped);
+      if (y - h < contentBot) newPage();
+      drawRowBg(y, h, rgb(0.99, 0.92, 0.85));
+      page.drawRectangle({ x: margin, y: y - 0.5, width: usableW, height: 1, color: orange });
+      drawCellText(wrapped, y, fontBold);
+      drawGrid(y, h);
+      y -= h;
+    };
+
+    y -= 10;
+    renderHeader();
+    for (let ri = 0; ri < padRows.length; ri++) {
+      const wrapped = wrapRow(padRows[ri], font);
+      const rowH = rowHeight(wrapped);
+      if (y - rowH < contentBot) { newPage(); renderHeader(); }
+      if (ri % 2 === 1) drawRowBg(y, rowH, rgb(0.975, 0.975, 0.985));
+      drawCellText(wrapped, y, font);
+      drawGrid(y, rowH);
+      y -= rowH;
+    }
+    y -= 10;
+  };
+
   // ── Course Overview (markdown-rendered description) ──────────────────────
   if (course.description) {
     ensureSpace(60);
@@ -746,6 +874,9 @@ async function generateCoursePDF(course: any) {
             y -= SP.listItemGap;
           });
           y -= SP.afterList - SP.listItemGap;
+          break;
+        case "table":
+          drawTable(block.headers, block.rows);
           break;
       }
     }
@@ -935,6 +1066,9 @@ async function generateCoursePDF(course: any) {
             y -= SP.listItemGap;
           });
           y -= SP.afterList - SP.listItemGap;
+          break;
+        case "table":
+          drawTable(block.headers, block.rows);
           break;
       }
     }
