@@ -22,6 +22,7 @@
  */
 
 import { useEffect, useRef, useState, useCallback } from "react";
+import { fetchSavedWatchedSecs, syncWatchedSecsToServer } from "@/lib/lessonProgressSync";
 
 export const SCROLL_THRESHOLD = 90;  // %
 export const TIME_THRESHOLD   = 60;  // seconds
@@ -59,34 +60,6 @@ function savePersisted(lessonId: string, data: PersistedProgress) {
 function clearPersisted(lessonId: string) {
   if (typeof window === "undefined") return;
   try { window.localStorage.removeItem(storageKey(lessonId)); } catch {}
-}
-
-/**
- * Push the latest watched-seconds to the server. Uses sendBeacon when the page
- * is unloading (it's the only request method that reliably survives) and a
- * normal fetch otherwise. `completed` is intentionally omitted so the server
- * preserves whatever completion state already exists.
- */
-function syncToServer(lessonId: string, watchedSecs: number, opts: { beacon?: boolean } = {}) {
-  if (typeof window === "undefined" || watchedSecs <= 0) return;
-  const payload = JSON.stringify({ lessonId, watchedSecs });
-  if (opts.beacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
-    try {
-      const blob = new Blob([payload], { type: "application/json" });
-      navigator.sendBeacon("/api/progress", blob);
-      return;
-    } catch {
-      // Fall through to fetch — best-effort.
-    }
-  }
-  try {
-    fetch("/api/progress", {
-      method:  "POST",
-      headers: { "Content-Type": "application/json" },
-      body:    payload,
-      keepalive: true,
-    }).catch(() => {});
-  } catch {}
 }
 
 interface Options {
@@ -195,17 +168,13 @@ export function useReadingProgress({ lessonId, isEnrolled, alreadyCompleted, onC
   useEffect(() => {
     if (!isEnrolled || alreadyCompleted) return;
     let cancelled = false;
-    fetch(`/api/progress?lessonId=${encodeURIComponent(lessonId)}`)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data) => {
-        if (cancelled || !data) return;
-        const dbSecs = Math.max(0, Number(data.watchedSecs) || 0);
-        if (dbSecs > activeSecsRef.current) {
-          setActiveSecs(dbSecs);
-          savePersisted(lessonId, { activeSecs: dbSecs, scrollPct: scrollPctRef.current });
-        }
-      })
-      .catch(() => {});
+    fetchSavedWatchedSecs(lessonId).then((data) => {
+      if (cancelled || !data) return;
+      if (data.watchedSecs > activeSecsRef.current) {
+        setActiveSecs(data.watchedSecs);
+        savePersisted(lessonId, { activeSecs: data.watchedSecs, scrollPct: scrollPctRef.current });
+      }
+    });
     return () => { cancelled = true; };
   }, [lessonId, isEnrolled, alreadyCompleted]);
 
@@ -218,7 +187,7 @@ export function useReadingProgress({ lessonId, isEnrolled, alreadyCompleted, onC
     const syncIfDirty = (beacon = false) => {
       const current = activeSecsRef.current;
       if (current > lastSyncedRef.current) {
-        syncToServer(lessonId, current, { beacon });
+        syncWatchedSecsToServer(lessonId, current, { beacon });
         lastSyncedRef.current = current;
       }
     };
@@ -245,7 +214,7 @@ export function useReadingProgress({ lessonId, isEnrolled, alreadyCompleted, onC
       completedRef.current = true;
       stopTimer();
       // Final DB sync of the exact second count before clearing local state.
-      syncToServer(lessonId, activeSecs);
+      syncWatchedSecsToServer(lessonId, activeSecs);
       clearPersisted(lessonId);
       onCompleteRef.current();
     }

@@ -18,12 +18,52 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { CheckCircle2, PlayCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { fetchSavedWatchedSecs, syncWatchedSecsToServer } from "@/lib/lessonProgressSync";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const COMPLETE_THRESHOLD = 80;   // % of video that must be ACTUALLY watched
 const POLL_INTERVAL_MS   = 500;  // How often we poll currentTime (ms)
 const SCRUB_THRESHOLD    = 1.8;  // seconds; delta > this = forward scrub
+const DB_SYNC_INTERVAL   = 15;   // seconds between background DB writes
+
+// ─── Persistence (localStorage) ──────────────────────────────────────────────
+
+const STORAGE_PREFIX = "lh:videoProgress:";
+const storageKey = (lessonId: string) => `${STORAGE_PREFIX}${lessonId}`;
+
+interface PersistedVideo { segs: Segment[]; duration: number }
+
+function loadPersistedVideo(lessonId: string): PersistedVideo | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = window.localStorage.getItem(storageKey(lessonId));
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as Partial<PersistedVideo>;
+    const segs = Array.isArray(parsed.segs)
+      ? parsed.segs
+          .filter((s): s is [number, number] =>
+            Array.isArray(s) && s.length === 2 && typeof s[0] === "number" && typeof s[1] === "number" && s[1] > s[0])
+      : [];
+    const duration = Math.max(0, Number(parsed.duration) || 0);
+    if (!segs.length && duration <= 0) return null;
+    return { segs, duration };
+  } catch {
+    return null;
+  }
+}
+
+function savePersistedVideo(lessonId: string, data: PersistedVideo) {
+  if (typeof window === "undefined") return;
+  try {
+    window.localStorage.setItem(storageKey(lessonId), JSON.stringify(data));
+  } catch {}
+}
+
+function clearPersistedVideo(lessonId: string) {
+  if (typeof window === "undefined") return;
+  try { window.localStorage.removeItem(storageKey(lessonId)); } catch {}
+}
 
 // ─── Segment helpers ──────────────────────────────────────────────────────────
 
@@ -161,21 +201,30 @@ function CompletionOverlay({ show }: { show: boolean }) {
 // ─── YouTube sub-component ────────────────────────────────────────────────────
 
 interface YTSubProps {
-  videoId:    string;
-  onPctChange: (pct: number) => void;
+  videoId:           string;
+  initialSegments?:  Segment[];
+  initialDuration?:  number;
+  onPctChange:       (pct: number) => void;
+  onSegmentsChange?: (segs: Segment[], duration: number) => void;
 }
 
-function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
+function YouTubePlayer({ videoId, initialSegments, initialDuration, onPctChange, onSegmentsChange }: YTSubProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const playerRef    = useRef<any>(null);
-  const segsRef      = useRef<Segment[]>([]);
+  const segsRef      = useRef<Segment[]>(initialSegments ? [...initialSegments] : []);
   const segStartRef  = useRef<number | null>(null);
   const lastTimeRef  = useRef(0);
   const tickRef      = useRef<ReturnType<typeof setInterval> | null>(null);
-  const durRef       = useRef(0);
+  const durRef       = useRef(initialDuration ?? 0);
   const onPctRef     = useRef(onPctChange);
+  const onSegsRef    = useRef(onSegmentsChange);
   useEffect(() => { onPctRef.current = onPctChange; });
+  useEffect(() => { onSegsRef.current = onSegmentsChange; });
+
+  const flushSegs = () => {
+    if (onSegsRef.current) onSegsRef.current(mergeSegments(segsRef.current), durRef.current);
+  };
 
   const stopTick  = () => { if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; } };
   const startTick = () => {
@@ -243,6 +292,7 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
               }
               const pct = calcWatchedPct(segsRef.current, durRef.current);
               onPctRef.current(pct);
+              flushSegs();
             }
           },
         },
@@ -263,22 +313,33 @@ function YouTubePlayer({ videoId, onPctChange }: YTSubProps) {
 // ─── HTML5 <video> sub-component ─────────────────────────────────────────────
 
 interface HTML5SubProps {
-  url:         string;
-  onPctChange: (pct: number) => void;
+  url:               string;
+  initialSegments?:  Segment[];
+  initialDuration?:  number;
+  onPctChange:       (pct: number) => void;
+  onSegmentsChange?: (segs: Segment[], duration: number) => void;
 }
 
-function HTML5VideoPlayer({ url, onPctChange }: HTML5SubProps) {
-  const segsRef     = useRef<Segment[]>([]);
+function HTML5VideoPlayer({ url, initialSegments, initialDuration, onPctChange, onSegmentsChange }: HTML5SubProps) {
+  const segsRef     = useRef<Segment[]>(initialSegments ? [...initialSegments] : []);
   const segStartRef = useRef<number | null>(null);
   const prevTimeRef = useRef(0);
   const seekingRef  = useRef(false);
+  const durRef      = useRef(initialDuration ?? 0);
   const onPctRef    = useRef(onPctChange);
+  const onSegsRef   = useRef(onSegmentsChange);
   useEffect(() => { onPctRef.current = onPctChange; });
+  useEffect(() => { onSegsRef.current = onSegmentsChange; });
+
+  const flushSegs = () => {
+    if (onSegsRef.current) onSegsRef.current(mergeSegments(segsRef.current), durRef.current);
+  };
 
   const finishSegment = (end: number) => {
     if (segStartRef.current !== null && end > segStartRef.current) {
       segsRef.current.push([segStartRef.current, end]);
       segStartRef.current = null;
+      flushSegs();
     }
   };
 
@@ -288,18 +349,27 @@ function HTML5VideoPlayer({ url, onPctChange }: HTML5SubProps) {
       controls
       preload="metadata"
       className="absolute inset-0 w-full h-full bg-black"
+      onLoadedMetadata={(e) => {
+        const d = e.currentTarget.duration;
+        if (d > 0) {
+          durRef.current = d;
+          if (segsRef.current.length) flushSegs();
+        }
+      }}
       onPlay={(e) => {
         const v = e.currentTarget;
         segStartRef.current = v.currentTime;
         prevTimeRef.current = v.currentTime;
       }}
       onPause={(e) => {
+        durRef.current = e.currentTarget.duration || durRef.current;
         finishSegment(e.currentTarget.currentTime);
-        onPctRef.current(calcWatchedPct(segsRef.current, e.currentTarget.duration));
+        onPctRef.current(calcWatchedPct(segsRef.current, durRef.current));
       }}
       onEnded={(e) => {
+        durRef.current = e.currentTarget.duration || durRef.current;
         finishSegment(e.currentTarget.currentTime);
-        onPctRef.current(calcWatchedPct(segsRef.current, e.currentTarget.duration));
+        onPctRef.current(calcWatchedPct(segsRef.current, durRef.current));
       }}
       onSeeking={() => {
         seekingRef.current = true;
@@ -314,8 +384,9 @@ function HTML5VideoPlayer({ url, onPctChange }: HTML5SubProps) {
       onTimeUpdate={(e) => {
         if (seekingRef.current) return;
         const v = e.currentTarget;
+        durRef.current = v.duration || durRef.current;
         prevTimeRef.current = v.currentTime;
-        onPctRef.current(calcWatchedPct(segsRef.current, v.duration));
+        onPctRef.current(calcWatchedPct(segsRef.current, durRef.current));
       }}
     />
   );
@@ -372,6 +443,7 @@ function IframePlayer({ url, alreadyCompleted, onManualComplete, markingComplete
 
 interface VideoLessonPlayerProps {
   url:               string;
+  lessonId:          string;
   alreadyCompleted:  boolean;
   onComplete:        () => void;
   /** Shown only for non-trackable (iframe) videos; uses same handler */
@@ -380,16 +452,38 @@ interface VideoLessonPlayerProps {
 
 export default function VideoLessonPlayer({
   url,
+  lessonId,
   alreadyCompleted,
   onComplete,
   onManualComplete,
 }: VideoLessonPlayerProps) {
-  // Bug fix: use 100 (not COMPLETE_THRESHOLD) so the bar fills to 100% when already done
-  const [watchedPct,      setWatchedPct]      = useState(alreadyCompleted ? 100 : 0);
+  // Hydrate segments from localStorage so the watch bar resumes on tab reopen.
+  const persistedRef = useRef<PersistedVideo | null>(null);
+  if (persistedRef.current === null) {
+    persistedRef.current = (!alreadyCompleted && loadPersistedVideo(lessonId)) || { segs: [], duration: 0 };
+  }
+  const initialPct = alreadyCompleted
+    ? 100
+    : calcWatchedPct(persistedRef.current.segs, persistedRef.current.duration);
+
+  const [watchedPct,      setWatchedPct]      = useState(initialPct);
   const [completed,       setCompleted]       = useState(alreadyCompleted);
   const [showOverlay,     setShowOverlay]     = useState(false);
   const [markingComplete, setMarkingComplete] = useState(false);
   const firedRef = useRef(alreadyCompleted);
+
+  // Mirror the latest watched-seconds in a ref so unload/interval handlers can
+  // read them without re-binding effects on every tick.
+  const watchedSecsRef = useRef(
+    alreadyCompleted ? 0 : Math.round(initialPct / 100 * persistedRef.current.duration),
+  );
+
+  const handleSegmentsChange = useCallback((segs: Segment[], duration: number) => {
+    if (alreadyCompleted) return;
+    savePersistedVideo(lessonId, { segs, duration });
+    const totalSecs = mergeSegments(segs).reduce((acc, [s, e]) => acc + (e - s), 0);
+    watchedSecsRef.current = Math.round(totalSecs);
+  }, [lessonId, alreadyCompleted]);
 
   const handlePctChange = useCallback((pct: number) => {
     setWatchedPct((prev) => {
@@ -400,12 +494,62 @@ export default function VideoLessonPlayer({
         // Brief completion overlay
         setShowOverlay(true);
         setTimeout(() => setShowOverlay(false), 2500);
+        // Final DB sync + drop local cache before flipping to "complete"
+        syncWatchedSecsToServer(lessonId, watchedSecsRef.current);
+        clearPersistedVideo(lessonId);
         // Fire async to avoid state update during render
         setTimeout(onComplete, 0);
       }
       return next;
     });
-  }, [onComplete]);
+  }, [onComplete, lessonId]);
+
+  // ── Hydrate from DB (cross-device resume) ────────────────────────────────
+  useEffect(() => {
+    if (alreadyCompleted) return;
+    let cancelled = false;
+    fetchSavedWatchedSecs(lessonId).then((data) => {
+      if (cancelled || !data || data.watchedSecs <= watchedSecsRef.current) return;
+      // We don't know the per-segment breakdown — express the DB total as a
+      // single [0, watchedSecs] block so the pct math is correct.
+      const dbSeg: Segment = [0, data.watchedSecs];
+      const duration = persistedRef.current?.duration ?? 0;
+      handleSegmentsChange([dbSeg], duration);
+      if (duration > 0) {
+        setWatchedPct((prev) => Math.max(prev, calcWatchedPct([dbSeg], duration)));
+      }
+    });
+    return () => { cancelled = true; };
+  }, [lessonId, alreadyCompleted, handleSegmentsChange]);
+
+  // ── Periodic DB sync + flush on tab hide ─────────────────────────────────
+  useEffect(() => {
+    if (alreadyCompleted) return;
+
+    const lastSyncedRef = { current: watchedSecsRef.current };
+
+    const syncIfDirty = (beacon = false) => {
+      const current = watchedSecsRef.current;
+      if (current > lastSyncedRef.current) {
+        syncWatchedSecsToServer(lessonId, current, { beacon });
+        lastSyncedRef.current = current;
+      }
+    };
+
+    const interval   = setInterval(() => syncIfDirty(false), DB_SYNC_INTERVAL * 1000);
+    const onHide     = () => { if (document.hidden) syncIfDirty(true); };
+    const onPageHide = () => syncIfDirty(true);
+
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onPageHide);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onPageHide);
+      syncIfDirty(true);
+    };
+  }, [lessonId, alreadyCompleted]);
 
   const handleManualComplete = useCallback(async () => {
     if (markingComplete || completed) return;
@@ -431,9 +575,21 @@ export default function VideoLessonPlayer({
       {/* ── Video area ──────────────────────────────────────────────────── */}
       <div className="relative aspect-video bg-black overflow-hidden">
         {youtubeId ? (
-          <YouTubePlayer videoId={youtubeId} onPctChange={handlePctChange} />
+          <YouTubePlayer
+            videoId={youtubeId}
+            initialSegments={persistedRef.current?.segs}
+            initialDuration={persistedRef.current?.duration}
+            onPctChange={handlePctChange}
+            onSegmentsChange={handleSegmentsChange}
+          />
         ) : isVidFile ? (
-          <HTML5VideoPlayer url={url} onPctChange={handlePctChange} />
+          <HTML5VideoPlayer
+            url={url}
+            initialSegments={persistedRef.current?.segs}
+            initialDuration={persistedRef.current?.duration}
+            onPctChange={handlePctChange}
+            onSegmentsChange={handleSegmentsChange}
+          />
         ) : (
           <IframePlayer
             url={url}
