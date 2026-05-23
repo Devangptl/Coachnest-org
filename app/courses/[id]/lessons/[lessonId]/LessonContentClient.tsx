@@ -160,89 +160,66 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
       {/* ── Course completion confetti overlay ───────────────────────────── */}
       <CourseCompletionConfetti show={showConfetti} onDone={() => setShowConfetti(false)} />
 
-      {/* ── Certificate achievement highlight ───────────────────────────── */}
+      {/* ── Certificate download alert (compact, theme-aware) ───────────── */}
       <AnimatePresence>
         {eligibleForCert && (
           <motion.div
             key="cert-achievement"
-            initial={{ opacity: 0, y: -10 }}
+            initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.4, ease: "easeOut" }}
-            className="mb-5 sm:mb-7 relative overflow-hidden rounded-xl border border-amber-400/20 bg-gradient-to-r from-amber-950/50 via-yellow-950/30 to-amber-950/50"
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            role="alert"
+            className="mb-4 sm:mb-5 relative overflow-hidden rounded-lg border border-amber-300/70 bg-amber-50/80 dark:border-amber-400/25 dark:bg-amber-500/[0.06]"
           >
-            {/* Slow shimmer sweep */}
+            {/* Slow shimmer sweep — visible in both themes */}
             <motion.div
-              className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-300/[0.05] to-transparent"
+              aria-hidden="true"
+              className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/10 to-transparent dark:via-amber-300/[0.06]"
               animate={{ x: ["-100%", "200%"] }}
               transition={{ duration: 5, repeat: Infinity, ease: "linear", repeatDelay: 3 }}
             />
 
-            {/* Subtle top edge glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
-
-            <div className="relative px-5 py-4 sm:px-6 sm:py-5 flex items-center gap-4 sm:gap-5">
-              {/* Trophy icon */}
-              <motion.div
-                initial={{ scale: 0.7, rotate: -15 }}
-                animate={{ scale: 1, rotate: 0 }}
-                transition={{ type: "spring", stiffness: 260, damping: 18, delay: 0.1 }}
-                className="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br from-amber-500/25 to-yellow-600/15 border border-amber-400/25 flex items-center justify-center shadow-lg shadow-amber-900/30"
-              >
-                <Trophy className="w-6 h-6 sm:w-7 sm:h-7 text-amber-400" />
-              </motion.div>
-
-              {/* Text content */}
-              <div className="flex-1 min-w-0">
-                <motion.div
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.15, duration: 0.3 }}
-                  className="flex items-center gap-2 mb-1"
-                >
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-400 uppercase tracking-widest bg-amber-500/15 border border-amber-400/20 px-2 py-0.5 rounded-full">
-                    <Sparkles className="w-2.5 h-2.5" />
-                    {courseFinished ? "100% Complete" : `${Math.round(progressPct * 100)}% Complete`}
-                  </span>
-                </motion.div>
-                <motion.h3
-                  initial={{ opacity: 0, x: -6 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.2, duration: 0.3 }}
-                  className="text-foreground font-bold text-sm sm:text-[15px] leading-snug"
-                >
-                  {courseFinished ? "You've mastered this course!" : "Certificate Unlocked!"}
-                </motion.h3>
-                <motion.p
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.28, duration: 0.3 }}
-                  className="text-muted-foreground/50 text-xs mt-0.5 hidden sm:block"
-                >
-                  {courseFinished
-                    ? "Every lesson complete — a remarkable achievement worth celebrating."
-                    : "You've passed the certification threshold. Your credential is ready."}
-                </motion.p>
+            <div className="relative px-3 py-2.5 sm:px-4 sm:py-3 flex items-center gap-3">
+              {/* Trophy chip */}
+              <div className="flex-shrink-0 w-9 h-9 rounded-md flex items-center justify-center bg-amber-100 border border-amber-300/80 dark:bg-amber-500/15 dark:border-amber-400/25">
+                <Trophy className="w-4 h-4 text-amber-600 dark:text-amber-400" />
               </div>
 
-              {/* Certificate download — quiet secondary action */}
-              <motion.button
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.25, duration: 0.25 }}
+              {/* Text */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 leading-tight">
+                  <p className="text-[13px] sm:text-sm font-semibold text-amber-900 dark:text-amber-100 truncate">
+                    {courseFinished ? "Course mastered!" : "Certificate unlocked"}
+                  </p>
+                  <span className="hidden sm:inline-flex items-center gap-0.5 text-[10px] font-bold uppercase tracking-wider text-amber-700/90 dark:text-amber-400/90">
+                    <Sparkles className="w-2.5 h-2.5" />
+                    {courseFinished ? "100%" : `${Math.round(progressPct * 100)}%`}
+                  </span>
+                </div>
+                <p className="text-[11px] sm:text-xs text-amber-800/80 dark:text-amber-200/60 leading-snug truncate">
+                  {courseFinished
+                    ? "Every lesson complete — your credential is ready."
+                    : "You've passed the threshold. Download your certificate."}
+                </p>
+              </div>
+
+              {/* Download button */}
+              <button
                 onClick={downloadCertificate}
                 disabled={downloadingCert}
-                className="flex-shrink-0 flex items-center gap-1.5 text-amber-400 hover:text-amber-300 bg-amber-500/10 hover:bg-amber-500/20 border border-amber-400/20 hover:border-amber-400/35 transition-all px-3 sm:px-4 py-2 sm:py-2.5 rounded-lg text-xs font-semibold disabled:opacity-50 group"
+                className="flex-shrink-0 inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-semibold transition-all disabled:opacity-60 bg-amber-500 hover:bg-amber-600 text-white shadow-sm dark:bg-amber-500/15 dark:hover:bg-amber-500/25 dark:text-amber-300 dark:border dark:border-amber-400/30 group"
+                aria-label={downloadingCert ? "Generating certificate" : "Download certificate"}
               >
                 {downloadingCert ? (
-                  <div className="w-3.5 h-3.5 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 border-2 border-white/40 border-t-white dark:border-amber-400/30 dark:border-t-amber-400 rounded-full animate-spin" />
                 ) : (
                   <Download className="w-3.5 h-3.5 group-hover:-translate-y-0.5 transition-transform" />
                 )}
                 <span className="hidden sm:inline whitespace-nowrap">
-                  {downloadingCert ? "Generating…" : "Certificate"}
+                  {downloadingCert ? "Generating…" : "Download"}
                 </span>
-              </motion.button>
+              </button>
             </div>
           </motion.div>
         )}
