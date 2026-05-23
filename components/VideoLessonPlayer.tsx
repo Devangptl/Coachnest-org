@@ -91,6 +91,14 @@ function calcWatchedPct(segs: Segment[], duration: number): number {
   return Math.min(100, (total / duration) * 100);
 }
 
+/** Watched pct including a currently-playing segment so the bar advances live. */
+function calcLivePct(segs: Segment[], segStart: number | null, now: number, duration: number): number {
+  if (segStart !== null && now > segStart) {
+    return calcWatchedPct([...segs, [segStart, now]], duration);
+  }
+  return calcWatchedPct(segs, duration);
+}
+
 // ─── URL detectors ────────────────────────────────────────────────────────────
 
 function getYouTubeId(url: string): string | null {
@@ -241,12 +249,15 @@ function YouTubePlayer({ videoId, initialSegments, initialDuration, onPctChange,
       if (delta > SCRUB_THRESHOLD && segStartRef.current !== null) {
         if (lastTimeRef.current > segStartRef.current) {
           segsRef.current.push([segStartRef.current, lastTimeRef.current]);
+          flushSegs();
         }
         segStartRef.current = t;
       }
       lastTimeRef.current = t;
 
-      const pct = calcWatchedPct(segsRef.current, durRef.current);
+      // Include the live segment so the progress bar advances during playback,
+      // not only when the user pauses or scrubs.
+      const pct = calcLivePct(segsRef.current, segStartRef.current, t, durRef.current);
       onPctRef.current(pct);
     }, POLL_INTERVAL_MS);
   };
@@ -386,7 +397,8 @@ function HTML5VideoPlayer({ url, initialSegments, initialDuration, onPctChange, 
         const v = e.currentTarget;
         durRef.current = v.duration || durRef.current;
         prevTimeRef.current = v.currentTime;
-        onPctRef.current(calcWatchedPct(segsRef.current, durRef.current));
+        // Include the live segment so the bar grows continuously while playing.
+        onPctRef.current(calcLivePct(segsRef.current, segStartRef.current, v.currentTime, durRef.current));
       }}
     />
   );
