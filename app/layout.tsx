@@ -3,7 +3,7 @@
  * Provides the global background, font, Navbar, and toast notifications.
  */
 import type { Metadata } from "next";
-import { Poppins, Caveat } from "next/font/google";
+import { Poppins, Caveat, Anek_Gujarati, Mukta_Vaani, Hind_Vadodara, Baloo_Bhai_2 } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -18,6 +18,35 @@ const caveat = Caveat({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   variable: "--font-caveat",
+  display: "swap",
+});
+
+// Gujarati fonts — loaded only when Gujarati script is detected in content
+const anekGujarati = Anek_Gujarati({
+  subsets: ["gujarati"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-gu-lesson",
+  display: "swap",
+});
+
+const muktaVaani = Mukta_Vaani({
+  subsets: ["gujarati"],
+  weight: ["400", "600", "700"],
+  variable: "--font-gu-para",
+  display: "swap",
+});
+
+const hindVadodara = Hind_Vadodara({
+  subsets: ["gujarati"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-gu-ui",
+  display: "swap",
+});
+
+const balooBhai2 = Baloo_Bhai_2({
+  subsets: ["gujarati"],
+  weight: ["400", "500", "600", "700", "800"],
+  variable: "--font-gu-heading",
   display: "swap",
 });
 import Navbar from "@/components/Navbar";
@@ -101,7 +130,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${caveat.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${caveat.variable} ${anekGujarati.variable} ${muktaVaani.variable} ${hindVadodara.variable} ${balooBhai2.variable}`}>
       <head>
         {/* Preconnect to external CDNs for faster image loads */}
         <link rel="preconnect" href="https://images.unsplash.com" />
