@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play, Pause, Square, ChevronLeft, ChevronRight,
-  Volume2, X, Headphones, Loader2,
+  Volume2, X, Headphones, Loader2, Languages, Check, AlertTriangle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -29,6 +29,37 @@ const MAX_CHUNK = 130;
 // events, so a timing estimator drives the highlight and auto-calibrates from
 // each chunk's measured duration. Real boundary events re-anchor it.
 const DEFAULT_CHARS_PER_SEC = 14.5; // at rate 1.0, before calibration
+
+// ─── Language detection ──────────────────────────────────────────────────────
+// Picks a BCP-47 language tag from the script of the text. Without this the
+// speech engine pronounces Gujarati/Hindi script with English phonetics.
+
+const GU_RE = /[઀-૿]/; // Gujarati block
+const HI_RE = /[ऀ-ॿ]/; // Devanagari block (Hindi / Marathi)
+
+function detectLang(text: string): "gu-IN" | "hi-IN" | "en-US" {
+  if (GU_RE.test(text)) return "gu-IN";
+  if (HI_RE.test(text)) return "hi-IN";
+  return "en-US";
+}
+
+/** Choose the best available voice for a target BCP-47 language. */
+function pickVoice(voices: SpeechSynthesisVoice[], lang: string): SpeechSynthesisVoice | undefined {
+  if (!voices.length) return undefined;
+  const base = lang.split("-")[0];
+  return (
+    voices.find((v) => v.lang.toLowerCase() === lang.toLowerCase() && /google/i.test(v.name)) ||
+    voices.find((v) => v.lang.toLowerCase() === lang.toLowerCase()) ||
+    voices.find((v) => v.lang.toLowerCase().startsWith(base + "-")) ||
+    voices.find((v) => v.lang.toLowerCase().startsWith(base)) ||
+    // Indic fallback: Hindi voices generally read Gujarati script better than
+    // an English voice would, even if pronunciation isn't perfect.
+    (base === "gu" ? voices.find((v) => v.lang.toLowerCase().startsWith("hi")) : undefined) ||
+    voices.find((v) => v.lang.startsWith("en") && /google/i.test(v.name)) ||
+    voices.find((v) => v.lang.startsWith("en")) ||
+    voices[0]
+  );
+}
 
 // ─── Section model ───────────────────────────────────────────────────────────
 // Lesson content is parsed into ordered sections. Text sections drive
@@ -171,7 +202,10 @@ function buildChunks(sections: Section[]): Chunk[] {
       const chunkStart = words[startWord].start;
       const wordEnd = words[i].start + words[i].w.length;
       const len = wordEnd - chunkStart;
-      const endsSentence = /[.!?:;]["')\]]?$/.test(words[i].w);
+      // Include Indic sentence terminators (। danda, ॥ double danda) so
+      // Gujarati/Hindi paragraphs chunk at sentence boundaries instead of
+      // hitting MAX_CHUNK mid-phrase.
+      const endsSentence = /[.!?:;।॥]["')\]]?$/.test(words[i].w);
       const atLast = i === words.length - 1;
       if (atLast || len >= MAX_CHUNK || (endsSentence && len >= MIN_CHUNK)) {
         chunks.push({ sectionIdx, text: text.slice(chunkStart, wordEnd), offset: chunkStart });
@@ -230,11 +264,28 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
   );
   const chunks = useRef<Chunk[]>(buildChunks(sections.current));
 
+  // Dominant language of the lesson text — used to default the voice
+  // picker. Computed once from the full text.
+  const dominantLang = useMemo(() => detectLang(text), [text]);
+
   // Render state
   const [status, setStatus]   = useState<Status>("loading");
   const [sec, setSec]         = useState(0);   // active section index
   const [speed, setSpeed]     = useState<Speed>(1);
   const [charIdx, setCharIdx] = useState(-1);  // section-relative char offset spoken
+
+  // Voice picker state. `voices` is the live list from the speech API
+  // (populated asynchronously by `voiceschanged`). `voiceName` is the user's
+  // explicit choice (persisted per lesson-language); when null we auto-pick.
+  const [voices, setVoices] = useState<SpeechSynthesisVoice[]>([]);
+  const voicePrefKey = `lh:audioVoice:${dominantLang}`;
+  const [voiceName, setVoiceName] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    try { return window.localStorage.getItem(voicePrefKey); } catch { return null; }
+  });
+  const voiceNameRef = useRef(voiceName);
+  useEffect(() => { voiceNameRef.current = voiceName; }, [voiceName]);
+  const [showVoiceMenu, setShowVoiceMenu] = useState(false);
 
   // Refs — always up-to-date inside callbacks (avoids stale closures)
   const statusRef = useRef<Status>("loading");
@@ -309,8 +360,9 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     let attempts = 0;
     function tryLoad() {
       if (stopped) return;
-      const voices = window.speechSynthesis.getVoices();
-      if (voices.length > 0 || attempts >= 10) updStatus("idle");
+      const v = window.speechSynthesis.getVoices();
+      setVoices(v);
+      if (v.length > 0 || attempts >= 10) updStatus("idle");
       else { attempts++; setTimeout(tryLoad, 200); }
     }
     tryLoad();
@@ -365,12 +417,18 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
         utt.rate  = rate;
         utt.pitch = 1;
 
-        const voices = window.speechSynthesis.getVoices();
-        const preferred =
-          voices.find((v) => v.lang.startsWith("en") && v.name.toLowerCase().includes("google")) ||
-          voices.find((v) => v.lang.startsWith("en")) ||
-          voices[0];
+        // Pick voice + lang based on the script of *this* chunk so mixed-
+        // language lessons (e.g. Gujarati paragraph followed by an English
+        // code sample) read each part correctly. A user-pinned voice always
+        // wins (lets them override when the OS exposes a poor default).
+        const lang = detectLang(chunk.text);
+        const allVoices = window.speechSynthesis.getVoices();
+        const pinned = voiceNameRef.current
+          ? allVoices.find((v) => v.name === voiceNameRef.current)
+          : undefined;
+        const preferred = pinned ?? pickVoice(allVoices, lang);
         if (preferred) utt.voice = preferred;
+        utt.lang = preferred?.lang || lang;
 
         utt.onstart = () => {
           chunkRef.current = chunkIndex;
@@ -422,6 +480,45 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
     },
     [updStatus, updSec, startEstimator, stopEstimator]
   );
+
+  // ── Voice picker ───────────────────────────────────────────────────────────
+
+  // Voices grouped: matches for the lesson's dominant language first, then
+  // everything else. Lets a Gujarati lesson surface gu-IN / hi-IN voices at
+  // the top and demote unrelated English voices below.
+  const groupedVoices = useMemo(() => {
+    const base = dominantLang.split("-")[0];
+    const matches: SpeechSynthesisVoice[] = [];
+    const fallback: SpeechSynthesisVoice[] = [];
+    const others: SpeechSynthesisVoice[] = [];
+    voices.forEach((v) => {
+      const vl = v.lang.toLowerCase();
+      if (vl.startsWith(base)) matches.push(v);
+      else if (base === "gu" && vl.startsWith("hi")) fallback.push(v);
+      else others.push(v);
+    });
+    return { matches, fallback, others };
+  }, [voices, dominantLang]);
+
+  const noNativeVoice = dominantLang !== "en-US" && groupedVoices.matches.length === 0;
+
+  const activeVoice = useMemo(() => {
+    if (voiceName) return voices.find((v) => v.name === voiceName);
+    return pickVoice(voices, dominantLang);
+  }, [voices, voiceName, dominantLang]);
+
+  function handleSelectVoice(name: string | null) {
+    setVoiceName(name);
+    setShowVoiceMenu(false);
+    try {
+      if (name) window.localStorage.setItem(voicePrefKey, name);
+      else window.localStorage.removeItem(voicePrefKey);
+    } catch {}
+    // If currently playing, re-speak the current chunk with the new voice.
+    if (statusRef.current === "playing") {
+      speak(chunkRef.current, speedRef.current, false);
+    }
+  }
 
   // ── Controls ───────────────────────────────────────────────────────────────
 
@@ -554,6 +651,38 @@ export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayin
                   {s}×
                 </button>
               ))}
+            </div>
+
+            {/* Voice picker — surfaces what voices the OS exposes and lets
+                the user override the auto-pick (essential for Gujarati /
+                Hindi where many systems ship only English voices). */}
+            <div className="relative flex-shrink-0">
+              <button
+                onClick={() => setShowVoiceMenu((s) => !s)}
+                className={cn(
+                  "h-8 px-2 rounded-lg bg-muted hover:bg-border text-muted-foreground hover:text-foreground flex items-center gap-1 transition-colors",
+                  showVoiceMenu && "bg-border text-foreground",
+                  noNativeVoice && "ring-1 ring-amber-400/60"
+                )}
+                aria-label="Select voice"
+                title={activeVoice ? `Voice: ${activeVoice.name}` : "Select voice"}
+              >
+                <Languages className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline text-[11px] font-semibold max-w-[110px] truncate">
+                  {activeVoice ? activeVoice.name.replace(/^Microsoft |^Google /, "") : "Voice"}
+                </span>
+                {noNativeVoice && <AlertTriangle className="w-3 h-3 text-amber-500" />}
+              </button>
+              {showVoiceMenu && (
+                <VoicePickerMenu
+                  groups={groupedVoices}
+                  activeVoiceName={activeVoice?.name ?? null}
+                  dominantLang={dominantLang}
+                  noNativeVoice={noNativeVoice}
+                  onSelect={handleSelectVoice}
+                  onClose={() => setShowVoiceMenu(false)}
+                />
+              )}
             </div>
 
             <button
@@ -851,6 +980,145 @@ function TableView({
           })}
         </tbody>
       </table>
+    </div>
+  );
+}
+
+// ─── Voice picker menu ───────────────────────────────────────────────────────
+
+interface VoicePickerMenuProps {
+  groups: {
+    matches: SpeechSynthesisVoice[];
+    fallback: SpeechSynthesisVoice[];
+    others: SpeechSynthesisVoice[];
+  };
+  activeVoiceName: string | null;
+  dominantLang: string;
+  noNativeVoice: boolean;
+  onSelect: (name: string | null) => void;
+  onClose: () => void;
+}
+
+function VoicePickerMenu({
+  groups,
+  activeVoiceName,
+  dominantLang,
+  noNativeVoice,
+  onSelect,
+  onClose,
+}: VoicePickerMenuProps) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const onDown = (e: PointerEvent) => {
+      if (!ref.current) return;
+      if (!ref.current.contains(e.target as Node)) onClose();
+    };
+    const t = setTimeout(() => document.addEventListener("pointerdown", onDown), 0);
+    return () => {
+      clearTimeout(t);
+      document.removeEventListener("pointerdown", onDown);
+    };
+  }, [onClose]);
+
+  const langLabel: Record<string, string> = {
+    "gu-IN": "Gujarati",
+    "hi-IN": "Hindi",
+    "en-US": "English",
+  };
+
+  return (
+    <div
+      ref={ref}
+      role="menu"
+      className="absolute right-0 top-full mt-1.5 z-50 w-[260px] max-h-[340px] overflow-auto rounded-lg border border-border bg-popover text-popover-foreground shadow-lg"
+    >
+      {noNativeVoice && (
+        <div className="px-3 py-2 border-b border-border bg-amber-50 dark:bg-amber-500/10 flex items-start gap-2 text-[11px] text-amber-800 dark:text-amber-200 leading-snug">
+          <AlertTriangle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+          <span>
+            No {langLabel[dominantLang] ?? dominantLang} voice installed on this device.
+            Install a {langLabel[dominantLang] ?? dominantLang} language pack in your OS
+            settings for proper pronunciation, or pick a fallback below.
+          </span>
+        </div>
+      )}
+
+      <button
+        onClick={() => onSelect(null)}
+        className={cn(
+          "w-full flex items-center gap-2 px-3 py-2 text-left text-xs hover:bg-muted transition-colors border-b border-border",
+          !activeVoiceName && "bg-muted"
+        )}
+        role="menuitemradio"
+        aria-checked={!activeVoiceName}
+      >
+        <span className="w-3.5 h-3.5 inline-grid place-items-center">
+          {!activeVoiceName && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+        </span>
+        <span className="flex-1 font-semibold">Auto ({langLabel[dominantLang] ?? dominantLang})</span>
+      </button>
+
+      <VoiceGroup
+        label={`${langLabel[dominantLang] ?? dominantLang} voices`}
+        voices={groups.matches}
+        activeName={activeVoiceName}
+        onSelect={onSelect}
+      />
+      {groups.fallback.length > 0 && (
+        <VoiceGroup
+          label="Closest match (Hindi)"
+          voices={groups.fallback}
+          activeName={activeVoiceName}
+          onSelect={onSelect}
+        />
+      )}
+      <VoiceGroup
+        label="Other voices"
+        voices={groups.others}
+        activeName={activeVoiceName}
+        onSelect={onSelect}
+      />
+    </div>
+  );
+}
+
+function VoiceGroup({
+  label,
+  voices,
+  activeName,
+  onSelect,
+}: {
+  label: string;
+  voices: SpeechSynthesisVoice[];
+  activeName: string | null;
+  onSelect: (name: string) => void;
+}) {
+  if (voices.length === 0) return null;
+  return (
+    <div>
+      <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-wider font-bold text-muted-foreground/70">
+        {label}
+      </div>
+      {voices.map((v) => (
+        <button
+          key={v.name + v.lang}
+          onClick={() => onSelect(v.name)}
+          className={cn(
+            "w-full flex items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-muted transition-colors",
+            activeName === v.name && "bg-muted"
+          )}
+          role="menuitemradio"
+          aria-checked={activeName === v.name}
+        >
+          <span className="w-3.5 h-3.5 inline-grid place-items-center flex-shrink-0">
+            {activeName === v.name && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+          </span>
+          <span className="flex-1 min-w-0">
+            <span className="block truncate font-medium">{v.name}</span>
+            <span className="block text-[10px] text-muted-foreground/70 truncate">{v.lang}</span>
+          </span>
+        </button>
+      ))}
     </div>
   );
 }
