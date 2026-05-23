@@ -200,7 +200,7 @@ export default function CourseReaderPanel({
                     </div>
                   ) : active.type === "VIDEO" && active.content ? (
                     <div className="rounded-xl overflow-hidden border border-border">
-                      <VideoLessonPlayer url={active.content} alreadyCompleted onComplete={() => {}} />
+                      <VideoLessonPlayer url={active.content} lessonId={active.id} alreadyCompleted onComplete={() => {}} />
                     </div>
                   ) : active.content ? (
                     <div

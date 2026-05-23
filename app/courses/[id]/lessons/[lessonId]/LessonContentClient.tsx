@@ -374,6 +374,7 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
           // VIDEO: smart player with segment tracking + auto-complete at 80%
           <VideoLessonPlayer
             url={lesson.content}
+            lessonId={lesson.id}
             alreadyCompleted={done}
             onComplete={handleAutoComplete}
             onManualComplete={isEnrolled ? handleAutoComplete : undefined}
