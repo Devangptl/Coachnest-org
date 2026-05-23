@@ -281,33 +281,11 @@
   line-height: 0.95;
 }
 
-/* ─── Gujarati script fonts ──────────────────────────────────────────────────── */
+/* ─── Gujarati script font ───────────────────────────────────────────────────── */
 /* Applied via useGujaratiFont() when Gujarati Unicode characters are detected.  */
-/* Each class maps to a purpose-specific typeface per the design spec:           */
-/*   lesson   → Anek Gujarati   (main lesson body)                               */
-/*   para     → Mukta Vaani     (long reading paragraphs)                        */
-/*   ui       → Hind Vadodara   (buttons, nav, labels)                           */
-/*   heading  → Baloo Bhai 2    (titles, thumbnails)                             */
-.font-gu-lesson {
-  font-family: var(--font-gu-lesson, "Anek Gujarati", sans-serif);
+.font-gujarati {
+  font-family: var(--font-gujarati, "Anek Gujarati", sans-serif);
   line-height: 1.7;
-}
-
-.font-gu-para {
-  font-family: var(--font-gu-para, "Mukta Vaani", sans-serif);
-  line-height: 1.8;
-  letter-spacing: 0.01em;
-}
-
-.font-gu-ui {
-  font-family: var(--font-gu-ui, "Hind Vadodara", sans-serif);
-  line-height: 1.4;
-}
-
-.font-gu-heading {
-  font-family: var(--font-gu-heading, "Baloo Bhai 2", sans-serif);
-  line-height: 1.2;
-  letter-spacing: -0.01em;
 }
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
