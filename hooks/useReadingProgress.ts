@@ -11,8 +11,12 @@
  *   • The browser tab is hidden (visibilitychange)
  *   • The window loses focus (blur / focus)
  *
- * Progress (active seconds + max scroll %) is persisted to localStorage per
- * lesson, so closing/reopening the tab resumes from where the user left off.
+ * Persistence strategy (so closing/reopening the tab resumes the timer):
+ *   • localStorage — written every tick, read on mount → instant resume.
+ *   • Database     — synced every DB_SYNC_INTERVAL seconds, on tab-hide via
+ *                    sendBeacon, and on completion. The DB value is fetched on
+ *                    mount and merged (max) with localStorage so progress
+ *                    survives across devices / a cleared browser.
  *
  * onComplete() is called exactly once when both conditions are met.
  */
@@ -22,6 +26,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 export const SCROLL_THRESHOLD = 90;  // %
 export const TIME_THRESHOLD   = 60;  // seconds
 
+const DB_SYNC_INTERVAL = 15;         // seconds between background DB writes
 const STORAGE_PREFIX = "lh:readProgress:";
 const storageKey = (lessonId: string) => `${STORAGE_PREFIX}${lessonId}`;
 
@@ -54,6 +59,34 @@ function savePersisted(lessonId: string, data: PersistedProgress) {
 function clearPersisted(lessonId: string) {
   if (typeof window === "undefined") return;
   try { window.localStorage.removeItem(storageKey(lessonId)); } catch {}
+}
+
+/**
+ * Push the latest watched-seconds to the server. Uses sendBeacon when the page
+ * is unloading (it's the only request method that reliably survives) and a
+ * normal fetch otherwise. `completed` is intentionally omitted so the server
+ * preserves whatever completion state already exists.
+ */
+function syncToServer(lessonId: string, watchedSecs: number, opts: { beacon?: boolean } = {}) {
+  if (typeof window === "undefined" || watchedSecs <= 0) return;
+  const payload = JSON.stringify({ lessonId, watchedSecs });
+  if (opts.beacon && typeof navigator !== "undefined" && navigator.sendBeacon) {
+    try {
+      const blob = new Blob([payload], { type: "application/json" });
+      navigator.sendBeacon("/api/progress", blob);
+      return;
+    } catch {
+      // Fall through to fetch — best-effort.
+    }
+  }
+  try {
+    fetch("/api/progress", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    payload,
+      keepalive: true,
+    }).catch(() => {});
+  } catch {}
 }
 
 interface Options {
@@ -156,12 +189,63 @@ export function useReadingProgress({ lessonId, isEnrolled, alreadyCompleted, onC
     return () => window.removeEventListener("scroll", measure);
   }, [isEnrolled, alreadyCompleted, lessonId]);
 
+  // ── Hydrate from DB on mount ──────────────────────────────────────────────
+  // localStorage gives us an instant resume; the DB read catches the case where
+  // the user is on a new device or cleared their browser data.
+  useEffect(() => {
+    if (!isEnrolled || alreadyCompleted) return;
+    let cancelled = false;
+    fetch(`/api/progress?lessonId=${encodeURIComponent(lessonId)}`)
+      .then((r) => (r.ok ? r.json() : null))
+      .then((data) => {
+        if (cancelled || !data) return;
+        const dbSecs = Math.max(0, Number(data.watchedSecs) || 0);
+        if (dbSecs > activeSecsRef.current) {
+          setActiveSecs(dbSecs);
+          savePersisted(lessonId, { activeSecs: dbSecs, scrollPct: scrollPctRef.current });
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [lessonId, isEnrolled, alreadyCompleted]);
+
+  // ── Periodic DB sync + flush on tab hide ──────────────────────────────────
+  useEffect(() => {
+    if (!isEnrolled || alreadyCompleted) return;
+
+    const lastSyncedRef = { current: activeSecsRef.current };
+
+    const syncIfDirty = (beacon = false) => {
+      const current = activeSecsRef.current;
+      if (current > lastSyncedRef.current) {
+        syncToServer(lessonId, current, { beacon });
+        lastSyncedRef.current = current;
+      }
+    };
+
+    const interval = setInterval(() => syncIfDirty(false), DB_SYNC_INTERVAL * 1000);
+    const onHide = () => { if (document.hidden) syncIfDirty(true); };
+    const onPageHide = () => syncIfDirty(true);
+
+    document.addEventListener("visibilitychange", onHide);
+    window.addEventListener("pagehide", onPageHide);
+
+    return () => {
+      clearInterval(interval);
+      document.removeEventListener("visibilitychange", onHide);
+      window.removeEventListener("pagehide", onPageHide);
+      syncIfDirty(true);
+    };
+  }, [lessonId, isEnrolled, alreadyCompleted]);
+
   // ── Completion gate ───────────────────────────────────────────────────────
   useEffect(() => {
     if (completedRef.current) return;
     if (scrollPct >= SCROLL_THRESHOLD && activeSecs >= TIME_THRESHOLD) {
       completedRef.current = true;
       stopTimer();
+      // Final DB sync of the exact second count before clearing local state.
+      syncToServer(lessonId, activeSecs);
       clearPersisted(lessonId);
       onCompleteRef.current();
     }
