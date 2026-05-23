@@ -281,6 +281,13 @@
   line-height: 0.95;
 }
 
+/* ─── Gujarati script font ───────────────────────────────────────────────────── */
+/* Applied via useGujaratiFont() when Gujarati Unicode characters are detected.  */
+.font-gujarati {
+  font-family: var(--font-gujarati, "Anek Gujarati", sans-serif);
+  line-height: 1.7;
+}
+
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
 
 /* Small glow segments that travel along individual grid lines.
