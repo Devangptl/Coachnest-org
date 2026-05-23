@@ -19,6 +19,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { CheckCircle2, PlayCircle, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { fetchSavedWatchedSecs, syncWatchedSecsToServer } from "@/lib/lessonProgressSync";
+import CustomVideoPlayer from "./CustomVideoPlayer";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -355,11 +356,9 @@ function HTML5VideoPlayer({ url, initialSegments, initialDuration, onPctChange, 
   };
 
   return (
-    <video
+    <CustomVideoPlayer
       src={url}
-      controls
-      preload="metadata"
-      className="absolute inset-0 w-full h-full bg-black"
+      className="absolute inset-0 w-full h-full !rounded-none"
       onLoadedMetadata={(e) => {
         const d = e.currentTarget.duration;
         if (d > 0) {
