@@ -118,6 +118,21 @@ const getStats = unstable_cache(
   { revalidate: 300 }
 );
 
+const getLandingReviews = unstable_cache(
+  () =>
+    prisma.review.findMany({
+      where: { rating: { gte: 4 }, comment: { not: null } },
+      include: {
+        user:   { select: { id: true, name: true, avatar: true } },
+        course: { select: { title: true } },
+      },
+      orderBy: [{ helpful: "desc" }, { createdAt: "desc" }],
+      take: 12,
+    }),
+  ["landing-reviews"],
+  { revalidate: 600 }
+);
+
 const CATEGORY_ICONS: Record<string, typeof Code> = {
   "web-development": Globe,
   react: Code,
@@ -175,11 +190,24 @@ const CATEGORY_ICON_COLOR: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  const [courses, categories, stats] = await Promise.all([
+  const [courses, categories, stats, rawReviews] = await Promise.all([
     getFeaturedCourses(),
     getCategories(),
     getStats(),
+    getLandingReviews(),
   ]);
+
+  const landingReviews = rawReviews
+    .filter((r) => r.comment && r.comment.trim().length > 15)
+    .map((r) => ({
+      id:     r.id,
+      name:   r.user.name,
+      role:   r.course.title,
+      avatar: r.user.avatar ?? null,
+      seed:   r.user.id,
+      rating: r.rating,
+      text:   r.comment!,
+    }));
 
   const websiteJsonLd = {
     "@context": "https://schema.org",
@@ -940,7 +968,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           REVIEWS MARQUEE
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <ReviewsMarquee />
+      <ReviewsMarquee reviews={landingReviews} />
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           FAQ
