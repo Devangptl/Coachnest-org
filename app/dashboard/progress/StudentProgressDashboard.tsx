@@ -61,20 +61,24 @@ export default function StudentProgressDashboard({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
+  const bg = isLight ? "#ffffff" : "#1a1535";
+
   const tooltipStyle = {
     contentStyle: {
-      background: isLight ? "#ffffff" : "#1a1636",
-      border: `1px solid ${isLight ? "rgba(24,19,16,.12)" : "rgba(255,255,255,.15)"}`,
+      background: bg,
+      border: `1px solid ${isLight ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.1)"}`,
       borderRadius: 12,
-      color: isLight ? "#181310" : "#fff",
+      color: isLight ? "#181310" : "#f1f5f9",
       fontSize: 13,
+      boxShadow: isLight ? "0 4px 24px rgba(0,0,0,.09)" : "0 4px 24px rgba(0,0,0,.5)",
     },
-    labelStyle: { color: isLight ? "#c2410c" : "#d97757", fontWeight: 600 },
+    labelStyle: { color: isLight ? "#ea580c" : "#fb923c", fontWeight: 700 },
+    cursor: { stroke: isLight ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)", strokeWidth: 1 },
   };
 
-  const tickColor = isLight ? "#685e55" : "#94a3b8";
-  const gridColor = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
-  const primaryColor = isLight ? "#c2410c" : "#d97757";
+  const tickColor = isLight ? "#6b7280" : "#94a3b8";
+  const gridColor = isLight ? "rgba(0,0,0,.05)" : "rgba(255,255,255,.05)";
+  const primaryColor = isLight ? "#ea580c" : "#fb923c";
   const xpColor = isLight ? "#7c3aed" : "#a78bfa";
 
   const inProgress = courseProgress.filter((c) => c.progress > 0 && c.progress < 100);
@@ -185,7 +189,7 @@ export default function StudentProgressDashboard({
                   <Cell
                     key={i}
                     fill={primaryColor}
-                    opacity={entry.lessons === 0 ? 0.2 : 0.5 + (i / weeklyActivity.length) * 0.5}
+                    opacity={entry.lessons === 0 ? 0.2 : 0.3 + (i / Math.max(weeklyActivity.length - 1, 1)) * 0.7}
                   />
                 ))}
               </Bar>
@@ -201,8 +205,9 @@ export default function StudentProgressDashboard({
             <AreaChart data={weeklyActivity}>
               <defs>
                 <linearGradient id="xpGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={xpColor} stopOpacity={0.35} />
-                  <stop offset="95%" stopColor={xpColor} stopOpacity={0} />
+                  <stop offset="0%" stopColor={xpColor} stopOpacity={0.42} />
+                  <stop offset="55%" stopColor={xpColor} stopOpacity={0.13} />
+                  <stop offset="100%" stopColor={xpColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -227,7 +232,8 @@ export default function StudentProgressDashboard({
                 stroke={xpColor}
                 strokeWidth={2.5}
                 fill="url(#xpGrad)"
-                dot={{ r: 3, fill: xpColor }}
+                dot={{ r: 4, fill: xpColor, stroke: bg, strokeWidth: 2 }}
+                activeDot={{ r: 6, strokeWidth: 2 }}
               />
             </AreaChart>
           </ResponsiveContainer>

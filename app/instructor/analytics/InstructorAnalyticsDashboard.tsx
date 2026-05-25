@@ -58,25 +58,29 @@ export default function InstructorAnalyticsDashboard({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
+  const bg = isLight ? "#ffffff" : "#1a1535";
+
   const tooltipStyle = {
     contentStyle: {
-      background: isLight ? "#ffffff" : "#1a1636",
-      border: `1px solid ${isLight ? "rgba(24,19,16,.12)" : "rgba(255,255,255,.15)"}`,
+      background: bg,
+      border: `1px solid ${isLight ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.1)"}`,
       borderRadius: 12,
-      color: isLight ? "#181310" : "#fff",
+      color: isLight ? "#181310" : "#f1f5f9",
       fontSize: 13,
+      boxShadow: isLight ? "0 4px 24px rgba(0,0,0,.09)" : "0 4px 24px rgba(0,0,0,.5)",
     },
-    labelStyle: { color: isLight ? "#c2410c" : "#d97757", fontWeight: 600 },
+    labelStyle: { color: isLight ? "#ea580c" : "#fb923c", fontWeight: 700 },
+    cursor: { stroke: isLight ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)", strokeWidth: 1 },
   };
 
-  const tickColor = isLight ? "#685e55" : "#94a3b8";
-  const gridColor = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
-  const primary   = isLight ? "#c2410c" : "#d97757";
-  const amber     = isLight ? "#d97706" : "#fbbf24";
-  const emerald   = isLight ? "#059669" : "#34d399";
-  const blue      = isLight ? "#2563eb" : "#60a5fa";
-  const orange    = isLight ? "#ea580c" : "#fb923c";
-  const mutedFill = isLight ? "#d1d5db" : "#334155";
+  const tickColor = isLight ? "#6b7280" : "#94a3b8";
+  const gridColor = isLight ? "rgba(0,0,0,.05)" : "rgba(255,255,255,.05)";
+  const primary   = isLight ? "#ea580c" : "#fb923c";
+  const amber     = isLight ? "#f59e0b" : "#fbbf24";
+  const emerald   = isLight ? "#10b981" : "#34d399";
+  const blue      = isLight ? "#3b82f6" : "#60a5fa";
+  const orange    = isLight ? "#f97316" : "#fb923c";
+  const mutedFill = isLight ? "#cbd5e1" : "#334155";
 
   const summaryCards = [
     {
@@ -140,11 +144,13 @@ export default function InstructorAnalyticsDashboard({
 
       {/* Charts */}
       <Tabs defaultValue="enrollments">
-        <TabsList className="w-auto">
-          <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
-          <TabsTrigger value="progress">Student Progress</TabsTrigger>
-          {quizStats.length > 0 && <TabsTrigger value="quizzes">Quiz Stats</TabsTrigger>}
-        </TabsList>
+        <div className="overflow-x-auto pb-1 -mb-1">
+          <TabsList className="w-auto min-w-max">
+            <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
+            <TabsTrigger value="progress">Student Progress</TabsTrigger>
+            {quizStats.length > 0 && <TabsTrigger value="quizzes">Quiz Stats</TabsTrigger>}
+          </TabsList>
+        </div>
 
         {/* Monthly enrollment trend */}
         <TabsContent value="enrollments">
@@ -155,8 +161,9 @@ export default function InstructorAnalyticsDashboard({
               <AreaChart data={monthlyEnrollments}>
                 <defs>
                   <linearGradient id="enrollGradInstructor" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={primary} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={primary} stopOpacity={0} />
+                    <stop offset="0%" stopColor={primary} stopOpacity={0.4} />
+                    <stop offset="55%" stopColor={primary} stopOpacity={0.12} />
+                    <stop offset="100%" stopColor={primary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -168,8 +175,8 @@ export default function InstructorAnalyticsDashboard({
                   stroke={primary}
                   strokeWidth={2.5}
                   fill="url(#enrollGradInstructor)"
-                  dot={{ r: 3, fill: primary }}
-                  activeDot={{ r: 5 }}
+                  dot={{ r: 4, fill: primary, stroke: bg, strokeWidth: 2 }}
+                  activeDot={{ r: 6, strokeWidth: 2 }}
                 />
               </AreaChart>
             </ResponsiveContainer>
