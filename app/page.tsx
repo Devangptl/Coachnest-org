@@ -18,7 +18,6 @@ import FeaturedCourseCard from "@/components/landing/FeaturedCourseCard";
 // Lazy-load heavy animation components (framer-motion) — separate JS chunks
 const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
 const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
-const RotatingWords = dynamic(() => import("@/components/landing/RotatingWords"));
 
 const FadeInSection = dynamic(() => import("@/components/landing/FadeInSection"));
 const AnimatedCounter = dynamic(() => import("@/components/landing/AnimatedCounter"));
@@ -317,19 +316,15 @@ export default async function HomePage() {
                 </Link>
               </FadeInSection>
 
-              {/* Headline with rotating word */}
+              {/* Headline */}
               <FadeInSection delay={0.06}>
-                <h1 className="text-[32px] sm:text-[48px] lg:text-[58px] font-hero leading-[1.05] mb-6">
-                  <span className="text-foreground">Learn to </span>
-                  <RotatingWords
-                    words={["Code.", "Design.", "Create.", "Lead."]}
-                    className="hero-gradient-text font-handwritten text-[1.2em] align-baseline"
-                  />
-                  <br className="hidden sm:block" />
-                  <span className="text-foreground">Build the </span>
+                <h1 className="text-[32px] sm:text-[48px] lg:text-[58px] font-hero leading-[1.1] mb-6">
+                  <span className="text-foreground">Learn from the best.</span>
+                  <br />
+                  <span className="text-foreground">Build an extraordinary </span>
                   <span className="relative inline-block">
-                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
-                      career
+                    <span className="font-handwritten text-[1.15em] bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
+                      career.
                     </span>
                     <svg
                       aria-hidden="true"
@@ -346,7 +341,6 @@ export default async function HomePage() {
                       />
                     </svg>
                   </span>
-                  <span className="text-foreground"> you want.</span>
                 </h1>
               </FadeInSection>
 
