@@ -80,10 +80,10 @@ export default function OverviewTab({
   ];
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-4 sm:space-y-5">
       {/* Description block */}
       {cls.description && (
-        <div className="glass p-5 rounded-xl">
+        <div className="glass p-4 sm:p-5 rounded-xl">
           <h2 className="text-sm font-semibold mb-2 text-muted-foreground uppercase tracking-wide">
             About this class
           </h2>
@@ -94,9 +94,9 @@ export default function OverviewTab({
       )}
 
       {/* Two-column: quick actions + features */}
-      <div className="grid md:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-3 sm:gap-4">
         {/* Quick actions */}
-        <div className="glass p-5 rounded-xl">
+        <div className="glass p-4 sm:p-5 rounded-xl">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <PlusCircle className="w-4 h-4 text-amber-400" />
             Quick actions
@@ -130,7 +130,7 @@ export default function OverviewTab({
         </div>
 
         {/* Feature toggles */}
-        <div className="glass p-5 rounded-xl">
+        <div className="glass p-4 sm:p-5 rounded-xl">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Shield className="w-4 h-4 text-amber-400" />
             Features
@@ -166,7 +166,7 @@ export default function OverviewTab({
 
       {/* Courses preview */}
       {cls.courses.length > 0 && (
-        <div className="glass p-5 rounded-xl">
+        <div className="glass p-4 sm:p-5 rounded-xl">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-sm font-semibold flex items-center gap-2">
               <BookOpen className="w-4 h-4 text-amber-400" />
@@ -204,7 +204,7 @@ export default function OverviewTab({
 
       {/* Cohort schedule */}
       {(cls.startDate || cls.endDate || cls.maxStudents) && (
-        <div className="glass p-5 rounded-xl">
+        <div className="glass p-4 sm:p-5 rounded-xl">
           <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-amber-400" />
             Cohort
@@ -237,7 +237,7 @@ export default function OverviewTab({
       )}
 
       {/* Activity timeline */}
-      <div className="glass p-5 rounded-xl">
+      <div className="glass p-4 sm:p-5 rounded-xl">
         <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
           <Users className="w-4 h-4 text-amber-400" />
           Recent activity

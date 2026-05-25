@@ -145,14 +145,18 @@ export default function ClassDetailShell({
   const isPublished = cls.status === "PUBLISHED";
 
   return (
-    <div className="px-4 max-w-7xl mx-auto pb-12">
+    <div className="px-3 sm:px-4 max-w-7xl mx-auto pb-12">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <div className="relative rounded-2xl overflow-hidden mb-4 border border-border">
+      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden mb-4 border border-border">
         {cls.banner ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={cls.banner} alt="" className="w-full h-56 object-cover" />
+          <img
+            src={cls.banner}
+            alt=""
+            className="w-full h-40 sm:h-56 object-cover"
+          />
         ) : (
-          <div className="w-full h-56 bg-gradient-to-br from-amber-500/30 via-orange-500/15 to-violet-500/20 relative">
+          <div className="w-full h-40 sm:h-56 bg-gradient-to-br from-amber-500/30 via-orange-500/15 to-violet-500/20 relative">
             {/* Subtle dotted pattern overlay */}
             <div
               className="absolute inset-0 opacity-30"
@@ -168,12 +172,18 @@ export default function ClassDetailShell({
         {/* Dark overlay so text stays legible on any banner */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-        {/* Floating action group */}
-        <div className="absolute top-4 right-4 flex items-center gap-2">
+        {/* Floating action group — icon-only on mobile to avoid overflow */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1.5 sm:gap-2">
           {isPublished && (
             <Link href={`/classes/${cls.slug}`} target="_blank">
-              <Button size="sm" variant="secondary" className="backdrop-blur bg-black/40 border-white/20 text-white hover:bg-black/60">
-                <ExternalLink className="w-3.5 h-3.5" /> Preview
+              <Button
+                size="sm"
+                variant="secondary"
+                className="backdrop-blur bg-black/40 border-white/20 text-white hover:bg-black/60"
+                aria-label="Preview public class page"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Preview</span>
               </Button>
             </Link>
           )}
@@ -183,18 +193,27 @@ export default function ClassDetailShell({
               variant="secondary"
               onClick={copyInvite}
               className="backdrop-blur bg-black/40 border-white/20 text-white hover:bg-black/60"
+              aria-label="Copy invite link"
             >
-              <Copy className="w-3.5 h-3.5" /> Invite link
+              <Copy className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Invite link</span>
             </Button>
           )}
           <Button size="sm" onClick={togglePublish} disabled={busy}>
-            {isPublished ? "Unpublish" : (<><Sparkles className="w-3.5 h-3.5" /> Publish</>)}
+            {isPublished ? (
+              "Unpublish"
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5" />
+                Publish
+              </>
+            )}
           </Button>
         </div>
 
         {/* Title block */}
-        <div className="absolute bottom-0 left-0 right-0 p-5 sm:p-6">
-          <div className="flex items-center gap-2 mb-2 flex-wrap">
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-2 flex-wrap">
             <Pill tone={isPublished ? "emerald" : "amber"}>{cls.status}</Pill>
             <Pill tone="slate">
               {cls.visibility === "PUBLIC" ? (
@@ -206,11 +225,11 @@ export default function ClassDetailShell({
             <Pill tone="slate">{cls.joinMode.replace("_", " ").toLowerCase()}</Pill>
             {cls.isPaid && <Pill tone="violet">Paid</Pill>}
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold text-white drop-shadow-sm">
+          <h1 className="text-xl sm:text-3xl font-bold text-white drop-shadow-sm line-clamp-2">
             {cls.name}
           </h1>
           {cls.description && (
-            <p className="text-sm text-white/80 mt-1 line-clamp-1 max-w-2xl">
+            <p className="hidden sm:block text-sm text-white/80 mt-1 line-clamp-1 max-w-2xl">
               {cls.description}
             </p>
           )}
@@ -253,9 +272,9 @@ export default function ClassDetailShell({
       </div>
 
       {/* ── Tabs layout ─────────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row gap-5">
-        {/* Mobile: horizontal scroll */}
-        <nav className="lg:hidden flex gap-1 overflow-x-auto pb-1 -mx-4 px-4 scrollbar-thin">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5">
+        {/* Mobile: horizontal scroll, sticky under the page header */}
+        <nav className="lg:hidden flex gap-1 overflow-x-auto pb-1 -mx-3 px-3 sm:-mx-4 sm:px-4 sticky top-14 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 -mt-1">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}

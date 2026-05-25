@@ -140,8 +140,8 @@ export default function AssignmentsTab({ classId }: { classId: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div>
+      <div className="flex items-start sm:items-center justify-between gap-3 flex-wrap">
+        <div className="min-w-0">
           <h2 className="text-lg font-semibold flex items-center gap-2">
             <ClipboardList className="w-5 h-5 text-amber-400" />
             Assignments
@@ -150,8 +150,10 @@ export default function AssignmentsTab({ classId }: { classId: string }) {
             Author homework, projects, and quizzes. Grade submissions inline.
           </p>
         </div>
-        <Button size="sm" onClick={() => setCreating(true)}>
-          <Plus className="w-4 h-4" /> New assignment
+        <Button size="sm" onClick={() => setCreating(true)} className="shrink-0">
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">New assignment</span>
+          <span className="sm:hidden">New</span>
         </Button>
       </div>
 
@@ -427,7 +429,7 @@ function AssignmentDialog({
             </Field>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Field label="Max score">
               <input
                 type="number"

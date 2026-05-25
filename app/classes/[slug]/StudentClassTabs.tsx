@@ -29,7 +29,7 @@ export default function StudentClassTabs({
 
   return (
     <div className="glass rounded-xl">
-      <div className="flex border-b border-border overflow-x-auto">
+      <div className="flex border-b border-border overflow-x-auto scrollbar-thin">
         <TabBtn active={tab === "announcements"} onClick={() => setTab("announcements")} icon={Megaphone} label="Announcements" />
         <TabBtn active={tab === "assignments"} onClick={() => setTab("assignments")} icon={ClipboardList} label="Assignments" />
         {enableDiscussion && (
@@ -38,7 +38,7 @@ export default function StudentClassTabs({
         {enableChat && <TabBtn active={tab === "chat"} onClick={() => setTab("chat")} icon={MessageCircle} label="Chat" />}
         <TabBtn active={tab === "live"} onClick={() => setTab("live")} icon={Video} label="Live" />
       </div>
-      <div className="p-4">
+      <div className="p-3 sm:p-4">
         {tab === "announcements" && <AnnouncementsPanel classId={classId} />}
         {tab === "assignments" && <StudentAssignmentsPanel classId={classId} />}
         {tab === "discussion" && enableDiscussion && (
@@ -59,8 +59,10 @@ function TabBtn({
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-4 py-3 text-sm font-medium ${
-        active ? "text-amber-400 border-b-2 border-amber-400" : "text-muted-foreground"
+      className={`shrink-0 flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-2.5 sm:py-3 text-sm font-medium whitespace-nowrap transition-colors ${
+        active
+          ? "text-amber-400 border-b-2 border-amber-400"
+          : "text-muted-foreground hover:text-foreground"
       }`}
     >
       <Icon className="w-4 h-4" /> {label}

@@ -115,14 +115,18 @@ export default function LiveSessionsTab({ classId }: { classId: string }) {
               <List className="w-3.5 h-3.5" /> List
             </button>
           </div>
-          <Button size="sm" variant="secondary" onClick={copyFeed}>
-            <Copy className="w-3.5 h-3.5" /> Copy feed
+          <Button size="sm" variant="secondary" onClick={copyFeed} aria-label="Copy calendar feed URL">
+            <Copy className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Copy feed</span>
           </Button>
-          <Button size="sm" variant="secondary" onClick={downloadFeed}>
-            <Download className="w-3.5 h-3.5" /> Download .ics
+          <Button size="sm" variant="secondary" onClick={downloadFeed} aria-label="Download .ics file">
+            <Download className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">Download .ics</span>
           </Button>
           <Button size="sm" onClick={() => { setEditing(null); setShowForm(true); }}>
-            <PlusCircle className="w-4 h-4" /> Schedule
+            <PlusCircle className="w-4 h-4" />
+            <span className="hidden sm:inline">Schedule</span>
+            <span className="sm:hidden">New</span>
           </Button>
         </div>
       </div>
@@ -401,7 +405,7 @@ function MonthCalendar({
                   d.setHours(10, 0, 0, 0);
                   onCreateOnDate(d);
                 }}
-                className={`min-h-[68px] p-1.5 rounded-lg text-left flex flex-col gap-1 transition-colors ${
+                className={`min-h-[56px] sm:min-h-[68px] p-1 sm:p-1.5 rounded-lg text-left flex flex-col gap-1 transition-colors ${
                   isSelected
                     ? "bg-amber-500/10 border border-amber-400/30"
                     : "hover:bg-secondary border border-transparent"

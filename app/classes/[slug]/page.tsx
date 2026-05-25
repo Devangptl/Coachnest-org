@@ -97,9 +97,9 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/85 to-background" />
 
-        <div className="relative max-w-6xl mx-auto px-4 pt-8 pb-12">
+        <div className="relative max-w-6xl mx-auto px-4 pt-6 sm:pt-10 pb-8 sm:pb-14">
           {/* Pills */}
-          <div className="flex items-center gap-2 mb-3 flex-wrap">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-3 flex-wrap">
             <Pill tone="amber">
               <GraduationCap className="w-3 h-3" /> Class
             </Pill>
@@ -119,37 +119,37 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
             )}
           </div>
 
-          <h1 className="text-3xl sm:text-4xl font-bold leading-tight max-w-3xl">
+          <h1 className="text-2xl sm:text-4xl font-bold leading-tight max-w-3xl">
             {cls.name}
           </h1>
 
           {/* Instructor */}
           <Link
             href={`/instructors/${cls.instructor.id}`}
-            className="inline-flex items-center gap-2 mt-3 text-sm text-muted-foreground hover:text-foreground"
+            className="inline-flex items-center gap-2 mt-3 text-sm text-muted-foreground hover:text-foreground max-w-full"
           >
             {cls.instructor.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={cls.instructor.avatar}
                 alt=""
-                className="w-6 h-6 rounded-full object-cover"
+                className="w-6 h-6 rounded-full object-cover shrink-0"
               />
             ) : (
-              <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px] font-bold text-amber-400">
+              <div className="w-6 h-6 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px] font-bold text-amber-400 shrink-0">
                 {cls.instructor.name.slice(0, 1).toUpperCase()}
               </div>
             )}
-            <span>
+            <span className="truncate">
               by <span className="font-medium text-foreground">{cls.instructor.name}</span>
               {cls.instructor.headline && (
-                <span className="text-muted-foreground"> · {cls.instructor.headline}</span>
+                <span className="text-muted-foreground hidden sm:inline"> · {cls.instructor.headline}</span>
               )}
             </span>
           </Link>
 
           {/* Meta pills */}
-          <div className="flex flex-wrap gap-2 mt-4">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4">
             <MetaPill
               icon={Users}
               label={`${cls._count.enrollments} ${cls._count.enrollments === 1 ? "student" : "students"}`}
@@ -173,11 +173,35 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
       </section>
 
       {/* ── Main grid ─────────────────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 pb-12 -mt-2">
-        <div className="grid lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-6xl mx-auto px-4 pb-20 lg:pb-12 -mt-2">
+        <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Mobile: aside first (CTA-above-fold). lg: aside on the right. */}
+          <aside className="lg:col-span-1 lg:order-2">
+            <div className="glass p-4 sm:p-5 rounded-xl lg:sticky lg:top-20 border border-amber-400/10">
+              <JoinClassPanel
+                classId={cls.id}
+                slug={cls.slug}
+                joinMode={cls.joinMode}
+                isLoggedIn={!!session}
+                enrollmentStatus={enrollment?.status ?? null}
+                inviteCodeHint={invite}
+                price={cls.price ? Number(cls.price) : null}
+                isPaid={cls.isPaid}
+                included={{
+                  courses: cls.courses.length,
+                  liveSessions: cls._count.liveSessions,
+                  enableCertificate: cls.enableCertificate,
+                  enableChat: cls.enableChat,
+                  maxStudents: cls.maxStudents,
+                  enrolledCount: cls._count.enrollments,
+                }}
+              />
+            </div>
+          </aside>
+
+          <div className="lg:col-span-2 lg:order-1 space-y-4 sm:space-y-6 min-w-0">
             {cls.description && (
-              <div className="glass p-5 rounded-xl">
+              <div className="glass p-4 sm:p-5 rounded-xl">
                 <h2 className="text-sm font-semibold mb-2 uppercase tracking-wide text-muted-foreground">
                   About this class
                 </h2>
@@ -209,29 +233,6 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
               />
             )}
           </div>
-
-          <aside className="lg:col-span-1">
-            <div className="glass p-5 rounded-xl sticky top-20 border border-amber-400/10">
-              <JoinClassPanel
-                classId={cls.id}
-                slug={cls.slug}
-                joinMode={cls.joinMode}
-                isLoggedIn={!!session}
-                enrollmentStatus={enrollment?.status ?? null}
-                inviteCodeHint={invite}
-                price={cls.price ? Number(cls.price) : null}
-                isPaid={cls.isPaid}
-                included={{
-                  courses: cls.courses.length,
-                  liveSessions: cls._count.liveSessions,
-                  enableCertificate: cls.enableCertificate,
-                  enableChat: cls.enableChat,
-                  maxStudents: cls.maxStudents,
-                  enrolledCount: cls._count.enrollments,
-                }}
-              />
-            </div>
-          </aside>
         </div>
       </div>
     </div>
