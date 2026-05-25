@@ -18,7 +18,7 @@ import FeaturedCourseCard from "@/components/landing/FeaturedCourseCard";
 // Lazy-load heavy animation components (framer-motion) — separate JS chunks
 const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
 const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
-const RotatingWords = dynamic(() => import("@/components/landing/RotatingWords"));
+const ReviewsMarquee = dynamic(() => import("@/components/landing/ReviewsMarquee"));
 
 const FadeInSection = dynamic(() => import("@/components/landing/FadeInSection"));
 const AnimatedCounter = dynamic(() => import("@/components/landing/AnimatedCounter"));
@@ -317,24 +317,20 @@ export default async function HomePage() {
                 </Link>
               </FadeInSection>
 
-              {/* Headline with rotating word */}
+              {/* Headline */}
               <FadeInSection delay={0.06}>
-                <h1 className="text-[32px] sm:text-[48px] lg:text-[55px] font-bold tracking-tight leading-[1.02] mb-6">
-                  <span className="text-foreground">Learn to </span>
-                  <RotatingWords
-                    words={["Code.", "Design.", "Create.", "Lead."]}
-                    className="hero-gradient-text font-handwritten text-[1.2em] align-baseline"
-                  />
-                  <br className="hidden sm:block" />
-                  <span className="text-foreground">Build the </span>
+                <h1 className="text-[32px] sm:text-[48px] lg:text-[58px] font-hero leading-[1.1] mb-6">
+                  <span className="text-foreground">Learn from the best.</span>
+                  <br />
+                  <span className="text-foreground">Build an extraordinary </span>
                   <span className="relative inline-block">
-                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-[#bd4925] via-[#d97757] to-[#e27c5b] bg-clip-text text-transparent">
-                      career
+                    <span className="font-handwritten text-[1.15em] bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
+                      career.
                     </span>
                     <svg
                       aria-hidden="true"
                       viewBox="0 0 200 12"
-                      className="absolute left-0 -bottom-1 w-full h-2.5 text-[#d97757]/70"
+                      className="absolute left-0 -bottom-1 w-full h-2.5 text-[#ea580c]/70"
                       preserveAspectRatio="none"
                     >
                       <path
@@ -346,7 +342,6 @@ export default async function HomePage() {
                       />
                     </svg>
                   </span>
-                  <span className="text-foreground"> you want.</span>
                 </h1>
               </FadeInSection>
 
@@ -444,7 +439,6 @@ export default async function HomePage() {
           </FadeInSection> */}
         </div>
       </section>
-
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           TRUSTED BY / SOCIAL PROOF BAR
@@ -650,8 +644,7 @@ export default async function HomePage() {
           FEATURED COURSES — Premium Compact
       ═══════════════════════════════════════════════════════════════════════════ */}
       {courses.length > 0 && (
-        <section className="py-20  relative">
-          <div className="absolute inset-0 " />
+        <section className="py-20 relative">
           <div className="mx-auto relative">
             {/* Section Header */}
             <FadeInSection>
@@ -660,8 +653,8 @@ export default async function HomePage() {
                   <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-500/5 border border-orange-500/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-[#d97757] mb-4 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
                     <Sparkles className="w-3.5 h-3.5 text-[#d97757] animate-pulse" /> Trending Now
                   </div>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-                    Featured <span className="text-[#d97757]">Courses</span>
+                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                    Featured <span className="text-[#ea580c]">Courses</span>
                   </h2>
                   <p className="text-muted-foreground mt-3 text-[15px] sm:text-lg max-w-xl">
                     Hand-picked by our instructors — start with the best and accelerate your career today.
@@ -669,15 +662,15 @@ export default async function HomePage() {
                 </div>
                 <Link
                   href="/courses"
-                  className="group inline-flex items-center gap-2 bg-white/5 backdrop-blur-md border border-white/10 text-white/80 hover:text-white hover:bg-white/10 hover:border-orange-500/30 text-sm font-medium px-5 py-2.5 rounded-lg transition-all shrink-0 hover:shadow-[0_0_20px_rgba(249,115,22,0.15)]"
+                  className="group inline-flex items-center gap-2 border border-border text-muted-foreground hover:text-foreground hover:border-[#ea580c]/40 text-sm font-medium px-5 py-2.5 rounded-lg transition-all shrink-0"
                 >
                   View all courses <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </div>
             </FadeInSection>
 
-            {/* Course Grid — premium compact cards */}
-            <StaggerChildren className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4" staggerDelay={0.07}>
+            {/* Course Grid */}
+            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3" staggerDelay={0.05}>
               {courses.map((course) => {
                 const avg = course.reviews.length
                   ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
@@ -943,6 +936,11 @@ export default async function HomePage() {
           COMPARISON TABLE — Why CoachNest vs Others
       ═══════════════════════════════════════════════════════════════════════════ */}
       <CompareSection />
+
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          REVIEWS MARQUEE
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      <ReviewsMarquee />
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           FAQ

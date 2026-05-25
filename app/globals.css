@@ -272,13 +272,20 @@
   }
 }
 
+/* ─── Display serif for hero headline ────────────────────────────────────────── */
+.font-hero {
+  font-family: var(--font-playfair, "Playfair Display", Georgia, serif);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.1;
+}
+
 /* ─── Handwritten highlight font ─────────────────────────────────────────────── */
 .font-handwritten {
-  font-family: var(--font-caveat, "Caveat", cursive);
+  font-family: var(--font-dancing, "Dancing Script", cursive);
   font-weight: 700;
-  letter-spacing: -0.005em;
-  /* Caveat has a smaller x-height; nudge it up to align with the rest of h1 */
-  line-height: 0.95;
+  letter-spacing: 0.01em;
+  line-height: 1.0;
 }
 
 /* ─── Gujarati script font ───────────────────────────────────────────────────── */
@@ -289,6 +296,16 @@
 }
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
+
+/* Reviews marquee — continuous scroll left-to-right and right-to-left */
+@keyframes marquee-ltr {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-rtl {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
 
 /* Small glow segments that travel along individual grid lines.
    Top/left are animated (parent-relative %) so the beam crosses the
@@ -369,7 +386,7 @@
     linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
 }
 
-/* Animated gradient text shimmer — warm orange/amber */
+/* Animated gradient text shimmer — brand primary orange */
 @keyframes gradient-shift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -379,12 +396,11 @@
 .hero-gradient-text {
   background: linear-gradient(
     90deg,
-    #f97316 0%,
-    #fb923c 20%,
-    #fbbf24 40%,
-    #fb923c 60%,
-    #f97316 80%,
-    #ea580c 100%
+    hsl(var(--primary)) 0%,
+    #f97316 25%,
+    #fb923c 50%,
+    #f97316 75%,
+    hsl(var(--primary)) 100%
   );
   background-size: 200% 100%;
   animation: gradient-shift 6s ease-in-out infinite;

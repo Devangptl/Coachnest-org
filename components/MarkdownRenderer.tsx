@@ -523,22 +523,22 @@ function TableWrapper({ children }: { children: ReactNode }) {
 // ─── MarkdownListItem ─────────────────────────────────────────────────────────
 
 function MarkdownListItem({
-  children, className, compact, ...rest
-}: { children?: ReactNode; className?: string; compact?: boolean; [k: string]: unknown }) {
+  children, className, compact, blockIndex, ...rest
+}: { children?: ReactNode; className?: string; compact?: boolean; blockIndex?: number; [k: string]: unknown }) {
   const listType = useContext(ListTypeCtx);
   const isTask   = className?.includes("task-list-item");
   const liIndex  = rest["data-li-index"] as number | undefined;
 
   if (isTask) {
     return (
-      <li className={cn("flex items-start gap-2 text-muted-foreground leading-relaxed list-none", compact ? "text-sm" : "text-[15px]")}>
+      <li data-block-index={blockIndex} className={cn("flex items-start gap-2 text-muted-foreground leading-relaxed list-none", compact ? "text-sm" : "text-[15px]")}>
         {children}
       </li>
     );
   }
   if (listType === "ol" || liIndex !== undefined) {
     return (
-      <li className={cn("flex items-start gap-3 text-muted-foreground leading-relaxed list-none", compact ? "text-sm" : "text-[15px]")}>
+      <li data-block-index={blockIndex} className={cn("flex items-start gap-3 text-muted-foreground leading-relaxed list-none", compact ? "text-sm" : "text-[15px]")}>
         <span className="flex-shrink-0 min-w-[1.5rem] h-[1.5rem] rounded-md bg-[#d97757]/15 text-[#d97757] text-[11px] font-bold flex items-center justify-center mt-0.5 border border-[#d97757]/20">
           {liIndex ?? "•"}
         </span>
@@ -547,7 +547,7 @@ function MarkdownListItem({
     );
   }
   return (
-    <li className={cn("flex items-start gap-3 text-muted-foreground leading-relaxed list-none", compact ? "text-sm" : "text-[15px]")}>
+    <li data-block-index={blockIndex} className={cn("flex items-start gap-3 text-muted-foreground leading-relaxed list-none", compact ? "text-sm" : "text-[15px]")}>
       <span className="mt-[0.5em] w-1.5 h-1.5 rounded-full bg-[#d97757]/50 flex-shrink-0" />
       <span className="flex-1 min-w-0">{children}</span>
     </li>
@@ -619,13 +619,17 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
 
   const processed = preprocess(content);
 
+  // Shared counter — incremented by every block element so TextHighlighter
+  // can locate the right block via [data-block-index].
+  const blockIdx = { n: 0 };
+
   const components: Components = {
 
     // ── Headings (h1–h6 with anchor IDs) ──────────────────────────────────────
     h1: ({ children }) => {
       const id = toSlug(children);
       return (
-        <h1 id={id} className={cn(
+        <h1 id={id} data-block-index={blockIdx.n++} className={cn(
           "group relative text-xl sm:text-2xl font-bold text-foreground mt-8 mb-4 first:mt-0 pb-3 border-b border-border/50 flex items-center gap-2",
           compact && "text-lg mt-5 mb-2 pb-2",
         )}>
@@ -641,7 +645,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     h2: ({ children }) => {
       const id = toSlug(children);
       return (
-        <h2 id={id} className={cn(
+        <h2 id={id} data-block-index={blockIdx.n++} className={cn(
           "group relative text-base sm:text-[1.15rem] font-bold text-foreground mt-7 mb-3 first:mt-0 flex items-center gap-2.5 border-l-[3px] border-[#d97757]/60 pl-3",
           compact && "text-sm sm:text-base mt-4 mb-2",
         )}>
@@ -656,7 +660,7 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     h3: ({ children }) => {
       const id = toSlug(children);
       return (
-        <h3 id={id} className={cn(
+        <h3 id={id} data-block-index={blockIdx.n++} className={cn(
           "group text-sm sm:text-[1rem] font-semibold text-foreground/90 mt-5 mb-2 first:mt-0 flex items-center gap-2",
           compact && "mt-3 mb-1",
         )}>
@@ -670,28 +674,29 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
     },
 
     h4: ({ children }) => (
-      <h4 className="text-[13px] sm:text-sm font-semibold text-foreground/70 mt-4 mb-1.5 uppercase tracking-widest">
+      <h4 data-block-index={blockIdx.n++} className="text-[13px] sm:text-sm font-semibold text-foreground/70 mt-4 mb-1.5 uppercase tracking-widest">
         {children}
       </h4>
     ),
 
     h5: ({ children }) => (
-      <h5 className="text-[13px] font-semibold text-muted-foreground mt-3 mb-1">{children}</h5>
+      <h5 data-block-index={blockIdx.n++} className="text-[13px] font-semibold text-muted-foreground mt-3 mb-1">{children}</h5>
     ),
 
     h6: ({ children }) => (
-      <h6 className="text-[12px] font-semibold text-muted-foreground/70 mt-3 mb-1 uppercase tracking-wider">{children}</h6>
+      <h6 data-block-index={blockIdx.n++} className="text-[12px] font-semibold text-muted-foreground/70 mt-3 mb-1 uppercase tracking-wider">{children}</h6>
     ),
 
     // ── Paragraph ──────────────────────────────────────────────────────────────
     p: ({ children, node }) => {
+      const idx = blockIdx.n++;
       const child = node?.children?.[0];
       if (child?.type === "text") {
         const videoUrl = parseVideoDirective((child as { value: string }).value);
         if (videoUrl) return <VideoEmbed url={videoUrl} />;
       }
       return (
-        <p className={cn(
+        <p data-block-index={idx} className={cn(
           "text-muted-foreground leading-[1.85] tracking-wide mb-4 last:mb-0 whitespace-normal",
           compact ? "text-sm mb-2" : "text-[15px]",
         )}>
@@ -783,11 +788,11 @@ const MarkdownRenderer = memo(function MarkdownRenderer({ content, compact = fal
       );
     },
 
-    li: (props) => <MarkdownListItem {...props} compact={compact} />,
+    li: (props) => <MarkdownListItem {...props} compact={compact} blockIndex={blockIdx.n++} />,
 
     // ── Blockquote ─────────────────────────────────────────────────────────────
     blockquote: ({ children }) => (
-      <blockquote className={cn(
+      <blockquote data-block-index={blockIdx.n++} className={cn(
         "relative my-5 pl-5 border-l-[3px] border-[#d97757]/40 text-muted-foreground/80 italic",
         "before:content-['\\201C'] before:absolute before:-top-1 before:-left-0.5 before:text-3xl before:text-[#d97757]/20 before:font-serif before:leading-none before:select-none",
       )}>
