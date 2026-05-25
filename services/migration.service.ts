@@ -83,32 +83,53 @@ async function appliedMigrations(): Promise<AppliedRow[] | null> {
 }
 
 export async function getMigrationStatus(): Promise<MigrationStatus> {
-  const [disk, applied] = await Promise.all([
+  const [disk, allRows] = await Promise.all([
     diskMigrations(),
     appliedMigrations(),
   ]);
 
-  const appliedOk = (applied ?? []).filter(
+  // `_prisma_migrations` can have MULTIPLE rows for the same migration_name —
+  // every failed attempt leaves a row, and the eventually-successful retry
+  // adds another. Categorising each row independently would double-count
+  // (same migration shows up as "applied" and "failed" simultaneously).
+  // Collapse to one canonical row per migration_name: the most recent attempt.
+  const byName = new Map<string, AppliedRow>();
+  for (const r of allRows ?? []) {
+    const existing = byName.get(r.migration_name);
+    if (!existing) {
+      byName.set(r.migration_name, r);
+      continue;
+    }
+    const existingT = existing.started_at?.getTime() ?? 0;
+    const candT = r.started_at?.getTime() ?? 0;
+    // Prefer the row that's actually finished — a successful retry wins over
+    // an older failed row even if the clocks tie.
+    const candIsBetter =
+      candT > existingT ||
+      (candT === existingT && !!r.finished_at && !existing.finished_at);
+    if (candIsBetter) byName.set(r.migration_name, r);
+  }
+  const canonical = Array.from(byName.values());
+
+  const appliedOk = canonical.filter(
     (r) => r.finished_at && !r.rolled_back_at,
   );
 
-  const failed = (applied ?? [])
+  const failed = canonical
     .filter((r) => !r.finished_at || r.rolled_back_at)
     .map((r) => ({
       name: r.migration_name,
       startedAt: r.started_at ? r.started_at.toISOString() : null,
     }));
 
-  // A migration that already has ANY row in _prisma_migrations (applied OR
-  // failed) is NOT pending — otherwise a single failed migration would be
-  // double-counted as both "failed" and "pending". Pending = on disk with
-  // no migration-table record at all.
-  const recordedNames = new Set((applied ?? []).map((r) => r.migration_name));
+  // Anything on disk without any row at all is pending. Failed / rolled-back
+  // migrations are NOT pending — they need to be resolved, not re-queued.
+  const recordedNames = new Set(byName.keys());
   const pending = (disk ?? []).filter((n) => !recordedNames.has(n));
 
   return {
     runnerEnabled: isRunnerEnabled(),
-    historyAvailable: applied !== null,
+    historyAvailable: allRows !== null,
     diskAvailable: disk !== null,
     applied: appliedOk.map((r) => ({
       name: r.migration_name,
