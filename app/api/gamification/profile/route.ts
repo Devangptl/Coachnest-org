@@ -1,16 +1,12 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { updateStreak } from "@/lib/gamification";
 import { BADGES, getLevelForXp, xpToNextLevel } from "@/lib/badges";
 
 export async function GET() {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-    // Update streak on each profile fetch (acts as a daily login ping)
-    await updateStreak(session.userId);
 
     const [profile, earnedBadges] = await Promise.all([
       prisma.userGameProfile.findUnique({ where: { userId: session.userId } }),

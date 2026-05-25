@@ -6,7 +6,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { awardXp, checkQuizBadges } from "@/lib/gamification";
+import { awardXp, checkQuizBadges, updateStreak } from "@/lib/gamification";
 import { XP_VALUES } from "@/lib/gamification";
 
 export async function POST(
@@ -51,6 +51,8 @@ export async function POST(
         timeTaken: timeTaken ?? null,
       },
     });
+
+    await updateStreak(session.userId);
 
     // Award XP for quiz
     let xpGained = 0;
