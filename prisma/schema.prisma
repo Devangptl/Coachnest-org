@@ -247,6 +247,7 @@ model User {
   announcements       Announcement[]       @relation("AnnouncementAuthor")
   discussions         Discussion[]         @relation("DiscussionAuthor")
   classMessages       Message[]            @relation("MessageAuthor")
+  discussionVotes     DiscussionVote[]
   classXpEvents       ClassXpEvent[]
   classCertificates   ClassCertificate[]
   assignmentsCreated  Assignment[]             @relation("AssignmentAuthor")
@@ -1487,6 +1488,10 @@ model Discussion {
   body      String         @db.Text
   parentId  String?
   resolved  Boolean        @default(false)
+  pinned    Boolean        @default(false)
+  tags      String[]       @default([])
+  // For QUESTION threads: which reply was accepted as the answer.
+  acceptedReplyId String? @unique
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
@@ -1494,10 +1499,27 @@ model Discussion {
   author   User         @relation("DiscussionAuthor", fields: [authorId], references: [id])
   parent   Discussion?  @relation("DiscussionReplies", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Discussion[] @relation("DiscussionReplies")
+  acceptedReply Discussion? @relation("DiscussionAcceptedReply", fields: [acceptedReplyId], references: [id], onDelete: SetNull)
+  acceptedFor   Discussion? @relation("DiscussionAcceptedReply")
+  votes    DiscussionVote[]
 
   @@index([classId, createdAt])
+  @@index([classId, pinned, createdAt])
   @@index([parentId])
   @@map("class_discussions")
+}
+
+model DiscussionVote {
+  discussionId String
+  userId       String
+  createdAt    DateTime @default(now())
+
+  discussion Discussion @relation(fields: [discussionId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([discussionId, userId])
+  @@index([userId])
+  @@map("class_discussion_votes")
 }
 
 model Message {

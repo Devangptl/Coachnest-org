@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 import { channels, events } from "@/lib/realtime/channels";
-import { ClipboardList, Megaphone, MessageCircle, Video } from "lucide-react";
+import { ClipboardList, Megaphone, MessageCircle, MessagesSquare, Video } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import ClassChatPanel from "./ClassChatPanel";
 import StudentAssignmentsPanel from "./StudentAssignmentsPanel";
+import ClassDiscussions from "@/components/class/ClassDiscussions";
 
 type Announcement = { id: string; title: string; body: string; createdAt: string; author: { name: string } };
 type LiveSession = { id: string; title: string; scheduledAt: string; meetingUrl: string | null; status: string };
@@ -15,24 +16,34 @@ export default function StudentClassTabs({
   classId,
   enableChat,
   enableDiscussion,
+  currentUserId,
 }: {
   classId: string;
   enableChat: boolean;
   enableDiscussion: boolean;
+  currentUserId?: string;
 }) {
-  const [tab, setTab] = useState<"announcements" | "assignments" | "chat" | "live">("announcements");
+  const [tab, setTab] = useState<
+    "announcements" | "assignments" | "discussion" | "chat" | "live"
+  >("announcements");
 
   return (
     <div className="glass rounded-xl">
       <div className="flex border-b border-border overflow-x-auto">
         <TabBtn active={tab === "announcements"} onClick={() => setTab("announcements")} icon={Megaphone} label="Announcements" />
         <TabBtn active={tab === "assignments"} onClick={() => setTab("assignments")} icon={ClipboardList} label="Assignments" />
+        {enableDiscussion && (
+          <TabBtn active={tab === "discussion"} onClick={() => setTab("discussion")} icon={MessagesSquare} label="Q&A" />
+        )}
         {enableChat && <TabBtn active={tab === "chat"} onClick={() => setTab("chat")} icon={MessageCircle} label="Chat" />}
         <TabBtn active={tab === "live"} onClick={() => setTab("live")} icon={Video} label="Live" />
       </div>
       <div className="p-4">
         {tab === "announcements" && <AnnouncementsPanel classId={classId} />}
         {tab === "assignments" && <StudentAssignmentsPanel classId={classId} />}
+        {tab === "discussion" && enableDiscussion && (
+          <ClassDiscussions classId={classId} currentUserId={currentUserId} />
+        )}
         {tab === "chat" && <ClassChatPanel classId={classId} />}
         {tab === "live" && <LivePanel classId={classId} />}
       </div>

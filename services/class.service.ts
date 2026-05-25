@@ -401,7 +401,13 @@ export async function createAnnouncement(
 export async function createDiscussion(
   classId: string,
   authorId: string,
-  input: { kind?: "GENERAL" | "QUESTION" | "ANNOUNCEMENT_REPLY"; title: string; body: string; parentId?: string | null },
+  input: {
+    kind?: "GENERAL" | "QUESTION" | "ANNOUNCEMENT_REPLY";
+    title: string;
+    body: string;
+    parentId?: string | null;
+    tags?: string[];
+  },
 ) {
   await assertIsMember(classId, authorId);
   return prisma.discussion.create({
@@ -412,8 +418,189 @@ export async function createDiscussion(
       title: input.title,
       body: input.body,
       parentId: input.parentId ?? null,
+      tags: input.tags ?? [],
     },
   });
+}
+
+export async function getDiscussionThread(
+  classId: string,
+  discussionId: string,
+  userId: string,
+) {
+  await assertIsMember(classId, userId);
+  const thread = await prisma.discussion.findFirst({
+    where: { id: discussionId, classId },
+    include: {
+      author: { select: { id: true, name: true, avatar: true } },
+      votes: { select: { userId: true } },
+      replies: {
+        orderBy: [{ createdAt: "asc" }],
+        include: {
+          author: { select: { id: true, name: true, avatar: true } },
+          votes: { select: { userId: true } },
+        },
+      },
+    },
+  });
+  if (!thread) throw new Error("Discussion not found");
+  return thread;
+}
+
+export async function replyToDiscussion(
+  classId: string,
+  parentId: string,
+  authorId: string,
+  body: string,
+) {
+  await assertIsMember(classId, authorId);
+  const parent = await prisma.discussion.findUnique({
+    where: { id: parentId },
+    select: { classId: true, title: true, kind: true },
+  });
+  if (!parent || parent.classId !== classId) {
+    throw new Error("Parent discussion not found");
+  }
+  return prisma.discussion.create({
+    data: {
+      classId,
+      authorId,
+      kind: "GENERAL",
+      title: parent.title.slice(0, 200),
+      body,
+      parentId,
+    },
+    include: {
+      author: { select: { id: true, name: true, avatar: true } },
+    },
+  });
+}
+
+export async function updateDiscussion(
+  classId: string,
+  discussionId: string,
+  userId: string,
+  input: {
+    title?: string;
+    body?: string;
+    tags?: string[];
+    pinned?: boolean;
+    resolved?: boolean;
+    acceptedReplyId?: string | null;
+  },
+) {
+  const cls = await prisma.class.findUnique({ where: { id: classId } });
+  if (!cls) throw new Error("Class not found");
+
+  const thread = await prisma.discussion.findFirst({
+    where: { id: discussionId, classId },
+  });
+  if (!thread) throw new Error("Discussion not found");
+
+  const isOwner = cls.instructorId === userId;
+  const isAssistant = isOwner
+    ? false
+    : !!(await prisma.classAssistant.findUnique({
+        where: { classId_userId: { classId, userId } },
+      }));
+  const isAuthor = thread.authorId === userId;
+  const isStaff = isOwner || isAssistant;
+
+  // Field-level permissions:
+  // - pinned: staff only
+  // - acceptedReplyId / resolved: question author OR staff
+  // - title / body / tags: author OR staff
+  const data: Record<string, unknown> = {};
+  if (input.title !== undefined) {
+    if (!isAuthor && !isStaff) throw new Error("Forbidden");
+    data.title = input.title;
+  }
+  if (input.body !== undefined) {
+    if (!isAuthor && !isStaff) throw new Error("Forbidden");
+    data.body = input.body;
+  }
+  if (input.tags !== undefined) {
+    if (!isAuthor && !isStaff) throw new Error("Forbidden");
+    data.tags = input.tags;
+  }
+  if (input.pinned !== undefined) {
+    if (!isStaff) throw new Error("Only instructors can pin");
+    data.pinned = input.pinned;
+  }
+  if (input.resolved !== undefined) {
+    if (!isAuthor && !isStaff) throw new Error("Forbidden");
+    data.resolved = input.resolved;
+  }
+  if (input.acceptedReplyId !== undefined) {
+    if (!isAuthor && !isStaff) throw new Error("Forbidden");
+    if (input.acceptedReplyId) {
+      const reply = await prisma.discussion.findFirst({
+        where: { id: input.acceptedReplyId, parentId: discussionId },
+      });
+      if (!reply) throw new Error("Reply not part of this thread");
+      data.acceptedReplyId = input.acceptedReplyId;
+      data.resolved = true;
+    } else {
+      data.acceptedReplyId = null;
+      data.resolved = false;
+    }
+  }
+
+  return prisma.discussion.update({
+    where: { id: discussionId },
+    data,
+  });
+}
+
+export async function deleteDiscussion(
+  classId: string,
+  discussionId: string,
+  userId: string,
+) {
+  const cls = await prisma.class.findUnique({ where: { id: classId } });
+  if (!cls) throw new Error("Class not found");
+  const thread = await prisma.discussion.findFirst({
+    where: { id: discussionId, classId },
+  });
+  if (!thread) throw new Error("Discussion not found");
+
+  const isAuthor = thread.authorId === userId;
+  const isOwner = cls.instructorId === userId;
+  const isAssistant = isOwner
+    ? false
+    : !!(await prisma.classAssistant.findUnique({
+        where: { classId_userId: { classId, userId } },
+      }));
+  if (!isAuthor && !isOwner && !isAssistant) throw new Error("Forbidden");
+
+  return prisma.discussion.delete({ where: { id: discussionId } });
+}
+
+export async function toggleDiscussionVote(
+  classId: string,
+  discussionId: string,
+  userId: string,
+) {
+  await assertIsMember(classId, userId);
+  const thread = await prisma.discussion.findFirst({
+    where: { id: discussionId, classId },
+    select: { id: true },
+  });
+  if (!thread) throw new Error("Discussion not found");
+
+  const existing = await prisma.discussionVote.findUnique({
+    where: { discussionId_userId: { discussionId, userId } },
+  });
+  if (existing) {
+    await prisma.discussionVote.delete({
+      where: { discussionId_userId: { discussionId, userId } },
+    });
+    return { voted: false };
+  }
+  await prisma.discussionVote.create({
+    data: { discussionId, userId },
+  });
+  return { voted: true };
 }
 
 // ─── Chat / Messages ──────────────────────────────────────────────────────────

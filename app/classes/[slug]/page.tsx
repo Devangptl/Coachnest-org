@@ -118,7 +118,14 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
             }))}
           />
 
-          {isMember && <StudentClassTabs classId={cls.id} enableChat={cls.enableChat} enableDiscussion={cls.enableDiscussion} />}
+          {isMember && (
+            <StudentClassTabs
+              classId={cls.id}
+              enableChat={cls.enableChat}
+              enableDiscussion={cls.enableDiscussion}
+              currentUserId={session?.userId}
+            />
+          )}
         </div>
 
         <aside className="lg:col-span-1">

@@ -191,7 +191,9 @@ export default function ClassDetailShell({
           {tab === "live" && <LiveSessionsTab classId={cls.id} />}
           {tab === "attendance" && <AttendanceTab classId={cls.id} />}
           {tab === "assignments" && <AssignmentsTab classId={cls.id} />}
-          {tab === "discussion" && <DiscussionTab classId={cls.id} />}
+          {tab === "discussion" && (
+            <DiscussionTab classId={cls.id} currentUserId={cls.instructorId} />
+          )}
           {tab === "announcements" && <AnnouncementsTab classId={cls.id} />}
           {tab === "analytics" && <AnalyticsTab classId={cls.id} />}
           {tab === "settings" && <SettingsTab cls={cls} onRefresh={onRefresh} />}
