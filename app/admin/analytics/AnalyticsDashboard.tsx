@@ -64,24 +64,28 @@ export default function AnalyticsDashboard({
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
 
+  const bg = isLight ? "#ffffff" : "#1a1535";
+
   const tooltipStyle = {
     contentStyle: {
-      background: isLight ? "#ffffff" : "#1a1636",
-      border: `1px solid ${isLight ? "rgba(24,19,16,.12)" : "rgba(255,255,255,.15)"}`,
+      background: bg,
+      border: `1px solid ${isLight ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.1)"}`,
       borderRadius: 12,
-      color: isLight ? "#181310" : "#fff",
+      color: isLight ? "#181310" : "#f1f5f9",
       fontSize: 13,
+      boxShadow: isLight ? "0 4px 24px rgba(0,0,0,.09)" : "0 4px 24px rgba(0,0,0,.5)",
     },
-    labelStyle: { color: isLight ? "#c2410c" : "#d97757", fontWeight: 600 },
+    labelStyle: { color: isLight ? "#ea580c" : "#fb923c", fontWeight: 700 },
+    cursor: { stroke: isLight ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)", strokeWidth: 1 },
   };
 
-  const tickColor   = isLight ? "#685e55" : "#94a3b8";
-  const gridColor   = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
-  const primary     = isLight ? "#c2410c" : "#d97757";
-  const blue        = isLight ? "#2563eb" : "#60a5fa";
-  const emerald     = isLight ? "#059669" : "#34d399";
-  const amber       = isLight ? "#d97706" : "#fbbf24";
-  const mutedFill   = isLight ? "#d1d5db" : "#334155";
+  const tickColor   = isLight ? "#6b7280" : "#94a3b8";
+  const gridColor   = isLight ? "rgba(0,0,0,.05)" : "rgba(255,255,255,.05)";
+  const primary     = isLight ? "#ea580c" : "#fb923c";
+  const blue        = isLight ? "#3b82f6" : "#60a5fa";
+  const emerald     = isLight ? "#10b981" : "#34d399";
+  const amber       = isLight ? "#f59e0b" : "#fbbf24";
+  const mutedFill   = isLight ? "#cbd5e1" : "#334155";
 
   const statCards = [
     {
@@ -172,7 +176,7 @@ export default function AnalyticsDashboard({
       </div>
 
       {/* Engagement cards */}
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         {engagementCards.map(({ label, value, icon: Icon, color }, i) => (
           <motion.div
             key={label}
@@ -194,12 +198,14 @@ export default function AnalyticsDashboard({
 
       {/* Charts */}
       <Tabs defaultValue="revenue">
-        <TabsList className="w-auto">
-          <TabsTrigger value="revenue">Revenue</TabsTrigger>
-          <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
-          <TabsTrigger value="users">User Growth</TabsTrigger>
-          <TabsTrigger value="completion">Course Completion</TabsTrigger>
-        </TabsList>
+        <div className="overflow-x-auto pb-1 -mb-1">
+          <TabsList className="w-auto min-w-max">
+            <TabsTrigger value="revenue">Revenue</TabsTrigger>
+            <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
+            <TabsTrigger value="users">User Growth</TabsTrigger>
+            <TabsTrigger value="completion">Course Completion</TabsTrigger>
+          </TabsList>
+        </div>
 
         {/* Revenue trend */}
         <TabsContent value="revenue">
@@ -210,8 +216,9 @@ export default function AnalyticsDashboard({
               <AreaChart data={revenue}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor={primary} stopOpacity={0.35} />
-                    <stop offset="95%" stopColor={primary} stopOpacity={0} />
+                    <stop offset="0%" stopColor={primary} stopOpacity={0.4} />
+                    <stop offset="55%" stopColor={primary} stopOpacity={0.12} />
+                    <stop offset="100%" stopColor={primary} stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -226,7 +233,7 @@ export default function AnalyticsDashboard({
                   {...tooltipStyle}
                   formatter={(v: number) => [`₹${v.toLocaleString("en-IN")}`, "Revenue"]}
                 />
-                <Area dataKey="revenue" stroke={primary} strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 3, fill: primary }} />
+                <Area dataKey="revenue" stroke={primary} strokeWidth={2.5} fill="url(#revGrad)" dot={{ r: 4, fill: primary, stroke: bg, strokeWidth: 2 }} activeDot={{ r: 6, strokeWidth: 2 }} />
               </AreaChart>
             </ResponsiveContainer>
           </div>
@@ -272,8 +279,8 @@ export default function AnalyticsDashboard({
                   dataKey="enrollments"
                   stroke={blue}
                   strokeWidth={2.5}
-                  dot={{ r: 3, fill: blue }}
-                  activeDot={{ r: 5 }}
+                  dot={{ r: 4, fill: blue, stroke: bg, strokeWidth: 2 }}
+                  activeDot={{ r: 6, strokeWidth: 2 }}
                 />
                 <Line
                   yAxisId="right"
@@ -281,8 +288,8 @@ export default function AnalyticsDashboard({
                   stroke={primary}
                   strokeWidth={2.5}
                   strokeDasharray="5 3"
-                  dot={{ r: 3, fill: primary }}
-                  activeDot={{ r: 5 }}
+                  dot={{ r: 4, fill: primary, stroke: bg, strokeWidth: 2 }}
+                  activeDot={{ r: 6, strokeWidth: 2 }}
                 />
               </LineChart>
             </ResponsiveContainer>
@@ -302,7 +309,7 @@ export default function AnalyticsDashboard({
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [v, "New Users"]} />
                 <Bar dataKey="users" radius={[6, 6, 0, 0]}>
                   {userGrowth.map((_, i) => (
-                    <Cell key={i} fill={primary} opacity={0.5 + (i / userGrowth.length) * 0.5} />
+                    <Cell key={i} fill={primary} opacity={0.3 + (i / Math.max(userGrowth.length - 1, 1)) * 0.7} />
                   ))}
                 </Bar>
               </BarChart>
@@ -315,7 +322,7 @@ export default function AnalyticsDashboard({
           <div className="glass p-4">
             <h3 className="text-foreground font-semibold mb-1">Course Completion Rates</h3>
             <p className="text-muted-foreground/60 text-xs mb-4">Top courses by enrollment</p>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={Math.max(300, courseCompletionStats.length * 46)}>
               <BarChart data={courseCompletionStats} layout="vertical" margin={{ left: 12, right: 24 }}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" horizontal={false} />
                 <XAxis

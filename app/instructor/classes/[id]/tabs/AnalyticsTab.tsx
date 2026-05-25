@@ -144,23 +144,26 @@ export default function AnalyticsTab({ classId }: { classId: string }) {
   }, [classId]);
 
   // ── Chart styling ─────────────────────────────────────────────────────────
-  const tickColor = isLight ? "#685e55" : "#94a3b8";
-  const gridColor = isLight ? "rgba(24,19,16,.06)" : "rgba(255,255,255,.06)";
-  const primary = isLight ? "#c2410c" : "#d97757";
-  const emerald = isLight ? "#059669" : "#34d399";
-  const sky = isLight ? "#0284c7" : "#38bdf8";
-  const amber = isLight ? "#d97706" : "#fbbf24";
-  const red = isLight ? "#dc2626" : "#f87171";
+  const bg = isLight ? "#ffffff" : "#1a1535";
+  const tickColor = isLight ? "#6b7280" : "#94a3b8";
+  const gridColor = isLight ? "rgba(0,0,0,.05)" : "rgba(255,255,255,.05)";
+  const primary = isLight ? "#ea580c" : "#fb923c";
+  const emerald = isLight ? "#10b981" : "#34d399";
+  const sky = isLight ? "#0ea5e9" : "#38bdf8";
+  const amber = isLight ? "#f59e0b" : "#fbbf24";
+  const red = isLight ? "#e11d48" : "#fb7185";
 
   const tooltipStyle = {
     contentStyle: {
-      background: isLight ? "#ffffff" : "#1a1636",
-      border: `1px solid ${isLight ? "rgba(24,19,16,.12)" : "rgba(255,255,255,.15)"}`,
+      background: bg,
+      border: `1px solid ${isLight ? "rgba(0,0,0,.08)" : "rgba(255,255,255,.1)"}`,
       borderRadius: 12,
-      color: isLight ? "#181310" : "#fff",
+      color: isLight ? "#181310" : "#f1f5f9",
       fontSize: 13,
+      boxShadow: isLight ? "0 4px 24px rgba(0,0,0,.09)" : "0 4px 24px rgba(0,0,0,.5)",
     },
-    labelStyle: { color: primary, fontWeight: 600 },
+    labelStyle: { color: primary, fontWeight: 700 },
+    cursor: { stroke: isLight ? "rgba(0,0,0,.06)" : "rgba(255,255,255,.06)", strokeWidth: 1 },
   };
 
   const enrollDelta = useMemo(() => {
@@ -295,8 +298,9 @@ export default function AnalyticsTab({ classId }: { classId: string }) {
           <AreaChart data={data.enrollmentTrend}>
             <defs>
               <linearGradient id="classEnrollGrad" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={primary} stopOpacity={0.35} />
-                <stop offset="95%" stopColor={primary} stopOpacity={0} />
+                <stop offset="0%" stopColor={primary} stopOpacity={0.4} />
+                <stop offset="55%" stopColor={primary} stopOpacity={0.12} />
+                <stop offset="100%" stopColor={primary} stopOpacity={0} />
               </linearGradient>
             </defs>
             <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
@@ -325,8 +329,10 @@ export default function AnalyticsTab({ classId }: { classId: string }) {
               type="monotone"
               dataKey="enrollments"
               stroke={primary}
-              strokeWidth={2}
+              strokeWidth={2.5}
               fill="url(#classEnrollGrad)"
+              dot={{ r: 4, fill: primary, stroke: bg, strokeWidth: 2 }}
+              activeDot={{ r: 6, strokeWidth: 2 }}
             />
           </AreaChart>
         </ResponsiveContainer>
