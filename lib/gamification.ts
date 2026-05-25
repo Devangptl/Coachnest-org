@@ -100,46 +100,52 @@ export async function checkQuizBadges(userId: string, score: number, passed: boo
 }
 
 // ── Update daily streak ───────────────────────────────────────────────────────
+// Call this from real learning events (lesson complete, quiz attempt) only —
+// never from page-view routes, otherwise page visits would maintain streaks.
 
 export async function updateStreak(userId: string) {
   const profile = await getOrCreateProfile(userId);
   const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+  // Use UTC day boundaries so the result is the same regardless of server timezone.
+  const todayUtc = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
 
   if (profile.lastActiveDate) {
     const last = new Date(profile.lastActiveDate);
-    const lastDay = new Date(last.getFullYear(), last.getMonth(), last.getDate());
-    const diffDays = Math.round((today.getTime() - lastDay.getTime()) / 86400000);
+    const lastUtc = Date.UTC(last.getUTCFullYear(), last.getUTCMonth(), last.getUTCDate());
+    const diffDays = Math.round((todayUtc - lastUtc) / 86_400_000);
 
-    if (diffDays === 0) return profile; // already logged today
-    if (diffDays === 1) {
-      // Consecutive day
-      const newStreak = profile.streak + 1;
-      const longestStreak = Math.max(newStreak, profile.longestStreak);
-      await prisma.userGameProfile.update({
-        where: { userId },
-        data: { streak: newStreak, longestStreak, lastActiveDate: now },
-      });
-      // Award streak XP
-      const streakXp = XP_VALUES.DAILY_STREAK_BASE + newStreak * 2;
-      await awardXp(userId, "DAILY_STREAK", streakXp, { streak: newStreak });
-      // Check streak badges
-      if (newStreak >= 3)  await grantBadge(userId, "streak_3");
-      if (newStreak >= 7)  await grantBadge(userId, "streak_7");
-      if (newStreak >= 30) await grantBadge(userId, "streak_30");
-    } else {
-      // Streak broken
-      await prisma.userGameProfile.update({
-        where: { userId },
-        data: { streak: 1, lastActiveDate: now },
-      });
-    }
+    if (diffDays === 0) return profile; // already active today — nothing to do
+
+    const newStreak = diffDays === 1 ? profile.streak + 1 : 1;
+    const newLongest = Math.max(newStreak, profile.longestStreak);
+
+    // Optimistic concurrency: only commit if lastActiveDate hasn't changed
+    // since we read it (prevents double-increment from concurrent requests).
+    const updated = await prisma.userGameProfile.updateMany({
+      where: { userId, lastActiveDate: profile.lastActiveDate },
+      data: { streak: newStreak, longestStreak: newLongest, lastActiveDate: now },
+    });
+    if (updated.count === 0) return profile; // a concurrent call already won
+
+    // Award XP for every active day (including day-1 restarts after a break).
+    const streakXp = XP_VALUES.DAILY_STREAK_BASE + newStreak * 2;
+    await awardXp(userId, "DAILY_STREAK", streakXp, { streak: newStreak });
+
+    if (newStreak >= 3)  await grantBadge(userId, "streak_3");
+    if (newStreak >= 7)  await grantBadge(userId, "streak_7");
+    if (newStreak >= 30) await grantBadge(userId, "streak_30");
+
   } else {
-    // First time
-    await prisma.userGameProfile.update({
-      where: { userId },
+    // First-ever learning activity — bootstrap the profile.
+    const updated = await prisma.userGameProfile.updateMany({
+      where: { userId, lastActiveDate: null },
       data: { streak: 1, longestStreak: 1, lastActiveDate: now },
     });
+    if (updated.count === 0) return profile;
+
+    const streakXp = XP_VALUES.DAILY_STREAK_BASE + 1 * 2;
+    await awardXp(userId, "DAILY_STREAK", streakXp, { streak: 1 });
   }
 
   return prisma.userGameProfile.findUnique({ where: { userId } });

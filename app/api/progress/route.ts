@@ -10,7 +10,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { awardXp, checkLessonBadges } from "@/lib/gamification";
+import { awardXp, checkLessonBadges, updateStreak } from "@/lib/gamification";
 import { XP_VALUES } from "@/lib/gamification";
 
 export async function GET(req: NextRequest) {
@@ -84,6 +84,7 @@ export async function POST(req: NextRequest) {
       await awardXp(session.userId, "LESSON_COMPLETE", XP_VALUES.LESSON_COMPLETE, { lessonId });
       xpGained = XP_VALUES.LESSON_COMPLETE;
       await checkLessonBadges(session.userId);
+      await updateStreak(session.userId);
     }
 
     return NextResponse.json({ progress, xpGained });
