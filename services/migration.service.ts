@@ -15,6 +15,8 @@ import "server-only";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { access, readdir } from "node:fs/promises";
+import { existsSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import { prisma } from "@/lib/prisma";
 
@@ -22,13 +24,51 @@ const execFileAsync = promisify(execFile);
 
 const DEPLOY_TIMEOUT_MS = 120_000;
 const MIGRATIONS_DIR = path.join(process.cwd(), "prisma", "migrations");
-const PRISMA_BIN = path.join(process.cwd(), "node_modules", ".bin", "prisma");
 
 // In-process lock — blocks overlapping deploys within a single instance.
 let deployInFlight = false;
 
 export function isRunnerEnabled(): boolean {
   return process.env.ENABLE_MIGRATION_RUNNER === "true";
+}
+
+/**
+ * Locate a runnable Prisma CLI across deployment layouts (dev, Docker,
+ * Next.js standalone, Vercel/Lambda). Order of preference:
+ *
+ *  1. The prisma package's JS entry, resolved via Node's module algorithm
+ *     (`prisma/package.json` → `<dir>/build/index.js`). This is the most
+ *     reliable target because it doesn't rely on `.bin` symlinks, which
+ *     are routinely stripped from bundled / packed deployments.
+ *  2. `.bin/prisma` symlinks under a few plausible roots.
+ *
+ * Returns `null` when none are found — the runner stays disabled and the
+ * caller surfaces a clear error.
+ */
+function resolvePrismaCommand(): { cmd: string; args: string[] } | null {
+  // (1) JS entry through Node's resolver.
+  try {
+    const req = createRequire(path.join(process.cwd(), "package.json"));
+    const pkgPath = req.resolve("prisma/package.json");
+    const main = path.join(path.dirname(pkgPath), "build", "index.js");
+    if (existsSync(main)) {
+      return { cmd: process.execPath, args: [main] };
+    }
+  } catch {
+    /* package not resolvable from cwd — fall through to .bin candidates */
+  }
+
+  // (2) Fallback to .bin symlinks.
+  const candidates = [
+    path.join(process.cwd(), "node_modules", ".bin", "prisma"),
+    path.join(process.cwd(), "..", "node_modules", ".bin", "prisma"),
+    path.join(process.cwd(), ".next", "standalone", "node_modules", ".bin", "prisma"),
+  ];
+  for (const c of candidates) {
+    if (existsSync(c)) return { cmd: c, args: [] };
+  }
+
+  return null;
 }
 
 interface AppliedRow {
@@ -192,11 +232,12 @@ export async function runMigrateDeploy(actor: {
     throw new Error("A migration deploy is already in progress");
   }
 
-  try {
-    await access(PRISMA_BIN);
-  } catch {
+  const resolved = resolvePrismaCommand();
+  if (!resolved) {
     throw new Error(
-      "Prisma CLI not found in node_modules — deploy unavailable in this environment",
+      "Prisma CLI not found in node_modules — deploy unavailable in this environment. " +
+        "Ensure the `prisma` package is installed in production (devDependencies are skipped " +
+        "in many deploys — move it to dependencies, or run migrations from a build/CI step).",
     );
   }
 
@@ -206,8 +247,11 @@ export async function runMigrateDeploy(actor: {
 
   try {
     const { stdout, stderr } = await execFileAsync(
-      PRISMA_BIN,
-      ["migrate", "deploy"], // fixed args — no shell, no user input
+      resolved.cmd,
+      // Fixed args — no shell, no user input. The first segment of args is
+      // the JS entry path when invoking via `node`; "migrate deploy" is
+      // always the trailing pair.
+      [...resolved.args, "migrate", "deploy"],
       {
         cwd: process.cwd(),
         timeout: DEPLOY_TIMEOUT_MS,
