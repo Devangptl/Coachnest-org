@@ -361,7 +361,7 @@ export default function AnalyticsTab({ classId }: { classId: string }) {
             <HelpCircle className="w-4 h-4 text-amber-400" /> Quiz performance
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[520px]">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs text-muted-foreground border-b border-border">
                   <th className="text-left font-medium py-2">Quiz</th>
@@ -396,7 +396,7 @@ export default function AnalyticsTab({ classId }: { classId: string }) {
             <ClipboardList className="w-4 h-4 text-amber-400" /> Assignment performance
           </h3>
           <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[520px]">
+            <table className="w-full text-sm">
               <thead>
                 <tr className="text-xs text-muted-foreground border-b border-border">
                   <th className="text-left font-medium py-2">Assignment</th>
