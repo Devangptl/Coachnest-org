@@ -103,6 +103,20 @@ export const discussionSchema = z.object({
   title: z.string().min(3).max(200),
   body: z.string().min(1).max(10000),
   parentId: z.string().optional().nullable(),
+  tags: z.array(z.string().min(1).max(30)).max(8).default([]),
+});
+
+export const discussionReplySchema = z.object({
+  body: z.string().min(1).max(10000),
+});
+
+export const discussionUpdateSchema = z.object({
+  title: z.string().min(3).max(200).optional(),
+  body: z.string().min(1).max(10000).optional(),
+  tags: z.array(z.string().min(1).max(30)).max(8).optional(),
+  pinned: z.boolean().optional(),
+  resolved: z.boolean().optional(),
+  acceptedReplyId: z.string().nullable().optional(),
 });
 
 export const messageSchema = z.object({

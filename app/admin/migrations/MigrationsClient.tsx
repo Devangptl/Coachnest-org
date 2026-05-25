@@ -22,6 +22,7 @@ interface Status {
   applied: { name: string; finishedAt: string | null }[];
   pending: string[];
   failed: { name: string; startedAt: string | null }[];
+  orphans: { name: string; finishedAt: string | null; failed: boolean }[];
 }
 
 const CONFIRM_PHRASE = "CONFIRM";
@@ -181,6 +182,14 @@ export default function MigrationsClient() {
               until then.
             </Notice>
           )}
+          {status.orphans.length > 0 && (
+            <Notice tone="amber">
+              {status.orphans.length} row(s) in <code>_prisma_migrations</code>{" "}
+              don&apos;t match any migration file on disk — likely baselined or
+              renamed migrations. They&apos;re shown below for visibility and
+              don&apos;t block deploys.
+            </Notice>
+          )}
 
           {/* Pending */}
           <Section title={`Pending (${status.pending.length})`}>
@@ -301,6 +310,34 @@ export default function MigrationsClient() {
               </ul>
             )}
           </Section>
+
+          {/* Historical / orphaned rows */}
+          {status.orphans.length > 0 && (
+            <Section title={`Historical, not on disk (${status.orphans.length})`}>
+              <ul className="divide-y divide-border max-h-60 overflow-y-auto">
+                {status.orphans.map((m) => (
+                  <li
+                    key={m.name}
+                    className="py-2 px-3 text-sm font-mono flex items-center justify-between gap-2"
+                  >
+                    <span className="flex items-center gap-2 min-w-0">
+                      {m.failed ? (
+                        <AlertTriangle className="w-3.5 h-3.5 text-amber-400 flex-shrink-0" />
+                      ) : (
+                        <CheckCircle2 className="w-3.5 h-3.5 text-muted-foreground flex-shrink-0" />
+                      )}
+                      <span className="truncate">{m.name}</span>
+                    </span>
+                    {m.finishedAt && (
+                      <span className="text-xs text-muted-foreground flex-shrink-0">
+                        {new Date(m.finishedAt).toLocaleString()}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
         </div>
       )}
     </div>
