@@ -319,7 +319,7 @@ export default async function HomePage() {
 
               {/* Headline with rotating word */}
               <FadeInSection delay={0.06}>
-                <h1 className="text-[32px] sm:text-[48px] lg:text-[55px] font-bold tracking-tight leading-[1.02] mb-6">
+                <h1 className="text-[32px] sm:text-[48px] lg:text-[58px] font-hero leading-[1.05] mb-6">
                   <span className="text-foreground">Learn to </span>
                   <RotatingWords
                     words={["Code.", "Design.", "Create.", "Lead."]}

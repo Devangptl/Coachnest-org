@@ -272,6 +272,14 @@
   }
 }
 
+/* ─── Display serif for hero headline ────────────────────────────────────────── */
+.font-hero {
+  font-family: var(--font-fraunces, "Fraunces", Georgia, serif);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.0;
+}
+
 /* ─── Handwritten highlight font ─────────────────────────────────────────────── */
 .font-handwritten {
   font-family: var(--font-caveat, "Caveat", cursive);
