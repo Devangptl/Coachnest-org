@@ -46,6 +46,12 @@ export interface MigrationStatus {
   applied: { name: string; finishedAt: string | null }[];
   pending: string[];
   failed: { name: string; startedAt: string | null }[];
+  /**
+   * Rows present in `_prisma_migrations` whose migration file is no longer
+   * on disk — historical entries from baselined / squashed / renamed
+   * migrations. These do NOT block `migrate deploy` for current files.
+   */
+  orphans: { name: string; finishedAt: string | null; failed: boolean }[];
 }
 
 /** Read the names of all migrations committed to the repo (on disk). */
@@ -111,16 +117,35 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
   }
   const canonical = Array.from(byName.values());
 
-  const appliedOk = canonical.filter(
-    (r) => r.finished_at && !r.rolled_back_at,
+  // Cross-reference with disk. A row in `_prisma_migrations` whose file is
+  // no longer on disk is an ORPHAN — a historical entry from a baselined,
+  // squashed, or renamed migration. Orphans must not be counted as
+  // applied/failed for the current codebase, otherwise:
+  //   1) an old failed orphan blocks the deploy of an unrelated new migration
+  //   2) the totals are confusing (you see "1 applied" but the list looks
+  //      empty because the entry doesn't match anything you'd recognise).
+  // When disk isn't readable at runtime (serverless), we can't tell orphans
+  // apart — fall back to counting every row.
+  const onDisk = disk ? new Set(disk) : null;
+  const isOnDisk = (name: string) => (onDisk ? onDisk.has(name) : true);
+
+  const appliedRows = canonical.filter(
+    (r) => isOnDisk(r.migration_name) && r.finished_at && !r.rolled_back_at,
   );
 
-  const failed = canonical
-    .filter((r) => !r.finished_at || r.rolled_back_at)
-    .map((r) => ({
-      name: r.migration_name,
-      startedAt: r.started_at ? r.started_at.toISOString() : null,
-    }));
+  const failedRows = canonical.filter(
+    (r) =>
+      isOnDisk(r.migration_name) && (!r.finished_at || r.rolled_back_at),
+  );
+
+  const orphans = (onDisk
+    ? canonical.filter((r) => !onDisk.has(r.migration_name))
+    : []
+  ).map((r) => ({
+    name: r.migration_name,
+    finishedAt: r.finished_at ? r.finished_at.toISOString() : null,
+    failed: !r.finished_at || !!r.rolled_back_at,
+  }));
 
   // Anything on disk without any row at all is pending. Failed / rolled-back
   // migrations are NOT pending — they need to be resolved, not re-queued.
@@ -131,12 +156,16 @@ export async function getMigrationStatus(): Promise<MigrationStatus> {
     runnerEnabled: isRunnerEnabled(),
     historyAvailable: allRows !== null,
     diskAvailable: disk !== null,
-    applied: appliedOk.map((r) => ({
+    applied: appliedRows.map((r) => ({
       name: r.migration_name,
       finishedAt: r.finished_at ? r.finished_at.toISOString() : null,
     })),
     pending,
-    failed,
+    failed: failedRows.map((r) => ({
+      name: r.migration_name,
+      startedAt: r.started_at ? r.started_at.toISOString() : null,
+    })),
+    orphans,
   };
 }
 
