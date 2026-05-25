@@ -104,15 +104,25 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to:   { height: "0" },
         },
+        "marquee-ltr": {
+          "0%":   { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+        "marquee-rtl": {
+          "0%":   { transform: "translateX(-50%)" },
+          "100%": { transform: "translateX(0)" },
+        },
       },
       animation: {
         "fade-in":        "fade-in 0.5s ease-out",
         "slide-in":       "slide-in 0.3s ease-out",
         "slide-up":       "slide-up 0.4s ease-out",
         "scale-in":       "scale-in 0.3s ease-out",
-        shimmer:          "shimmer 2s infinite linear",
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up":   "accordion-up 0.2s ease-out",
+        shimmer:           "shimmer 2s infinite linear",
+        "accordion-down":  "accordion-down 0.2s ease-out",
+        "accordion-up":    "accordion-up 0.2s ease-out",
+        "marquee-ltr":     "marquee-ltr 30s linear infinite",
+        "marquee-rtl":     "marquee-rtl 33s linear infinite",
       },
       backdropBlur: { xs: "2px" },
       // ── Box shadows ──────────────────────────────────────────────────────

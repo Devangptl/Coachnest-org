@@ -18,6 +18,7 @@ import FeaturedCourseCard from "@/components/landing/FeaturedCourseCard";
 // Lazy-load heavy animation components (framer-motion) — separate JS chunks
 const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
 const HeroShowcase = dynamic(() => import("@/components/landing/HeroShowcase"));
+const ReviewsMarquee = dynamic(() => import("@/components/landing/ReviewsMarquee"));
 
 const FadeInSection = dynamic(() => import("@/components/landing/FadeInSection"));
 const AnimatedCounter = dynamic(() => import("@/components/landing/AnimatedCounter"));
@@ -439,6 +440,10 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          REVIEWS MARQUEE
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      <ReviewsMarquee />
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           TRUSTED BY / SOCIAL PROOF BAR

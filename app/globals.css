@@ -297,6 +297,16 @@
 
 /* ─── Hero-specific animations ────────────────────────────────────────────────── */
 
+/* Reviews marquee — continuous scroll left-to-right and right-to-left */
+@keyframes marquee-ltr {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes marquee-rtl {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
 /* Small glow segments that travel along individual grid lines.
    Top/left are animated (parent-relative %) so the beam crosses the
    full height/width of its track. drop-shadow gives a soft halo. */
