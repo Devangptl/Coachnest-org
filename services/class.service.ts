@@ -436,48 +436,361 @@ export async function postChatMessage(
 
 // ─── Analytics ────────────────────────────────────────────────────────────────
 
+/**
+ * Rich analytics rollup for a class dashboard.
+ *
+ * One pass of focused queries → aggregated entirely in JS so the route stays
+ * dependency-light. Costs scale with (#students × #lessons) so it's intended
+ * for cohorts in the low thousands; beyond that, move per-day series to
+ * materialized views.
+ */
 export async function getClassAnalytics(classId: string, instructorId: string) {
   await assertClassOwner(classId, instructorId);
 
-  const [
-    enrollments,
-    courses,
-    sessions,
-    attendance,
-    leaderboard,
-  ] = await Promise.all([
-    prisma.classEnrollment.groupBy({
-      by: ["status"],
-      where: { classId },
-      _count: { _all: true },
-    }),
-    prisma.classCourse.findMany({
-      where: { classId },
-      include: {
-        course: {
-          select: {
-            id: true,
-            title: true,
-            _count: { select: { enrollments: true, lessons: true } },
+  const enrollmentsByStatus = await prisma.classEnrollment.groupBy({
+    by: ["status"],
+    where: { classId },
+    _count: { _all: true },
+  });
+
+  // Approved-only data feeds the per-student / engagement charts.
+  const approvedEnrollments = await prisma.classEnrollment.findMany({
+    where: { classId, status: "APPROVED" },
+    include: { user: { select: { id: true, name: true, avatar: true } } },
+  });
+  const studentIds = approvedEnrollments.map((e) => e.userId);
+
+  const classCourses = await prisma.classCourse.findMany({
+    where: { classId },
+    orderBy: { order: "asc" },
+    include: {
+      course: {
+        select: {
+          id: true,
+          title: true,
+          totalLessons: true,
+          lessons: {
+            select: { id: true, title: true, type: true, duration: true },
           },
         },
       },
+    },
+  });
+  const lessonIds = classCourses.flatMap((cc) => cc.course.lessons.map((l) => l.id));
+
+  const [
+    lessonProgress,
+    quizzes,
+    sessions,
+    attendance,
+    assignments,
+    recentEnrollments,
+  ] = await Promise.all([
+    studentIds.length && lessonIds.length
+      ? prisma.lessonProgress.findMany({
+          where: {
+            userId: { in: studentIds },
+            lessonId: { in: lessonIds },
+          },
+          select: {
+            lessonId: true,
+            userId: true,
+            completed: true,
+            watchedSecs: true,
+          },
+        })
+      : Promise.resolve([] as Array<{
+          lessonId: string;
+          userId: string;
+          completed: boolean;
+          watchedSecs: number;
+        }>),
+    lessonIds.length
+      ? prisma.quiz.findMany({
+          where: { lessonId: { in: lessonIds } },
+          select: {
+            id: true,
+            title: true,
+            passMark: true,
+            lessonId: true,
+            attempts: {
+              where: { userId: { in: studentIds } },
+              select: { userId: true, score: true, passed: true },
+            },
+          },
+        })
+      : Promise.resolve([] as Array<{
+          id: string;
+          title: string;
+          passMark: number;
+          lessonId: string;
+          attempts: Array<{ userId: string; score: number; passed: boolean }>;
+        }>),
+    prisma.liveSession.findMany({
+      where: { classId },
+      orderBy: { scheduledAt: "asc" },
+      select: {
+        id: true,
+        title: true,
+        scheduledAt: true,
+        status: true,
+        _count: { select: { attendance: true } },
+      },
     }),
-    prisma.liveSession.count({ where: { classId } }),
     prisma.attendance.groupBy({
       by: ["status"],
       where: { session: { classId } },
       _count: { _all: true },
     }),
+    prisma.assignment.findMany({
+      where: { classId },
+      orderBy: { createdAt: "asc" },
+      select: {
+        id: true,
+        title: true,
+        maxScore: true,
+        passingScore: true,
+        status: true,
+        dueAt: true,
+        submissions: {
+          where: { studentId: { in: studentIds } },
+          select: {
+            studentId: true,
+            status: true,
+            score: true,
+            submittedAt: true,
+            isLate: true,
+          },
+        },
+      },
+    }),
     prisma.classEnrollment.findMany({
       where: { classId, status: "APPROVED" },
-      orderBy: [{ xpEarned: "desc" }, { progressPct: "desc" }],
-      take: 10,
-      include: { user: { select: { id: true, name: true, avatar: true } } },
+      select: { approvedAt: true, requestedAt: true },
+      orderBy: { approvedAt: "asc" },
     }),
   ]);
 
-  return { enrollments, courses, sessions, attendance, leaderboard };
+  // ── Aggregate ───────────────────────────────────────────────────────────────
+
+  const totalStudents = approvedEnrollments.length;
+  const totalLessons = lessonIds.length;
+  const totalLessonSlots = totalStudents * totalLessons;
+
+  let completedLessons = 0;
+  let totalWatchSecs = 0;
+  for (const p of lessonProgress) {
+    if (p.completed) completedLessons += 1;
+    totalWatchSecs += p.watchedSecs;
+  }
+  const avgProgressPct = totalLessonSlots
+    ? Math.round((completedLessons / totalLessonSlots) * 100)
+    : 0;
+
+  // Active = updated lastActiveAt within 7 days
+  const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+  const activeStudents = approvedEnrollments.filter(
+    (e) => e.lastActiveAt && e.lastActiveAt >= sevenDaysAgo,
+  ).length;
+
+  // ── Per-lesson engagement ─────────────────────────────────────────────────
+  const lessonStats = classCourses.flatMap((cc) =>
+    cc.course.lessons.map((l) => {
+      const rows = lessonProgress.filter((p) => p.lessonId === l.id);
+      const completed = rows.filter((r) => r.completed).length;
+      const watchSecs = rows.reduce((acc, r) => acc + r.watchedSecs, 0);
+      return {
+        lessonId: l.id,
+        title: l.title,
+        type: l.type,
+        courseTitle: cc.course.title,
+        completionPct: totalStudents
+          ? Math.round((completed / totalStudents) * 100)
+          : 0,
+        completedCount: completed,
+        totalStudents,
+        watchSecs,
+      };
+    }),
+  );
+
+  // ── Per-quiz performance ──────────────────────────────────────────────────
+  const quizStats = quizzes.map((q) => {
+    const attempts = q.attempts;
+    // Best attempt per student.
+    const bestByStudent = new Map<string, { score: number; passed: boolean }>();
+    for (const a of attempts) {
+      const prev = bestByStudent.get(a.userId);
+      if (!prev || a.score > prev.score) {
+        bestByStudent.set(a.userId, { score: a.score, passed: a.passed });
+      }
+    }
+    const best = Array.from(bestByStudent.values());
+    const avgScore = best.length
+      ? Math.round(best.reduce((acc, b) => acc + b.score, 0) / best.length)
+      : 0;
+    const passCount = best.filter((b) => b.passed).length;
+    return {
+      quizId: q.id,
+      title: q.title,
+      passMark: q.passMark,
+      takenBy: bestByStudent.size,
+      totalAttempts: attempts.length,
+      passCount,
+      passRate: bestByStudent.size
+        ? Math.round((passCount / bestByStudent.size) * 100)
+        : 0,
+      avgScore,
+    };
+  });
+
+  // ── Per-assignment performance ────────────────────────────────────────────
+  const assignmentStats = assignments.map((a) => {
+    const subs = a.submissions;
+    // Latest per student (collapse multiple attempts).
+    const latestByStudent = new Map<string, (typeof subs)[number]>();
+    for (const s of subs) {
+      const prev = latestByStudent.get(s.studentId);
+      // status priority: GRADED > SUBMITTED > RETURNED > DRAFT
+      const priority = { GRADED: 3, SUBMITTED: 2, RETURNED: 1, DRAFT: 0 } as const;
+      if (!prev || priority[s.status] >= priority[prev.status]) {
+        latestByStudent.set(s.studentId, s);
+      }
+    }
+    const finalized = Array.from(latestByStudent.values()).filter(
+      (s) => s.status === "GRADED" || s.status === "SUBMITTED",
+    );
+    const graded = finalized.filter((s) => s.status === "GRADED" && s.score !== null);
+    const avgScore = graded.length
+      ? Math.round(
+          graded.reduce((acc, s) => acc + (s.score ?? 0), 0) / graded.length,
+        )
+      : 0;
+    const passing = graded.filter(
+      (s) => (s.score ?? 0) >= a.passingScore,
+    ).length;
+    const lateCount = finalized.filter((s) => s.isLate).length;
+    return {
+      assignmentId: a.id,
+      title: a.title,
+      status: a.status,
+      maxScore: a.maxScore,
+      passingScore: a.passingScore,
+      dueAt: a.dueAt,
+      submittedCount: finalized.length,
+      submissionRate: totalStudents
+        ? Math.round((finalized.length / totalStudents) * 100)
+        : 0,
+      gradedCount: graded.length,
+      passCount: passing,
+      lateCount,
+      avgScore,
+    };
+  });
+
+  // ── Attendance summary ────────────────────────────────────────────────────
+  const attendByStatus: Record<string, number> = {
+    PRESENT: 0, ABSENT: 0, LATE: 0, EXCUSED: 0,
+  };
+  for (const row of attendance) {
+    attendByStatus[row.status] = row._count?._all ?? 0;
+  }
+  const totalAttendRows = Object.values(attendByStatus).reduce((a, b) => a + b, 0);
+  const attendanceRate = totalAttendRows
+    ? Math.round(
+        ((attendByStatus.PRESENT + attendByStatus.LATE) / totalAttendRows) * 100,
+      )
+    : 0;
+
+  // ── Enrollment trend (last 30 days, daily bucket) ─────────────────────────
+  const days = 30;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const trend: Array<{ date: string; enrollments: number }> = [];
+  for (let i = days - 1; i >= 0; i -= 1) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    trend.push({ date: d.toISOString().slice(0, 10), enrollments: 0 });
+  }
+  const trendIndex = new Map(trend.map((t, i) => [t.date, i]));
+  for (const r of recentEnrollments) {
+    const when = r.approvedAt ?? r.requestedAt;
+    if (!when) continue;
+    const key = when.toISOString().slice(0, 10);
+    const idx = trendIndex.get(key);
+    if (idx !== undefined) trend[idx].enrollments += 1;
+  }
+
+  // ── Top + struggling students ─────────────────────────────────────────────
+  const ranked = [...approvedEnrollments].sort(
+    (a, b) =>
+      b.xpEarned - a.xpEarned ||
+      b.progressPct - a.progressPct,
+  );
+  const topStudents = ranked.slice(0, 10).map((e) => ({
+    userId: e.user.id,
+    name: e.user.name,
+    avatar: e.user.avatar,
+    xpEarned: e.xpEarned,
+    progressPct: e.progressPct,
+    attendStreak: e.attendStreak,
+  }));
+  const struggling = ranked
+    .filter((e) => e.progressPct < 30)
+    .slice(-10)
+    .reverse()
+    .map((e) => ({
+      userId: e.user.id,
+      name: e.user.name,
+      avatar: e.user.avatar,
+      progressPct: e.progressPct,
+      lastActiveAt: e.lastActiveAt,
+    }));
+
+  // ── Top + bottom lessons by engagement ────────────────────────────────────
+  const lessonRanked = [...lessonStats].sort(
+    (a, b) => b.completionPct - a.completionPct,
+  );
+  const topLessons = lessonRanked.slice(0, 5);
+  const bottomLessons = lessonRanked
+    .filter((l) => l.totalStudents > 0)
+    .slice(-5)
+    .reverse();
+
+  return {
+    kpis: {
+      totalStudents,
+      activeStudents,
+      pendingRequests:
+        enrollmentsByStatus.find((e) => e.status === "PENDING")?._count._all ?? 0,
+      avgProgressPct,
+      attendanceRate,
+      totalLiveSessions: sessions.length,
+      totalWatchHours: Math.round(totalWatchSecs / 3600),
+      totalAssignments: assignments.length,
+      totalQuizzes: quizzes.length,
+    },
+    enrollmentsByStatus: enrollmentsByStatus.map((e) => ({
+      status: e.status,
+      count: e._count._all,
+    })),
+    enrollmentTrend: trend,
+    attendance: attendByStatus,
+    sessions: sessions.map((s) => ({
+      id: s.id,
+      title: s.title,
+      scheduledAt: s.scheduledAt,
+      status: s.status,
+      attendees: s._count.attendance,
+    })),
+    lessonStats,
+    topLessons,
+    bottomLessons,
+    quizStats,
+    assignmentStats,
+    topStudents,
+    struggling,
+  };
 }
 
 // ─── Certificates ─────────────────────────────────────────────────────────────
