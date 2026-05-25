@@ -670,7 +670,7 @@ export default async function HomePage() {
             </FadeInSection>
 
             {/* Course Grid */}
-            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6" staggerDelay={0.07}>
+            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3" staggerDelay={0.05}>
               {courses.map((course) => {
                 const avg = course.reviews.length
                   ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
