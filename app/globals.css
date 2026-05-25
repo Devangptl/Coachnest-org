@@ -274,10 +274,10 @@
 
 /* ─── Display serif for hero headline ────────────────────────────────────────── */
 .font-hero {
-  font-family: var(--font-fraunces, "Fraunces", Georgia, serif);
-  font-weight: 800;
-  letter-spacing: -0.035em;
-  line-height: 1.0;
+  font-family: var(--font-playfair, "Playfair Display", Georgia, serif);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
 }
 
 /* ─── Handwritten highlight font ─────────────────────────────────────────────── */
@@ -376,7 +376,7 @@
     linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
 }
 
-/* Animated gradient text shimmer — violet/indigo */
+/* Animated gradient text shimmer — brand primary orange */
 @keyframes gradient-shift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -386,12 +386,11 @@
 .hero-gradient-text {
   background: linear-gradient(
     90deg,
-    #6366f1 0%,
-    #8b5cf6 20%,
-    #a78bfa 40%,
-    #8b5cf6 60%,
-    #6366f1 80%,
-    #4f46e5 100%
+    hsl(var(--primary)) 0%,
+    #f97316 25%,
+    #fb923c 50%,
+    #f97316 75%,
+    hsl(var(--primary)) 100%
   );
   background-size: 200% 100%;
   animation: gradient-shift 6s ease-in-out infinite;

@@ -3,7 +3,7 @@
  * Provides the global background, font, Navbar, and toast notifications.
  */
 import type { Metadata } from "next";
-import { Poppins, Dancing_Script, Anek_Gujarati, Fraunces } from "next/font/google";
+import { Poppins, Dancing_Script, Anek_Gujarati, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -21,11 +21,11 @@ const dancingScript = Dancing_Script({
   display: "swap",
 });
 
-// Aesthetic display serif for hero headlines
-const fraunces = Fraunces({
+// Elegant editorial serif for hero headlines
+const playfair = Playfair_Display({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700", "800", "900"],
-  variable: "--font-fraunces",
+  weight: ["400", "500", "600", "700", "800", "900"],
+  variable: "--font-playfair",
   display: "swap",
 });
 
@@ -117,7 +117,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${dancingScript.variable} ${anekGujarati.variable} ${fraunces.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${dancingScript.variable} ${anekGujarati.variable} ${playfair.variable}`}>
       <head>
         {/* Preconnect to external CDNs for faster image loads */}
         <link rel="preconnect" href="https://images.unsplash.com" />

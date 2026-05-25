@@ -328,13 +328,13 @@ export default async function HomePage() {
                   <br className="hidden sm:block" />
                   <span className="text-foreground">Build the </span>
                   <span className="relative inline-block">
-                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-[#4f46e5] via-[#8b5cf6] to-[#a78bfa] bg-clip-text text-transparent">
+                    <span className="font-handwritten text-[1.2em] bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
                       career
                     </span>
                     <svg
                       aria-hidden="true"
                       viewBox="0 0 200 12"
-                      className="absolute left-0 -bottom-1 w-full h-2.5 text-[#8b5cf6]/70"
+                      className="absolute left-0 -bottom-1 w-full h-2.5 text-[#ea580c]/70"
                       preserveAspectRatio="none"
                     >
                       <path
