@@ -97,7 +97,7 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-background/60 via-background/85 to-background" />
 
-        <div className="relative max-w-6xl mx-auto px-4 pt-6 sm:pt-10 pb-8 sm:pb-14">
+        <div className="relative pt-6 sm:pt-10 pb-8 sm:pb-14 px-3 sm:px-4 lg:px-6">
           {/* Pills */}
           <div className="flex items-center gap-1.5 sm:gap-2 mb-3 flex-wrap">
             <Pill tone="amber">
@@ -119,7 +119,7 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
             )}
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-bold leading-tight max-w-3xl">
+          <h1 className="text-2xl sm:text-4xl font-bold leading-tight">
             {cls.name}
           </h1>
 
@@ -173,7 +173,7 @@ async function ClassDetailContent({ slug, invite }: { slug: string; invite?: str
       </section>
 
       {/* ── Main grid ─────────────────────────────────────────────────── */}
-      <div className="max-w-6xl mx-auto px-4 pb-20 lg:pb-12 -mt-2">
+      <div className="pb-20 lg:pb-12 -mt-2 px-3 sm:px-4 lg:px-6">
         <div className="grid lg:grid-cols-3 gap-4 sm:gap-6">
           {/* Mobile: aside first (CTA-above-fold). lg: aside on the right. */}
           <aside className="lg:col-span-1 lg:order-2">
@@ -243,13 +243,13 @@ function ClassDetailSkeleton() {
   return (
     <div>
       <section className="relative bg-gradient-to-b from-amber-500/10 via-background to-background">
-        <div className="max-w-6xl mx-auto px-4 pt-8 pb-12 space-y-3">
+        <div className="pt-8 pb-12 space-y-3 px-3 sm:px-4 lg:px-6">
           <Skeleton h="h-5" w="w-20" className="rounded-full" />
           <Skeleton h="h-10" w="w-2/3" />
           <Skeleton h="h-4" w="w-48" />
         </div>
       </section>
-      <div className="max-w-6xl mx-auto px-4 -mt-2 pb-12">
+      <div className="-mt-2 pb-12 px-3 sm:px-4 lg:px-6">
         <div className="grid lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2 space-y-4">
             <div className="glass p-5 rounded-xl space-y-2">

@@ -145,9 +145,9 @@ export default function ClassDetailShell({
   const isPublished = cls.status === "PUBLISHED";
 
   return (
-    <div className="px-3 sm:px-4 max-w-7xl mx-auto pb-12">
+    <div className="pb-12">
       {/* ── Hero ─────────────────────────────────────────────────────── */}
-      <div className="relative rounded-xl sm:rounded-2xl overflow-hidden mb-4 border border-border">
+      <div className="relative overflow-hidden mb-4 border-y border-border sm:border sm:rounded-2xl">
         {cls.banner ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -229,7 +229,7 @@ export default function ClassDetailShell({
             {cls.name}
           </h1>
           {cls.description && (
-            <p className="hidden sm:block text-sm text-white/80 mt-1 line-clamp-1 max-w-2xl">
+            <p className="hidden sm:block text-sm text-white/80 mt-1 line-clamp-1">
               {cls.description}
             </p>
           )}
@@ -237,7 +237,7 @@ export default function ClassDetailShell({
       </div>
 
       {/* ── KPI strip ───────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 px-3 sm:px-4 lg:px-6">
         <KpiTile
           icon={Users}
           label="Students"
@@ -272,9 +272,9 @@ export default function ClassDetailShell({
       </div>
 
       {/* ── Tabs layout ─────────────────────────────────────────────── */}
-      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5">
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 px-3 sm:px-4 lg:px-6">
         {/* Mobile: horizontal scroll, sticky under the page header */}
-        <nav className="lg:hidden flex gap-1 overflow-x-auto pb-1 -mx-3 px-3 sm:-mx-4 sm:px-4 sticky top-14 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70 -mt-1">
+        <nav className="lg:hidden flex gap-1 overflow-x-auto pb-1 sticky top-14 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
           {TABS.map(({ id, label, icon: Icon }) => (
             <button
               key={id}
