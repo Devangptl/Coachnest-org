@@ -3,7 +3,7 @@
  * Provides the global background, font, Navbar, and toast notifications.
  */
 import type { Metadata } from "next";
-import { Poppins, Caveat, Anek_Gujarati, Fraunces } from "next/font/google";
+import { Poppins, Dancing_Script, Anek_Gujarati, Fraunces } from "next/font/google";
 import "./globals.css";
 
 const poppins = Poppins({
@@ -13,11 +13,11 @@ const poppins = Poppins({
   display: "swap",
 });
 
-// Aesthetic handwritten script for highlight words
-const caveat = Caveat({
+// Elegant cursive script for accent highlight words
+const dancingScript = Dancing_Script({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
-  variable: "--font-caveat",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-dancing",
   display: "swap",
 });
 
@@ -117,7 +117,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${caveat.variable} ${anekGujarati.variable} ${fraunces.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${poppins.variable} ${dancingScript.variable} ${anekGujarati.variable} ${fraunces.variable}`}>
       <head>
         {/* Preconnect to external CDNs for faster image loads */}
         <link rel="preconnect" href="https://images.unsplash.com" />

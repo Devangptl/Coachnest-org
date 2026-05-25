@@ -282,11 +282,10 @@
 
 /* ─── Handwritten highlight font ─────────────────────────────────────────────── */
 .font-handwritten {
-  font-family: var(--font-caveat, "Caveat", cursive);
+  font-family: var(--font-dancing, "Dancing Script", cursive);
   font-weight: 700;
-  letter-spacing: -0.005em;
-  /* Caveat has a smaller x-height; nudge it up to align with the rest of h1 */
-  line-height: 0.95;
+  letter-spacing: 0.01em;
+  line-height: 1.0;
 }
 
 /* ─── Gujarati script font ───────────────────────────────────────────────────── */
@@ -377,7 +376,7 @@
     linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
 }
 
-/* Animated gradient text shimmer — warm orange/amber */
+/* Animated gradient text shimmer — violet/indigo */
 @keyframes gradient-shift {
   0%   { background-position: 0% 50%; }
   50%  { background-position: 100% 50%; }
@@ -387,12 +386,12 @@
 .hero-gradient-text {
   background: linear-gradient(
     90deg,
-    #f97316 0%,
-    #fb923c 20%,
-    #fbbf24 40%,
-    #fb923c 60%,
-    #f97316 80%,
-    #ea580c 100%
+    #6366f1 0%,
+    #8b5cf6 20%,
+    #a78bfa 40%,
+    #8b5cf6 60%,
+    #6366f1 80%,
+    #4f46e5 100%
   );
   background-size: 200% 100%;
   animation: gradient-shift 6s ease-in-out infinite;
