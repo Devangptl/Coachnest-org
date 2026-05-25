@@ -318,7 +318,7 @@ export default async function HomePage() {
 
               {/* Headline */}
               <FadeInSection delay={0.06}>
-                <h1 className="text-[22px] sm:text-[32px] lg:text-[42px] font-hero leading-[1.1] mb-6">
+                <h1 className="text-[32px] sm:text-[48px] lg:text-[58px] font-hero leading-[1.1] mb-6">
                   <span className="text-foreground">Learn from the best.</span>
                   <br />
                   <span className="text-foreground">Build an extraordinary </span>
