@@ -5,7 +5,7 @@ import Link from "next/link";
 import {
   LayoutDashboard, BookOpen, Users, Video, ClipboardCheck,
   MessageCircle, Megaphone, BarChart3, Settings, Copy, Globe, Lock,
-  ClipboardList,
+  ClipboardList, ExternalLink, Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -59,20 +59,45 @@ type Cls = {
   _count: { enrollments: number; liveSessions: number };
 };
 
-const TABS = [
-  { id: "overview",      label: "Overview",      icon: LayoutDashboard },
-  { id: "courses",       label: "Courses",       icon: BookOpen },
-  { id: "students",      label: "Students",      icon: Users },
-  { id: "live",          label: "Live Sessions", icon: Video },
-  { id: "attendance",    label: "Attendance",    icon: ClipboardCheck },
-  { id: "assignments",   label: "Assignments",   icon: ClipboardList },
-  { id: "discussion",    label: "Discussion",    icon: MessageCircle },
-  { id: "announcements", label: "Announcements", icon: Megaphone },
-  { id: "analytics",     label: "Analytics",     icon: BarChart3 },
-  { id: "settings",      label: "Settings",      icon: Settings },
-] as const;
+type TabDef = {
+  id: string;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+};
 
-type TabId = (typeof TABS)[number]["id"];
+const TAB_GROUPS: ReadonlyArray<{ label: string; tabs: TabDef[] }> = [
+  {
+    label: "Manage",
+    tabs: [
+      { id: "overview",   label: "Overview",   icon: LayoutDashboard },
+      { id: "courses",    label: "Courses",    icon: BookOpen },
+      { id: "students",   label: "Students",   icon: Users },
+    ],
+  },
+  {
+    label: "Engage",
+    tabs: [
+      { id: "live",          label: "Live",          icon: Video },
+      { id: "attendance",    label: "Attendance",    icon: ClipboardCheck },
+      { id: "assignments",   label: "Assignments",   icon: ClipboardList },
+      { id: "discussion",    label: "Discussion",    icon: MessageCircle },
+      { id: "announcements", label: "Announcements", icon: Megaphone },
+    ],
+  },
+  {
+    label: "Analyze",
+    tabs: [
+      { id: "analytics", label: "Analytics", icon: BarChart3 },
+      { id: "settings",  label: "Settings",  icon: Settings },
+    ],
+  },
+];
+
+const TABS: TabDef[] = TAB_GROUPS.flatMap((g) => g.tabs);
+type TabId =
+  | "overview" | "courses" | "students"
+  | "live" | "attendance" | "assignments" | "discussion" | "announcements"
+  | "analytics" | "settings";
 
 export default function ClassDetailShell({
   cls,
@@ -117,91 +142,262 @@ export default function ClassDetailShell({
     toast.success("Invite link copied");
   }
 
+  const isPublished = cls.status === "PUBLISHED";
+
   return (
-    <div className="px-4 max-w-7xl mx-auto">
-      {/* Banner */}
-      <div className="rounded-xl overflow-hidden mb-4 relative">
+    <div className="pb-12">
+      {/* ── Hero ─────────────────────────────────────────────────────── */}
+      <div className="relative overflow-hidden mb-4 border-y border-border sm:border sm:rounded-2xl">
         {cls.banner ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={cls.banner} alt="" className="w-full h-40 object-cover" />
+          <img
+            src={cls.banner}
+            alt=""
+            className="w-full h-40 sm:h-56 object-cover"
+          />
         ) : (
-          <div className="w-full h-32 bg-gradient-to-r from-amber-500/15 via-orange-500/10 to-amber-500/15" />
-        )}
-      </div>
-
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border ${
-              cls.status === "PUBLISHED"
-                ? "bg-emerald-500/15 text-emerald-400 border-emerald-400/30"
-                : "bg-amber-500/15 text-amber-400 border-amber-400/30"
-            }`}>{cls.status}</span>
-            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border bg-secondary text-muted-foreground border-border flex items-center gap-1">
-              {cls.visibility === "PUBLIC" ? <Globe className="w-3 h-3" /> : <Lock className="w-3 h-3" />}
-              {cls.visibility}
-            </span>
-            <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border">
-              {cls.joinMode.replace("_", " ")}
-            </span>
+          <div className="w-full h-40 sm:h-56 bg-gradient-to-br from-amber-500/30 via-orange-500/15 to-violet-500/20 relative">
+            {/* Subtle dotted pattern overlay */}
+            <div
+              className="absolute inset-0 opacity-30"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle, currentColor 1px, transparent 1px)",
+                backgroundSize: "24px 24px",
+                color: "rgba(255,255,255,0.2)",
+              }}
+            />
           </div>
-          <h1 className="text-2xl font-bold">{cls.name}</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {cls._count.enrollments} students · {cls.courses.length} courses · {cls._count.liveSessions} live sessions
-          </p>
-        </div>
-        <div className="flex items-center gap-2">
+        )}
+        {/* Dark overlay so text stays legible on any banner */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+
+        {/* Floating action group — icon-only on mobile to avoid overflow */}
+        <div className="absolute top-3 right-3 sm:top-4 sm:right-4 flex items-center gap-1.5 sm:gap-2">
+          {isPublished && (
+            <Link href={`/classes/${cls.slug}`} target="_blank">
+              <Button
+                size="sm"
+                variant="secondary"
+                className="backdrop-blur bg-black/40 border-white/20 text-white hover:bg-black/60"
+                aria-label="Preview public class page"
+              >
+                <ExternalLink className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Preview</span>
+              </Button>
+            </Link>
+          )}
           {cls.inviteCode && (
-            <Button variant="secondary" size="sm" onClick={copyInvite}>
-              <Copy className="w-4 h-4" /> Copy invite link
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={copyInvite}
+              className="backdrop-blur bg-black/40 border-white/20 text-white hover:bg-black/60"
+              aria-label="Copy invite link"
+            >
+              <Copy className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Invite link</span>
             </Button>
           )}
-          <Button onClick={togglePublish} disabled={busy} size="sm">
-            {cls.status === "PUBLISHED" ? "Unpublish" : "Publish"}
+          <Button size="sm" onClick={togglePublish} disabled={busy}>
+            {isPublished ? (
+              "Unpublish"
+            ) : (
+              <>
+                <Sparkles className="w-3.5 h-3.5" />
+                Publish
+              </>
+            )}
           </Button>
+        </div>
+
+        {/* Title block */}
+        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6">
+          <div className="flex items-center gap-1.5 sm:gap-2 mb-2 flex-wrap">
+            <Pill tone={isPublished ? "emerald" : "amber"}>{cls.status}</Pill>
+            <Pill tone="slate">
+              {cls.visibility === "PUBLIC" ? (
+                <><Globe className="w-3 h-3" /> Public</>
+              ) : (
+                <><Lock className="w-3 h-3" /> Private</>
+              )}
+            </Pill>
+            <Pill tone="slate">{cls.joinMode.replace("_", " ").toLowerCase()}</Pill>
+            {cls.isPaid && <Pill tone="violet">Paid</Pill>}
+          </div>
+          <h1 className="text-xl sm:text-3xl font-bold text-white drop-shadow-sm line-clamp-2">
+            {cls.name}
+          </h1>
+          {cls.description && (
+            <p className="hidden sm:block text-sm text-white/80 mt-1 line-clamp-1">
+              {cls.description}
+            </p>
+          )}
         </div>
       </div>
 
-      {/* Tabs layout */}
-      <div className="flex flex-col lg:flex-row gap-4">
-        <aside className="lg:w-56 shrink-0">
-          <nav className="flex lg:flex-col gap-1 overflow-x-auto pb-2 lg:pb-0">
-            {TABS.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setTab(id as TabId)}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
-                  tab === id
-                    ? "bg-amber-500/10 text-foreground border border-amber-400/20"
-                    : "text-muted-foreground hover:text-foreground hover:bg-secondary border border-transparent"
-                }`}
-              >
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
+      {/* ── KPI strip ───────────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-6 px-3 sm:px-4 lg:px-6">
+        <KpiTile
+          icon={Users}
+          label="Students"
+          value={cls._count.enrollments}
+          tone="emerald"
+        />
+        <KpiTile
+          icon={BookOpen}
+          label="Courses"
+          value={cls.courses.length}
+          tone="amber"
+        />
+        <KpiTile
+          icon={Video}
+          label="Live sessions"
+          value={cls._count.liveSessions}
+          tone="violet"
+        />
+        <KpiTile
+          icon={cls.startDate ? LayoutDashboard : ClipboardList}
+          label={cls.startDate ? "Starts" : "Cohort start"}
+          value={
+            cls.startDate
+              ? new Date(cls.startDate).toLocaleDateString(undefined, {
+                  month: "short",
+                  day: "numeric",
+                })
+              : "TBD"
+          }
+          tone="sky"
+        />
+      </div>
+
+      {/* ── Tabs layout ─────────────────────────────────────────────── */}
+      <div className="flex flex-col lg:flex-row gap-4 sm:gap-5 px-3 sm:px-4 lg:px-6">
+        {/* Mobile: horizontal scroll, sticky under the page header */}
+        <nav className="lg:hidden flex gap-1 overflow-x-auto pb-1 sticky top-14 z-20 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/70">
+          {TABS.map(({ id, label, icon: Icon }) => (
+            <button
+              key={id}
+              onClick={() => setTab(id as TabId)}
+              className={`shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
+                tab === id
+                  ? "bg-amber-500/15 text-amber-400 border border-amber-400/30"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary border border-transparent"
+              }`}
+            >
+              <Icon className="w-4 h-4" />
+              {label}
+            </button>
+          ))}
+        </nav>
+
+        {/* Desktop: grouped sidebar */}
+        <aside className="hidden lg:block lg:w-60 shrink-0">
+          <nav className="space-y-5 sticky top-20">
+            {TAB_GROUPS.map((group) => (
+              <div key={group.label}>
+                <div className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/70 mb-1.5 px-2">
+                  {group.label}
+                </div>
+                <div className="space-y-0.5">
+                  {group.tabs.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => setTab(id as TabId)}
+                      className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        tab === id
+                          ? "bg-amber-500/10 text-foreground border border-amber-400/20"
+                          : "text-muted-foreground hover:text-foreground hover:bg-secondary border border-transparent"
+                      }`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ))}
           </nav>
         </aside>
 
         <main className="flex-1 min-w-0">
-          {tab === "overview" && <OverviewTab cls={cls} />}
-          {tab === "courses" && <CoursesTab cls={cls} />}
-          {tab === "students" && <StudentsTab classId={cls.id} />}
-          {tab === "live" && <LiveSessionsTab classId={cls.id} />}
-          {tab === "attendance" && <AttendanceTab classId={cls.id} />}
-          {tab === "assignments" && <AssignmentsTab classId={cls.id} />}
-          {tab === "discussion" && (
+          {tab === "overview"      && <OverviewTab cls={cls} onJumpTab={(t) => setTab(t as TabId)} />}
+          {tab === "courses"       && <CoursesTab cls={cls} />}
+          {tab === "students"      && <StudentsTab classId={cls.id} />}
+          {tab === "live"          && <LiveSessionsTab classId={cls.id} />}
+          {tab === "attendance"    && <AttendanceTab classId={cls.id} />}
+          {tab === "assignments"   && <AssignmentsTab classId={cls.id} />}
+          {tab === "discussion"    && (
             <DiscussionTab classId={cls.id} currentUserId={cls.instructorId} />
           )}
           {tab === "announcements" && <AnnouncementsTab classId={cls.id} />}
-          {tab === "analytics" && <AnalyticsTab classId={cls.id} />}
-          {tab === "settings" && <SettingsTab cls={cls} onRefresh={onRefresh} />}
+          {tab === "analytics"     && <AnalyticsTab classId={cls.id} />}
+          {tab === "settings"      && <SettingsTab cls={cls} onRefresh={onRefresh} />}
         </main>
       </div>
 
-      <div className="text-xs text-muted-foreground mt-6">
-        <Link href="/instructor/classes" className="hover:text-foreground">← Back to all classes</Link>
+      <div className="text-xs text-muted-foreground mt-8">
+        <Link href="/instructor/classes" className="hover:text-foreground">
+          ← Back to all classes
+        </Link>
+      </div>
+    </div>
+  );
+}
+
+// ─── Small presentational helpers ───────────────────────────────────────────
+
+function Pill({
+  children,
+  tone,
+}: {
+  children: React.ReactNode;
+  tone: "emerald" | "amber" | "slate" | "violet";
+}) {
+  const tones = {
+    emerald: "bg-emerald-500/20 text-emerald-300 border-emerald-400/40",
+    amber: "bg-amber-500/20 text-amber-300 border-amber-400/40",
+    slate: "bg-white/10 text-white/90 border-white/20",
+    violet: "bg-violet-500/20 text-violet-300 border-violet-400/40",
+  } as const;
+  return (
+    <span
+      className={`text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border backdrop-blur-sm inline-flex items-center gap-1 ${tones[tone]}`}
+    >
+      {children}
+    </span>
+  );
+}
+
+function KpiTile({
+  icon: Icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ComponentType<{ className?: string }>;
+  label: string;
+  value: number | string;
+  tone: "amber" | "emerald" | "violet" | "sky";
+}) {
+  const tones = {
+    amber: "text-amber-400 bg-amber-500/10",
+    emerald: "text-emerald-400 bg-emerald-500/10",
+    violet: "text-violet-400 bg-violet-500/10",
+    sky: "text-sky-400 bg-sky-500/10",
+  } as const;
+  return (
+    <div className="glass p-3 sm:p-4 rounded-xl flex items-center gap-3">
+      <div
+        className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center shrink-0 ${tones[tone]}`}
+      >
+        <Icon className="w-4 h-4" />
+      </div>
+      <div className="min-w-0">
+        <div className="text-lg sm:text-xl font-bold tabular-nums truncate">
+          {value}
+        </div>
+        <div className="text-[11px] text-muted-foreground">{label}</div>
       </div>
     </div>
   );

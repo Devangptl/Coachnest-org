@@ -16,9 +16,5 @@ export default async function InstructorClassDetailPage({
   const { id } = await params;
   const { tab } = await searchParams;
 
-  return (
-    <div className="px-4 max-w-7xl mx-auto">
-      <InstructorClassClient id={id} initialTab={tab ?? "overview"} />
-    </div>
-  );
+  return <InstructorClassClient id={id} initialTab={tab ?? "overview"} />;
 }
