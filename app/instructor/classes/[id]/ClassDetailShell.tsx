@@ -5,6 +5,7 @@ import Link from "next/link";
 import {
   LayoutDashboard, BookOpen, Users, Video, ClipboardCheck,
   MessageCircle, Megaphone, BarChart3, Settings, Copy, Globe, Lock,
+  ClipboardList,
 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -16,6 +17,7 @@ import LiveSessionsTab from "./tabs/LiveSessionsTab";
 import AttendanceTab from "./tabs/AttendanceTab";
 import DiscussionTab from "./tabs/DiscussionTab";
 import AnnouncementsTab from "./tabs/AnnouncementsTab";
+import AssignmentsTab from "./tabs/AssignmentsTab";
 import AnalyticsTab from "./tabs/AnalyticsTab";
 import SettingsTab from "./tabs/SettingsTab";
 
@@ -63,6 +65,7 @@ const TABS = [
   { id: "students",      label: "Students",      icon: Users },
   { id: "live",          label: "Live Sessions", icon: Video },
   { id: "attendance",    label: "Attendance",    icon: ClipboardCheck },
+  { id: "assignments",   label: "Assignments",   icon: ClipboardList },
   { id: "discussion",    label: "Discussion",    icon: MessageCircle },
   { id: "announcements", label: "Announcements", icon: Megaphone },
   { id: "analytics",     label: "Analytics",     icon: BarChart3 },
@@ -187,6 +190,7 @@ export default function ClassDetailShell({
           {tab === "students" && <StudentsTab classId={cls.id} />}
           {tab === "live" && <LiveSessionsTab classId={cls.id} />}
           {tab === "attendance" && <AttendanceTab classId={cls.id} />}
+          {tab === "assignments" && <AssignmentsTab classId={cls.id} />}
           {tab === "discussion" && <DiscussionTab classId={cls.id} />}
           {tab === "announcements" && <AnnouncementsTab classId={cls.id} />}
           {tab === "analytics" && <AnalyticsTab classId={cls.id} />}

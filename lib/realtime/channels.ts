@@ -9,6 +9,7 @@ export const channels = {
   classJoinRequests: (classId: string) => `class:${classId}:join-requests`,
   classAttendance:   (classId: string) => `class:${classId}:attendance`,
   classLive:         (classId: string) => `class:${classId}:live`,
+  classAssignments:  (classId: string) => `class:${classId}:assignments`,
 } as const;
 
 export const events = {
@@ -26,6 +27,9 @@ export const events = {
   classAttendance:     "class.attendance.updated",
   classLiveStarted:    "class.live.started",
   classLiveEnded:      "class.live.ended",
+  classAssignmentPublished: "class.assignment.published",
+  classAssignmentSubmitted: "class.assignment.submitted",
+  classAssignmentGraded:    "class.assignment.graded",
 } as const;
 
 export type RealtimeEvent = (typeof events)[keyof typeof events];
