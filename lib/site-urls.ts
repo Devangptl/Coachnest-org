@@ -1,13 +1,10 @@
 /**
- * Site URL helpers for the two-host architecture:
- *   - APP_ORIGIN   — the main platform (courses, dashboard, admin)
- *   - BOOKS_ORIGIN — the books storefront subdomain
+ * Site URL helpers — used to emit externally-facing links (emails, OG
+ * metadata, sitemap, social shares, post-purchase deep links).
  *
- * Both hosts serve from the same Next.js deployment; middleware rewrites the
- * book subdomain's paths onto the canonical /books/* routes. Use these
- * helpers anywhere we emit an externally-facing link (emails, OG metadata,
- * sitemap, social shares, post-purchase deep links) so search engines and
- * users converge on the canonical host for each surface.
+ * The books module lives at `/books` on the main domain — there is no
+ * separate subdomain. These helpers exist as a single seam in case that
+ * changes in the future.
  */
 
 export const APP_ORIGIN: string =
@@ -15,22 +12,10 @@ export const APP_ORIGIN: string =
   process.env.NEXT_PUBLIC_APP_URL ??
   "https://coachnest.com";
 
-export const BOOKS_ORIGIN: string =
-  process.env.NEXT_PUBLIC_BOOKS_ORIGIN ??
-  "https://books.coachnest.com";
-
-export const BOOKS_HOST: string =
-  process.env.NEXT_PUBLIC_BOOKS_HOST ??
-  // Derive from BOOKS_ORIGIN as a fallback
-  (() => {
-    try { return new URL(BOOKS_ORIGIN).host; }
-    catch { return "books.coachnest.com"; }
-  })();
-
 export function booksCatalogUrl(): string {
-  return `${BOOKS_ORIGIN}/`;
+  return `${APP_ORIGIN}/books`;
 }
 
 export function bookDetailUrl(slug: string): string {
-  return `${BOOKS_ORIGIN}/${slug}`;
+  return `${APP_ORIGIN}/books/${slug}`;
 }
