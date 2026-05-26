@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";
 import { handlePaymentSuccess, handlePaymentIntentSuccess } from "@/services/payment.service";
+import { handleBookPaymentSuccess } from "@/services/book-payment.service";
 import {
   handleSubscriptionCheckoutCompleted,
   handleSubscriptionCreated,
@@ -45,12 +46,17 @@ export async function POST(req: NextRequest) {
         const session = event.data.object;
 
         if (session.mode === "payment") {
-          // One-time course purchase
           const paymentIntentId =
             typeof session.payment_intent === "string"
               ? session.payment_intent
               : session.payment_intent?.id ?? "";
-          await handlePaymentSuccess(session.id, paymentIntentId);
+          // Route by metadata.type — "books" goes through the cart flow,
+          // everything else (course, feature) goes through the legacy handler.
+          if (session.metadata?.type === "books") {
+            await handleBookPaymentSuccess(session.id, paymentIntentId);
+          } else {
+            await handlePaymentSuccess(session.id, paymentIntentId);
+          }
         } else if (session.mode === "subscription") {
           // Write the subscription record immediately so the success page
           // always finds it — don't wait for customer.subscription.created

@@ -129,7 +129,7 @@ function shell(body: string): string {
       <!-- Wordmark -->
       <div style="margin-bottom:32px;">
         <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">
-          Coach<span style="color:#f97316;">Nest</span>
+          Coach<span style="color:#f97316;">nest</span>
         </span>
       </div>
 
@@ -291,6 +291,51 @@ export async function sendPurchaseEmail(
       ${btn("Start Learning", `${APP}/courses/${courseId}`)}
     `),
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 7b. Book purchase confirmation ──────────────────────────────────────────
+
+export async function sendBookPurchaseEmail(
+  to: string,
+  name: string,
+  bookTitles: string[],
+  amount: string,
+) {
+  const titleSummary = bookTitles.length === 1
+    ? `"${bookTitles[0]}"`
+    : `${bookTitles.length} books`;
+
+  const list = bookTitles
+    .map((t) => `<li style="color:#e5e5e5;font-size:14px;line-height:1.7;margin:4px 0;">${t}</li>`)
+    .join("");
+
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: `Your Coachnest purchase: ${titleSummary}`,
+    html: shell(`
+      <p style="margin:0 0 4px;">${badge("Purchase Confirmed")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Your books are ready 📚
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Hi ${name}, your payment was successful. The following ${bookTitles.length === 1 ? "title is" : "titles are"} now available in your library:
+      </p>
+
+      <ul style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;padding:16px 24px;margin:0 0 24px;list-style:disc;">
+        ${list}
+      </ul>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Amount paid", `₹${amount}`)}
+          ${infoRow("Access",      "Perpetual download")}
+        </tbody>
+      </table>
+
+      ${btn("Go to Library", `${APP}/dashboard/library`)}
+    `),
+  });
 }
 
 // ─── 8. Course update / new lesson ───────────────────────────────────────────

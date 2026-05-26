@@ -127,6 +127,12 @@ enum PlaylistVisibility {
   PRIVATE
 }
 
+enum BookFileFormat {
+  PDF
+  EPUB
+  DOCX
+}
+
 // ─── Organization (Multi-tenant) ──────────────────────────────────────────────
 
 model Organization {
@@ -142,6 +148,7 @@ model Organization {
 
   members OrganizationMember[]
   courses Course[]
+  books   Book[]
   coupons Coupon[]
   payouts Payout[]
 
@@ -271,6 +278,14 @@ model User {
   coursePlaylists CoursePlaylist[]       @relation("PlaylistOwner")
   playlistFollows CoursePlaylistFollow[]
 
+  // Books module
+  books          Book[]          @relation("BookAuthor")
+  bookOrders     BookOrder[]
+  bookPurchases  BookPurchase[]
+  bookReviews    BookReview[]
+  bookWishlist   BookWishlist[]
+  cart           Cart?
+
   @@map("users")
 }
 
@@ -283,6 +298,7 @@ model Category {
   icon    String?
   color   String?
   courses Course[]
+  books   Book[]
 
   @@map("categories")
 }
@@ -572,12 +588,14 @@ model Coupon {
   uses           Int          @default(0)
   expiresAt      DateTime?
   courseId       String?
+  bookId         String?      // scope coupon to a single book (symmetric with courseId)
   organizationId String?
   createdById    String?      // instructor who created this coupon
   createdAt      DateTime     @default(now())
 
   organization Organization? @relation(fields: [organizationId], references: [id])
   orders       Order[]
+  bookOrders   BookOrder[]
   couponUses   CouponUse[]
 
   @@map("coupons")
@@ -1153,7 +1171,8 @@ model MediaAsset {
   userId    String
   url       String
   publicId  String   @unique
-  folder    String   @default("misc") // courses | blogs | avatars | misc
+  folder    String   @default("misc") // courses | blogs | avatars | books | misc
+  kind      String   @default("image") // image | document | video
   filename  String?
   bytes     Int      @default(0)
   width     Int      @default(0)
@@ -1165,6 +1184,7 @@ model MediaAsset {
 
   @@index([userId])
   @@index([userId, folder])
+  @@index([userId, kind])
   @@map("media_assets")
 }
 
@@ -1712,4 +1732,158 @@ model CoursePlaylistFollow {
   @@id([userId, playlistId])
   @@index([playlistId])
   @@map("course_playlist_follows")
+}
+
+// ─── Books / Documents Module ─────────────────────────────────────────────────
+
+model Book {
+  id              String         @id @default(cuid())
+  title           String
+  slug            String         @unique
+  description     String         @db.Text
+  shortDesc       String?
+  coverImage      String?
+  previewVideo    String?
+  author          String
+  pageCount       Int?
+  language        String         @default("English")
+  fileFormat      BookFileFormat
+  fileUrl         String
+  filePublicId    String
+  fileSize        Int
+  price           Decimal?       @db.Decimal(10, 2)
+  discountPrice   Decimal?       @db.Decimal(10, 2)
+  isFree          Boolean        @default(false)
+  status          ContentStatus  @default(DRAFT)
+  instructorRevenuePercent Int   @default(70)
+  categoryId      String?
+  createdById     String
+  organizationId  String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  category     Category?       @relation(fields: [categoryId], references: [id])
+  createdBy    User            @relation("BookAuthor", fields: [createdById], references: [id])
+  organization Organization?   @relation(fields: [organizationId], references: [id])
+  orderItems   BookOrderItem[]
+  purchases    BookPurchase[]
+  reviews      BookReview[]
+  wishlist     BookWishlist[]
+  cartItems    CartItem[]
+
+  @@index([status, createdAt])
+  @@index([categoryId, status])
+  @@index([createdById])
+  @@map("books")
+}
+
+model Cart {
+  id        String     @id @default(cuid())
+  userId    String     @unique
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  cartId  String
+  bookId  String
+  addedAt DateTime @default(now())
+
+  cart Cart @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([cartId, bookId])
+  @@index([bookId])
+  @@map("cart_items")
+}
+
+model BookOrder {
+  id              String      @id @default(cuid())
+  userId          String
+  amount          Decimal     @db.Decimal(10, 2)
+  subtotal        Decimal     @db.Decimal(10, 2)
+  currency        String      @default("INR")
+  status          OrderStatus @default(PENDING)
+  stripeSessionId String?     @unique
+  stripePaymentId String?     @unique
+  couponId        String?
+  discountAmount  Decimal?    @db.Decimal(10, 2)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+
+  user   User            @relation(fields: [userId], references: [id])
+  coupon Coupon?         @relation(fields: [couponId], references: [id])
+  items  BookOrderItem[]
+
+  @@index([userId, status])
+  @@map("book_orders")
+}
+
+model BookOrderItem {
+  id                String  @id @default(cuid())
+  bookOrderId       String
+  bookId            String
+  price             Decimal @db.Decimal(10, 2)
+  instructorRevenue Decimal @db.Decimal(10, 2)
+  platformRevenue   Decimal @db.Decimal(10, 2)
+  instructorPercent Decimal @db.Decimal(5, 2)
+
+  bookOrder BookOrder     @relation(fields: [bookOrderId], references: [id], onDelete: Cascade)
+  book      Book          @relation(fields: [bookId], references: [id])
+  purchase  BookPurchase?
+
+  @@unique([bookOrderId, bookId])
+  @@index([bookId])
+  @@map("book_order_items")
+}
+
+model BookPurchase {
+  id          String   @id @default(cuid())
+  userId      String
+  bookId      String
+  orderItemId String   @unique
+  downloads   Int      @default(0)
+  purchasedAt DateTime @default(now())
+
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book      Book          @relation(fields: [bookId], references: [id])
+  orderItem BookOrderItem @relation(fields: [orderItemId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([userId, purchasedAt])
+  @@map("book_purchases")
+}
+
+model BookReview {
+  id        String   @id @default(cuid())
+  userId    String
+  bookId    String
+  rating    Int
+  comment   String?  @db.Text
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, bookId])
+  @@index([bookId, createdAt])
+  @@map("book_reviews")
+}
+
+model BookWishlist {
+  userId  String
+  bookId  String
+  addedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  book Book @relation(fields: [bookId], references: [id], onDelete: Cascade)
+
+  @@id([userId, bookId])
+  @@index([bookId])
+  @@map("book_wishlists")
 }
