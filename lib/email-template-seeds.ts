@@ -553,5 +553,226 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
         `Thank you for your interest in teaching on CoachNest.`
       ),
     },
+
+    // ── 25. Assignment Graded (Student) ───────────────────────────────────────
+    {
+      slug: "assignment-graded",
+      name: "Assignment Graded",
+      subject: "Your assignment \"{{assignmentTitle}}\" has been graded",
+      description: "Sent to a student when their assignment submission is graded by the instructor.",
+      variables: ["studentName", "assignmentTitle", "classTitle", "score", "maxScore", "feedback", "link"],
+      htmlBody: shell(
+        "Assignment graded",
+        "Your submission has been graded, {{studentName}}",
+        `${para("Your instructor has reviewed your submission for <strong style=\"color:#d97757;\">{{assignmentTitle}}</strong> in {{classTitle}}.")}
+        ${infoTable([
+          ["Assignment", "{{assignmentTitle}}"],
+          ["Class", "{{classTitle}}"],
+          ["Score", "{{score}} / {{maxScore}}"],
+        ])}
+        ${quoteBox("Instructor Feedback", "{{feedback}}")}`,
+        "View Submission",
+        "{{link}}"
+      ),
+    },
+
+    // ── 26. Assignment Submitted — Instructor Notification ────────────────────
+    {
+      slug: "assignment-submitted-instructor",
+      name: "Assignment Submission Received (Instructor)",
+      subject: "{{studentName}} submitted \"{{assignmentTitle}}\"",
+      description: "Sent to an instructor when a student finalises their assignment submission.",
+      variables: ["instructorName", "studentName", "assignmentTitle", "classTitle", "link"],
+      htmlBody: shell(
+        "New submission",
+        "Assignment submission received",
+        `${para("Hi {{instructorName}}, a student has submitted their assignment and is awaiting your review.")}
+        ${infoTable([
+          ["Student", "{{studentName}}"],
+          ["Assignment", "{{assignmentTitle}}"],
+          ["Class", "{{classTitle}}"],
+          ["Status", "Awaiting grading"],
+        ])}`,
+        "Grade Submission",
+        "{{link}}"
+      ),
+    },
+
+    // ── 27. Class Enrollment Approved (Student) ───────────────────────────────
+    {
+      slug: "class-enrollment-approved",
+      name: "Class Enrollment Approved",
+      subject: "You've been approved to join \"{{className}}\" — CoachNest",
+      description: "Sent to a student when the instructor approves their class join request.",
+      variables: ["studentName", "className", "link"],
+      htmlBody: shell(
+        "Enrollment approved",
+        "You're in, {{studentName}}! 🎉",
+        `${para("Your request to join <strong style=\"color:#d97757;\">{{className}}</strong> has been approved. You now have full access to the class materials.")}
+        ${infoTable([
+          ["Class", "{{className}}"],
+          ["Status", "Approved"],
+          ["Access", "Full class access"],
+        ])}
+        ${steps([
+          ["Access your class", "Head to your class page to get started."],
+          ["Complete your assignments", "Submit assignments before their due dates."],
+          ["Join live sessions", "Attend scheduled live sessions with your instructor."],
+        ])}`,
+        "Go to Class",
+        "{{link}}"
+      ),
+    },
+
+    // ── 28. Class Enrollment Rejected (Student) ───────────────────────────────
+    {
+      slug: "class-enrollment-rejected",
+      name: "Class Enrollment Rejected",
+      subject: "Update on your request to join \"{{className}}\" — CoachNest",
+      description: "Sent to a student when the instructor rejects their class join request.",
+      variables: ["studentName", "className"],
+      htmlBody: shell(
+        "Enrollment update",
+        "Enrollment request reviewed",
+        `${para("Hi {{studentName}}, your request to join <strong style=\"color:#d97757;\">{{className}}</strong> was not approved at this time.")}
+        ${para("If you believe this is a mistake or have any questions, please contact the instructor or our support team.")}`,
+        "Browse Other Classes",
+        "{{appUrl}}/classes",
+        `Need help? <a href="{{appUrl}}/contact" style="color:#d97757;text-decoration:none;">Contact support</a>.`
+      ),
+    },
+
+    // ── 29. New Class Join Request — Instructor Notification ──────────────────
+    {
+      slug: "class-join-request-instructor",
+      name: "Class Join Request (Instructor)",
+      subject: "{{studentName}} wants to join \"{{className}}\"",
+      description: "Sent to an instructor when a student requests to join their class (approval required).",
+      variables: ["instructorName", "studentName", "className", "link"],
+      htmlBody: shell(
+        "New join request",
+        "A student wants to join your class",
+        `${para("Hi {{instructorName}}, a student is requesting to join your class and is waiting for your approval.")}
+        ${infoTable([
+          ["Student", "{{studentName}}"],
+          ["Class", "{{className}}"],
+          ["Status", "Pending your approval"],
+        ])}`,
+        "Review Request",
+        "{{link}}"
+      ),
+    },
+
+    // ── 30. Class Announcement (Enrolled Students) ────────────────────────────
+    {
+      slug: "class-announcement",
+      name: "Class Announcement",
+      subject: "New announcement in \"{{className}}\"",
+      description: "Sent to all enrolled students when an instructor posts a class announcement.",
+      variables: ["studentName", "className", "announcementTitle", "announcementBody", "link"],
+      htmlBody: shell(
+        "Class announcement",
+        "New announcement in {{className}}",
+        `${para("Hi {{studentName}}, your instructor posted a new announcement in <strong style=\"color:#d97757;\">{{className}}</strong>.")}
+        ${quoteBox("{{announcementTitle}}", "{{announcementBody}}")}`,
+        "View in Class",
+        "{{link}}"
+      ),
+    },
+
+    // ── 31. New Course Review — Instructor Notification ───────────────────────
+    {
+      slug: "new-course-review",
+      name: "New Course Review (Instructor)",
+      subject: "New {{rating}}-star review on \"{{courseTitle}}\"",
+      description: "Sent to an instructor when a student leaves a review on their course.",
+      variables: ["instructorName", "studentName", "courseTitle", "rating", "comment", "link"],
+      htmlBody: shell(
+        "New review",
+        "A student reviewed your course",
+        `${para("Hi {{instructorName}}, <strong>{{studentName}}</strong> left a <strong style=\"color:#d97757;\">{{rating}}-star review</strong> on <strong>{{courseTitle}}</strong>.")}
+        ${infoTable([
+          ["Course", "{{courseTitle}}"],
+          ["Student", "{{studentName}}"],
+          ["Rating", "{{rating}} / 5 stars"],
+        ])}
+        ${quoteBox("Review Comment", "{{comment}}")}`,
+        "View Course Reviews",
+        "{{link}}"
+      ),
+    },
+
+    // ── 32. New Refund Request — Admin Notification ───────────────────────────
+    {
+      slug: "refund-request-admin",
+      name: "New Refund Request (Admin)",
+      subject: "[CoachNest] New refund request from {{studentName}}",
+      description: "Sent to admin when a student submits a refund request.",
+      variables: ["studentName", "studentEmail", "courseTitle", "refundAmount"],
+      htmlBody: shell(
+        "Refund request",
+        "New refund request received",
+        `${para("A student has submitted a refund request and is awaiting your review.")}
+        ${infoTable([
+          ["Student", "{{studentName}}"],
+          ["Email", "{{studentEmail}}"],
+          ["Course", "{{courseTitle}}"],
+          ["Refund amount", "&#8377;{{refundAmount}}"],
+          ["Status", "Pending Review"],
+        ])}`,
+        "Review in Admin Panel",
+        "{{appUrl}}/admin/refunds"
+      ),
+    },
+
+    // ── 33. Course Pending Review — Admin Notification ────────────────────────
+    {
+      slug: "course-pending-review-admin",
+      name: "Course Pending Review (Admin)",
+      subject: "[CoachNest] New course pending review from {{instructorName}}",
+      description: "Sent to admin when an instructor submits a free course for review.",
+      variables: ["instructorName", "instructorEmail", "courseTitle", "link"],
+      htmlBody: shell(
+        "Course pending review",
+        "New course awaiting review",
+        `${para("An instructor has submitted a free course for review and publication.")}
+        ${infoTable([
+          ["Instructor", "{{instructorName}}"],
+          ["Email", "{{instructorEmail}}"],
+          ["Course", "{{courseTitle}}"],
+          ["Status", "Pending Review"],
+        ])}
+        ${steps([
+          ["Review the course content", "Check all lessons, sections, and materials."],
+          ["Approve or reject", "Use the admin panel to make your decision."],
+          ["Instructor notified", "They'll receive an email with your decision automatically."],
+        ])}`,
+        "Review Course",
+        "{{link}}"
+      ),
+    },
+
+    // ── 34. Course Completed (Student) ────────────────────────────────────────
+    {
+      slug: "course-completed",
+      name: "Course Completed",
+      subject: "You've completed \"{{courseTitle}}\" — claim your certificate! 🎓",
+      description: "Sent to a student the moment they reach 90% lesson completion in a course.",
+      variables: ["studentName", "courseTitle", "instructorName", "certLink", "courseLink"],
+      htmlBody: shell(
+        "Course complete",
+        "Outstanding work, {{studentName}}! 🎓",
+        `${para("You've successfully completed <strong style=\"color:#d97757;\">{{courseTitle}}</strong> by <strong>{{instructorName}}</strong>. Your certificate of completion is ready to download and share.")}
+        ${infoTable([
+          ["Course", "{{courseTitle}}"],
+          ["Instructor", "{{instructorName}}"],
+          ["Status", "✓ Completed"],
+        ])}
+        ${noticeBox("Share your achievement on LinkedIn to showcase your new skills to employers and your network!")}`,
+        "Download Certificate",
+        "{{certLink}}",
+        `Want to keep learning? <a href="{{courseLink}}" style="color:#d97757;text-decoration:none;">Explore more courses</a>.`
+      ),
+    },
   ];
 }
