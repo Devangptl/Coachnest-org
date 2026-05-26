@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     where: { id: parsed.data.enrollmentId },
     include: {
       user:  { select: { email: true, name: true } },
-      class: { select: { title: true } },
+      class: { select: { name: true } },
     },
   });
 
@@ -67,7 +67,7 @@ export async function PATCH(req: NextRequest, ctx: { params: Promise<{ id: strin
     // Notify student of the decision (fire-and-forget)
     if (enrollmentBefore?.user.email) {
       const { email, name } = enrollmentBefore.user;
-      const className = enrollmentBefore.class.title;
+      const className = enrollmentBefore.class.name;
       if (parsed.data.decision === "APPROVE") {
         sendClassEnrollmentApprovedEmail(email, name ?? "Student", className, id).catch(() => null);
       } else if (parsed.data.decision === "REJECT") {

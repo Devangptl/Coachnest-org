@@ -79,7 +79,7 @@ export async function POST(
           assignment.class.instructor.name ?? "Instructor",
           student?.name ?? "A student",
           assignment.title,
-          assignment.class.title,
+          assignment.class.name,
           classId,
         ).catch(() => null);
       }).catch(() => null);

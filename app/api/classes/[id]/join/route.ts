@@ -34,7 +34,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
           cls.instructor.email,
           cls.instructor.name ?? "Instructor",
           student?.name ?? "A student",
-          cls.title,
+          cls.name,
           id,
         ).catch(() => null);
       }).catch(() => null);

@@ -34,7 +34,7 @@ export async function PATCH(
       where: { id: submissionId },
       include: {
         student: { select: { email: true, name: true } },
-        assignment: { select: { title: true, maxScore: true, class: { select: { title: true } } } },
+        assignment: { select: { title: true, maxScore: true, class: { select: { name: true } } } },
       },
     }).then((sub) => {
       if (sub?.student.email && sub.assignment) {
@@ -42,7 +42,7 @@ export async function PATCH(
           sub.student.email,
           sub.student.name ?? "Student",
           sub.assignment.title,
-          sub.assignment.class.title,
+          sub.assignment.class.name,
           submission.score ?? 0,
           sub.assignment.maxScore,
           submission.feedback ?? null,

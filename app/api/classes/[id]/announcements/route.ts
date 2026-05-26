@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
     // Email all approved class members about the announcement (fire-and-forget)
     prisma.class.findUnique({
       where: { id },
-      select: { title: true },
+      select: { name: true },
     }).then(async (cls) => {
       if (!cls) return;
       const enrollments = await prisma.classEnrollment.findMany({
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
             ? sendClassAnnouncementEmail(
                 e.user.email,
                 e.user.name ?? "Student",
-                cls.title,
+                cls.name,
                 a.title,
                 a.body,
                 id,
