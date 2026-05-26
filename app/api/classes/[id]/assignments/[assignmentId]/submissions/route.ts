@@ -57,7 +57,7 @@ export async function POST(
     );
 
     // Notify instructor when a student finalises their submission (fire-and-forget)
-    if (parsed.data.status === "SUBMITTED") {
+    if (parsed.data.finalize) {
       prisma.assignment.findUnique({
         where: { id: assignmentId },
         include: {
