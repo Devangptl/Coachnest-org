@@ -1296,3 +1296,69 @@ export async function sendCourseRejectedEmail(
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
+// ─── 34. Course completed (student) ──────────────────────────────────────────
+
+export async function sendCourseCompletedEmail(
+  to: string,
+  studentName: string,
+  courseTitle: string,
+  instructorName: string,
+  courseId: string
+) {
+  const override = await resolveTemplate("course-completed", {
+    studentName, courseTitle, instructorName,
+    certLink: `${APP}/dashboard/certificates`,
+    courseLink: `${APP}/courses/${courseId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `You've completed "${courseTitle}" — claim your certificate! 🎓`,
+    html: override?.html ?? shell(`
+      <div style="text-align:center;margin-bottom:32px;">
+        <div style="display:inline-block;width:72px;height:72px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:18px;line-height:72px;font-size:36px;margin-bottom:16px;">🎓</div>
+        <h1 style="color:#ffffff;font-size:28px;font-weight:900;margin:0 0 10px;letter-spacing:-0.5px;">
+          Course Complete!
+        </h1>
+        <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0;">
+          Outstanding work, <strong style="color:#f97316;">${studentName}</strong>!
+        </p>
+      </div>
+
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;text-align:center;">
+        You've successfully completed
+        <strong style="color:#ffffff;">${courseTitle}</strong>
+        by <span style="color:#f97316;">${instructorName}</span>.
+        Your certificate of completion is ready to download and share.
+      </p>
+
+      <div style="background:linear-gradient(135deg,#1a0e00,#1a1200);border:1px solid #3a2800;border-radius:12px;padding:24px;margin-bottom:28px;text-align:center;">
+        <p style="color:#f59e0b;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Certificate of Completion</p>
+        <p style="color:#fbbf24;font-size:18px;font-weight:800;margin:0 0 4px;">${courseTitle}</p>
+        <p style="color:#a3a3a3;font-size:12px;margin:0;">Awarded to ${studentName}</p>
+      </div>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Course",     courseTitle)}
+          ${infoRow("Instructor", instructorName)}
+          ${infoRow("Status",     `<span style="color:#22c55e;font-weight:700;">✓ Completed</span>`)}
+        </tbody>
+      </table>
+
+      <div style="background:#0d1a0d;border:1px solid #1f3a1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#86efac;font-size:13px;margin:0;line-height:1.6;">
+          💡 <strong>Share your achievement!</strong> Add your certificate to your LinkedIn profile and let your network know about your new skills.
+        </p>
+      </div>
+
+      <div style="text-align:center;">
+        ${btn("Download Certificate", `${APP}/dashboard/certificates`)}
+      </div>
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;text-align:center;">
+        Want to keep learning? <a href="${APP}/courses" style="color:#f97316;">Explore more courses</a>.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+

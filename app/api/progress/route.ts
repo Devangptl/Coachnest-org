@@ -12,6 +12,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { awardXp, checkLessonBadges, updateStreak } from "@/lib/gamification";
 import { XP_VALUES } from "@/lib/gamification";
+import { sendCourseCompletedEmail } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   const session = await getSession();
@@ -85,6 +86,50 @@ export async function POST(req: NextRequest) {
       xpGained = XP_VALUES.LESSON_COMPLETE;
       await checkLessonBadges(session.userId);
       await updateStreak(session.userId);
+
+      // Check if this lesson completion pushes the student over the 90% threshold
+      // for the first time — if so send a course-complete email (fire-and-forget).
+      prisma.lesson.findUnique({
+        where: { id: lessonId },
+        select: { courseId: true },
+      }).then(async (lesson) => {
+        if (!lesson) return;
+        const { courseId } = lesson;
+
+        // Skip if a certificate already exists (email was sent on a prior completion).
+        const [cert, totalLessons, completedLessons, user, course] = await Promise.all([
+          prisma.certificate.findUnique({
+            where: { userId_courseId: { userId: session.userId, courseId } },
+          }),
+          prisma.lesson.count({ where: { courseId } }),
+          prisma.lessonProgress.count({
+            where: { userId: session.userId, completed: true, lesson: { courseId } },
+          }),
+          prisma.user.findUnique({
+            where: { id: session.userId },
+            select: { email: true, name: true },
+          }),
+          prisma.course.findUnique({
+            where: { id: courseId },
+            select: { title: true, createdBy: { select: { name: true } } },
+          }),
+        ]);
+
+        if (cert) return; // already celebrated
+        if (!user?.email || !course) return;
+        if (totalLessons === 0) return;
+
+        const pct = completedLessons / totalLessons;
+        if (pct >= 0.9) {
+          sendCourseCompletedEmail(
+            user.email,
+            user.name ?? "Student",
+            course.title,
+            course.createdBy?.name ?? "Your Instructor",
+            courseId,
+          ).catch(() => null);
+        }
+      }).catch(() => null);
     }
 
     return NextResponse.json({ progress, xpGained });
