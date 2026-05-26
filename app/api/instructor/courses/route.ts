@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import slugify from "slugify";
+import { sendCoursePendingReviewAdminEmail } from "@/lib/email";
 
 const FREE_COURSE_LIMIT = 5;
 
@@ -167,6 +168,23 @@ export async function POST(req: NextRequest) {
         });
       })
     );
+  }
+
+  // Notify admin when a free course is submitted for review (fire-and-forget)
+  if (status === "PENDING_REVIEW") {
+    prisma.user.findUnique({
+      where: { id: session.userId },
+      select: { name: true, email: true },
+    }).then((instructor) => {
+      if (instructor?.email) {
+        sendCoursePendingReviewAdminEmail(
+          instructor.name ?? "Instructor",
+          instructor.email,
+          course.title,
+          course.id,
+        ).catch(() => null);
+      }
+    }).catch(() => null);
   }
 
   return NextResponse.json({ course }, { status: 201 });

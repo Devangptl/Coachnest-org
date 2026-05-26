@@ -898,6 +898,359 @@ export async function sendCourseApprovedEmail(
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
+// ─── 25. Assignment graded (student) ─────────────────────────────────────────
+
+export async function sendAssignmentGradedEmail(
+  to: string,
+  studentName: string,
+  assignmentTitle: string,
+  classTitle: string,
+  score: number,
+  maxScore: number,
+  feedback: string | null,
+  classId: string
+) {
+  const pct = maxScore > 0 ? Math.round((score / maxScore) * 100) : 0;
+  const scoreColor = pct >= 70 ? "#22c55e" : pct >= 40 ? "#f59e0b" : "#ef4444";
+  const override = await resolveTemplate("assignment-graded", {
+    studentName, assignmentTitle, classTitle,
+    score: String(score), maxScore: String(maxScore),
+    feedback: feedback ?? "", link: `${APP}/classes/${classId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your assignment "${assignmentTitle}" has been graded`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Assignment Graded", scoreColor)}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Your Submission Has Been Graded
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${studentName}, your instructor has reviewed your submission for
+        <strong style="color:#f97316;">${assignmentTitle}</strong> in ${classTitle}.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Assignment", assignmentTitle)}
+          ${infoRow("Score", `<span style="color:${scoreColor};font-weight:700;">${score} / ${maxScore} (${pct}%)</span>`)}
+        </tbody>
+      </table>
+
+      ${feedback ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #f97316;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">Instructor Feedback</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;white-space:pre-wrap;">${feedback}</p>
+      </div>` : ""}
+
+      ${btn("View Submission", `${APP}/classes/${classId}`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 26. Assignment submitted — notify instructor ─────────────────────────────
+
+export async function sendAssignmentSubmittedEmail(
+  to: string,
+  instructorName: string,
+  studentName: string,
+  assignmentTitle: string,
+  classTitle: string,
+  classId: string
+) {
+  const override = await resolveTemplate("assignment-submitted-instructor", {
+    instructorName, studentName, assignmentTitle, classTitle,
+    link: `${APP}/classes/${classId}/manage`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `${studentName} submitted "${assignmentTitle}"`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("New Submission", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
+        Assignment Submission Received
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${instructorName}, a student has submitted their assignment and is awaiting your review.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Student",    studentName)}
+          ${infoRow("Assignment", assignmentTitle)}
+          ${infoRow("Class",      classTitle)}
+        </tbody>
+      </table>
+
+      ${btn("Grade Submission", `${APP}/classes/${classId}/manage`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 27. Class enrollment approved (student) ─────────────────────────────────
+
+export async function sendClassEnrollmentApprovedEmail(
+  to: string,
+  studentName: string,
+  className: string,
+  classId: string
+) {
+  const override = await resolveTemplate("class-enrollment-approved", {
+    studentName, className, link: `${APP}/classes/${classId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `You've been approved to join "${className}" — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Enrollment Approved", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        You're In! 🎉
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Hi ${studentName}, your request to join
+        <strong style="color:#f97316;">${className}</strong> has been approved.
+        You now have full access to the class materials.
+      </p>
+
+      <div style="background:#0d1a0d;border:1px solid #1f3a1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#86efac;font-size:13px;margin:0;line-height:1.6;">
+          💡 Head to your class page to access courses, assignments, and live sessions.
+        </p>
+      </div>
+
+      ${btn("Go to Class", `${APP}/classes/${classId}`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 28. Class enrollment rejected (student) ─────────────────────────────────
+
+export async function sendClassEnrollmentRejectedEmail(
+  to: string,
+  studentName: string,
+  className: string
+) {
+  const override = await resolveTemplate("class-enrollment-rejected", { studentName, className });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Update on your request to join "${className}" — CoachNest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Enrollment Update", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Enrollment Request Reviewed
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${studentName}, your request to join
+        <strong style="color:#f97316;">${className}</strong> was not approved at this time.
+      </p>
+      <p style="color:#a3a3a3;font-size:14px;line-height:1.7;margin:0 0 28px;">
+        If you believe this is a mistake or have questions, please contact the instructor or our support team.
+      </p>
+      ${btn("Browse Other Classes", `${APP}/classes`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 29. New class join request (instructor) ──────────────────────────────────
+
+export async function sendNewClassJoinRequestEmail(
+  to: string,
+  instructorName: string,
+  studentName: string,
+  className: string,
+  classId: string
+) {
+  const override = await resolveTemplate("class-join-request-instructor", {
+    instructorName, studentName, className,
+    link: `${APP}/classes/${classId}/manage`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `${studentName} wants to join "${className}"`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Join Request", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
+        New Student Join Request
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${instructorName}, a student is requesting to join your class.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Student", studentName)}
+          ${infoRow("Class",   className)}
+          ${infoRow("Status",  `<span style="color:#f59e0b;font-weight:700;">Pending your approval</span>`)}
+        </tbody>
+      </table>
+
+      ${btn("Review Request", `${APP}/classes/${classId}/manage`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 30. Class announcement (enrolled students) ───────────────────────────────
+
+export async function sendClassAnnouncementEmail(
+  to: string,
+  studentName: string,
+  className: string,
+  announcementTitle: string,
+  announcementBody: string,
+  classId: string
+) {
+  const override = await resolveTemplate("class-announcement", {
+    studentName, className, announcementTitle, announcementBody,
+    link: `${APP}/classes/${classId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `New announcement in "${className}"`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Class Announcement")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        New Announcement
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Hi ${studentName}, your instructor posted a new announcement in
+        <strong style="color:#f97316;">${className}</strong>.
+      </p>
+
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;padding:20px 24px;margin-bottom:28px;">
+        <p style="color:#e5e5e5;font-size:15px;font-weight:700;margin:0 0 12px;">${announcementTitle}</p>
+        <p style="color:#a3a3a3;font-size:14px;line-height:1.7;margin:0;white-space:pre-wrap;">${announcementBody}</p>
+      </div>
+
+      ${btn("View in Class", `${APP}/classes/${classId}`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 31. New course review (instructor) ──────────────────────────────────────
+
+export async function sendNewCourseReviewEmail(
+  to: string,
+  instructorName: string,
+  studentName: string,
+  courseTitle: string,
+  rating: number,
+  comment: string | null,
+  courseId: string
+) {
+  const stars = "★".repeat(rating) + "☆".repeat(5 - rating);
+  const override = await resolveTemplate("new-course-review", {
+    instructorName, studentName, courseTitle,
+    rating: String(rating), comment: comment ?? "",
+    link: `${APP}/instructor/courses/${courseId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `New ${rating}-star review on "${courseTitle}"`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("New Review")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        A Student Left a Review
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hi ${instructorName}, <strong style="color:#e5e5e5;">${studentName}</strong> reviewed your course
+        <strong style="color:#f97316;">${courseTitle}</strong>.
+      </p>
+
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;padding:20px 24px;margin-bottom:28px;">
+        <p style="color:#fbbf24;font-size:22px;letter-spacing:2px;margin:0 0 10px;">${stars}</p>
+        ${comment ? `<p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;white-space:pre-wrap;">"${comment}"</p>` : `<p style="color:#6b6b6b;font-size:13px;margin:0;">No written comment.</p>`}
+      </div>
+
+      ${btn("View Course Reviews", `${APP}/instructor/courses/${courseId}`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 32. New refund request (admin) ──────────────────────────────────────────
+
+export async function sendRefundRequestAdminEmail(
+  studentName: string,
+  studentEmail: string,
+  courseTitle: string,
+  refundAmount: string,
+  requestId: string
+) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
+  const override = await resolveTemplate("refund-request-admin", {
+    studentName, studentEmail, courseTitle, refundAmount,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(adminEmail),
+    subject: override?.subject ?? `[CoachNest] New refund request from ${studentName}`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Refund Request", "#f59e0b")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
+        New Refund Request
+      </h1>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Student", studentName)}
+          ${infoRow("Email",   `<a href="mailto:${studentEmail}" style="color:#f97316;">${studentEmail}</a>`)}
+          ${infoRow("Course",  courseTitle)}
+          ${infoRow("Amount",  `<span style="color:#f59e0b;font-weight:700;">₹${refundAmount}</span>`)}
+          ${infoRow("Status",  `<span style="color:#f59e0b;font-weight:700;">Pending Review</span>`)}
+        </tbody>
+      </table>
+
+      ${btn("Review in Admin Panel", `${APP}/admin/refunds`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 33. Course submitted for admin review (admin) ────────────────────────────
+
+export async function sendCoursePendingReviewAdminEmail(
+  instructorName: string,
+  instructorEmail: string,
+  courseTitle: string,
+  courseId: string
+) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
+  const override = await resolveTemplate("course-pending-review-admin", {
+    instructorName, instructorEmail, courseTitle,
+    link: `${APP}/admin/courses/${courseId}`,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(adminEmail),
+    subject: override?.subject ?? `[CoachNest] New course pending review from ${instructorName}`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Course Pending Review", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
+        New Course Awaiting Review
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        An instructor has submitted a free course for review and publication.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Instructor", instructorName)}
+          ${infoRow("Email",      `<a href="mailto:${instructorEmail}" style="color:#f97316;">${instructorEmail}</a>`)}
+          ${infoRow("Course",     courseTitle)}
+          ${infoRow("Status",     `<span style="color:#f59e0b;font-weight:700;">Pending Review</span>`)}
+        </tbody>
+      </table>
+
+      ${btn("Review Course", `${APP}/admin/courses/${courseId}`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
 // ─── 24. Course rejected by admin (instructor) ────────────────────────────────
 
 export async function sendCourseRejectedEmail(

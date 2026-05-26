@@ -24,6 +24,7 @@ import {
   sendRefundSubmittedEmail,
   sendRefundProcessedEmail,
   sendRefundRejectedEmail,
+  sendRefundRequestAdminEmail,
 } from "@/lib/email";
 
 const MAX_REFUND_PROGRESS_PCT = 80; // ≥ 80 % → ineligible
@@ -168,14 +169,23 @@ export async function createRefundRequest(
     });
   });
 
-  // Notify student by email (fire-and-forget)
+  // Notify student and admin by email (fire-and-forget)
   if (user?.email) {
+    const courseTitle = order.course?.title ?? "your course";
+    const amountStr = parseFloat(refundAmount.toString()).toLocaleString("en-IN");
     sendRefundSubmittedEmail(
       user.email,
       user.name ?? "Student",
-      order.course?.title ?? "your course",
-      parseFloat(refundAmount.toString()).toLocaleString("en-IN"),
+      courseTitle,
+      amountStr,
       parseFloat(progressPercent.toString()).toFixed(0),
+    ).catch(() => null);
+    sendRefundRequestAdminEmail(
+      user.name ?? "Student",
+      user.email,
+      courseTitle,
+      amountStr,
+      refundRequest.id,
     ).catch(() => null);
   }
 

@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { assertIsMember, createAnnouncement } from "@/services/class.service";
 import { announcementSchema } from "@/lib/validation/class";
+import { sendClassAnnouncementEmail } from "@/lib/email";
 
 export async function GET(_req: NextRequest, ctx: { params: Promise<{ id: string }> }) {
   const { id } = await ctx.params;
@@ -36,6 +37,33 @@ export async function POST(req: NextRequest, ctx: { params: Promise<{ id: string
 
   try {
     const a = await createAnnouncement(id, session.userId, parsed.data);
+
+    // Email all approved class members about the announcement (fire-and-forget)
+    prisma.class.findUnique({
+      where: { id },
+      select: { title: true },
+    }).then(async (cls) => {
+      if (!cls) return;
+      const enrollments = await prisma.classEnrollment.findMany({
+        where: { classId: id, status: "APPROVED", userId: { not: session.userId } },
+        include: { user: { select: { email: true, name: true } } },
+      });
+      await Promise.allSettled(
+        enrollments.map((e) =>
+          e.user.email
+            ? sendClassAnnouncementEmail(
+                e.user.email,
+                e.user.name ?? "Student",
+                cls.title,
+                a.title,
+                a.body,
+                id,
+              )
+            : Promise.resolve()
+        )
+      );
+    }).catch(() => null);
+
     return NextResponse.json({ announcement: a }, { status: 201 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed";
