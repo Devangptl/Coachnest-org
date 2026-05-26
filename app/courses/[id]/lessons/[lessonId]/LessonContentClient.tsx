@@ -387,10 +387,9 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
               <MarkdownRenderer content={lesson.content} />
             </TextHighlighter>
 
-            {/* Reading progress footer — unified progress widget */}
+            {/* Reading progress footer — progress bar only */}
             {isEnrolled && !done && (
               <div className="mt-8 pt-5 border-t border-border/40">
-                {/* Header row: label + percentage */}
                 <div className="flex items-center justify-between mb-2.5">
                   <div className="flex items-center gap-1.5">
                     <BookOpen className="w-3.5 h-3.5 text-[#d97757]" />
@@ -404,60 +403,15 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                     <span>{combinedPct}%</span>
                   </div>
                 </div>
-
-                {/* Main combined progress bar */}
-                <div className="relative h-2.5 bg-secondary rounded-full overflow-hidden mb-3">
+                <div className="relative h-2.5 bg-secondary rounded-full overflow-hidden">
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-700 ease-out",
-                      combinedPct >= 100
-                        ? "bg-green-500"
-                        : "bg-gradient-to-r from-[#d97757] to-orange-400"
+                      combinedPct >= 100 ? "bg-green-500" : "bg-gradient-to-r from-[#d97757] to-orange-400"
                     )}
                     style={{ width: `${combinedPct}%` }}
                   />
                 </div>
-
-                {/* Two metric pills */}
-                <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-md text-[11px] border transition-all duration-300",
-                    scrollDone
-                      ? "bg-green-500/10 text-green-400 border-green-500/20"
-                      : "bg-secondary text-muted-foreground/60 border-border/40"
-                  )}>
-                    <Eye className="w-3 h-3 flex-shrink-0" />
-                    <span className="font-medium">{scrollDone ? "Scrolled" : `${scrollPct}% scrolled`}</span>
-                    {scrollDone
-                      ? <CheckCircle2 className="w-3 h-3 ml-auto flex-shrink-0" />
-                      : <span className="text-muted-foreground/35 ml-auto whitespace-nowrap">/ 90%</span>
-                    }
-                  </div>
-                  <div className={cn(
-                    "flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-md text-[11px] border transition-all duration-300",
-                    timeDone
-                      ? "bg-green-500/10 text-green-400 border-green-500/20"
-                      : "bg-secondary text-muted-foreground/60 border-border/40"
-                  )}>
-                    <Clock className="w-3 h-3 flex-shrink-0" />
-                    <span className="font-medium">{timeDone ? "Time met" : `${activeSecs}s`}</span>
-                    {timeDone
-                      ? <CheckCircle2 className="w-3 h-3 ml-auto flex-shrink-0" />
-                      : <span className="text-muted-foreground/35 ml-auto whitespace-nowrap">/ {TIME_THRESHOLD}s</span>
-                    }
-                  </div>
-                </div>
-
-                {/* Hint text */}
-                {(!scrollDone || !timeDone) && (
-                  <p className="text-[10px] text-muted-foreground/35 mt-2.5 text-center">
-                    {!scrollDone && !timeDone
-                      ? "Scroll through and spend time reading to complete this lesson"
-                      : !scrollDone
-                      ? "Keep scrolling to finish the lesson"
-                      : "Keep reading — almost there!"}
-                  </p>
-                )}
               </div>
             )}
           </div>
