@@ -54,6 +54,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
 
   // Content
   { segment: "courses",           allow: ["SUPER_ADMIN", "CONTENT_ADMIN"] },
+  { segment: "books",             allow: ["SUPER_ADMIN", "CONTENT_ADMIN"] },
   { segment: "playlists",         allow: ["SUPER_ADMIN", "CONTENT_ADMIN"] },
   { segment: "quizzes",           allow: ["SUPER_ADMIN", "CONTENT_ADMIN"] },
   { segment: "blogs",             allow: ["SUPER_ADMIN", "CONTENT_ADMIN"] },

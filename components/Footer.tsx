@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const PLATFORM_LINKS = [
   { label: "Browse Courses",    href: "/courses"  },
+  { label: "Books & Documents", href: "/books"    },
   { label: "Search",            href: "/search"   },
   { label: "Blog",              href: "/blog"     },
   { label: "Become Instructor", href: "/signup"   },

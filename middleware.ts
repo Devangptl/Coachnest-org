@@ -26,8 +26,62 @@ const AUTH_ONLY  = ["/login", "/signup"];
 const underPath = (pathname: string, base: string) =>
   pathname === base || pathname.startsWith(base + "/");
 
+// Paths that stay at their canonical location on EITHER host. On the books
+// subdomain, anything outside this set is rewritten to /books/<rest>.
+const BOOKS_PASSTHROUGH = [
+  "/cart", "/checkout", "/dashboard", "/admin", "/instructor",
+  "/login", "/signup", "/onboarding", "/launch",
+  "/api", "/_next", "/auth", "/about", "/contact",
+  "/legal", "/blog", "/press", "/careers", "/search",
+];
+
+const isBooksHost = (host: string, configuredHost: string): boolean => {
+  if (host === configuredHost) return true;
+  // Dev convenience: books.localhost[:port]
+  if (host.startsWith("books.localhost")) return true;
+  return false;
+};
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
+
+  // ── -1. Books subdomain rewrite ─────────────────────────────────────────
+  // Maps `books.<domain>/<path>` → `<domain>/books/<path>` internally while
+  // keeping the user-visible URL on the subdomain. Inverse 308 redirect on
+  // the apex prevents duplicate-content SEO.
+  const host = req.headers.get("host") ?? "";
+  const configuredBooksHost =
+    process.env.NEXT_PUBLIC_BOOKS_HOST ?? "books.coachnest.com";
+  const onBooksSubdomain = isBooksHost(host, configuredBooksHost);
+
+  if (onBooksSubdomain) {
+    const isPassthrough = BOOKS_PASSTHROUGH.some((p) => underPath(pathname, p));
+    if (!isPassthrough) {
+      const url = req.nextUrl.clone();
+      url.pathname = pathname === "/" ? "/books" : `/books${pathname}`;
+      return NextResponse.rewrite(url);
+    }
+  } else {
+    // Inverse: redirect apex /books and /books/* to the canonical subdomain.
+    // Only applies in production-like environments where BOOKS_HOST is set
+    // to a different value than the current host.
+    const booksHostConfigured = !!process.env.NEXT_PUBLIC_BOOKS_HOST;
+    if (booksHostConfigured && host !== configuredBooksHost) {
+      if (pathname === "/books") {
+        return NextResponse.redirect(
+          new URL("/", `https://${configuredBooksHost}`),
+          308,
+        );
+      }
+      if (pathname.startsWith("/books/")) {
+        const slug = pathname.slice("/books/".length);
+        return NextResponse.redirect(
+          new URL(`/${slug}`, `https://${configuredBooksHost}`),
+          308,
+        );
+      }
+    }
+  }
 
   // ── 0. Launch / Coming-Soon mode ─────────────────────────────────────────
   const LAUNCH_MODE = process.env.NEXT_PUBLIC_LAUNCH_MODE === "true";
