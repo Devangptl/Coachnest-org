@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ChevronRight, FileText } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Terms of Service — CoachNest",
+  title: "Terms of Service — Coachnest",
   description:
-    "Read the terms and conditions that govern your use of the CoachNest platform.",
+    "Read the terms and conditions that govern your use of the Coachnest platform.",
 };
 
 const SECTIONS = [
@@ -50,7 +50,7 @@ export default function TermsOfServicePage() {
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
-              These Terms of Service govern your use of the CoachNest platform. By creating an account or
+              These Terms of Service govern your use of the Coachnest platform. By creating an account or
               accessing any part of our service, you agree to be bound by these terms.
             </p>
           </div>
@@ -80,17 +80,17 @@ export default function TermsOfServicePage() {
             <article className="space-y-10">
 
               <Section id="acceptance" title="1. Acceptance of Terms">
-                <p>By accessing or using CoachNest (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;), you agree to comply with and be legally bound by these Terms of Service and our <Link href="/legal/privacy-policy" className="legal-link">Privacy Policy</Link>. If you do not agree, please do not use the Platform.</p>
+                <p>By accessing or using Coachnest (&quot;the Platform&quot;, &quot;we&quot;, &quot;us&quot;, &quot;our&quot;), you agree to comply with and be legally bound by these Terms of Service and our <Link href="/legal/privacy-policy" className="legal-link">Privacy Policy</Link>. If you do not agree, please do not use the Platform.</p>
                 <p>These Terms apply to all visitors, registered users, instructors, and anyone else who accesses the Platform.</p>
               </Section>
 
               <Section id="eligibility" title="2. Eligibility">
-                <p>You must be at least 13 years of age to use CoachNest. If you are under 18, you represent that you have your parent&apos;s or legal guardian&apos;s permission to use the Platform and that they have read and agreed to these Terms on your behalf.</p>
-                <p>By using CoachNest you represent and warrant that you have the right, authority, and capacity to enter into these Terms and to abide by all of the terms and conditions set forth herein.</p>
+                <p>You must be at least 13 years of age to use Coachnest. If you are under 18, you represent that you have your parent&apos;s or legal guardian&apos;s permission to use the Platform and that they have read and agreed to these Terms on your behalf.</p>
+                <p>By using Coachnest you represent and warrant that you have the right, authority, and capacity to enter into these Terms and to abide by all of the terms and conditions set forth herein.</p>
               </Section>
 
               <Section id="accounts" title="3. User Accounts">
-                <p>To access most features of CoachNest you must register for an account. When you create an account you agree to:</p>
+                <p>To access most features of Coachnest you must register for an account. When you create an account you agree to:</p>
                 <ul>
                   <li>Provide accurate, current, and complete registration information.</li>
                   <li>Maintain and promptly update your account information to keep it accurate and complete.</li>
@@ -105,15 +105,15 @@ export default function TermsOfServicePage() {
                 <SubHeading>Enrollment & Access</SubHeading>
                 <p>When you enrol in a course you receive a limited, non-exclusive, non-transferable licence to access and view the course content for your personal, non-commercial educational purposes.</p>
                 <SubHeading>Lifetime Access</SubHeading>
-                <p>For paid courses, you receive lifetime access to the content as long as CoachNest continues to operate and the instructor does not remove the course. We are not responsible for instructor decisions to remove or update course material.</p>
+                <p>For paid courses, you receive lifetime access to the content as long as Coachnest continues to operate and the instructor does not remove the course. We are not responsible for instructor decisions to remove or update course material.</p>
                 <SubHeading>Gamification Features</SubHeading>
-                <p>CoachNest awards XP (experience points), badges, and streak counts as you progress through courses and engage with the community. These rewards exist for personal motivation only. XP, badges, and streaks are non-transferable, have no monetary value, cannot be exchanged or redeemed for any benefit outside the Platform, and may be reset or adjusted by CoachNest at any time without notice.</p>
+                <p>Coachnest awards XP (experience points), badges, and streak counts as you progress through courses and engage with the community. These rewards exist for personal motivation only. XP, badges, and streaks are non-transferable, have no monetary value, cannot be exchanged or redeemed for any benefit outside the Platform, and may be reset or adjusted by Coachnest at any time without notice.</p>
                 <SubHeading>Community & Forum Conduct</SubHeading>
-                <p>When participating in forums, study groups, or peer review, you agree to engage respectfully and constructively. You must not post spam, solicitations, off-topic promotional material, or content that harasses, demeans, or targets other members. CoachNest reserves the right to remove any community content and to suspend or terminate accounts of users who repeatedly violate community standards.</p>
+                <p>When participating in forums, study groups, or peer review, you agree to engage respectfully and constructively. You must not post spam, solicitations, off-topic promotional material, or content that harasses, demeans, or targets other members. Coachnest reserves the right to remove any community content and to suspend or terminate accounts of users who repeatedly violate community standards.</p>
                 <SubHeading>Certificates</SubHeading>
-                <p>Upon completing a course, you may receive a CoachNest completion certificate. Certificates are issued for personal use only and are non-transferable. They are not accredited academic qualifications and do not imply endorsement by any third-party institution. CoachNest reserves the right to revoke a certificate if the associated account is found to have violated these Terms.</p>
+                <p>Upon completing a course, you may receive a Coachnest completion certificate. Certificates are issued for personal use only and are non-transferable. They are not accredited academic qualifications and do not imply endorsement by any third-party institution. Coachnest reserves the right to revoke a certificate if the associated account is found to have violated these Terms.</p>
                 <SubHeading>User-Generated Content</SubHeading>
-                <p>You retain ownership of content you submit (reviews, forum posts, etc.) but grant CoachNest a worldwide, royalty-free licence to use, display, and distribute that content on the Platform. You represent that your content does not infringe any third-party rights.</p>
+                <p>You retain ownership of content you submit (reviews, forum posts, etc.) but grant Coachnest a worldwide, royalty-free licence to use, display, and distribute that content on the Platform. You represent that your content does not infringe any third-party rights.</p>
               </Section>
 
               <Section id="payments" title="5. Payments & Billing">
@@ -123,17 +123,17 @@ export default function TermsOfServicePage() {
                 <SubHeading>Subscriptions</SubHeading>
                 <p>Subscription plans renew automatically at the end of each billing period. You can cancel anytime from your account settings; cancellation takes effect at the end of the current billing period.</p>
                 <SubHeading>Taxes</SubHeading>
-                <p>You are responsible for any applicable sales taxes, VAT, or similar charges based on your jurisdiction. Where required by law, CoachNest may collect and remit such taxes on your behalf.</p>
+                <p>You are responsible for any applicable sales taxes, VAT, or similar charges based on your jurisdiction. Where required by law, Coachnest may collect and remit such taxes on your behalf.</p>
               </Section>
 
               <Section id="instructor" title="6. Instructor Terms">
                 <p>If you apply to become an instructor and are approved, additional Instructor Terms apply. In general:</p>
                 <ul>
-                  <li>You retain ownership of your course content but grant CoachNest a licence to host, market, and distribute it on the Platform.</li>
+                  <li>You retain ownership of your course content but grant Coachnest a licence to host, market, and distribute it on the Platform.</li>
                   <li>You are responsible for the accuracy and quality of your course content.</li>
                   <li>You must ensure your content does not infringe third-party intellectual property rights.</li>
                   <li>Revenue sharing terms are outlined in the separate Instructor Agreement provided at onboarding.</li>
-                  <li>CoachNest reserves the right to remove any course that violates these Terms or our content standards.</li>
+                  <li>Coachnest reserves the right to remove any course that violates these Terms or our content standards.</li>
                 </ul>
               </Section>
 
@@ -152,8 +152,8 @@ export default function TermsOfServicePage() {
               </Section>
 
               <Section id="ip" title="8. Intellectual Property">
-                <p>The CoachNest name, logo, brand identity, and all Platform software are owned by CoachNest and protected by applicable intellectual property laws. Nothing in these Terms transfers any ownership rights to you.</p>
-                <p>Course content belongs to the respective instructors. Platform infrastructure, design, and code belong to CoachNest. You may not copy, modify, distribute, sell, or lease any part of our services or software, nor may you reverse engineer or extract source code, unless applicable law permits it or you have our written permission.</p>
+                <p>The Coachnest name, logo, brand identity, and all Platform software are owned by Coachnest and protected by applicable intellectual property laws. Nothing in these Terms transfers any ownership rights to you.</p>
+                <p>Course content belongs to the respective instructors. Platform infrastructure, design, and code belong to Coachnest. You may not copy, modify, distribute, sell, or lease any part of our services or software, nor may you reverse engineer or extract source code, unless applicable law permits it or you have our written permission.</p>
               </Section>
 
               <Section id="disclaimers" title="9. Disclaimers">
@@ -163,11 +163,11 @@ export default function TermsOfServicePage() {
 
               <Section id="liability" title="10. Limitation of Liability">
                 <p>TO THE MAXIMUM EXTENT PERMITTED BY LAW, COACHNEST AND ITS OFFICERS, EMPLOYEES, AGENTS, PARTNERS, AND LICENSORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, INCLUDING LOSS OF PROFITS, DATA, OR GOODWILL, ARISING OUT OF OR RELATED TO YOUR USE OF THE PLATFORM.</p>
-                <p>Our total cumulative liability to you for any claims arising out of or relating to these Terms or your use of the Platform shall not exceed the greater of (a) $100 or (b) the total amount you paid to CoachNest in the 12 months preceding the claim.</p>
+                <p>Our total cumulative liability to you for any claims arising out of or relating to these Terms or your use of the Platform shall not exceed the greater of (a) $100 or (b) the total amount you paid to Coachnest in the 12 months preceding the claim.</p>
               </Section>
 
               <Section id="termination" title="11. Termination">
-                <p>You may delete your account at any time from your account settings. CoachNest may suspend or terminate your access to the Platform immediately, without prior notice or liability, for any reason including if you breach these Terms.</p>
+                <p>You may delete your account at any time from your account settings. Coachnest may suspend or terminate your access to the Platform immediately, without prior notice or liability, for any reason including if you breach these Terms.</p>
                 <p>Upon termination, your right to use the Platform ceases. Provisions that by their nature should survive termination (including ownership, disclaimers, indemnity, and limitations of liability) will survive.</p>
               </Section>
 
@@ -182,7 +182,7 @@ export default function TermsOfServicePage() {
               <Section id="contact" title="14. Contact Us">
                 <p>Questions about these Terms? Please reach out:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
-                  <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Legal Team</p>
+                  <p className="text-white/60 text-sm mb-1 font-medium">Coachnest Legal Team</p>
                   <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a request via our Contact page →
                   </Link>

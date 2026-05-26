@@ -5,7 +5,7 @@ export const runtime = "edge";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const title = searchParams.get("title") ?? "CoachNest — Modern Learning Platform";
+  const title = searchParams.get("title") ?? "Coachnest — Modern Learning Platform";
   const subtitle = searchParams.get("subtitle") ?? "Expert-crafted courses. Learn at your own pace.";
   const type = searchParams.get("type") ?? "site"; // "course" | "blog" | "site"
 
@@ -89,7 +89,7 @@ export async function GET(req: NextRequest) {
               C
             </div>
             <span style={{ color: "white", fontSize: "22px", fontWeight: 700, letterSpacing: "-0.5px" }}>
-              CoachNest
+              Coachnest
             </span>
           </div>
 

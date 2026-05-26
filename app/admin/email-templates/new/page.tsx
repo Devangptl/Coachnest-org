@@ -145,7 +145,7 @@ export default function NewEmailTemplatePage() {
                   <input
                     type="text"
                     className="input-glass w-full"
-                    placeholder="e.g. Welcome to CoachNest, {{name}}!"
+                    placeholder="e.g. Welcome to Coachnest, {{name}}!"
                     value={form.subject}
                     onChange={(e) => setForm({ ...form, subject: e.target.value })}
                     required
@@ -264,7 +264,7 @@ export default function NewEmailTemplatePage() {
               )}
 
               <p className="text-muted-foreground/60 text-xs mt-2">
-                The body is wrapped in the CoachNest email shell automatically when sending test emails.
+                The body is wrapped in the Coachnest email shell automatically when sending test emails.
                 Use inline styles for cross-client compatibility.
               </p>
             </GlassCard>

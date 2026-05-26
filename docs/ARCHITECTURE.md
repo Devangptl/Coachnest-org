@@ -1,4 +1,4 @@
-# CoachNest — Architecture
+# Coachnest — Architecture
 
 ## Table of Contents
 
@@ -21,7 +21,7 @@
 
 ## System Overview
 
-CoachNest is a full-stack online learning platform built on **Next.js 15 App Router**. It supports three distinct user roles (Student, Instructor, Admin), each with their own portal. The platform handles course creation and delivery, Stripe payments with dynamic revenue splits, a gamification engine, community tools, and blog/marketing content.
+Coachnest is a full-stack online learning platform built on **Next.js 15 App Router**. It supports three distinct user roles (Student, Instructor, Admin), each with their own portal. The platform handles course creation and delivery, Stripe payments with dynamic revenue splits, a gamification engine, community tools, and blog/marketing content.
 
 ```
 Browser / Mobile

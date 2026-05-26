@@ -2,7 +2,7 @@
  * Shared email template seed data.
  * Used by both the Prisma seed script and the admin seed API route.
  *
- * All templates follow the light-themed CoachNest email design.
+ * All templates follow the light-themed Coachnest email design.
  * {{variable}} placeholders are substituted by the mailer at send time.
  * Built-in: {{logo}}, {{appUrl}}
  */
@@ -29,7 +29,7 @@ function shell(
   <table cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;">
 
     <tr><td align="center" style="padding:28px 36px 44px;text-align:center;">
-      <img src="{{logo}}" alt="CoachNest" width="130" style="display:block;height:auto;margin:0 auto;" />
+      <img src="{{logo}}" alt="Coachnest" width="130" style="display:block;height:auto;margin:0 auto;" />
     </td></tr>
 
     <tr><td>
@@ -53,7 +53,7 @@ function shell(
 
     <tr><td style="padding:20px 0 8px;text-align:center;">
       <p style="font-family:sans-serif;font-size:11px;color:#c4bab3;margin:0 0 5px;">
-        &copy; 2026 CoachNest &mdash; Modern Learning Platform
+        &copy; 2026 Coachnest &mdash; Modern Learning Platform
       </p>
       <p style="font-family:sans-serif;font-size:11px;margin:0;">
         <a href="{{appUrl}}/legal/privacy-policy" style="color:#c4bab3;text-decoration:none;">Privacy Policy</a>
@@ -133,13 +133,13 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "welcome",
       name: "Welcome",
-      subject: "Welcome to CoachNest — you're in! 🎓",
+      subject: "Welcome to Coachnest — you're in! 🎓",
       description: "Sent when a new user signs up.",
       variables: ["name"],
       htmlBody: shell(
         "Welcome aboard",
         "Hey {{name}}, you're in! 👋",
-        `${para("Your CoachNest account is ready. Start exploring expert-crafted courses and level up your skills at your own pace.")}
+        `${para("Your Coachnest account is ready. Start exploring expert-crafted courses and level up your skills at your own pace.")}
         ${steps([
           ["Browse the course library", "Find courses that match your goals."],
           ["Enroll and start learning", "Learn with video, reading, and quizzes."],
@@ -155,7 +155,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "free-enrollment",
       name: "Free Course Enrollment",
-      subject: "You're enrolled in \"{{courseTitle}}\" — CoachNest 🎉",
+      subject: "You're enrolled in \"{{courseTitle}}\" — Coachnest 🎉",
       description: "Sent when a student enrolls in a free course for the first time.",
       variables: ["name", "courseTitle", "link"],
       htmlBody: shell(
@@ -181,7 +181,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "purchase-confirmation",
       name: "Purchase Confirmation",
-      subject: "You're enrolled in \"{{courseTitle}}\" — CoachNest 🎉",
+      subject: "You're enrolled in \"{{courseTitle}}\" — Coachnest 🎉",
       description: "Sent when a student successfully purchases a course.",
       variables: ["name", "courseTitle", "amount", "link"],
       htmlBody: shell(
@@ -240,7 +240,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "course-rejected",
       name: "Course Rejected",
-      subject: "Update on your course \"{{courseTitle}}\" — CoachNest",
+      subject: "Update on your course \"{{courseTitle}}\" — Coachnest",
       description: "Sent to an instructor when their course is rejected by admin.",
       variables: ["name", "courseTitle", "reason", "link"],
       htmlBody: shell(
@@ -281,7 +281,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "refund-submitted",
       name: "Refund Request Submitted",
-      subject: "Refund request received for \"{{courseTitle}}\" — CoachNest",
+      subject: "Refund request received for \"{{courseTitle}}\" — Coachnest",
       description: "Sent to a student when their refund request is submitted.",
       variables: ["name", "courseTitle", "refundAmount", "progressPercent"],
       htmlBody: shell(
@@ -304,7 +304,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "refund-processed",
       name: "Refund Processed",
-      subject: "Your refund for \"{{courseTitle}}\" has been processed — CoachNest",
+      subject: "Your refund for \"{{courseTitle}}\" has been processed — Coachnest",
       description: "Sent to a student when their refund is completed.",
       variables: ["name", "courseTitle", "refundAmount"],
       htmlBody: shell(
@@ -327,7 +327,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "refund-rejected",
       name: "Refund Rejected",
-      subject: "Your refund request for \"{{courseTitle}}\" was not approved — CoachNest",
+      subject: "Your refund request for \"{{courseTitle}}\" was not approved — Coachnest",
       description: "Sent to a student when their refund request is denied.",
       variables: ["name", "courseTitle", "adminNotes"],
       htmlBody: shell(
@@ -345,7 +345,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "payout-requested",
       name: "Payout Request Submitted",
-      subject: "Payout request of &#8377;{{amount}} received — CoachNest",
+      subject: "Payout request of &#8377;{{amount}} received — Coachnest",
       description: "Sent to an instructor when they submit a payout request.",
       variables: ["name", "amount"],
       htmlBody: shell(
@@ -365,7 +365,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "payout-approved",
       name: "Payout Approved",
-      subject: "Your payout of &#8377;{{amount}} has been approved — CoachNest",
+      subject: "Your payout of &#8377;{{amount}} has been approved — Coachnest",
       description: "Sent to an instructor when their payout request is approved.",
       variables: ["name", "amount"],
       htmlBody: shell(
@@ -386,7 +386,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "payout-rejected",
       name: "Payout Rejected",
-      subject: "Your payout request of &#8377;{{amount}} was not approved — CoachNest",
+      subject: "Your payout request of &#8377;{{amount}} was not approved — Coachnest",
       description: "Sent to an instructor when their payout request is rejected.",
       variables: ["name", "amount", "adminNotes"],
       htmlBody: shell(
@@ -404,7 +404,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "payout-processed",
       name: "Payout Transferred",
-      subject: "Your payout of &#8377;{{amount}} has been transferred — CoachNest",
+      subject: "Your payout of &#8377;{{amount}} has been transferred — Coachnest",
       description: "Sent to an instructor when their payout is transferred to their bank.",
       variables: ["name", "amount"],
       htmlBody: shell(
@@ -425,7 +425,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "contact-confirmation",
       name: "Contact Form Confirmation",
-      subject: "We received your message — CoachNest",
+      subject: "We received your message — Coachnest",
       description: "Sent to a user after they submit the contact form.",
       variables: ["name"],
       htmlBody: shell(
@@ -437,7 +437,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
           ["Team review", "A support team member will review your message."],
           ["Reply sent", "We'll respond to this email address."],
         ])}`,
-        "Visit CoachNest",
+        "Visit Coachnest",
         "{{appUrl}}",
         `For urgent matters, email us at <a href="mailto:support@coachnest.in" style="color:#d97757;text-decoration:none;">support@coachnest.in</a>.`
       ),
@@ -447,7 +447,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "contact-admin-notification",
       name: "Contact Admin Notification",
-      subject: "[CoachNest] New inquiry from {{name}}",
+      subject: "[Coachnest] New inquiry from {{name}}",
       description: "Sent to admin when a user submits the contact form.",
       variables: ["name", "email", "subject", "message"],
       htmlBody: shell(
@@ -469,7 +469,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "contact-reply",
       name: "Contact Reply",
-      subject: "Re: {{originalSubject}} — CoachNest",
+      subject: "Re: {{originalSubject}} — Coachnest",
       description: "Sent to a user when an admin replies to their contact inquiry.",
       variables: ["name", "originalSubject", "replyMessage"],
       htmlBody: shell(
@@ -487,13 +487,13 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "instructor-application-admin",
       name: "Instructor Application (Admin)",
-      subject: "[CoachNest] New instructor application from {{instructorName}}",
+      subject: "[Coachnest] New instructor application from {{instructorName}}",
       description: "Sent to admin when a new instructor application is submitted.",
       variables: ["instructorName", "instructorEmail"],
       htmlBody: shell(
         "New application",
         "New instructor application received",
-        `${para("A new user has applied to become an instructor on CoachNest and is awaiting your review.")}
+        `${para("A new user has applied to become an instructor on Coachnest and is awaiting your review.")}
         ${infoTable([
           ["Applicant", "{{instructorName}}"],
           ["Email", "{{instructorEmail}}"],
@@ -513,7 +513,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "instructor-approved",
       name: "Instructor Approved",
-      subject: "Your CoachNest instructor application has been approved! 🎉",
+      subject: "Your Coachnest instructor application has been approved! 🎉",
       description: "Sent to a user when their instructor application is approved.",
       variables: ["name"],
       htmlBody: shell(
@@ -539,18 +539,18 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "instructor-rejected",
       name: "Instructor Rejected",
-      subject: "Update on your CoachNest instructor application",
+      subject: "Update on your Coachnest instructor application",
       description: "Sent to a user when their instructor application is rejected.",
       variables: ["name", "reason"],
       htmlBody: shell(
         "Application update",
         "Application status update",
-        `${para("Hi {{name}}, thank you for applying to become an instructor on CoachNest. After careful review, we're unable to approve your application at this time.")}
+        `${para("Hi {{name}}, thank you for applying to become an instructor on Coachnest. After careful review, we're unable to approve your application at this time.")}
         ${quoteBox("Reason", "{{reason}}")}
-        ${para("You can continue using CoachNest as a student and access all available courses. You're welcome to reapply in the future.")}`,
+        ${para("You can continue using Coachnest as a student and access all available courses. You're welcome to reapply in the future.")}`,
         "Contact Support",
         "{{appUrl}}/contact",
-        `Thank you for your interest in teaching on CoachNest.`
+        `Thank you for your interest in teaching on Coachnest.`
       ),
     },
 
@@ -602,7 +602,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "class-enrollment-approved",
       name: "Class Enrollment Approved",
-      subject: "You've been approved to join \"{{className}}\" — CoachNest",
+      subject: "You've been approved to join \"{{className}}\" — Coachnest",
       description: "Sent to a student when the instructor approves their class join request.",
       variables: ["studentName", "className", "link"],
       htmlBody: shell(
@@ -628,7 +628,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "class-enrollment-rejected",
       name: "Class Enrollment Rejected",
-      subject: "Update on your request to join \"{{className}}\" — CoachNest",
+      subject: "Update on your request to join \"{{className}}\" — Coachnest",
       description: "Sent to a student when the instructor rejects their class join request.",
       variables: ["studentName", "className"],
       htmlBody: shell(
@@ -706,7 +706,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "refund-request-admin",
       name: "New Refund Request (Admin)",
-      subject: "[CoachNest] New refund request from {{studentName}}",
+      subject: "[Coachnest] New refund request from {{studentName}}",
       description: "Sent to admin when a student submits a refund request.",
       variables: ["studentName", "studentEmail", "courseTitle", "refundAmount"],
       htmlBody: shell(
@@ -729,7 +729,7 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
     {
       slug: "course-pending-review-admin",
       name: "Course Pending Review (Admin)",
-      subject: "[CoachNest] New course pending review from {{instructorName}}",
+      subject: "[Coachnest] New course pending review from {{instructorName}}",
       description: "Sent to admin when an instructor submits a free course for review.",
       variables: ["instructorName", "instructorEmail", "courseTitle", "link"],
       htmlBody: shell(

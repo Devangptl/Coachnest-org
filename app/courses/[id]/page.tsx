@@ -222,7 +222,7 @@ export default async function CourseDetailPage({ params }: Props) {
     image: course.thumbnail ?? undefined,
     provider: {
       "@type": "Organization",
-      name: "CoachNest",
+      name: "Coachnest",
       sameAs: BASE_URL,
     },
     instructor: {

@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ChevronRight, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — CoachNest",
+  title: "Privacy Policy — Coachnest",
   description:
-    "Learn how CoachNest collects, uses, and protects your personal information.",
+    "Learn how Coachnest collects, uses, and protects your personal information.",
 };
 
 const SECTIONS = [
@@ -46,7 +46,7 @@ export default function PrivacyPolicyPage() {
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
-              At CoachNest, your privacy is important to us. This policy explains what data we collect,
+              At Coachnest, your privacy is important to us. This policy explains what data we collect,
               why we collect it, and how you can control it.
             </p>
           </div>
@@ -76,7 +76,7 @@ export default function PrivacyPolicyPage() {
             <article className="prose prose-invert prose-sm max-w-none space-y-10">
 
               <Section id="information-we-collect" title="1. Information We Collect">
-                <p>We collect information you provide directly to us and information generated automatically when you use CoachNest.</p>
+                <p>We collect information you provide directly to us and information generated automatically when you use Coachnest.</p>
                 <SubHeading>Account Information</SubHeading>
                 <p>When you create an account we collect your name, email address, and password (stored as a secure hash). If you sign in via a third-party provider, we receive the profile information that provider makes available.</p>
                 <SubHeading>Payment Information</SubHeading>
@@ -158,17 +158,17 @@ export default function PrivacyPolicyPage() {
               </Section>
 
               <Section id="children" title="8. Children's Privacy">
-                <p>CoachNest is not directed at children under 13 years of age. We do not knowingly collect personal data from children under 13. If you believe a child has provided us with personal data, please contact us immediately so we can delete the information.</p>
+                <p>Coachnest is not directed at children under 13 years of age. We do not knowingly collect personal data from children under 13. If you believe a child has provided us with personal data, please contact us immediately so we can delete the information.</p>
               </Section>
 
               <Section id="changes" title="9. Changes to This Policy">
-                <p>We may update this Privacy Policy from time to time. When we do, we will revise the "last updated" date at the top of this page and notify you via email or an in-app notice for material changes. Your continued use of CoachNest after such notification constitutes your acceptance of the updated policy.</p>
+                <p>We may update this Privacy Policy from time to time. When we do, we will revise the "last updated" date at the top of this page and notify you via email or an in-app notice for material changes. Your continued use of Coachnest after such notification constitutes your acceptance of the updated policy.</p>
               </Section>
 
               <Section id="contact" title="10. Contact Us">
                 <p>If you have questions, concerns, or requests related to this Privacy Policy, please reach out:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
-                  <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Privacy Team</p>
+                  <p className="text-white/60 text-sm mb-1 font-medium">Coachnest Privacy Team</p>
                   <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a request via our Contact page →
                   </Link>
@@ -183,7 +183,7 @@ export default function PrivacyPolicyPage() {
             <p className="text-white/30 text-xs uppercase tracking-wider font-medium mb-5">Related Legal Documents</p>
             <div className="grid sm:grid-cols-3 gap-3">
               {[
-                { label: "Terms of Service", href: "/legal/terms-of-service", desc: "Rules governing your use of CoachNest." },
+                { label: "Terms of Service", href: "/legal/terms-of-service", desc: "Rules governing your use of Coachnest." },
                 { label: "Refund Policy", href: "/legal/refund-policy", desc: "How to request a refund for purchases." },
                 { label: "Cookie Policy", href: "/legal/cookie-policy", desc: "How we use cookies and similar technologies." },
               ].map((doc) => (

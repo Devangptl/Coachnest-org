@@ -59,7 +59,7 @@ function ConfirmEmailContent() {
         {/* Logo */}
         <div className="flex justify-center mb-8">
           <Link href="/">
-            <img src="/logo.png" alt="CoachNest" className="h-7 w-auto object-contain" />
+            <img src="/logo.png" alt="Coachnest" className="h-7 w-auto object-contain" />
           </Link>
         </div>
 

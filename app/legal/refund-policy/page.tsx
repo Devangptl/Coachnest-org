@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ChevronRight, RefreshCw, CheckCircle, XCircle, Clock } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Refund Policy — CoachNest",
+  title: "Refund Policy — Coachnest",
   description:
-    "Understand CoachNest's 30-day money-back guarantee and refund process.",
+    "Understand Coachnest's 30-day money-back guarantee and refund process.",
 };
 
 const SECTIONS = [
@@ -93,8 +93,8 @@ export default function RefundPolicyPage() {
             <article className="space-y-10">
 
               <Section id="overview" title="1. Overview">
-                <p>CoachNest offers a 30-day money-back guarantee on individual course purchases. We believe in the quality of our content and want every learner to feel confident in their investment. If a course is not what you expected, we will make it right.</p>
-                <p>This policy covers individual course purchases made directly on CoachNest. Subscription plans have separate terms described in the <a href="#subscriptions" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Subscriptions</a> section below.</p>
+                <p>Coachnest offers a 30-day money-back guarantee on individual course purchases. We believe in the quality of our content and want every learner to feel confident in their investment. If a course is not what you expected, we will make it right.</p>
+                <p>This policy covers individual course purchases made directly on Coachnest. Subscription plans have separate terms described in the <a href="#subscriptions" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Subscriptions</a> section below.</p>
               </Section>
 
               <Section id="eligibility" title="2. Refund Eligibility">
@@ -103,7 +103,7 @@ export default function RefundPolicyPage() {
                   <li>Your refund request is submitted within <strong className="text-white/70">30 calendar days</strong> of the original purchase date.</li>
                   <li>You have completed <strong className="text-white/70">less than 30%</strong> of the course content.</li>
                   <li>You have not previously received a refund for the same course.</li>
-                  <li>The purchase was made directly on CoachNest (not through a third-party bundle or partner site).</li>
+                  <li>The purchase was made directly on Coachnest (not through a third-party bundle or partner site).</li>
                 </ul>
                 <p>Refunds are issued to the original payment method used at checkout.</p>
               </Section>
@@ -124,7 +124,7 @@ export default function RefundPolicyPage() {
                 <p>Requesting a refund is simple:</p>
                 <ol className="list-decimal pl-5 space-y-2">
                   <li>
-                    <strong className="text-white/70">Log in</strong> to your CoachNest account and go to your <strong className="text-white/70">Order History</strong> under Dashboard → Orders.
+                    <strong className="text-white/70">Log in</strong> to your Coachnest account and go to your <strong className="text-white/70">Order History</strong> under Dashboard → Orders.
                   </li>
                   <li>
                     Find the course you wish to return and click <strong className="text-white/70">&quot;Request Refund&quot;</strong>.
@@ -172,7 +172,7 @@ export default function RefundPolicyPage() {
               <Section id="contact" title="8. Contact Us">
                 <p>If you have any questions about our refund policy or need help with a refund request, please get in touch:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
-                  <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Support Team</p>
+                  <p className="text-white/60 text-sm mb-1 font-medium">Coachnest Support Team</p>
                   <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a support request →
                   </Link>
@@ -189,7 +189,7 @@ export default function RefundPolicyPage() {
             <div className="grid sm:grid-cols-3 gap-3">
               {[
                 { label: "Privacy Policy", href: "/legal/privacy-policy", desc: "How we collect and protect your data." },
-                { label: "Terms of Service", href: "/legal/terms-of-service", desc: "Rules governing your use of CoachNest." },
+                { label: "Terms of Service", href: "/legal/terms-of-service", desc: "Rules governing your use of Coachnest." },
                 { label: "Cookie Policy", href: "/legal/cookie-policy", desc: "How we use cookies and similar technologies." },
               ].map((doc) => (
                 <Link

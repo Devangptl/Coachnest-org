@@ -196,7 +196,7 @@ export default function CheckoutClient({
         <div>
           <h2 className="text-xl font-bold text-foreground">Payment successful!</h2>
           <p className="text-muted-foreground mt-1 text-sm">
-            Welcome to CoachNest {planLabel}. Redirecting…
+            Welcome to Coachnest {planLabel}. Redirecting…
           </p>
         </div>
         <div className="w-5 h-5">

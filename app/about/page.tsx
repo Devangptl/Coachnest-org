@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Users, Target, Lightbulb, Globe, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "About Us — CoachNest",
+  title: "About Us — Coachnest",
   description:
-    "Learn about CoachNest's mission to make world-class education accessible to everyone.",
+    "Learn about Coachnest's mission to make world-class education accessible to everyone.",
 };
 
 const VALUES = [
@@ -61,7 +61,7 @@ export default function AboutPage() {
               <span className="text-white/40">changes everything.</span>
             </h1>
             <p className="text-white/40 text-lg leading-relaxed max-w-2xl mx-auto">
-              CoachNest was founded in 2026 with a single mission: to make expert-level
+              Coachnest was founded in 2026 with a single mission: to make expert-level
               learning accessible to every developer, designer, and creator on the planet —
               regardless of where they live or what they can afford.
             </p>
@@ -81,7 +81,7 @@ export default function AboutPage() {
           <div className="rounded-md border border-white/8 bg-white/[.02] p-8 sm:p-12 mb-20">
             <h2 className="text-2xl font-bold text-white mb-4">Our Mission</h2>
             <p className="text-white/45 text-base leading-relaxed mb-4">
-              The traditional education system was not built for the pace of modern technology. By the time a curriculum is written, approved, and taught, the industry has already moved on. We built CoachNest to close that gap.
+              The traditional education system was not built for the pace of modern technology. By the time a curriculum is written, approved, and taught, the industry has already moved on. We built Coachnest to close that gap.
             </p>
             <p className="text-white/45 text-base leading-relaxed">
               We partner with working professionals — engineers at top tech companies, award-winning designers, successful entrepreneurs — and give them the tools to share their knowledge with the world. The result is a library of courses that reflect how the industry actually works today, not how a textbook describes it.

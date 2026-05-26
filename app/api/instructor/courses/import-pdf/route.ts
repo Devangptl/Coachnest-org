@@ -2,7 +2,7 @@
  * POST /api/instructor/courses/import-pdf
  *
  * Accepts a multipart/form-data PDF (field "file") that matches the
- * CoachNest course-creation template.  Parses course metadata, then
+ * Coachnest course-creation template.  Parses course metadata, then
  * creates Lessons of all three supported types:
  *
  *   TEXT  — LESSON_CONTENT holds the written body

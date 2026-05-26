@@ -110,7 +110,7 @@ export default function LaunchPage() {
           transition={{ duration: 0.45, delay: 0.08 }}
           className="mb-6 flex items-center gap-3"
         >
-          <img src="/logo.png" alt="CoachNest" className="h-10 w-auto max-w-[180px] object-contain" />
+          <img src="/logo.png" alt="Coachnest" className="h-10 w-auto max-w-[180px] object-contain" />
         </motion.div>
 
         {/* Headline */}
@@ -133,7 +133,7 @@ export default function LaunchPage() {
           transition={{ duration: 0.55, delay: 0.22 }}
           className="text-lg text-muted-foreground max-w-xl mb-12 leading-relaxed"
         >
-          CoachNest is a modern learning platform where expert instructors and
+          Coachnest is a modern learning platform where expert instructors and
           curious learners connect. Master new skills at your own pace.
         </motion.p>
 
@@ -233,7 +233,7 @@ export default function LaunchPage() {
           transition={{ duration: 0.6, delay: 0.6 }}
           className="text-xs text-muted-foreground/40"
         >
-          © {new Date().getFullYear()} CoachNest. All rights reserved.
+          © {new Date().getFullYear()} Coachnest. All rights reserved.
         </motion.p>
       </div>
     </div>

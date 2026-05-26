@@ -1,4 +1,4 @@
-# CoachNest — API Reference
+# Coachnest — API Reference
 
 ## Overview
 

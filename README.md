@@ -1,4 +1,4 @@
-# CoachNest - Modern Learning Platform
+# Coachnest - Modern Learning Platform
 
 A full-stack online education platform built with Next.js 15, featuring course management, gamification, community features, and payment integration.
 
@@ -28,7 +28,7 @@ A full-stack online education platform built with Next.js 15, featuring course m
 
 ## Overview
 
-CoachNest is a comprehensive online learning platform (v0.2.0) that supports:
+Coachnest is a comprehensive online learning platform (v0.2.0) that supports:
 
 - **Course creation & management** — instructors can create structured courses with sections, lessons, videos, and quizzes
 - **Student learning** — progress tracking, lesson completion, quiz attempts, and certificate generation
@@ -189,7 +189,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 # Email (Resend)
 RESEND_API_KEY=re_...
-EMAIL_FROM=CoachNest <noreply@yourdomain.com>
+EMAIL_FROM=Coachnest <noreply@yourdomain.com>
 
 # Cloudinary (image uploads)
 CLOUDINARY_URL=cloudinary://...

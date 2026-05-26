@@ -92,7 +92,7 @@ export async function GET() {
       end:   { x: PAGE_W - MARGIN, y: fy + 12 },
       thickness: 0.4, color: BORDER,
     });
-    page.drawText("CoachNest  -  Course Creation Template", {
+    page.drawText("Coachnest  -  Course Creation Template", {
       x: MARGIN, y: fy, size: 7, font: regular, color: INK_3,
     });
     const pl = `Page ${pageNum}`;
@@ -285,7 +285,7 @@ export async function GET() {
     "Choose the right LESSON_TYPE for each lesson: TEXT, VIDEO, or QUIZ.",
     "Add or duplicate LESSON blocks as needed — one block per lesson.",
     "Export / save as PDF (File > Print > Save as PDF works in any editor).",
-    "Upload the PDF at CoachNest > My Courses > Import from PDF.",
+    "Upload the PDF at Coachnest > My Courses > Import from PDF.",
   ];
 
   for (let i = 0; i < steps.length; i++) {

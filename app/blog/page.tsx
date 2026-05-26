@@ -13,7 +13,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 export const metadata: Metadata = {
   title: "Blog — Tips, Tutorials & Learning Resources",
   description:
-    "Read the CoachNest blog for programming tutorials, career advice, industry insights, and tips to accelerate your learning journey.",
+    "Read the Coachnest blog for programming tutorials, career advice, industry insights, and tips to accelerate your learning journey.",
   keywords: [
     "programming blog", "coding tutorials", "web development tips",
     "learning resources", "tech articles", "career advice",

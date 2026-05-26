@@ -17,7 +17,7 @@ export interface ReviewItem {
 // ── Fallback dummy data (shown when DB has < 6 real reviews) ──────────────────
 
 const DUMMY_ROW1: ReviewItem[] = [
-  { id: "d1", name: "Alex Rivera",    role: "Full-Stack Web Development",  seed: "AlexRivera",    rating: 5, text: "LearnHub completely changed my trajectory. I landed a senior dev role 8 months after finishing my first course.", avatar: null },
+  { id: "d1", name: "Alex Rivera",    role: "Full-Stack Web Development",  seed: "AlexRivera",    rating: 5, text: "Coachnest completely changed my trajectory. I landed a senior dev role 8 months after finishing my first course.", avatar: null },
   { id: "d2", name: "Priya Sharma",   role: "UI/UX Design Fundamentals",   seed: "PriyaSharma",   rating: 5, text: "The design courses are incredibly hands-on. Real projects, real feedback — not just theory.", avatar: null },
   { id: "d3", name: "Marcus Johnson", role: "Product Management",          seed: "MarcusJohnson", rating: 5, text: "Earned my certificate in 3 months while working full-time. The pacing is perfect for busy people.", avatar: null },
   { id: "d4", name: "Emily Watson",   role: "Data Analytics with Python",  seed: "EmilyWatson",   rating: 5, text: "The interactive quizzes after each lesson genuinely make concepts stick. I retained so much more than other platforms.", avatar: null },
@@ -26,10 +26,10 @@ const DUMMY_ROW1: ReviewItem[] = [
 ];
 
 const DUMMY_ROW2: ReviewItem[] = [
-  { id: "d7",  name: "Sofia Martinez",  role: "React & Next.js",           seed: "SofiaMartinez",  rating: 5, text: "The certificate from CoachNest actually gets noticed by recruiters. It carries real weight in interviews.", avatar: null },
-  { id: "d8",  name: "David Kim",       role: "DevOps & Cloud",            seed: "DavidKim",       rating: 5, text: "Clear, concise, and always current. I've recommended CoachNest to my entire engineering team.", avatar: null },
+  { id: "d7",  name: "Sofia Martinez",  role: "React & Next.js",           seed: "SofiaMartinez",  rating: 5, text: "The certificate from Coachnest actually gets noticed by recruiters. It carries real weight in interviews.", avatar: null },
+  { id: "d8",  name: "David Kim",       role: "DevOps & Cloud",            seed: "DavidKim",       rating: 5, text: "Clear, concise, and always current. I've recommended Coachnest to my entire engineering team.", avatar: null },
   { id: "d9",  name: "Rachel Thompson", role: "Frontend Development",      seed: "RachelThompson", rating: 5, text: "The progress tracking kept me accountable. Seeing my streaks grow pushed me to show up every single day.", avatar: null },
-  { id: "d10", name: "Aisha Patel",     role: "Tech Leadership",           seed: "AishaPatel",     rating: 5, text: "I use CoachNest to upskill my whole team. The quality is consistently excellent across every subject.", avatar: null },
+  { id: "d10", name: "Aisha Patel",     role: "Tech Leadership",           seed: "AishaPatel",     rating: 5, text: "I use Coachnest to upskill my whole team. The quality is consistently excellent across every subject.", avatar: null },
   { id: "d11", name: "Noah Williams",   role: "Mobile App Development",    seed: "NoahWilliams",   rating: 5, text: "Switched careers at 32 with help from these courses. The community support made all the difference.", avatar: null },
   { id: "d12", name: "Chen Wei",        role: "Cloud Architecture",        seed: "ChenWei",        rating: 5, text: "Went from beginner to AWS certified in four months. The structured path is genuinely world-class.", avatar: null },
 ];

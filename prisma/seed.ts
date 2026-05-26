@@ -1,5 +1,5 @@
 /**
- * CoachNest — complete database seed
+ * Coachnest — complete database seed
  *
  * Run:  npm run db:seed
  *
@@ -131,7 +131,7 @@ function opts(items: Array<{ text: string; correct?: boolean }>) {
 // ─── Main ─────────────────────────────────────────────────────────────────────
 
 async function main() {
-  console.log("\n🌱  CoachNest seed starting…\n");
+  console.log("\n🌱  Coachnest seed starting…\n");
 
   await clearAll();
   console.log();
@@ -1697,7 +1697,7 @@ kubectl rollout undo deploy/my-app   # Rollback
     {
       userId: studentArjun.id, type: "PURCHASE", read: false,
       title: "Pro Plan Activated! 🎉",
-      body:  "Welcome to CoachNest Pro. You now have unlimited access to every course. Start learning now!",
+      body:  "Welcome to Coachnest Pro. You now have unlimited access to every course. Start learning now!",
       link:  "/courses",
     },
     {
@@ -1709,13 +1709,13 @@ kubectl rollout undo deploy/my-app   # Rollback
     {
       userId: studentSneha.id, type: "PURCHASE", read: true,
       title: "Basic Plan Activated!",
-      body:  "Welcome to CoachNest Basic. Access up to 5 courses. Start learning now!",
+      body:  "Welcome to Coachnest Basic. Access up to 5 courses. Start learning now!",
       link:  "/courses",
     },
     {
       userId: studentAnjali.id, type: "PURCHASE", read: false,
       title: "Pro Plan Activated! 🎉",
-      body:  "Welcome to CoachNest Pro. Unlimited access is now yours!",
+      body:  "Welcome to Coachnest Pro. Unlimited access is now yours!",
       link:  "/courses",
     },
     {
