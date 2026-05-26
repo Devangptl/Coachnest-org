@@ -9,6 +9,7 @@
  */
 import { cache } from "react";
 import { createSupabaseServerClient } from "./supabase/server";
+import type { AdminSubRole } from "./admin-permissions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -16,6 +17,9 @@ export interface SessionPayload {
   userId: string;
   email: string;
   role: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+  // Only meaningful when role === "ADMIN". Mirrored from Supabase
+  // app_metadata so middleware/session can read it without a DB hit.
+  adminSubRole: AdminSubRole | null;
   name: string;
   avatar?: string | null;
 }
@@ -36,10 +40,14 @@ export const getSession = cache(async (): Promise<SessionPayload | null> => {
 
   if (error || !user) return null;
 
+  const role = (user.app_metadata?.role ?? "STUDENT") as SessionPayload["role"];
+  const rawSub = user.app_metadata?.adminSubRole as AdminSubRole | undefined;
+
   return {
     userId: user.id,
     email: user.email!,
-    role: (user.app_metadata?.role ?? "STUDENT") as SessionPayload["role"],
+    role,
+    adminSubRole: role === "ADMIN" ? rawSub ?? "SUPER_ADMIN" : null,
     name: user.user_metadata?.name ?? user.email!.split("@")[0],
     avatar: user.user_metadata?.avatar ?? null,
   };

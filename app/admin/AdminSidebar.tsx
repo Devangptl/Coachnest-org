@@ -4,17 +4,25 @@
  * AdminSidebar — Client Component that owns its own nav items.
  * Desktop: persistent sidebar column (unchanged).
  * Mobile (<lg): floating toggle + fullscreen slide-out drawer.
+ *
+ * Nav items are filtered by the admin's sub-role (passed from the
+ * server layout) using lib/admin-permissions.
  */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
   Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
-  Mail, ScrollText, ListVideo, Database,
+  Mail, ScrollText, ListVideo, Database, ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  canAccessAdminPath,
+  ADMIN_SUB_ROLE_LABELS,
+  type AdminSubRole,
+} from "@/lib/admin-permissions";
 
 const adminNav = [
   { label: "Overview",      href: "/admin",                 icon: LayoutDashboard },
@@ -36,16 +44,27 @@ const adminNav = [
   { label: "Email Templates", href: "/admin/email-templates", icon: Mail          },
   { label: "Email Logs",    href: "/admin/email-logs",        icon: ScrollText    },
   { label: "Professions",   href: "/admin/professions",       icon: Briefcase     },
+  { label: "Admin Roles",   href: "/admin/admins",            icon: ShieldCheck   },
   { label: "Migrations",    href: "/admin/migrations",        icon: Database      },
   { label: "My Profile",   href: "/admin/profile",           icon: UserCircle    },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({
+  subRole,
+  onNavigate,
+}: {
+  subRole: AdminSubRole;
+  onNavigate?: () => void;
+}) {
   const pathname = usePathname();
+  const visibleNav = useMemo(
+    () => adminNav.filter((item) => canAccessAdminPath(subRole, item.href)),
+    [subRole]
+  );
 
   return (
     <nav className="flex flex-col gap-1">
-      {adminNav.map((item) => {
+      {visibleNav.map((item) => {
         const isActive =
           pathname === item.href || pathname.startsWith(item.href + "/");
         const Icon = item.icon;
@@ -76,7 +95,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ subRole }: { subRole: AdminSubRole }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -100,10 +119,13 @@ export default function AdminSidebar() {
       {/* ── Desktop sidebar (unchanged) ─────────────────────────────── */}
       <aside className="hidden lg:block w-56 flex-shrink-0 self-start sticky top-16 mt-3">
         <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
+          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-1">
             Admin Panel
           </p>
-          <NavLinks />
+          <p className="text-[10px] text-[#d97757] font-medium uppercase tracking-wider px-2 mb-3">
+            {ADMIN_SUB_ROLE_LABELS[subRole]}
+          </p>
+          <NavLinks subRole={subRole} />
         </div>
       </aside>
 
@@ -131,9 +153,14 @@ export default function AdminSidebar() {
           >
             {/* Header */}
             <div className="flex items-center justify-between mb-5">
-              <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">
-                Admin Panel
-              </p>
+              <div>
+                <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">
+                  Admin Panel
+                </p>
+                <p className="text-[10px] text-[#d97757] font-medium uppercase tracking-wider mt-0.5">
+                  {ADMIN_SUB_ROLE_LABELS[subRole]}
+                </p>
+              </div>
               <button
                 onClick={() => setMobileOpen(false)}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
@@ -143,7 +170,7 @@ export default function AdminSidebar() {
               </button>
             </div>
 
-            <NavLinks onNavigate={() => setMobileOpen(false)} />
+            <NavLinks subRole={subRole} onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       )}
