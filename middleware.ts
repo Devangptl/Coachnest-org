@@ -16,6 +16,7 @@
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
+import { canAccessAdminPath, type AdminSubRole } from "@/lib/admin-permissions";
 
 const PROTECTED  = ["/dashboard", "/admin", "/instructor", "/onboarding"];
 const AUTH_ONLY  = ["/login", "/signup"];
@@ -66,6 +67,7 @@ export async function middleware(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
 
   const role             = (user?.app_metadata?.role ?? "STUDENT") as string;
+  const adminSubRole     = (user?.app_metadata?.adminSubRole ?? null) as AdminSubRole | null;
   const instructorStatus = (user?.app_metadata?.instructorStatus ?? null) as string | null;
   const isInstructorPending =
     role === "INSTRUCTOR" &&
@@ -84,6 +86,15 @@ export async function middleware(req: NextRequest) {
     if (underPath(pathname, "/admin") && role !== "ADMIN") {
       const dest = isInstructorPending ? "/instructor/pending" : role === "INSTRUCTOR" ? "/instructor" : "/dashboard";
       return NextResponse.redirect(new URL(dest, req.url));
+    }
+
+    // /admin sub-section — must match the admin's sub-role permissions.
+    // Existing admins without a sub-role default to SUPER_ADMIN (full access).
+    if (underPath(pathname, "/admin") && role === "ADMIN") {
+      const effectiveSubRole: AdminSubRole = adminSubRole ?? "SUPER_ADMIN";
+      if (!canAccessAdminPath(effectiveSubRole, pathname)) {
+        return NextResponse.redirect(new URL("/admin", req.url));
+      }
     }
 
     // /instructor — INSTRUCTOR and ADMIN only
