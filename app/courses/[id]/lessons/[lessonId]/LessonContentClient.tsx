@@ -133,6 +133,11 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
     onComplete:       handleAutoComplete,
   });
 
+  // Combined reading progress percentage (average of scroll + time progress)
+  const scrollProgress  = Math.min(100, Math.round((scrollPct  / SCROLL_THRESHOLD) * 100));
+  const timeProgress    = Math.min(100, Math.round((activeSecs / TIME_THRESHOLD)   * 100));
+  const combinedPct     = Math.round((scrollProgress + timeProgress) / 2);
+
   // ── Locked state ─────────────────────────────────────────────────────────
   if (isLocked) {
     return (
@@ -306,12 +311,18 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
                   <CheckCircle2 className="w-3.5 h-3.5" /> Completed
                 </span>
               ) : lesson.type === "TEXT" ? (
-                <span className="hidden sm:flex items-center gap-3 text-[11px] text-muted-foreground/50">
-                  <span className={cn("flex items-center gap-1", scrollDone && "text-green-400/70")}>
-                    <Eye className="w-3 h-3" /> {scrollPct}% read
-                  </span>
-                  <span className={cn("flex items-center gap-1", timeDone && "text-green-400/70")}>
-                    <Clock className="w-3 h-3" /> {activeSecs}s / {TIME_THRESHOLD}s
+                <span className="hidden sm:flex items-center gap-2 px-2.5 py-1.5 rounded-md bg-secondary border border-border/60 text-[11px]">
+                  <BookOpen className="w-3 h-3 text-[#d97757]/80 flex-shrink-0" />
+                  <div className="w-20 h-1.5 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={cn("h-full rounded-full transition-all duration-500",
+                        combinedPct >= 100 ? "bg-green-500" : "bg-gradient-to-r from-[#d97757] to-orange-400"
+                      )}
+                      style={{ width: `${combinedPct}%` }}
+                    />
+                  </div>
+                  <span className={cn("font-bold tabular-nums", combinedPct >= 100 ? "text-green-400" : "text-foreground/70")}>
+                    {combinedPct}%
                   </span>
                 </span>
               ) : null}
@@ -376,33 +387,77 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
               <MarkdownRenderer content={lesson.content} />
             </TextHighlighter>
 
-            {/* Reading progress footer (mobile-friendly, shown before completion) */}
+            {/* Reading progress footer — unified progress widget */}
             {isEnrolled && !done && (
-              <div className="mt-6 pt-4 border-t border-border/40 flex flex-col sm:flex-row gap-3 text-xs text-muted-foreground/60">
-                <div className="flex items-center gap-2 flex-1">
-                  <Eye className="w-3.5 h-3.5 flex-shrink-0" />
-                  <div className="flex-1 bg-secondary rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all duration-500", scrollDone ? "bg-green-500" : "bg-[#d97757]")}
-                      style={{ width: `${scrollPct}%` }}
-                    />
+              <div className="mt-8 pt-5 border-t border-border/40">
+                {/* Header row: label + percentage */}
+                <div className="flex items-center justify-between mb-2.5">
+                  <div className="flex items-center gap-1.5">
+                    <BookOpen className="w-3.5 h-3.5 text-[#d97757]" />
+                    <span className="text-xs font-semibold text-foreground/60 uppercase tracking-wide">Lesson Progress</span>
                   </div>
-                  <span className="whitespace-nowrap">
-                    {scrollDone ? "✓" : `${scrollPct}%`} scrolled
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 flex-1">
-                  <Clock className="w-3.5 h-3.5 flex-shrink-0" />
-                  <div className="flex-1 bg-secondary rounded-full h-1.5 overflow-hidden">
-                    <div
-                      className={cn("h-full rounded-full transition-all duration-500", timeDone ? "bg-green-500" : "bg-[#d97757]")}
-                      style={{ width: `${Math.min(100, (activeSecs / TIME_THRESHOLD) * 100)}%` }}
-                    />
+                  <div className={cn(
+                    "flex items-center gap-1 text-sm font-bold tabular-nums transition-colors duration-500",
+                    combinedPct >= 100 ? "text-green-400" : "text-[#d97757]"
+                  )}>
+                    {combinedPct >= 100 && <CheckCircle2 className="w-3.5 h-3.5" />}
+                    <span>{combinedPct}%</span>
                   </div>
-                  <span className="whitespace-nowrap">
-                    {timeDone ? "✓" : `${activeSecs}s`} / {TIME_THRESHOLD}s reading
-                  </span>
                 </div>
+
+                {/* Main combined progress bar */}
+                <div className="relative h-2.5 bg-secondary rounded-full overflow-hidden mb-3">
+                  <div
+                    className={cn(
+                      "h-full rounded-full transition-all duration-700 ease-out",
+                      combinedPct >= 100
+                        ? "bg-green-500"
+                        : "bg-gradient-to-r from-[#d97757] to-orange-400"
+                    )}
+                    style={{ width: `${combinedPct}%` }}
+                  />
+                </div>
+
+                {/* Two metric pills */}
+                <div className="flex items-center gap-2">
+                  <div className={cn(
+                    "flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-md text-[11px] border transition-all duration-300",
+                    scrollDone
+                      ? "bg-green-500/10 text-green-400 border-green-500/20"
+                      : "bg-secondary text-muted-foreground/60 border-border/40"
+                  )}>
+                    <Eye className="w-3 h-3 flex-shrink-0" />
+                    <span className="font-medium">{scrollDone ? "Scrolled" : `${scrollPct}% scrolled`}</span>
+                    {scrollDone
+                      ? <CheckCircle2 className="w-3 h-3 ml-auto flex-shrink-0" />
+                      : <span className="text-muted-foreground/35 ml-auto whitespace-nowrap">/ 90%</span>
+                    }
+                  </div>
+                  <div className={cn(
+                    "flex items-center gap-1.5 flex-1 px-2.5 py-2 rounded-md text-[11px] border transition-all duration-300",
+                    timeDone
+                      ? "bg-green-500/10 text-green-400 border-green-500/20"
+                      : "bg-secondary text-muted-foreground/60 border-border/40"
+                  )}>
+                    <Clock className="w-3 h-3 flex-shrink-0" />
+                    <span className="font-medium">{timeDone ? "Time met" : `${activeSecs}s`}</span>
+                    {timeDone
+                      ? <CheckCircle2 className="w-3 h-3 ml-auto flex-shrink-0" />
+                      : <span className="text-muted-foreground/35 ml-auto whitespace-nowrap">/ {TIME_THRESHOLD}s</span>
+                    }
+                  </div>
+                </div>
+
+                {/* Hint text */}
+                {(!scrollDone || !timeDone) && (
+                  <p className="text-[10px] text-muted-foreground/35 mt-2.5 text-center">
+                    {!scrollDone && !timeDone
+                      ? "Scroll through and spend time reading to complete this lesson"
+                      : !scrollDone
+                      ? "Keep scrolling to finish the lesson"
+                      : "Keep reading — almost there!"}
+                  </p>
+                )}
               </div>
             )}
           </div>
