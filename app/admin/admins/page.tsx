@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
 import { ShieldCheck } from "lucide-react";
 import AdminSubRoleSelect from "./AdminSubRoleSelect";
+import AddAdminForm from "./AddAdminForm";
 import { ADMIN_SUB_ROLE_LABELS } from "@/lib/admin-permissions";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,8 @@ export default async function AdminsPage() {
           Assign a sub-role to control which admin sections each admin can access.
         </p>
       </div>
+
+      <AddAdminForm />
 
       <GlassCard padding="sm">
         <div className="divide-y divide-border/50">
