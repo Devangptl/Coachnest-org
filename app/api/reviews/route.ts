@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { sendNewCourseReviewEmail } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,6 +51,24 @@ export async function POST(req: NextRequest) {
       update: { rating, comment, updatedAt: new Date() },
       include: { user: { select: { name: true, avatar: true } } },
     });
+
+    // Notify the course instructor of the new review (fire-and-forget)
+    prisma.course.findUnique({
+      where: { id: courseId },
+      include: { createdBy: { select: { email: true, name: true } } },
+    }).then((course) => {
+      if (course?.createdBy.email) {
+        sendNewCourseReviewEmail(
+          course.createdBy.email,
+          course.createdBy.name ?? "Instructor",
+          review.user.name ?? "A student",
+          course.title,
+          rating,
+          comment ?? null,
+          courseId,
+        ).catch(() => null);
+      }
+    }).catch(() => null);
 
     return NextResponse.json({ review }, { status: 201 });
   } catch (err) {

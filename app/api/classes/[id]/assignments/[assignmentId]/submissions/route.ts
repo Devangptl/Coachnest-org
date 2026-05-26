@@ -12,6 +12,8 @@ import {
   submitAssignment,
 } from "@/services/assignment.service";
 import { submitAssignmentSchema } from "@/lib/validation/assignment";
+import { prisma } from "@/lib/prisma";
+import { sendAssignmentSubmittedEmail } from "@/lib/email";
 
 export async function GET(
   _req: NextRequest,
@@ -34,7 +36,7 @@ export async function POST(
   req: NextRequest,
   ctx: { params: Promise<{ id: string; assignmentId: string }> },
 ) {
-  const { assignmentId } = await ctx.params;
+  const { id: classId, assignmentId } = await ctx.params;
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -53,6 +55,36 @@ export async function POST(
       session.userId,
       parsed.data,
     );
+
+    // Notify instructor when a student finalises their submission (fire-and-forget)
+    if (parsed.data.finalize) {
+      prisma.assignment.findUnique({
+        where: { id: assignmentId },
+        include: {
+          class: {
+            include: {
+              instructor: { select: { email: true, name: true } },
+            },
+          },
+          author: { select: { name: true } },
+        },
+      }).then(async (assignment) => {
+        if (!assignment?.class.instructor.email) return;
+        const student = await prisma.user.findUnique({
+          where: { id: session.userId },
+          select: { name: true },
+        });
+        sendAssignmentSubmittedEmail(
+          assignment.class.instructor.email,
+          assignment.class.instructor.name ?? "Instructor",
+          student?.name ?? "A student",
+          assignment.title,
+          assignment.class.name,
+          classId,
+        ).catch(() => null);
+      }).catch(() => null);
+    }
+
     return NextResponse.json({ submission }, { status: 201 });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Failed";
