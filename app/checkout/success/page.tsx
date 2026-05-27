@@ -29,10 +29,11 @@ function CheckoutSuccessContent() {
           setState("error");
           return;
         }
-        // Confirm enrollment / feature access using the PaymentIntent
+        // Confirm enrollment / feature access / book purchase via the PaymentIntent
         try {
-          const endpoint = type === "feature"
-            ? "/api/payments/confirm-feature-access"
+          const endpoint =
+            type === "feature" ? "/api/payments/confirm-feature-access"
+            : type === "books"   ? "/api/payments/confirm-book-purchase"
             : "/api/payments/confirm-enrollment";
           await fetch(endpoint, {
             method:  "POST",

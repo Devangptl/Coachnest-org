@@ -17,7 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";
 import { handlePaymentSuccess, handlePaymentIntentSuccess } from "@/services/payment.service";
-import { handleBookPaymentSuccess } from "@/services/book-payment.service";
+import { handleBookPaymentIntentSuccess } from "@/services/book-payment.service";
 import {
   handleSubscriptionCheckoutCompleted,
   handleSubscriptionCreated,
@@ -50,13 +50,7 @@ export async function POST(req: NextRequest) {
             typeof session.payment_intent === "string"
               ? session.payment_intent
               : session.payment_intent?.id ?? "";
-          // Route by metadata.type — "books" goes through the cart flow,
-          // everything else (course, feature) goes through the legacy handler.
-          if (session.metadata?.type === "books") {
-            await handleBookPaymentSuccess(session.id, paymentIntentId);
-          } else {
-            await handlePaymentSuccess(session.id, paymentIntentId);
-          }
+          await handlePaymentSuccess(session.id, paymentIntentId);
         } else if (session.mode === "subscription") {
           // Write the subscription record immediately so the success page
           // always finds it — don't wait for customer.subscription.created
@@ -78,11 +72,13 @@ export async function POST(req: NextRequest) {
         await handleSubscriptionDeleted(event);
         break;
 
-      // ── In-app course purchase (PaymentIntent flow) ───────────────────────
+      // ── In-app purchase (PaymentIntent flow) ──────────────────────────────
+      // Books (multi-item cart) vs courses are distinguished by metadata.type.
       case "payment_intent.succeeded": {
         const pi = event.data.object;
-        // Only handle course purchases (identified by orderId in metadata)
-        if (pi.metadata?.orderId) {
+        if (pi.metadata?.type === "books" && pi.metadata.bookOrderId) {
+          await handleBookPaymentIntentSuccess(pi.id);
+        } else if (pi.metadata?.orderId) {
           await handlePaymentIntentSuccess(pi.id);
         }
         break;

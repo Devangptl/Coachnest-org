@@ -1,16 +1,18 @@
 /**
- * Book Payment Service — mirrors services/payment.service.ts but for the
- * multi-item Books cart flow.
+ * Book Payment Service — multi-item cart flow built around Stripe
+ * PaymentIntent (in-app Elements / PaymentElement), mirroring the same
+ * pattern used by services/payment.service.ts for course purchases.
  *
  * Flow:
- *   createBookCheckoutSession  → reads cart → builds BookOrder + N items →
- *                                Stripe Checkout (one line_item per book)
- *   handleBookPaymentSuccess   → webhook fires → mark PAID → create
- *                                BookPurchase rows → credit instructor wallets →
- *                                empty cart → notify + email
+ *   createBookPaymentIntent     → reads cart → builds BookOrder + N items →
+ *                                 PaymentIntent (no redirect), returns clientSecret
+ *   handleBookPaymentIntentSuccess → webhook OR confirm-book-purchase →
+ *                                 mark PAID → create BookPurchase rows →
+ *                                 credit instructor wallets → empty cart →
+ *                                 notify + email
  *
  * Revenue split: per-item using Book.instructorRevenuePercent. Coupons apply
- * proportionally across all items. Referral links are out of scope for v1
+ * proportionally across items. Referral links are out of scope for v1
  * (organic split only on books).
  */
 import { prisma } from "@/lib/prisma";
@@ -19,19 +21,25 @@ import { createNotification } from "@/lib/notifications";
 import { sendBookPurchaseEmail } from "@/lib/email";
 import { clearCart } from "@/services/cart.service";
 
-interface CreateBookCheckoutResult {
-  orderId:   string;
-  sessionId: string;
-  url:       string | null;
+interface CreateBookPaymentIntentResult {
+  clientSecret: string | null;
+  orderId:      string;
+  amount:       number;
+  subtotal:     number;
+  discount:     number;
+  itemCount:    number;
 }
 
-export async function createBookCheckoutSession(
-  userId:      string,
-  couponCode?: string,
-): Promise<CreateBookCheckoutResult> {
+// ─── Create Stripe PaymentIntent for the user's cart ─────────────────────────
+
+export async function createBookPaymentIntent(
+  userId:            string,
+  couponCode?:       string,
+  paymentMethodType?: string,
+): Promise<CreateBookPaymentIntentResult> {
   const user = await prisma.user.findUnique({
     where:  { id: userId },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, stripeCustomerId: true },
   });
   if (!user) throw new Error("User not found");
 
@@ -53,7 +61,6 @@ export async function createBookCheckoutSession(
   });
   if (!cart || cart.items.length === 0) throw new Error("Your cart is empty");
 
-  // Filter out unpublished books defensively
   const items = cart.items.filter((i) => i.book.status === "PUBLISHED" && !i.book.isFree);
   if (items.length === 0) throw new Error("No purchasable items in cart");
 
@@ -63,12 +70,13 @@ export async function createBookCheckoutSession(
     select: { bookId: true },
   });
   if (owned.length > 0) {
-    const titles = items.filter((i) => owned.some((o) => o.bookId === i.book.id))
-                        .map((i) => i.book.title);
+    const titles = items
+      .filter((i) => owned.some((o) => o.bookId === i.book.id))
+      .map((i) => i.book.title);
     throw new Error(`Already purchased: ${titles.join(", ")}. Remove these from your cart.`);
   }
 
-  // Per-item base price (uses discountPrice when set)
+  // Per-item base price
   const lineItems = items.map((i) => {
     const basePrice = i.book.discountPrice && Number(i.book.discountPrice) < Number(i.book.price ?? 0)
       ? Number(i.book.discountPrice)
@@ -78,7 +86,7 @@ export async function createBookCheckoutSession(
   const subtotal = lineItems.reduce((s, i) => s + i.basePrice, 0);
   if (subtotal <= 0) throw new Error("Cart subtotal is zero");
 
-  // Apply coupon to subtotal, distribute discount proportionally
+  // Apply coupon
   let discountAmt = 0;
   let couponId: string | undefined;
   if (couponCode) {
@@ -101,7 +109,7 @@ export async function createBookCheckoutSession(
 
   const finalAmount = Math.max(0, subtotal - discountAmt);
 
-  // Per-item final price (subtotal-proportional allocation of discount)
+  // Per-item allocation (proportional discount distribution)
   const allocations = lineItems.map((i) => {
     const ratio = subtotal > 0 ? i.basePrice / subtotal : 0;
     const itemDiscount = parseFloat((discountAmt * ratio).toFixed(2));
@@ -112,7 +120,7 @@ export async function createBookCheckoutSession(
     return { ...i, itemFinal, instructorRevenue, platformRevenue, pct };
   });
 
-  // Create BookOrder + BookOrderItem rows in a single transaction
+  // Persist BookOrder + items in a single transaction
   const order = await prisma.bookOrder.create({
     data: {
       userId,
@@ -134,42 +142,64 @@ export async function createBookCheckoutSession(
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const stripe = getStripe();
+  // Ensure Stripe customer exists (India RBI export compliance)
+  const stripe       = getStripe();
+  const customerName = user.name ?? user.email;
+  let customerId     = user.stripeCustomerId ?? undefined;
+  if (!customerId) {
+    const customer = await stripe.customers.create({
+      email:   user.email,
+      name:    customerName,
+      address: { line1: "India", country: "IN" },
+      metadata: { userId: user.id },
+    });
+    customerId = customer.id;
+    await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
+  } else {
+    await stripe.customers.update(customerId, {
+      name:    customerName,
+      address: { line1: "India", country: "IN" },
+    });
+  }
 
-  const session = await stripe.checkout.sessions.create({
-    mode:                "payment",
-    customer_email:      user.email,
-    payment_intent_data: { description: `Coachnest book purchase (${allocations.length} item${allocations.length === 1 ? "" : "s"})` },
-    line_items: allocations.map((a) => ({
-      price_data: {
-        currency:     "inr",
-        unit_amount:  Math.round(a.itemFinal * 100),
-        product_data: {
-          name: a.book.title,
-          ...(a.book.coverImage ? { images: [a.book.coverImage] } : {}),
-        },
-      },
-      quantity: 1,
-    })),
-    metadata: {
+  const titlesShort = allocations
+    .slice(0, 3)
+    .map((a) => a.book.title)
+    .join(", ") + (allocations.length > 3 ? ` +${allocations.length - 3} more` : "");
+
+  const pi = await stripe.paymentIntents.create({
+    amount:   Math.round(finalAmount * 100),
+    currency: "inr",
+    customer: customerId,
+    ...(paymentMethodType === "upi"
+      ? { payment_method_types: ["upi"] }
+      : { automatic_payment_methods: { enabled: true } }),
+    description:   `Coachnest books: ${titlesShort}`,
+    metadata:      {
       bookOrderId: order.id,
       userId,
-      type: "books",
+      type:        "books",
+      itemCount:   String(allocations.length),
     },
-    success_url: `${appUrl}/checkout/success?type=books&orderId=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${appUrl}/checkout/cancel?type=books&orderId=${order.id}`,
+    receipt_email: user.email,
   });
 
   await prisma.bookOrder.update({
     where: { id: order.id },
-    data:  { stripeSessionId: session.id },
+    data:  { stripePaymentId: pi.id },
   });
 
-  return { orderId: order.id, sessionId: session.id, url: session.url };
+  return {
+    clientSecret: pi.client_secret,
+    orderId:      order.id,
+    amount:       finalAmount,
+    subtotal,
+    discount:     discountAmt,
+    itemCount:    allocations.length,
+  };
 }
 
-// ─── Credit instructor wallet for a single book item ─────────────────────────
+// ─── Wallet credit helper (per book item) ────────────────────────────────────
 
 async function creditInstructorWalletForBook(args: {
   bookOrderId:       string;
@@ -212,14 +242,11 @@ async function creditInstructorWalletForBook(args: {
   });
 }
 
-// ─── Webhook handler: mark PAID + create purchases + credit wallets ──────────
+// ─── Finalize order (called by both webhook + confirm endpoint) ──────────────
 
-export async function handleBookPaymentSuccess(
-  stripeSessionId: string,
-  paymentIntentId: string,
-) {
+async function finalizeBookOrder(orderId: string, paymentIntentId: string) {
   const order = await prisma.bookOrder.findUnique({
-    where: { stripeSessionId },
+    where:   { id: orderId },
     include: {
       user:  { select: { id: true, email: true, name: true } },
       items: {
@@ -234,8 +261,7 @@ export async function handleBookPaymentSuccess(
       },
     },
   });
-
-  if (!order) throw new Error("BookOrder not found for session");
+  if (!order) throw new Error("BookOrder not found");
   if (order.status === "PAID") {
     return { success: true, orderId: order.id, alreadyProcessed: true };
   }
@@ -245,7 +271,7 @@ export async function handleBookPaymentSuccess(
     data:  { status: "PAID", stripePaymentId: paymentIntentId },
   });
 
-  // Create BookPurchase rows (one per item)
+  // Create BookPurchase rows (one per item, idempotent)
   await Promise.all(
     order.items.map((item) =>
       prisma.bookPurchase.upsert({
@@ -260,7 +286,6 @@ export async function handleBookPaymentSuccess(
     ),
   );
 
-  // Credit each instructor's wallet
   for (const item of order.items) {
     await creditInstructorWalletForBook({
       bookOrderId:       order.id,
@@ -272,7 +297,6 @@ export async function handleBookPaymentSuccess(
     }).catch(console.error);
   }
 
-  // Apply coupon usage if present
   if (order.couponId) {
     await prisma.coupon.update({
       where: { id: order.couponId },
@@ -285,14 +309,10 @@ export async function handleBookPaymentSuccess(
     }).catch(console.error);
   }
 
-  // Empty the user's cart
   await clearCart(order.userId).catch(console.error);
 
-  // Notification + email
   const titles = order.items.map((i) => i.book.title);
-  const summary = titles.length === 1
-    ? `"${titles[0]}"`
-    : `${titles.length} books`;
+  const summary = titles.length === 1 ? `"${titles[0]}"` : `${titles.length} books`;
 
   await createNotification({
     data: {
@@ -314,4 +334,15 @@ export async function handleBookPaymentSuccess(
   }
 
   return { success: true, orderId: order.id, alreadyProcessed: false };
+}
+
+// ─── Webhook handler: payment_intent.succeeded ───────────────────────────────
+
+export async function handleBookPaymentIntentSuccess(paymentIntentId: string) {
+  const order = await prisma.bookOrder.findFirst({
+    where:  { stripePaymentId: paymentIntentId },
+    select: { id: true },
+  });
+  if (!order) throw new Error("BookOrder not found for payment intent");
+  return finalizeBookOrder(order.id, paymentIntentId);
 }

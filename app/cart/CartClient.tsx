@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import {
-  Trash2, Loader2, BookOpen, ArrowRight, Tag, ShieldCheck, Receipt,
+  Trash2, BookOpen, ArrowRight, ShieldCheck, Receipt,
 } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 
@@ -27,9 +27,6 @@ export default function CartClient({ initialItems }: Props) {
   const router = useRouter();
   const { remove } = useCart();
   const [items, setItems] = useState<Item[]>(initialItems);
-  const [couponCode, setCouponCode] = useState("");
-  const [checkoutBusy, setCheckoutBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const subtotal = items.reduce((s, i) => s + (i.discountPrice ?? i.price), 0);
   const baseTotal = items.reduce((s, i) => s + i.price, 0);
@@ -40,26 +37,8 @@ export default function CartClient({ initialItems }: Props) {
     setItems((prev) => prev.filter((i) => i.bookId !== bookId));
   }
 
-  async function handleCheckout() {
-    setCheckoutBusy(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/payments/create-book-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ couponCode: couponCode.trim() || undefined }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Checkout failed");
-      if (data.url) {
-        window.location.href = data.url;
-        return;
-      }
-      router.push(`/checkout/success?type=books&orderId=${data.orderId}`);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "Checkout failed");
-      setCheckoutBusy(false);
-    }
+  function handleCheckout() {
+    router.push("/checkout/books");
   }
 
   if (items.length === 0) {
@@ -165,46 +144,18 @@ export default function CartClient({ initialItems }: Props) {
             </div>
           </div>
 
-          {/* Coupon */}
-          <div className="mt-4 border-t border-border pt-4">
-            <label className="label flex items-center gap-1.5">
-              <Tag className="h-3 w-3" /> Coupon code
-            </label>
-            <input
-              type="text"
-              value={couponCode}
-              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-              placeholder="Optional"
-              className="input-glass uppercase placeholder:normal-case"
-            />
-            <p className="mt-1 text-[11px] text-muted-foreground">
-              Coupon discount is applied at checkout.
-            </p>
-          </div>
-
           <button
             onClick={handleCheckout}
-            disabled={checkoutBusy}
             className="btn-primary mt-4 !w-full !py-2.5 !text-sm justify-center"
           >
-            {checkoutBusy ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" /> Redirecting…
-              </>
-            ) : (
-              <>
-                Proceed to Checkout <ArrowRight className="h-4 w-4" />
-              </>
-            )}
+            Proceed to Checkout <ArrowRight className="h-4 w-4" />
           </button>
 
-          {error && (
-            <div className="mt-3 rounded-md border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-400">
-              {error}
-            </div>
-          )}
+          <p className="mt-3 text-center text-[11px] text-muted-foreground">
+            Coupon? Apply it on the next step.
+          </p>
 
-          <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+          <p className="mt-3 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
             <ShieldCheck className="h-3.5 w-3.5 text-green-500/80" />
             Secure payment · Lifetime download
           </p>
