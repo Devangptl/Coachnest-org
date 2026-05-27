@@ -23,10 +23,7 @@ export interface BookVM {
   categoryName:   string | null;
 }
 
-export default function BookCard({
-  book,
-  compact = false,
-}: { book: BookVM; compact?: boolean }) {
+export default function BookCard({ book }: { book: BookVM }) {
   const router = useRouter();
   const { add } = useCart();
   const [busy, setBusy]   = useState(false);
@@ -67,11 +64,8 @@ export default function BookCard({
       href={`/books/${book.slug}`}
       className="group relative flex h-full flex-col overflow-hidden rounded-md border border-border/60 bg-card transition-colors duration-200 hover:border-orange-500/30"
     >
-      {/* Top accent line on hover */}
-      <span className="absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 transition-opacity duration-200 group-hover:opacity-100" />
-
-      {/* ── Cover ─────────────────────────────────────────────── */}
-      <div className="relative aspect-[3/4] w-full overflow-hidden bg-secondary/60">
+      {/* ── Cover (4:5 ratio = ~25% shorter than 3:4 book aspect) ── */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-secondary/60">
         {book.coverImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -81,39 +75,56 @@ export default function BookCard({
             loading="lazy"
           />
         ) : (
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-0.5 text-muted-foreground/30">
+          <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
             <BookOpen className="h-8 w-8" />
           </div>
         )}
 
-        {/* Format chip — top-left */}
-        <span className="absolute left-1.5 top-1.5 rounded-sm bg-black/60 backdrop-blur-sm px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-white">
+        {/* Gradient bottom scrim — makes overlays legible regardless of cover */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
+
+        {/* Top accent line on hover */}
+        <span className="absolute inset-x-0 top-0 z-10 h-px bg-gradient-to-r from-orange-600 to-amber-500 opacity-0 transition-opacity group-hover:opacity-100" />
+
+        {/* Top-left format chip */}
+        <span className="absolute left-1.5 top-1.5 z-10 rounded-sm bg-black/65 px-1.5 py-px text-[9px] font-bold uppercase tracking-wider text-white backdrop-blur-sm">
           {book.fileFormat}
         </span>
 
-        {/* Discount chip — top-right */}
+        {/* Top-right discount chip */}
         {hasDiscount && discountPct > 0 && (
-          <span className="absolute right-1.5 top-1.5 rounded-sm bg-orange-500 px-1.5 py-px text-[9px] font-bold text-white">
+          <span className="absolute right-1.5 top-1.5 z-10 rounded-sm bg-orange-500 px-1.5 py-px text-[9px] font-bold text-white">
             -{discountPct}%
           </span>
         )}
 
-        {/* Free pill — bottom-right */}
-        {book.isFree && (
-          <span className="absolute bottom-1.5 right-1.5 rounded-sm bg-green-500/90 px-1.5 py-px text-[9px] font-bold uppercase text-white">
-            Free
+        {/* Bottom-left rating pill */}
+        {book.avgRating > 0 && (
+          <span className="absolute bottom-1.5 left-1.5 z-10 flex items-center gap-0.5 rounded bg-black/65 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+            <Star className="h-2.5 w-2.5 fill-amber-400 text-amber-400" />
+            {book.avgRating.toFixed(1)}
           </span>
         )}
 
-        {/* Quick-add button (top-right on hover) */}
-        {!book.isFree && (
+        {/* Bottom-right price + add button */}
+        <div className="absolute bottom-1.5 right-1.5 z-10 flex items-center gap-1">
+          {book.isFree ? (
+            <span className="rounded bg-green-500/90 px-1.5 py-0.5 text-[10px] font-bold uppercase text-white">
+              Free
+            </span>
+          ) : (
+            <span className="rounded bg-black/70 px-1.5 py-0.5 text-[11px] font-bold leading-none text-white backdrop-blur-sm">
+              ₹{Number(displayPrice).toLocaleString("en-IN")}
+            </span>
+          )}
+
           <button
             onClick={handleAdd}
             disabled={busy}
-            aria-label="Add to cart"
+            aria-label={book.isFree ? "Open book" : "Add to cart"}
             className={cn(
-              "absolute bottom-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition-all duration-200 hover:bg-orange-600 disabled:opacity-60",
-              compact ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              "flex h-5 w-5 items-center justify-center rounded-full bg-orange-500 text-white shadow-sm transition-colors hover:bg-orange-600 disabled:opacity-60",
+              added && "bg-green-500 hover:bg-green-500",
             )}
           >
             {busy ? (
@@ -124,66 +135,30 @@ export default function BookCard({
               <Plus className="h-3 w-3" />
             )}
           </button>
-        )}
+        </div>
       </div>
 
-      {/* ── Body ──────────────────────────────────────────────── */}
-      <div className="flex flex-1 flex-col gap-0.5 p-2">
-        <h3 className="line-clamp-2 text-[12.5px] font-semibold leading-snug text-foreground transition-colors group-hover:text-orange-500">
+      {/* ── Body — title + author, tight 2-line max ──────────── */}
+      <div className="flex flex-1 flex-col px-2 pt-1.5 pb-2">
+        <h3 className="line-clamp-2 text-[12px] font-semibold leading-snug text-foreground transition-colors group-hover:text-orange-500">
           {book.title}
         </h3>
-        <p className="truncate text-[10.5px] text-muted-foreground/80">
-          by {book.author}
+        <p className="mt-0.5 truncate text-[10px] text-muted-foreground/70">
+          {book.author}
         </p>
 
-        {/* Footer row */}
-        <div className="mt-auto flex items-center justify-between gap-1 pt-1.5">
-          {/* Price */}
-          <div className="flex items-baseline gap-1">
-            {book.isFree ? (
-              <span className="text-[11px] font-bold text-green-500">Free</span>
-            ) : (
-              <>
-                <span className="text-[13px] font-bold text-foreground">
-                  ₹{Number(displayPrice).toLocaleString("en-IN")}
-                </span>
-                {hasDiscount && (
-                  <span className="text-[9px] text-muted-foreground/70 line-through">
-                    ₹{Number(book.price).toLocaleString("en-IN")}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-
-          {/* Rating or downloads */}
-          {book.avgRating > 0 ? (
-            <span className="flex items-center gap-0.5 text-[10px] font-medium text-amber-500">
-              <Star className="h-2.5 w-2.5 fill-current" />
-              {book.avgRating.toFixed(1)}
-            </span>
-          ) : book.purchaseCount > 0 ? (
-            <span className="text-[10px] text-muted-foreground/70">
-              {book.purchaseCount.toLocaleString()} sold
-            </span>
-          ) : (
-            <span className="text-[10px] text-muted-foreground/60">New</span>
-          )}
-        </div>
-
-        {/* Inline feedback */}
-        {(error || added) && !compact && (
+        {/* Inline feedback (only when needed) */}
+        {(error || added) && (
           <p
             className={cn(
               "mt-1 line-clamp-1 text-[10px] leading-snug",
               error ? "text-red-400" : "text-green-500",
             )}
           >
-            {error ?? "Added to cart"}
+            {error ?? "Added"}
           </p>
         )}
       </div>
-
     </Link>
   );
 }
