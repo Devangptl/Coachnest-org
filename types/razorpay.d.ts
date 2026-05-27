@@ -77,7 +77,11 @@ export interface RazorpayCustomOptions {
 
 /** Card payment payload for `rzp.createPayment()` */
 export interface CardPaymentData {
-  method: "card";
+  method:  "card";
+  /** Required by Razorpay — 10-digit mobile number */
+  contact: string;
+  /** Required by Razorpay — customer email */
+  email:   string;
   card: {
     number:       string;
     expiry_month: string;   // "01"–"12"
@@ -85,24 +89,26 @@ export interface CardPaymentData {
     cvv:          string;
     name:         string;
   };
-  contact?: string;
-  email?:   string;
 }
 
 /** UPI collect-flow payload for `rzp.createPayment()` */
 export interface UpiPaymentData {
-  method:   "upi";
-  vpa:      string;    // Virtual Payment Address e.g. "user@paytm"
-  contact?: string;
-  email?:   string;
+  method:  "upi";
+  vpa:     string;    // Virtual Payment Address e.g. "user@paytm"
+  /** Required by Razorpay — 10-digit mobile number */
+  contact: string;
+  /** Required by Razorpay — customer email */
+  email:   string;
 }
 
 /** Net-banking payload for `rzp.createPayment()` */
 export interface NetBankingPaymentData {
-  method:   "netbanking";
-  bank:     string;    // Razorpay bank code e.g. "HDFC", "ICIC", "SBIN"
-  contact?: string;
-  email?:   string;
+  method:  "netbanking";
+  bank:    string;    // Razorpay bank code e.g. "HDFC", "ICIC", "SBIN"
+  /** Required by Razorpay — 10-digit mobile number */
+  contact: string;
+  /** Required by Razorpay — customer email */
+  email:   string;
 }
 
 export type RazorpayPaymentData = CardPaymentData | UpiPaymentData | NetBankingPaymentData;

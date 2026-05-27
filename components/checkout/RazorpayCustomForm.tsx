@@ -121,6 +121,10 @@ export default function RazorpayCustomForm({
   const [paying,  setPaying]  = useState(false);
   const [formErr, setFormErr] = useState<string | null>(null);
 
+  // Contact details — required by Razorpay createPayment() for every method
+  const [contact, setContact] = useState("");
+  const [email,   setEmail]   = useState("");
+
   // Card fields
   const [cardNumber, setCardNumber] = useState("");
   const [expiry,     setExpiry]     = useState("");
@@ -177,10 +181,22 @@ export default function RazorpayCustomForm({
     e.preventDefault();
     if (!rzpRef.current) { setFormErr("Payment gateway not ready. Please wait."); return; }
     setFormErr(null);
+
+    // ── Validate shared contact fields (required by Razorpay for every method)
+    const phone = contact.replace(/\D/g, "");
+    if (!phone || phone.length < 10) {
+      setFormErr("Enter a valid 10-digit mobile number.");
+      return;
+    }
+    if (!email.trim() || !email.includes("@")) {
+      setFormErr("Enter a valid email address.");
+      return;
+    }
+
     setPaying(true);
 
     if (tab === "card") {
-      const raw     = cardNumber.replace(/\s/g, "");
+      const raw      = cardNumber.replace(/\s/g, "");
       const [mm, yy] = expiry.split("/");
       if (raw.length < 13) { setFormErr("Enter a valid card number."); setPaying(false); return; }
       if (!mm || !yy || mm.length < 2 || yy.length < 2) { setFormErr("Enter a valid expiry date (MM/YY)."); setPaying(false); return; }
@@ -188,7 +204,9 @@ export default function RazorpayCustomForm({
       if (!nameOnCard.trim()) { setFormErr("Enter the name on your card."); setPaying(false); return; }
 
       const data: CardPaymentData = {
-        method: "card",
+        method:  "card",
+        contact: phone,
+        email:   email.trim(),
         card: {
           number:       raw,
           expiry_month: mm,
@@ -207,13 +225,23 @@ export default function RazorpayCustomForm({
         return;
       }
       setUpiStatus("waiting");
-      const data: UpiPaymentData = { method: "upi", vpa: upiId.trim() };
+      const data: UpiPaymentData = {
+        method:  "upi",
+        vpa:     upiId.trim(),
+        contact: phone,
+        email:   email.trim(),
+      };
       rzpRef.current.createPayment(data);
     }
 
     if (tab === "netbanking") {
       if (!selectedBank) { setFormErr("Please select your bank."); setPaying(false); return; }
-      const data: NetBankingPaymentData = { method: "netbanking", bank: selectedBank };
+      const data: NetBankingPaymentData = {
+        method:  "netbanking",
+        bank:    selectedBank,
+        contact: phone,
+        email:   email.trim(),
+      };
       rzpRef.current.createPayment(data);
     }
   }
@@ -488,6 +516,46 @@ export default function RazorpayCustomForm({
             )}
           </div>
         )}
+
+        {/* ── Contact details (required by Razorpay for every payment method) ── */}
+        <div className="space-y-3 pt-1 border-t border-border">
+          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pt-1">
+            Contact Details
+          </p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                Mobile Number <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="tel"
+                inputMode="numeric"
+                autoComplete="tel"
+                placeholder="10-digit mobile number"
+                value={contact}
+                onChange={(e) => setContact(e.target.value.replace(/\D/g, "").slice(0, 10))}
+                maxLength={10}
+                className="input-glass"
+                disabled={paying}
+              />
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
+                Email Address <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input-glass"
+                disabled={paying}
+              />
+            </div>
+          </div>
+        </div>
 
         {/* ── Error banner ──────────────────────────────────────────────── */}
         {formErr && (
