@@ -113,11 +113,32 @@ export interface NetBankingPaymentData {
 
 export type RazorpayPaymentData = CardPaymentData | UpiPaymentData | NetBankingPaymentData;
 
+/**
+ * Fired by razorpay.js when a card payment needs 3DS / OTP action.
+ * Intercept this event and render the `url` in your own iframe to avoid
+ * Razorpay's default overlay.
+ */
+export interface RazorpayActionPayload {
+  /** Direct GET URL — open this in an iframe to show the bank's OTP page. */
+  url?: string;
+  redirect?: {
+    url:     string;
+    method?: "GET" | "POST";
+    params?: Record<string, string>;
+  };
+}
+
 export interface RazorpayCustomInstance {
-  /** Submit payment details to Razorpay. May trigger 3DS / bank redirect. */
+  /** Submit payment details to Razorpay. May trigger 3DS via payment.action. */
   createPayment(data: RazorpayPaymentData): void;
   on(event: "payment.success", callback: (r: RazorpaySuccessResponse) => void): void;
   on(event: "payment.error",   callback: (r: RazorpayErrorResponse)   => void): void;
+  /**
+   * Fired when 3DS authentication is required for a card payment.
+   * Handle this yourself to avoid Razorpay's default overlay — render
+   * payload.url (or payload.redirect.url) inside your own iframe/modal.
+   */
+  on(event: "payment.action",  callback: (r: RazorpayActionPayload)   => void): void;
 }
 
 // ── Window augmentation ───────────────────────────────────────────────────────
