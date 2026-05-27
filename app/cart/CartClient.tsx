@@ -3,7 +3,9 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Trash2, Loader2, BookOpen, ArrowRight } from "lucide-react";
+import {
+  Trash2, Loader2, BookOpen, ArrowRight, Tag, ShieldCheck, Receipt,
+} from "lucide-react";
 import { useCart } from "@/hooks/useCart";
 
 interface Item {
@@ -21,7 +23,7 @@ interface Props {
   initialSubtotal: number;
 }
 
-export default function CartClient({ initialItems, initialSubtotal }: Props) {
+export default function CartClient({ initialItems }: Props) {
   const router = useRouter();
   const { remove } = useCart();
   const [items, setItems] = useState<Item[]>(initialItems);
@@ -30,6 +32,8 @@ export default function CartClient({ initialItems, initialSubtotal }: Props) {
   const [error, setError] = useState<string | null>(null);
 
   const subtotal = items.reduce((s, i) => s + (i.discountPrice ?? i.price), 0);
+  const baseTotal = items.reduce((s, i) => s + i.price, 0);
+  const itemDiscount = baseTotal - subtotal;
 
   async function handleRemove(bookId: string) {
     await remove(bookId);
@@ -60,60 +64,78 @@ export default function CartClient({ initialItems, initialSubtotal }: Props) {
 
   if (items.length === 0) {
     return (
-      <div className="rounded-xl border border-dashed border-white/[0.08] py-16 text-center">
-        <BookOpen className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
-        <p className="mb-4 text-sm text-muted-foreground">No items yet — browse the catalog to add some.</p>
-        <Link
-          href="/books"
-          className="inline-flex items-center gap-1.5 rounded-lg bg-orange-500 px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600"
-        >
+      <div className="rounded-lg border border-dashed border-border bg-card/30 py-16 text-center">
+        <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-orange-500/10 border border-orange-500/20">
+          <BookOpen className="h-7 w-7 text-orange-500/70" />
+        </div>
+        <h3 className="text-base font-semibold text-foreground mb-1">Your cart is empty</h3>
+        <p className="mb-5 text-sm text-muted-foreground">
+          Browse the catalog and add some titles to get started.
+        </p>
+        <Link href="/books" className="btn-primary !py-2 !px-4 !text-sm">
           Browse Books <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </div>
     );
   }
 
-  const initialUsed = subtotal !== initialSubtotal ? subtotal : initialSubtotal;
-  void initialUsed; // keep reference; suppress unused warning
-
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-      <ul className="space-y-3">
+    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      {/* ── Items ─────────────────────────────────────────────── */}
+      <ul className="space-y-2.5">
         {items.map((item) => {
           const finalPrice = item.discountPrice ?? item.price;
+          const hasDiscount = item.discountPrice != null && item.discountPrice < item.price;
           return (
             <li
               key={item.bookId}
-              className="flex items-start gap-3 rounded-xl border border-white/[0.06] bg-card/50 p-3"
+              className="group flex items-start gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-orange-500/30"
             >
+              {/* Cover */}
               <Link href={`/books/${item.slug}`} className="flex-shrink-0">
-                <div className="h-20 w-16 overflow-hidden rounded-md bg-secondary/50">
+                <div className="h-24 w-[68px] overflow-hidden rounded-md border border-border bg-secondary/60">
                   {item.coverImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img src={item.coverImage} alt={item.title} className="h-full w-full object-cover" />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-muted-foreground/40">
+                    <div className="flex h-full items-center justify-center text-muted-foreground/30">
                       <BookOpen className="h-6 w-6" />
                     </div>
                   )}
                 </div>
               </Link>
-              <div className="flex-1 min-w-0">
-                <Link href={`/books/${item.slug}`} className="block text-sm font-semibold text-foreground hover:text-orange-500 line-clamp-2">
+
+              {/* Title + author */}
+              <div className="min-w-0 flex-1">
+                <Link
+                  href={`/books/${item.slug}`}
+                  className="block text-[15px] font-semibold text-foreground hover:text-orange-500 transition-colors line-clamp-2"
+                >
                   {item.title}
                 </Link>
                 <p className="mt-0.5 text-xs text-muted-foreground">by {item.author}</p>
                 <div className="mt-2 flex items-baseline gap-2">
-                  <span className="text-base font-bold text-foreground">₹{finalPrice}</span>
-                  {item.discountPrice != null && item.discountPrice < item.price && (
-                    <span className="text-xs text-muted-foreground line-through">₹{item.price}</span>
+                  <span className="text-lg font-bold text-foreground">
+                    ₹{finalPrice.toLocaleString("en-IN")}
+                  </span>
+                  {hasDiscount && (
+                    <>
+                      <span className="text-xs text-muted-foreground line-through">
+                        ₹{item.price.toLocaleString("en-IN")}
+                      </span>
+                      <span className="rounded bg-orange-500/15 border border-orange-500/25 px-1.5 py-px text-[10px] font-bold text-orange-600 dark:text-orange-300">
+                        -{Math.round((1 - item.discountPrice! / item.price) * 100)}%
+                      </span>
+                    </>
                   )}
                 </div>
               </div>
+
+              {/* Remove */}
               <button
                 onClick={() => handleRemove(item.bookId)}
                 aria-label="Remove from cart"
-                className="rounded-lg p-2 text-muted-foreground hover:bg-red-500/10 hover:text-red-400"
+                className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-red-500/10 hover:text-red-400"
               >
                 <Trash2 className="h-4 w-4" />
               </button>
@@ -122,42 +144,85 @@ export default function CartClient({ initialItems, initialSubtotal }: Props) {
         })}
       </ul>
 
-      <aside className="h-fit rounded-xl border border-white/[0.06] bg-card/50 p-4 lg:sticky lg:top-20">
-        <h2 className="mb-3 text-sm font-semibold text-foreground">Order Summary</h2>
+      {/* ── Sticky summary ──────────────────────────────────────── */}
+      <aside className="h-fit lg:sticky lg:top-20">
+        <div className="rounded-lg border border-border bg-card p-5">
+          <h2 className="mb-4 text-sm font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+            <Receipt className="h-3.5 w-3.5" /> Order Summary
+          </h2>
 
-        <div className="space-y-2 text-sm">
-          <div className="flex items-center justify-between text-muted-foreground">
-            <span>Subtotal ({items.length} item{items.length === 1 ? "" : "s"})</span>
-            <span>₹{subtotal.toFixed(2)}</span>
+          <div className="space-y-2 text-sm">
+            <Row label={`Items (${items.length})`} value={`₹${baseTotal.toLocaleString("en-IN")}`} />
+            {itemDiscount > 0 && (
+              <Row label="Item discounts" value={`−₹${itemDiscount.toLocaleString("en-IN")}`} positive />
+            )}
+            <hr className="border-border my-3" />
+            <div className="flex items-baseline justify-between">
+              <span className="text-sm text-muted-foreground">Subtotal</span>
+              <span className="text-xl font-bold text-foreground">
+                ₹{subtotal.toLocaleString("en-IN")}
+              </span>
+            </div>
           </div>
+
+          {/* Coupon */}
+          <div className="mt-4 border-t border-border pt-4">
+            <label className="label flex items-center gap-1.5">
+              <Tag className="h-3 w-3" /> Coupon code
+            </label>
+            <input
+              type="text"
+              value={couponCode}
+              onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              placeholder="Optional"
+              className="input-glass uppercase placeholder:normal-case"
+            />
+            <p className="mt-1 text-[11px] text-muted-foreground">
+              Coupon discount is applied at checkout.
+            </p>
+          </div>
+
+          <button
+            onClick={handleCheckout}
+            disabled={checkoutBusy}
+            className="btn-primary mt-4 !w-full !py-2.5 !text-sm justify-center"
+          >
+            {checkoutBusy ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Redirecting…
+              </>
+            ) : (
+              <>
+                Proceed to Checkout <ArrowRight className="h-4 w-4" />
+              </>
+            )}
+          </button>
+
+          {error && (
+            <div className="mt-3 rounded-md border border-red-500/30 bg-red-500/10 p-2.5 text-xs text-red-400">
+              {error}
+            </div>
+          )}
+
+          <p className="mt-4 flex items-center justify-center gap-1.5 text-[11px] text-muted-foreground">
+            <ShieldCheck className="h-3.5 w-3.5 text-green-500/80" />
+            Secure payment · Lifetime download
+          </p>
         </div>
-
-        <div className="mt-4 border-t border-white/[0.06] pt-3">
-          <label className="mb-1 block text-xs text-muted-foreground">Coupon code</label>
-          <input
-            type="text"
-            value={couponCode}
-            onChange={(e) => setCouponCode(e.target.value)}
-            placeholder="OPTIONAL"
-            className="h-9 w-full rounded-lg border border-white/[0.08] bg-secondary/40 px-3 text-sm uppercase text-foreground placeholder:text-muted-foreground/50 placeholder:normal-case focus:border-orange-500/40 focus:outline-none"
-          />
-        </div>
-
-        <button
-          onClick={handleCheckout}
-          disabled={checkoutBusy}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-orange-500 py-2.5 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-50"
-        >
-          {checkoutBusy && <Loader2 className="h-4 w-4 animate-spin" />}
-          Proceed to Checkout
-        </button>
-
-        {error && <p className="mt-2 text-xs text-red-400">{error}</p>}
-
-        <p className="mt-3 text-[11px] leading-relaxed text-muted-foreground">
-          Secure payment via Stripe. Coupons applied at checkout.
-        </p>
       </aside>
+    </div>
+  );
+}
+
+function Row({
+  label, value, positive = false,
+}: { label: string; value: string; positive?: boolean }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={positive ? "text-green-500 font-medium" : "text-foreground font-medium"}>
+        {value}
+      </span>
     </div>
   );
 }

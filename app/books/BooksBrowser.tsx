@@ -1,65 +1,143 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { motion } from "framer-motion";
+import { Search, X, BookOpen } from "lucide-react";
 import BookCard, { type BookVM } from "@/components/BookCard";
+
+type Sort = "newest" | "price-asc" | "price-desc" | "rating" | "popular";
+
+const SORT_OPTIONS: { value: Sort; label: string }[] = [
+  { value: "newest",     label: "Newest" },
+  { value: "popular",    label: "Most Popular" },
+  { value: "rating",     label: "Top Rated" },
+  { value: "price-asc",  label: "Price: Low to High" },
+  { value: "price-desc", label: "Price: High to Low" },
+];
+
+const FORMAT_FILTERS: { value: "ALL" | "PDF" | "EPUB" | "DOCX"; label: string }[] = [
+  { value: "ALL",  label: "All" },
+  { value: "PDF",  label: "PDF" },
+  { value: "EPUB", label: "EPUB" },
+  { value: "DOCX", label: "DOCX" },
+];
 
 export default function BooksBrowser({ books }: { books: BookVM[] }) {
   const [q, setQ] = useState("");
-  const [sort, setSort] = useState<"newest" | "price-asc" | "price-desc" | "rating">("newest");
+  const [sort, setSort] = useState<Sort>("newest");
+  const [format, setFormat] = useState<typeof FORMAT_FILTERS[number]["value"]>("ALL");
 
-  const visible = useMemo(() => {
+  const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    let list = needle
-      ? books.filter((b) =>
-          b.title.toLowerCase().includes(needle) ||
-          b.author.toLowerCase().includes(needle) ||
-          (b.categoryName ?? "").toLowerCase().includes(needle))
-      : [...books];
+    let list = books;
+
+    if (format !== "ALL") {
+      list = list.filter((b) => b.fileFormat === format);
+    }
+    if (needle) {
+      list = list.filter((b) =>
+        [b.title, b.author, b.categoryName ?? ""]
+          .join(" ")
+          .toLowerCase()
+          .includes(needle));
+    }
 
     if (sort === "price-asc") {
-      list.sort((a, b) => (a.discountPrice ?? a.price ?? 0) - (b.discountPrice ?? b.price ?? 0));
+      list = [...list].sort((a, b) => (a.discountPrice ?? a.price ?? 0) - (b.discountPrice ?? b.price ?? 0));
     } else if (sort === "price-desc") {
-      list.sort((a, b) => (b.discountPrice ?? b.price ?? 0) - (a.discountPrice ?? a.price ?? 0));
+      list = [...list].sort((a, b) => (b.discountPrice ?? b.price ?? 0) - (a.discountPrice ?? a.price ?? 0));
     } else if (sort === "rating") {
-      list.sort((a, b) => b.avgRating - a.avgRating);
+      list = [...list].sort((a, b) => b.avgRating - a.avgRating);
+    } else if (sort === "popular") {
+      list = [...list].sort((a, b) => b.purchaseCount - a.purchaseCount);
     }
-    // 'newest' keeps server order (already by createdAt desc)
     return list;
-  }, [books, q, sort]);
+  }, [books, q, sort, format]);
 
   return (
-    <div>
-      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <div className="pb-20">
+      {/* ── Filter / search bar ───────────────────────────────── */}
+      <motion.div
+        initial={{ opacity: 0, y: 8 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35 }}
+        className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-center"
+      >
+        {/* Search */}
         <div className="relative flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <input
             type="search"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            placeholder="Search books, authors, categories…"
-            className="h-10 w-full rounded-lg border border-white/[0.08] bg-secondary/40 pl-10 pr-3 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-orange-500/40 focus:outline-none"
+            placeholder="Search by title, author, or category…"
+            className="input-glass !pl-10 !pr-10 !py-2 h-10"
           />
+          {q && (
+            <button
+              onClick={() => setQ("")}
+              aria-label="Clear search"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-md p-1 text-muted-foreground hover:bg-secondary hover:text-foreground"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          )}
         </div>
+
+        {/* Sort */}
         <select
           value={sort}
-          onChange={(e) => setSort(e.target.value as typeof sort)}
-          className="h-10 rounded-lg border border-white/[0.08] bg-secondary/40 px-3 text-sm text-foreground focus:border-orange-500/40 focus:outline-none"
+          onChange={(e) => setSort(e.target.value as Sort)}
+          className="input-glass !py-2 h-10 sm:w-52"
         >
-          <option value="newest">Newest first</option>
-          <option value="price-asc">Price: low to high</option>
-          <option value="price-desc">Price: high to low</option>
-          <option value="rating">Top rated</option>
+          {SORT_OPTIONS.map((o) => (
+            <option key={o.value} value={o.value}>{o.label}</option>
+          ))}
         </select>
+      </motion.div>
+
+      {/* ── Format pills ───────────────────────────────────────── */}
+      <div className="mb-5 flex flex-wrap gap-1.5">
+        {FORMAT_FILTERS.map((f) => {
+          const active = format === f.value;
+          return (
+            <button
+              key={f.value}
+              onClick={() => setFormat(f.value)}
+              className={
+                "rounded-md border px-3 py-1 text-xs font-medium transition-colors " +
+                (active
+                  ? "bg-orange-500/15 border-orange-500/40 text-orange-600 dark:text-orange-300"
+                  : "bg-secondary/60 border-border text-muted-foreground hover:text-foreground hover:border-border/80")
+              }
+            >
+              {f.label}
+            </button>
+          );
+        })}
       </div>
 
-      {visible.length === 0 ? (
-        <div className="rounded-xl border border-dashed border-white/[0.08] py-16 text-center text-sm text-muted-foreground">
-          {books.length === 0 ? "No books published yet — check back soon." : "No matches for your search."}
+      {/* ── Result count ───────────────────────────────────────── */}
+      <p className="mb-4 text-xs text-muted-foreground">
+        {filtered.length} title{filtered.length !== 1 ? "s" : ""}
+        {q.trim() && (
+          <>
+            {" "}matching <span className="text-foreground font-medium">&ldquo;{q.trim()}&rdquo;</span>
+          </>
+        )}
+      </p>
+
+      {/* ── Grid / empty state ─────────────────────────────────── */}
+      {filtered.length === 0 ? (
+        <div className="rounded-lg border border-dashed border-border bg-card/30 py-16 text-center">
+          <BookOpen className="mx-auto mb-3 h-10 w-10 text-muted-foreground/40" />
+          <p className="text-sm text-muted-foreground">
+            {books.length === 0 ? "No books published yet — check back soon." : "No matches for your filters."}
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-          {visible.map((book) => (
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          {filtered.map((book) => (
             <BookCard key={book.id} book={book} />
           ))}
         </div>

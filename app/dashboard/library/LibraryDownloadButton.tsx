@@ -26,10 +26,10 @@ export default function LibraryDownloadButton({ bookId }: { bookId: string }) {
       <button
         onClick={handleClick}
         disabled={busy}
-        className="flex w-full items-center justify-center gap-1.5 rounded-md bg-orange-500/15 px-3 py-1.5 text-xs font-semibold text-orange-500 hover:bg-orange-500/25 disabled:opacity-50"
+        className="flex w-full items-center justify-center gap-1.5 rounded-md bg-orange-500/10 border border-orange-500/25 px-3 py-1.5 text-xs font-semibold text-orange-600 dark:text-orange-300 hover:bg-orange-500/20 hover:border-orange-500/40 transition-colors disabled:opacity-50"
       >
         {busy ? <Loader2 className="h-3 w-3 animate-spin" /> : <Download className="h-3 w-3" />}
-        Download
+        {busy ? "Preparing…" : "Download"}
       </button>
       {error && <p className="mt-1 text-[10px] text-red-400">{error}</p>}
     </>

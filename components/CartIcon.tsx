@@ -12,11 +12,14 @@ export default function CartIcon({ className }: { className?: string }) {
     <Link
       href="/cart"
       aria-label={`Shopping cart (${count} item${count === 1 ? "" : "s"})`}
-      className={`relative flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors ${className ?? ""}`}
+      className={
+        "relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground hover:border-border transition-all " +
+        (className ?? "")
+      }
     >
-      <ShoppingCart className="h-4.5 w-4.5" />
+      <ShoppingCart className="h-4 w-4" />
       {count > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold leading-none text-white">
+        <span className="absolute -top-0.5 -right-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-bold leading-none text-white ring-2 ring-background">
           {count > 99 ? "99+" : count}
         </span>
       )}

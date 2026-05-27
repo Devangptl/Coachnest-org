@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { ShoppingCart } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getCart } from "@/services/cart.service";
 import CartClient from "./CartClient";
@@ -16,11 +17,19 @@ export default async function CartPage() {
   const cart = await getCart(session.userId);
 
   return (
-    <div className="pt-6 pb-16 max-w-4xl mx-auto">
-      <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Your Cart</h1>
-      <p className="text-sm text-muted-foreground mb-6">
-        {cart.count === 0 ? "Your cart is empty." : `${cart.count} item${cart.count === 1 ? "" : "s"} in your cart.`}
-      </p>
+    <div className="pt-6 pb-16 max-w-5xl mx-auto">
+      {/* ── Header ─────────────────────────────────────────────── */}
+      <div className="mb-6">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2.5">
+          <ShoppingCart className="w-6 h-6 text-orange-500" />
+          Your Cart
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {cart.count === 0
+            ? "Your cart is empty."
+            : `Reviewing ${cart.count} item${cart.count === 1 ? "" : "s"} before checkout.`}
+        </p>
+      </div>
 
       <CartClient
         initialItems={cart.items.map((i) => ({
