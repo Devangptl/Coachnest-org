@@ -5,117 +5,108 @@
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
-import { getStripe } from "@/lib/stripe";
+import { getRazorpay } from "@/lib/razorpay";
 
-// ─── Create Stripe Checkout Session for a feature purchase ───────────────────
+// ─── Create Razorpay order for a feature purchase ─────────────────────────────
 
-export async function createFeatureCheckoutSession(
-  userId: string,
+export async function createFeatureRazorpayOrder(
+  userId:    string,
   featureId: string
 ) {
   const user = await prisma.user.findUnique({
-    where: { id: userId },
+    where:  { id: userId },
     select: { id: true, email: true, name: true },
   });
   if (!user) throw new Error("User not found. Please log out and log back in.");
 
-  const feature = await prisma.platformFeature.findUnique({
-    where: { id: featureId },
+  const feature = await prisma.platformFeature.findFirst({
+    where:  { OR: [{ id: featureId }, { slug: featureId }] },
     select: { id: true, name: true, slug: true, price: true, isActive: true },
   });
-  if (!feature) throw new Error("Feature not found.");
-  if (!feature.isActive) throw new Error("This feature is not currently available.");
+  if (!feature)           throw new Error("Feature not found.");
+  if (!feature.isActive)  throw new Error("This feature is not currently available.");
 
   // Already purchased?
   const existing = await prisma.featurePurchase.findUnique({
-    where: { userId_featureId: { userId, featureId } },
+    where: { userId_featureId: { userId, featureId: feature.id } },
   });
   if (existing) throw new Error("You already have access to this feature.");
 
   const amount = Number(feature.price);
 
-  // Create a pending order — 100% platform revenue for add-ons
+  // Enforce Razorpay minimum amount (₹1 = 100 paise)
+  if (Math.round(amount * 100) < 100) {
+    throw new Error("Minimum order amount is ₹1");
+  }
+
+  // Create pending order — 100% platform revenue for add-ons
   const order = await prisma.order.create({
     data: {
       userId,
-      featureId,
+      featureId:         feature.id,
       amount,
-      currency: "INR",
-      status: "PENDING",
+      currency:          "INR",
+      status:            "PENDING",
       instructorRevenue: 0,
-      platformRevenue: amount,
+      platformRevenue:   amount,
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const stripe = getStripe();
-
-  const session = await stripe.checkout.sessions.create({
-    mode: "payment",
-    customer_email: user.email,
-    billing_address_collection: "required",
-    line_items: [
-      {
-        price_data: {
-          currency: "inr",
-          unit_amount: Math.round(amount * 100),
-          product_data: {
-            name: `${feature.name} — Platform Add-on`,
-            description: `One-time purchase for lifetime access to the ${feature.name} feature.`,
-          },
-        },
-        quantity: 1,
-      },
-    ],
-    metadata: {
-      orderId: order.id,
-      featureId,
+  // Create Razorpay order
+  const razorpay = getRazorpay();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rzpOrder = await (razorpay.orders.create as any)({
+    amount:   Math.round(amount * 100), // paise
+    currency: "INR",
+    receipt:  `feature_${order.id}`,
+    notes: {
+      orderId:   order.id,
+      featureId: feature.id,
       userId,
-      type: "feature",
+      type:      "feature",
     },
-    success_url: `${appUrl}/features/${feature.slug}?success=true&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${appUrl}/features/${feature.slug}?cancelled=true`,
   });
 
   await prisma.order.update({
     where: { id: order.id },
-    data: { stripeSessionId: session.id },
+    data:  { razorpayOrderId: rzpOrder.id },
   });
 
-  return { orderId: order.id, sessionId: session.id, url: session.url };
+  return {
+    razorpayOrderId: rzpOrder.id as string,
+    dbOrderId:       order.id,
+    amount,
+    currency:        "INR",
+    featureSlug:     feature.slug,
+    featureName:     feature.name,
+  };
 }
 
-// ─── Handle successful feature payment (called from webhook) ─────────────────
+// ─── Finalize feature payment after signature verification ────────────────────
 
 export async function handleFeaturePaymentSuccess(
-  orderId: string,
-  paymentIntentId: string
+  orderId:           string,
+  razorpayPaymentId: string
 ) {
   const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: {
-      feature: { select: { id: true, name: true, slug: true } },
-    },
+    where:   { id: orderId },
+    include: { feature: { select: { id: true, name: true, slug: true } } },
   });
-  if (!order) throw new Error(`Feature order not found: ${orderId}`);
-  if (!order.featureId) throw new Error("Order is not a feature purchase.");
+  if (!order)            throw new Error(`Feature order not found: ${orderId}`);
+  if (!order.featureId)  throw new Error("Order is not a feature purchase.");
   if (order.status === "PAID") return { success: true }; // idempotent
 
   // Mark order as paid
   await prisma.order.update({
     where: { id: order.id },
-    data: { status: "PAID", stripePaymentId: paymentIntentId },
+    data:  { status: "PAID", razorpayPaymentId },
   });
 
   // Grant feature access (upsert for idempotency)
   await prisma.featurePurchase.upsert({
-    where: { userId_featureId: { userId: order.userId, featureId: order.featureId } },
-    create: {
-      userId: order.userId,
-      featureId: order.featureId,
-      orderId: order.id,
-    },
-    update: {}, // already granted — no-op
+    where:  { userId_featureId: { userId: order.userId, featureId: order.featureId } },
+    create: { userId: order.userId, featureId: order.featureId, orderId: order.id },
+    update: {},
   });
 
   // Notify the user
@@ -123,10 +114,10 @@ export async function handleFeaturePaymentSuccess(
     await createNotification({
       data: {
         userId: order.userId,
-        title: `${order.feature.name} unlocked!`,
-        body: `You now have lifetime access to the ${order.feature.name} feature. Enjoy!`,
-        type: "PURCHASE",
-        link: `/features/${order.feature.slug}`,
+        title:  `${order.feature.name} unlocked!`,
+        body:   `You now have lifetime access to the ${order.feature.name} feature. Enjoy!`,
+        type:   "PURCHASE",
+        link:   `/features/${order.feature.slug}`,
       },
     });
   }

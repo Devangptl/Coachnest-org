@@ -19,7 +19,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
-import { getStripe } from "@/lib/stripe";
+import { getRazorpay } from "@/lib/razorpay";
 import {
   sendRefundSubmittedEmail,
   sendRefundProcessedEmail,
@@ -221,34 +221,34 @@ export async function approveAndProcessRefund(
     throw new Error("Refund request was already picked up by another process.");
   }
 
-  // ── Stripe refund ────────────────────────────────────────────────────────────
-  let stripeRefundId: string | undefined;
+  // ── Razorpay refund ──────────────────────────────────────────────────────────
+  let razorpayRefundId: string | undefined;
 
-  if (rr.order.stripePaymentId) {
+  if (rr.order.razorpayPaymentId) {
     try {
-      const stripe     = getStripe();
-      const stripeRef  = await stripe.refunds.create(
+      const razorpay = getRazorpay();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rzpRefund = await (razorpay.payments.refund as any)(
+        rr.order.razorpayPaymentId,
         {
-          payment_intent: rr.order.stripePaymentId,
-          amount:         Math.round(Number(rr.refundAmount) * 100), // partial refund in paise
-          reason:         "requested_by_customer",
-          metadata: {
+          amount: Math.round(Number(rr.refundAmount) * 100), // partial refund in paise
+          speed:  "normal",
+          notes: {
             refundRequestId: rr.id,
             orderId:         rr.order.id,
             progressPercent: rr.progressPercent.toString(),
             refundPercent:   rr.refundPercent.toString(),
           },
-        },
-        { idempotencyKey: `refund-${rr.id}` } // idempotent — safe to retry
+        }
       );
-      stripeRefundId = stripeRef.id;
+      razorpayRefundId = rzpRefund.id as string;
     } catch (err: unknown) {
       await prisma.refundRequest.update({
         where: { id: refundRequestId },
         data:  { status: "FAILED" },
       });
       throw new Error(
-        `Stripe refund failed: ${err instanceof Error ? err.message : String(err)}`
+        `Razorpay refund failed: ${err instanceof Error ? err.message : String(err)}`
       );
     }
   }
@@ -311,7 +311,7 @@ export async function approveAndProcessRefund(
           meta: {
             progressPercent: Number(rr.progressPercent),
             refundPercent:   Number(rr.refundPercent),
-            stripeRefundId,
+            razorpayRefundId,
           },
         },
         {
@@ -346,7 +346,7 @@ export async function approveAndProcessRefund(
     // 5. Mark refund request PROCESSED
     await tx.refundRequest.update({
       where: { id: refundRequestId },
-      data:  { status: "PROCESSED", stripeRefundId, processedAt: new Date() },
+      data:  { status: "PROCESSED", razorpayRefundId, processedAt: new Date() },
     });
   });
 
@@ -371,7 +371,7 @@ export async function approveAndProcessRefund(
     ).catch(() => null);
   }
 
-  return { success: true, refundAmount, stripeRefundId };
+  return { success: true, refundAmount, razorpayRefundId };
 }
 
 // ─── Admin: reject refund request ────────────────────────────────────────────
@@ -459,7 +459,7 @@ export async function getAdminRefundList(opts: {
       include: {
         user:   { select: { id: true, name: true, email: true, avatar: true } },
         course: { select: { id: true, title: true } },
-        order:  { select: { id: true, amount: true, saleSource: true, stripePaymentId: true } },
+        order:  { select: { id: true, amount: true, saleSource: true, razorpayPaymentId: true } },
         admin:  { select: { id: true, name: true } },
       },
       orderBy: { requestedAt: "desc" },

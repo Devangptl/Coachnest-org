@@ -1,52 +1,26 @@
 /**
  * POST /api/payments/verify
- * Client-side fallback: checks payment status via Stripe session ID.
- * The primary enrollment flow is handled by the webhook.
- * Body: { sessionId }
+ * @deprecated Use /api/razorpay/verify-payment instead.
+ *
+ * Redirects to the new Razorpay verify endpoint for backward compatibility.
+ * Body: { type, razorpayOrderId, razorpayPaymentId, razorpaySignature, dbOrderId }
  */
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
-import { getSession } from "@/lib/auth";
-import { getStripe } from "@/lib/stripe";
-import { handlePaymentSuccess } from "@/services/payment.service";
 
 export async function POST(req: NextRequest) {
-  try {
-    const session = await getSession();
-    if (!session)
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  // Forward to the canonical Razorpay verify endpoint
+  const body = await req.text();
+  const url  = new URL("/api/razorpay/verify-payment", req.nextUrl.origin);
 
-    const { sessionId } = await req.json();
-    if (!sessionId) {
-      return NextResponse.json(
-        { error: "Missing sessionId" },
-        { status: 400 }
-      );
-    }
+  const response = await fetch(url.toString(), {
+    method:  "POST",
+    headers: {
+      "Content-Type": "application/json",
+      cookie:         req.headers.get("cookie") ?? "",
+    },
+    body,
+  });
 
-    // Retrieve the Checkout Session from Stripe
-    const stripe = getStripe();
-    const checkoutSession = await stripe.checkout.sessions.retrieve(sessionId);
-
-    if (checkoutSession.payment_status === "paid") {
-      const paymentIntentId =
-        typeof checkoutSession.payment_intent === "string"
-          ? checkoutSession.payment_intent
-          : checkoutSession.payment_intent?.id || "";
-
-      const result = await handlePaymentSuccess(sessionId, paymentIntentId);
-      // Bust the server cache so router.refresh() gets fresh enrollment data
-      revalidatePath(`/courses/${result.courseId}`);
-      return NextResponse.json(result);
-    }
-
-    return NextResponse.json(
-      { error: "Payment not completed" },
-      { status: 400 }
-    );
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Payment verification failed";
-    return NextResponse.json({ error: message }, { status: 400 });
-  }
+  const data = await response.json();
+  return NextResponse.json(data, { status: response.status });
 }

@@ -534,6 +534,10 @@ model Order {
   amount            Decimal     @db.Decimal(10, 2)
   currency          String      @default("INR")
   status            OrderStatus @default(PENDING)
+  // Razorpay payment fields
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  // Legacy Stripe fields (kept for subscription/billing compatibility)
   stripeSessionId   String?     @unique
   stripePaymentId   String?     @unique
   couponId          String?
@@ -1119,7 +1123,8 @@ model RefundRequest {
   adminNotes      String?      @db.Text  // admin review notes
   adminId         String?               // who approved/rejected
 
-  stripeRefundId  String?      @unique  // Stripe refund object ID (set on PROCESSED)
+  razorpayRefundId String?     @unique  // Razorpay refund ID (set on PROCESSED)
+  stripeRefundId  String?      @unique  // Legacy Stripe refund ID
 
   requestedAt     DateTime     @default(now())
   reviewedAt      DateTime?    // when admin acted
@@ -1803,15 +1808,19 @@ model CartItem {
 }
 
 model BookOrder {
-  id              String      @id @default(cuid())
-  userId          String
-  amount          Decimal     @db.Decimal(10, 2)
-  subtotal        Decimal     @db.Decimal(10, 2)
-  currency        String      @default("INR")
-  status          OrderStatus @default(PENDING)
-  stripeSessionId String?     @unique
-  stripePaymentId String?     @unique
-  couponId        String?
+  id                String      @id @default(cuid())
+  userId            String
+  amount            Decimal     @db.Decimal(10, 2)
+  subtotal          Decimal     @db.Decimal(10, 2)
+  currency          String      @default("INR")
+  status            OrderStatus @default(PENDING)
+  // Razorpay payment fields
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  // Legacy Stripe fields
+  stripeSessionId   String?     @unique
+  stripePaymentId   String?     @unique
+  couponId          String?
   discountAmount  Decimal?    @db.Decimal(10, 2)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

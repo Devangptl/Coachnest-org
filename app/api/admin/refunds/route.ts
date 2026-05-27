@@ -64,8 +64,8 @@ export async function GET(req: NextRequest) {
         user:            r.user,
         course:          r.course,
         orderAmount:     Number(r.order.amount),
-        saleSource:      r.order.saleSource,
-        stripePaymentId: r.order.stripePaymentId,
+        saleSource:           r.order.saleSource,
+        razorpayPaymentId:    r.order.razorpayPaymentId,
       })),
       total,
       stats: stats.map((s) => ({

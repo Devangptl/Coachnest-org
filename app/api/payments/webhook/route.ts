@@ -1,23 +1,23 @@
 /**
  * POST /api/payments/webhook
- * Stripe webhook handler.
+ * Stripe webhook handler — subscription lifecycle events only.
+ *
+ * NOTE: One-time payment webhooks (checkout.session.completed,
+ * payment_intent.succeeded) are no longer needed — payments are now
+ * processed via Razorpay Standard Checkout and verified inline at
+ * POST /api/razorpay/verify-payment.
+ *
+ * This handler retains Stripe subscription webhooks so that billing plans
+ * continue to work correctly.
  *
  * Handled events:
- *   checkout.session.completed       → one-time course purchase OR feature add-on purchase
  *   customer.subscription.created    → new subscription activated
  *   customer.subscription.updated    → plan change / cancellation scheduled
  *   customer.subscription.deleted    → subscription expired / fully cancelled
  *   invoice.payment_failed           → notify user of failed renewal
- *
- * Routing:
- *   The session metadata `type` field distinguishes purchase kinds:
- *     "feature"  → feature add-on purchase (handleFeaturePaymentSuccess via payment.service)
- *     (default)  → course purchase (handlePaymentSuccess)
  */
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";
-import { handlePaymentSuccess, handlePaymentIntentSuccess } from "@/services/payment.service";
-import { handleBookPaymentIntentSuccess } from "@/services/book-payment.service";
 import {
   handleSubscriptionCheckoutCompleted,
   handleSubscriptionCreated,
@@ -41,21 +41,13 @@ export async function POST(req: NextRequest) {
     const event = verifyWebhookSignature(body, signature);
 
     switch (event.type) {
-      // ── One-time course purchase ──────────────────────────────────────────
+      // ── Subscription checkout completed ───────────────────────────────────
       case "checkout.session.completed": {
         const session = event.data.object;
-
-        if (session.mode === "payment") {
-          const paymentIntentId =
-            typeof session.payment_intent === "string"
-              ? session.payment_intent
-              : session.payment_intent?.id ?? "";
-          await handlePaymentSuccess(session.id, paymentIntentId);
-        } else if (session.mode === "subscription") {
-          // Write the subscription record immediately so the success page
-          // always finds it — don't wait for customer.subscription.created
+        if (session.mode === "subscription") {
           await handleSubscriptionCheckoutCompleted(session);
         }
+        // Payment mode sessions are now handled by Razorpay — no-op here.
         break;
       }
 
@@ -72,18 +64,6 @@ export async function POST(req: NextRequest) {
         await handleSubscriptionDeleted(event);
         break;
 
-      // ── In-app purchase (PaymentIntent flow) ──────────────────────────────
-      // Books (multi-item cart) vs courses are distinguished by metadata.type.
-      case "payment_intent.succeeded": {
-        const pi = event.data.object;
-        if (pi.metadata?.type === "books" && pi.metadata.bookOrderId) {
-          await handleBookPaymentIntentSuccess(pi.id);
-        } else if (pi.metadata?.orderId) {
-          await handlePaymentIntentSuccess(pi.id);
-        }
-        break;
-      }
-
       // ── Failed renewal payment ─────────────────────────────────────────────
       case "invoice.payment_failed":
         await handleInvoicePaymentFailed(event);
@@ -97,8 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ received: true });
   } catch (err: unknown) {
     console.error("[stripe:webhook]", err);
-    const message =
-      err instanceof Error ? err.message : "Webhook processing failed";
+    const message = err instanceof Error ? err.message : "Webhook processing failed";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

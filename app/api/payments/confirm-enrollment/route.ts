@@ -1,38 +1,32 @@
 /**
  * POST /api/payments/confirm-enrollment
- * Client-side fallback called immediately after stripe.confirmCardPayment() succeeds.
- * Verifies the PaymentIntent with Stripe and triggers enrollment right away —
- * without waiting for the webhook (which may be delayed or not yet configured).
+ * Confirms a course enrollment after a successful Razorpay payment.
+ * The signature must have already been verified by /api/razorpay/verify-payment.
  *
- * Body: { paymentIntentId: string }
+ * Body: { dbOrderId: string, razorpayPaymentId: string }
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { getStripe } from "@/lib/stripe";
-import { handlePaymentIntentSuccess } from "@/services/payment.service";
+import { finalizeCoursePayment } from "@/services/payment.service";
 
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
     if (!session) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-    const { paymentIntentId } = await req.json() as { paymentIntentId: string };
-    if (!paymentIntentId)
-      return NextResponse.json({ error: "paymentIntentId is required" }, { status: 400 });
+    const { dbOrderId, razorpayPaymentId } = await req.json() as {
+      dbOrderId:         string;
+      razorpayPaymentId: string;
+    };
 
-    // Verify with Stripe that the payment actually succeeded
-    const stripe = getStripe();
-    const pi = await stripe.paymentIntents.retrieve(paymentIntentId);
-
-    if (pi.status !== "succeeded" && pi.status !== "processing") {
+    if (!dbOrderId || !razorpayPaymentId) {
       return NextResponse.json(
-        { error: `Payment not completed (status: ${pi.status})` },
+        { error: "dbOrderId and razorpayPaymentId are required" },
         { status: 400 }
       );
     }
 
-    // Enroll the user — idempotent, safe to call even if webhook already ran
-    const result = await handlePaymentIntentSuccess(paymentIntentId);
+    const result = await finalizeCoursePayment(dbOrderId, razorpayPaymentId);
     return NextResponse.json(result);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : "Enrollment confirmation failed";
