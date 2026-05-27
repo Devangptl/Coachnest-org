@@ -3,12 +3,15 @@
 import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Lock, ArrowLeft, Calendar, BookOpen, Tag, X,
-  Loader2, ShieldCheck, ChevronRight,
+  Lock, ArrowLeft, BookOpen, Tag, X,
+  Loader2, ShieldCheck, ChevronRight, Calendar,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import type { RazorpayOptions } from "@/types/razorpay";
+import RazorpayCustomForm, {
+  type RazorpayOrderInfo,
+} from "@/components/checkout/RazorpayCustomForm";
+import type { RazorpaySuccessResponse } from "@/types/razorpay";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -23,24 +26,7 @@ interface Props {
   initialCoupon?: string;
 }
 
-// ── Load Razorpay checkout script ────────────────────────────────────────────
-
-function useRazorpayScript() {
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.Razorpay) {
-      setLoaded(true);
-      return;
-    }
-    const script   = document.createElement("script");
-    script.src     = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async   = true;
-    script.onload  = () => setLoaded(true);
-    script.onerror = () => console.error("Failed to load Razorpay checkout script");
-    document.body.appendChild(script);
-  }, []);
-  return loaded;
-}
+type Phase = "summary" | "payment";
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -48,8 +34,11 @@ export default function CourseCheckoutClient({
   courseId, courseName, instructorName, lessonCount,
   thumbnail, price: initialPrice, originalPrice, initialCoupon,
 }: Props) {
-  const router         = useRouter();
-  const razorpayLoaded = useRazorpayScript();
+  const router = useRouter();
+
+  // Phases
+  const [phase,     setPhase]     = useState<Phase>("summary");
+  const [orderInfo, setOrderInfo] = useState<RazorpayOrderInfo | null>(null);
 
   // Coupon state
   const [couponCode,    setCouponCode]    = useState(initialCoupon ?? "");
@@ -63,8 +52,8 @@ export default function CourseCheckoutClient({
     ? Math.max(0, initialPrice - appliedCoupon.discount)
     : initialPrice;
 
-  const [paying, setPaying] = useState(false);
-  const [error,  setError]  = useState<string | null>(null);
+  const [proceeding, setProceeding] = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
 
   // Auto-apply coupon from URL
   const applyInitialCoupon = useCallback(async () => {
@@ -81,6 +70,8 @@ export default function CourseCheckoutClient({
     setAppliedCoupon({ code: data.code, label: data.description ?? data.code, discount: discountAmt });
   }, [initialCoupon, courseId, initialPrice]);
   useEffect(() => { applyInitialCoupon(); }, [applyInitialCoupon]);
+
+  // ── Coupon apply ────────────────────────────────────────────────────────────
 
   async function handleApplyCoupon() {
     if (!couponCode.trim() || couponLoading) return;
@@ -102,14 +93,13 @@ export default function CourseCheckoutClient({
     }
   }
 
-  async function handlePay(e: FormEvent) {
-    e.preventDefault();
-    if (!razorpayLoaded) { setError("Payment gateway not loaded. Please refresh and try again."); return; }
-    setError(null);
-    setPaying(true);
+  // ── Proceed to payment (Phase 1 → Phase 2) ─────────────────────────────────
 
+  async function handleProceed(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setProceeding(true);
     try {
-      // Step 1 — create Razorpay order on backend
       const res  = await fetch("/api/razorpay/create-order", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -122,68 +112,113 @@ export default function CourseCheckoutClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create order");
 
-      const { razorpayOrderId, dbOrderId, amount, currency, key } = data;
-
-      // Step 2 — open Razorpay modal
-      await new Promise<void>((resolve, reject) => {
-        const options: RazorpayOptions = {
-          key,
-          amount:      Math.round(amount * 100), // paise
-          currency:    currency ?? "INR",
-          name:        "Coachnest",
-          description: courseName,
-          order_id:    razorpayOrderId,
-          prefill:     {},
-          theme:       { color: "#d4703f" },
-          modal: {
-            ondismiss: () => {
-              setPaying(false);
-              reject(new Error("Payment was cancelled."));
-            },
-          },
-          handler: async (response) => {
-            try {
-              // Step 3 — verify signature on backend
-              const vRes  = await fetch("/api/razorpay/verify-payment", {
-                method:  "POST",
-                headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify({
-                  type:               "course",
-                  razorpayOrderId:    response.razorpay_order_id,
-                  razorpayPaymentId:  response.razorpay_payment_id,
-                  razorpaySignature:  response.razorpay_signature,
-                  dbOrderId,
-                }),
-              });
-              const vData = await vRes.json();
-              if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
-              resolve();
-              router.push(`/courses/${courseId}?enrolled=true`);
-            } catch (err) {
-              reject(err);
-            }
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", (response) => {
-          reject(new Error(response.error?.description ?? "Payment failed. Please try again."));
-        });
-        rzp.open();
+      setOrderInfo({
+        razorpayOrderId: data.razorpayOrderId,
+        dbOrderId:       data.dbOrderId,
+        amount:          data.amount,         // rupees (not paise)
+        currency:        data.currency ?? "INR",
+        key:             data.key,
       });
+      setPhase("payment");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      if (msg !== "Payment was cancelled.") setError(msg);
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
-      setPaying(false);
+      setProceeding(false);
     }
+  }
+
+  // ── Verify payment and redirect (Phase 2 success) ─────────────────────────
+
+  async function handlePaymentSuccess(response: RazorpaySuccessResponse) {
+    if (!orderInfo) throw new Error("Order info missing");
+    const vRes  = await fetch("/api/razorpay/verify-payment", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        type:              "course",
+        razorpayOrderId:   response.razorpay_order_id,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpaySignature: response.razorpay_signature,
+        dbOrderId:         orderInfo.dbOrderId,
+      }),
+    });
+    const vData = await vRes.json();
+    if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
+    router.push(`/courses/${courseId}?enrolled=true`);
   }
 
   const hasDiscount = originalPrice > initialPrice || appliedCoupon;
   const savings     = originalPrice - displayPrice;
 
+  // ── Phase 2: Payment form ───────────────────────────────────────────────────
+
+  if (phase === "payment" && orderInfo) {
+    return (
+      <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
+        {/* Left: compact order summary */}
+        <div className="lg:col-span-2 space-y-4">
+          <button
+            type="button"
+            onClick={() => setPhase("summary")}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to order summary
+          </button>
+
+          <div className="rounded-md border border-border bg-card overflow-hidden">
+            {thumbnail && (
+              <div className="relative w-full aspect-video bg-secondary">
+                <Image src={thumbnail} alt={courseName} fill className="object-cover" />
+              </div>
+            )}
+            <div className="p-4">
+              <p className="text-xs text-muted-foreground mb-0.5">by {instructorName}</p>
+              <h3 className="font-bold text-foreground text-sm leading-snug mb-2">{courseName}</h3>
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <BookOpen className="w-3.5 h-3.5" />
+                {lessonCount} lessons · Lifetime access
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-md border border-border bg-secondary/30 p-4 space-y-2 text-sm">
+            {appliedCoupon && (
+              <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
+                <span>Coupon ({appliedCoupon.code})</span>
+                <span>−₹{appliedCoupon.discount.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between font-bold text-foreground">
+              <span>Total</span>
+              <span>₹{displayPrice.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: custom payment form */}
+        <div className="lg:col-span-3">
+          <RazorpayCustomForm
+            orderInfo={orderInfo}
+            description={courseName}
+            onSuccess={handlePaymentSuccess}
+            onError={(msg) => setError(msg)}
+            onBack={() => setPhase("summary")}
+          />
+          {error && (
+            <div className="mt-3 flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+              <span className="flex-shrink-0 mt-0.5">⚠</span>
+              {error}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Phase 1: Order summary + proceed button ─────────────────────────────────
+
   return (
-    <form onSubmit={handlePay}>
+    <form onSubmit={handleProceed}>
       <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
 
         {/* Left: order summary */}
@@ -305,14 +340,30 @@ export default function CourseCheckoutClient({
           </div>
         </div>
 
-        {/* Right: pay button */}
+        {/* Right: payment method preview + proceed */}
         <div className="lg:col-span-3">
           <div className="rounded-md border border-border bg-card p-6 sm:p-8">
             <h2 className="text-lg font-bold text-foreground mb-1">Complete your purchase</h2>
             <p className="text-sm text-muted-foreground mb-6">
-              Click below to open the secure Razorpay payment window. Supports
-              UPI, cards, net banking, and wallets.
+              Choose from Card, UPI, or Net Banking — all processed securely on the next step.
             </p>
+
+            {/* Payment method pills */}
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {[
+                { label: "Card",        sub: "Visa · MC · RuPay" },
+                { label: "UPI",         sub: "GPay · PhonePe · Paytm" },
+                { label: "Net Banking", sub: "50+ banks" },
+              ].map(({ label, sub }) => (
+                <div
+                  key={label}
+                  className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border bg-secondary/30 text-center"
+                >
+                  <span className="text-xs font-semibold text-foreground">{label}</span>
+                  <span className="text-[10px] text-muted-foreground">{sub}</span>
+                </div>
+              ))}
+            </div>
 
             {error && (
               <div className="mb-4 flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
@@ -323,16 +374,16 @@ export default function CourseCheckoutClient({
 
             <button
               type="submit"
-              disabled={paying || !razorpayLoaded}
+              disabled={proceeding}
               className="w-full btn-primary py-3.5 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              {paying ? (
-                <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+              {proceeding ? (
+                <><Loader2 className="w-4 h-4 animate-spin" /> Preparing checkout…</>
               ) : (
                 <><Lock className="w-4 h-4" />
                   {displayPrice === 0
                     ? "Enroll for Free"
-                    : `Pay ₹${displayPrice.toLocaleString("en-IN")}`}
+                    : `Proceed to Pay ₹${displayPrice.toLocaleString("en-IN")}`}
                   <ChevronRight className="w-4 h-4" /></>
               )}
             </button>
@@ -341,18 +392,6 @@ export default function CourseCheckoutClient({
               <ShieldCheck className="w-3.5 h-3.5" />
               Powered by Razorpay · UPI · Cards · Net Banking · Wallets
             </p>
-
-            {/* Payment brand chips */}
-            <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
-              {["UPI", "VISA", "Mastercard", "RuPay", "Net Banking"].map((brand) => (
-                <span
-                  key={brand}
-                  className="px-2 py-1 rounded border border-border text-[10px] font-bold text-muted-foreground bg-secondary/50 tracking-wide"
-                >
-                  {brand}
-                </span>
-              ))}
-            </div>
           </div>
         </div>
 

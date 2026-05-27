@@ -1,29 +1,16 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock, ArrowLeft, Loader2, ShieldCheck,
   CheckCircle2, ChevronRight, Package, Users,
 } from "lucide-react";
 import Link from "next/link";
-import type { RazorpayOptions } from "@/types/razorpay";
-
-// ── Load Razorpay checkout script ────────────────────────────────────────────
-
-function useRazorpayScript() {
-  const [loaded, setLoaded] = useState(false);
-  useEffect(() => {
-    if (typeof window !== "undefined" && window.Razorpay) { setLoaded(true); return; }
-    const script   = document.createElement("script");
-    script.src     = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async   = true;
-    script.onload  = () => setLoaded(true);
-    script.onerror = () => console.error("Failed to load Razorpay script");
-    document.body.appendChild(script);
-  }, []);
-  return loaded;
-}
+import RazorpayCustomForm, {
+  type RazorpayOrderInfo,
+} from "@/components/checkout/RazorpayCustomForm";
+import type { RazorpaySuccessResponse } from "@/types/razorpay";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -40,26 +27,28 @@ const FEATURE_ICON: Record<string, React.ElementType> = {
   community: Users,
 };
 
+type Phase = "summary" | "payment";
+
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function FeatureCheckoutClient({
   featureId, featureName, featureSlug, description, price, includes,
 }: Props) {
-  const router         = useRouter();
-  const razorpayLoaded = useRazorpayScript();
+  const router = useRouter();
 
-  const [paying, setPaying] = useState(false);
-  const [error,  setError]  = useState<string | null>(null);
+  const [phase,      setPhase]      = useState<Phase>("summary");
+  const [orderInfo,  setOrderInfo]  = useState<RazorpayOrderInfo | null>(null);
+  const [proceeding, setProceeding] = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
 
   const FeatureIcon = FEATURE_ICON[featureSlug] ?? Package;
 
-  async function handlePay() {
-    if (!razorpayLoaded) { setError("Payment gateway not loaded. Please refresh."); return; }
-    setError(null);
-    setPaying(true);
+  // ── Proceed to payment (Phase 1 → Phase 2) ─────────────────────────────────
 
+  async function handleProceed() {
+    setError(null);
+    setProceeding(true);
     try {
-      // Step 1 — create Razorpay order
       const res  = await fetch("/api/razorpay/create-order", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
@@ -68,61 +57,97 @@ export default function FeatureCheckoutClient({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create order");
 
-      const { razorpayOrderId, dbOrderId, amount, currency, key } = data;
-
-      // Step 2 — open Razorpay modal
-      await new Promise<void>((resolve, reject) => {
-        const options: RazorpayOptions = {
-          key,
-          amount:      Math.round(amount * 100), // paise
-          currency:    currency ?? "INR",
-          name:        "Coachnest",
-          description: `${featureName} — Platform Add-on`,
-          order_id:    razorpayOrderId,
-          theme:       { color: "#d4703f" },
-          modal: {
-            ondismiss: () => {
-              setPaying(false);
-              reject(new Error("Payment was cancelled."));
-            },
-          },
-          handler: async (response) => {
-            try {
-              // Step 3 — verify signature
-              const vRes  = await fetch("/api/razorpay/verify-payment", {
-                method:  "POST",
-                headers: { "Content-Type": "application/json" },
-                body:    JSON.stringify({
-                  type:               "feature",
-                  razorpayOrderId:    response.razorpay_order_id,
-                  razorpayPaymentId:  response.razorpay_payment_id,
-                  razorpaySignature:  response.razorpay_signature,
-                  dbOrderId,
-                }),
-              });
-              const vData = await vRes.json();
-              if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
-              resolve();
-              router.push(`/features/${featureSlug}?success=true`);
-            } catch (err) {
-              reject(err);
-            }
-          },
-        };
-
-        const rzp = new window.Razorpay(options);
-        rzp.on("payment.failed", (r) => {
-          reject(new Error(r.error?.description ?? "Payment failed. Please try again."));
-        });
-        rzp.open();
+      setOrderInfo({
+        razorpayOrderId: data.razorpayOrderId,
+        dbOrderId:       data.dbOrderId,
+        amount:          data.amount,
+        currency:        data.currency ?? "INR",
+        key:             data.key,
       });
+      setPhase("payment");
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : "Something went wrong";
-      if (msg !== "Payment was cancelled.") setError(msg);
+      setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
-      setPaying(false);
+      setProceeding(false);
     }
   }
+
+  // ── Verify payment and redirect (Phase 2 success) ─────────────────────────
+
+  async function handlePaymentSuccess(response: RazorpaySuccessResponse) {
+    if (!orderInfo) throw new Error("Order info missing");
+    const vRes  = await fetch("/api/razorpay/verify-payment", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        type:              "feature",
+        razorpayOrderId:   response.razorpay_order_id,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpaySignature: response.razorpay_signature,
+        dbOrderId:         orderInfo.dbOrderId,
+      }),
+    });
+    const vData = await vRes.json();
+    if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
+    router.push(`/features/${featureSlug}?success=true`);
+  }
+
+  // ── Phase 2: Payment form ───────────────────────────────────────────────────
+
+  if (phase === "payment" && orderInfo) {
+    return (
+      <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
+        {/* Left: compact feature summary */}
+        <div className="lg:col-span-2 space-y-4">
+          <button
+            type="button"
+            onClick={() => setPhase("summary")}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to order summary
+          </button>
+
+          <div className="rounded-md border border-border bg-card p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <FeatureIcon className="w-4.5 h-4.5 text-primary" />
+              </div>
+              <div>
+                <h3 className="font-bold text-foreground text-sm">{featureName}</h3>
+                <p className="text-xs text-muted-foreground">One-time · Lifetime access</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-md border border-border bg-secondary/30 p-4 text-sm">
+            <div className="flex items-center justify-between font-bold text-foreground">
+              <span>Total</span>
+              <span>₹{price.toLocaleString("en-IN")}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Right: custom payment form */}
+        <div className="lg:col-span-3">
+          <RazorpayCustomForm
+            orderInfo={orderInfo}
+            description={`${featureName} — Platform Add-on`}
+            onSuccess={handlePaymentSuccess}
+            onError={(msg) => setError(msg)}
+            onBack={() => setPhase("summary")}
+          />
+          {error && (
+            <div className="mt-3 flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+              <span className="flex-shrink-0 mt-0.5">⚠</span>
+              {error}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // ── Phase 1: Order summary + proceed button ─────────────────────────────────
 
   return (
     <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
@@ -187,14 +212,30 @@ export default function FeatureCheckoutClient({
         </div>
       </div>
 
-      {/* Right: pay button */}
+      {/* Right: payment method preview + proceed */}
       <div className="lg:col-span-3">
         <div className="rounded-md border border-border bg-card p-6 sm:p-8">
           <h2 className="text-lg font-bold text-foreground mb-1">Complete your purchase</h2>
           <p className="text-sm text-muted-foreground mb-6">
-            Click below to open the secure Razorpay payment window. Supports
-            UPI, cards, net banking, and wallets.
+            Choose from Card, UPI, or Net Banking — all processed securely on the next step.
           </p>
+
+          {/* Payment method pills */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { label: "Card",        sub: "Visa · MC · RuPay" },
+              { label: "UPI",         sub: "GPay · PhonePe · Paytm" },
+              { label: "Net Banking", sub: "50+ banks" },
+            ].map(({ label, sub }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border bg-secondary/30 text-center"
+              >
+                <span className="text-xs font-semibold text-foreground">{label}</span>
+                <span className="text-[10px] text-muted-foreground">{sub}</span>
+              </div>
+            ))}
+          </div>
 
           {error && (
             <div className="mb-4 flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
@@ -204,15 +245,15 @@ export default function FeatureCheckoutClient({
           )}
 
           <button
-            onClick={handlePay}
-            disabled={paying || !razorpayLoaded}
+            onClick={handleProceed}
+            disabled={proceeding}
             className="w-full btn-primary py-3.5 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {paying ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
+            {proceeding ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Preparing checkout…</>
             ) : (
               <><Lock className="w-4 h-4" />
-                Pay ₹{price.toLocaleString("en-IN")}
+                Proceed to Pay ₹{price.toLocaleString("en-IN")}
                 <ChevronRight className="w-4 h-4" /></>
             )}
           </button>
@@ -221,17 +262,6 @@ export default function FeatureCheckoutClient({
             <ShieldCheck className="w-3.5 h-3.5" />
             Powered by Razorpay · UPI · Cards · Net Banking · Wallets
           </p>
-
-          <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
-            {["UPI", "VISA", "Mastercard", "RuPay", "Net Banking"].map((brand) => (
-              <span
-                key={brand}
-                className="px-2 py-1 rounded border border-border text-[10px] font-bold text-muted-foreground bg-secondary/50 tracking-wide"
-              >
-                {brand}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 
