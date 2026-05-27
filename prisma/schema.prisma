@@ -101,10 +101,10 @@ enum JoinRequestStatus {
 
 enum RefundStatus {
   PENDING    // Student submitted, awaiting admin review
-  PROCESSING // Stripe refund in flight
-  PROCESSED  // Fully complete — Stripe refunded, enrollment revoked, wallet debited
+  PROCESSING // Razorpay refund in flight
+  PROCESSED  // Fully complete — refunded, enrollment revoked, wallet debited
   REJECTED   // Admin rejected the request
-  FAILED     // Stripe refund failed after approval
+  FAILED     // Razorpay refund failed after approval
 }
 
 enum LedgerEntryType {
@@ -209,9 +209,6 @@ model User {
   gameProfile    UserGameProfile?
   userBadges     UserBadge[]
   xpEvents       XpEvent[]
-
-  // Stripe
-  stripeCustomerId String? @unique
 
   // Tour Flags
   hasSeenTour          Boolean  @default(false)
@@ -537,9 +534,6 @@ model Order {
   // Razorpay payment fields
   razorpayOrderId   String?     @unique
   razorpayPaymentId String?     @unique
-  // Legacy Stripe fields (kept for subscription/billing compatibility)
-  stripeSessionId   String?     @unique
-  stripePaymentId   String?     @unique
   couponId          String?
   discountAmount    Decimal?    @db.Decimal(10, 2)
   // Revenue attribution (populated on PAID status)
@@ -1124,11 +1118,10 @@ model RefundRequest {
   adminId         String?               // who approved/rejected
 
   razorpayRefundId String?     @unique  // Razorpay refund ID (set on PROCESSED)
-  stripeRefundId  String?      @unique  // Legacy Stripe refund ID
 
   requestedAt     DateTime     @default(now())
   reviewedAt      DateTime?    // when admin acted
-  processedAt     DateTime?    // when Stripe refund completed
+  processedAt     DateTime?    // when refund completed
 
   order  Order  @relation(fields: [orderId],   references: [id])
   user   User   @relation(fields: [userId],    references: [id])
@@ -1817,9 +1810,6 @@ model BookOrder {
   // Razorpay payment fields
   razorpayOrderId   String?     @unique
   razorpayPaymentId String?     @unique
-  // Legacy Stripe fields
-  stripeSessionId   String?     @unique
-  stripePaymentId   String?     @unique
   couponId          String?
   discountAmount  Decimal?    @db.Decimal(10, 2)
   createdAt       DateTime    @default(now())

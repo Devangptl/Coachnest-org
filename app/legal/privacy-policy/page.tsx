@@ -80,7 +80,7 @@ export default function PrivacyPolicyPage() {
                 <SubHeading>Account Information</SubHeading>
                 <p>When you create an account we collect your name, email address, and password (stored as a secure hash). If you sign in via a third-party provider, we receive the profile information that provider makes available.</p>
                 <SubHeading>Payment Information</SubHeading>
-                <p>Payments are processed through Stripe. We do not store full card numbers or CVV codes on our servers. We receive and store a payment reference ID and the last four digits of your card solely for billing records.</p>
+                <p>Payments are processed through Razorpay. We do not store full card numbers or CVV codes on our servers. We receive and store a Razorpay payment reference ID solely for billing records.</p>
                 <SubHeading>Learning Activity</SubHeading>
                 <p>We record course enrollments, lesson completion, quiz scores, certificates earned, and time spent on the platform to power your learning dashboard and personalised recommendations.</p>
                 <p>We also track gamification activity — XP (experience points) earned from lessons and quizzes, badges awarded, daily and weekly learning streaks, and your position on the platform leaderboard. Community engagement is recorded as well, including forum posts, upvotes given and received, study group participation, shared notes, and peer review submissions and scores. This information powers your progress display, computes rankings, and surfaces relevant content.</p>
@@ -106,7 +106,7 @@ export default function PrivacyPolicyPage() {
               <Section id="sharing" title="3. Sharing Your Information">
                 <p>We share data only in the following circumstances:</p>
                 <ul>
-                  <li><strong className="text-white/70">Service Providers</strong> — trusted vendors who process data on our behalf (e.g., Stripe for payments, Resend for email delivery, Vercel for hosting, Cloudinary for media and image storage). These parties are contractually bound to protect your data.</li>
+                  <li><strong className="text-white/70">Service Providers</strong> — trusted vendors who process data on our behalf (e.g., Razorpay for payments, Resend for email delivery, Vercel for hosting, Cloudinary for media and image storage). These parties are contractually bound to protect your data.</li>
                   <li><strong className="text-white/70">Instructors</strong> — if you enrol in a course, the instructor can see your display name and aggregate progress to support your learning journey.</li>
                   <li><strong className="text-white/70">Legal Requirements</strong> — if we believe disclosure is required by law, subpoena, or legal process.</li>
                   <li><strong className="text-white/70">Business Transfers</strong> — in the event of a merger, acquisition, or sale of assets, your data may be transferred. We will notify you before such a transfer occurs.</li>

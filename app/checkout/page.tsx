@@ -1,10 +1,10 @@
 /**
  * /checkout?plan=PRO&billing=monthly
- * In-app checkout — no redirect to Stripe hosted page.
+ * Subscription checkout page — subscription plans have been removed.
+ * Redirects users to the direct course/feature purchase pages instead.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { StripeProvider } from "@/components/billing/StripeProvider";
 import CheckoutClient from "./CheckoutClient";
 
 const PLANS = {
@@ -78,32 +78,19 @@ export default async function CheckoutPage({ searchParams }: PageProps) {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar */}
-
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:py-16">
-        <StripeProvider>
-          <CheckoutClient
-            planKey={planKey}
-            planLabel={plan.label}
-            billing={billing}
-            price={price}
-            features={plan.features as unknown as string[]}
-            popular={"popular" in plan ? plan.popular : false}
-            color={plan.color}
-            bg={plan.bg}
-            border={plan.border}
-          />
-        </StripeProvider>
+        <CheckoutClient
+          planKey={planKey}
+          planLabel={plan.label}
+          billing={billing}
+          price={price}
+          features={plan.features as unknown as string[]}
+          popular={"popular" in plan ? plan.popular : false}
+          color={plan.color}
+          bg={plan.bg}
+          border={plan.border}
+        />
       </main>
     </div>
-  );
-}
-
-function LockIcon() {
-  return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-      <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-    </svg>
   );
 }

@@ -117,7 +117,7 @@ export default function TermsOfServicePage() {
               </Section>
 
               <Section id="payments" title="5. Payments & Billing">
-                <p>All prices are displayed in USD unless otherwise stated. Payments are processed securely by Stripe. By providing payment information you authorise us to charge the applicable fees.</p>
+                <p>All prices are displayed in USD unless otherwise stated. Payments are processed securely by Razorpay. By providing payment information you authorise us to charge the applicable fees.</p>
                 <SubHeading>Refunds</SubHeading>
                 <p>Please review our <Link href="/legal/refund-policy" className="legal-link">Refund Policy</Link> for full details on eligibility and the refund process. We offer a 30-day money-back guarantee on most courses.</p>
                 <SubHeading>Subscriptions</SubHeading>

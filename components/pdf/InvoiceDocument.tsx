@@ -159,7 +159,7 @@ export interface InvoiceData {
   originalAmount:  number; // amount + discountAmount
   currency:        string;
   couponCode:      string | null;
-  stripePaymentId: string | null;
+  razorpayPaymentId: string | null;
   createdAt:       Date | string;
 }
 
@@ -259,10 +259,10 @@ export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
         <View style={S.hr} />
 
         {/* ── Payment reference ──────────────────────────────────── */}
-        {invoice.stripePaymentId && (
+        {invoice.razorpayPaymentId && (
           <View style={S.refWrap}>
             <Text style={S.label}>Payment Reference</Text>
-            <Text style={S.refValue}>{invoice.stripePaymentId}</Text>
+            <Text style={S.refValue}>{invoice.razorpayPaymentId}</Text>
           </View>
         )}
 

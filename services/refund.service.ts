@@ -13,7 +13,7 @@
  * Guarantees:
  *   - One RefundRequest per Order (unique constraint on orderId)
  *   - Progress is snapshotted at request time (cannot be gamed after submission)
- *   - Stripe refund uses idempotency key = "refund-<refundRequestId>"
+ *   - Razorpay refund uses notes.refundRequestId for idempotency tracking
  *   - All DB mutations are wrapped in a single Prisma transaction
  *   - Enrollment deleted, instructor wallet debited, ledger entries written atomically
  */

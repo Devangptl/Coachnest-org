@@ -11,7 +11,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { getStripe } from "@/lib/stripe";
+import { getRazorpay } from "@/lib/razorpay";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -48,24 +48,23 @@ export async function POST(req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "Order has already been refunded." }, { status: 409 });
     }
 
-    // ── 1. Stripe refund ──────────────────────────────────────────────────────
-    let stripeRefundId: string | undefined;
-    if (order.stripePaymentId) {
+    // ── 1. Razorpay refund ────────────────────────────────────────────────────
+    let razorpayRefundId: string | undefined;
+    if (order.razorpayPaymentId) {
       try {
-        const stripe = getStripe();
-        const refund = await stripe.refunds.create(
+        const razorpay = getRazorpay();
+        const refund = await razorpay.payments.refund(
+          order.razorpayPaymentId,
           {
-            payment_intent: order.stripePaymentId,
-            amount:         Math.round(Number(amount) * 100),
-            reason:         "requested_by_customer",
-          },
-          { idempotencyKey: `admin-refund-order-${id}` }
+            amount: Math.round(Number(amount) * 100), // paise
+            notes:  { reason: reason || "Admin-issued refund", orderId: id },
+          }
         );
-        stripeRefundId = refund.id;
-      } catch (stripeErr: unknown) {
-        const msg = stripeErr instanceof Error ? stripeErr.message : String(stripeErr);
-        console.error("[refund] Stripe refund failed:", msg);
-        return NextResponse.json({ error: `Stripe refund failed: ${msg}` }, { status: 502 });
+        razorpayRefundId = refund.id;
+      } catch (rzpErr: unknown) {
+        const msg = rzpErr instanceof Error ? rzpErr.message : String(rzpErr);
+        console.error("[refund] Razorpay refund failed:", msg);
+        return NextResponse.json({ error: `Razorpay refund failed: ${msg}` }, { status: 502 });
       }
     }
 
@@ -82,31 +81,31 @@ export async function POST(req: NextRequest, { params }: Params) {
       const rr = await tx.refundRequest.upsert({
         where:  { orderId: id },
         create: {
-          orderId:         id,
-          userId:          order.userId,
-          courseId:        order.courseId ?? "__admin__",
-          progressPercent: 0,
+          orderId:          id,
+          userId:           order.userId,
+          courseId:         order.courseId ?? "__admin__",
+          progressPercent:  0,
           completedLessons: 0,
-          totalLessons:    0,
-          originalAmount:  Number(order.amount),
-          refundPercent:   (refundAmt / Number(order.amount)) * 100,
-          refundAmount:    refundAmt,
+          totalLessons:     0,
+          originalAmount:   Number(order.amount),
+          refundPercent:    (refundAmt / Number(order.amount)) * 100,
+          refundAmount:     refundAmt,
           instructorLoss,
           platformLoss,
-          reason:          reason || "Admin-issued refund",
-          adminId:         session.userId,
-          status:          "PROCESSED",
-          stripeRefundId,
-          reviewedAt:      new Date(),
-          processedAt:     new Date(),
+          reason:           reason || "Admin-issued refund",
+          adminId:          session.userId,
+          status:           "PROCESSED",
+          razorpayRefundId,
+          reviewedAt:       new Date(),
+          processedAt:      new Date(),
         },
         update: {
-          status:        "PROCESSED",
-          adminId:       session.userId,
-          adminNotes:    reason,
-          stripeRefundId,
-          reviewedAt:    new Date(),
-          processedAt:   new Date(),
+          status:           "PROCESSED",
+          adminId:          session.userId,
+          adminNotes:       reason,
+          razorpayRefundId,
+          reviewedAt:       new Date(),
+          processedAt:      new Date(),
         },
       });
 
@@ -154,7 +153,7 @@ export async function POST(req: NextRequest, { params }: Params) {
             type:            "REFUND",
             amount:          refundAmt,
             description:     `Admin refund — ₹${refundAmt}${reason ? ` (${reason})` : ""}`,
-            meta:            { adminId: session.userId, stripeRefundId },
+            meta:            { adminId: session.userId, razorpayRefundId },
           },
           {
             orderId:         id,

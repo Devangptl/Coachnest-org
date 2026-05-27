@@ -27,7 +27,7 @@ const COOKIE_TYPES = [
     examples: [
       { name: "session_token", purpose: "Keeps you logged in securely.", duration: "Session" },
       { name: "csrf_token", purpose: "Prevents cross-site request forgery attacks.", duration: "Session" },
-      { name: "__stripe_mid", purpose: "Fraud detection for payment processing (Stripe).", duration: "1 year" },
+      { name: "__rzp", purpose: "Fraud detection for payment processing (Razorpay).", duration: "Session" },
     ],
   },
   {
@@ -173,7 +173,7 @@ export default function CookiePolicyPage() {
               <Section id="third-party" title="4. Third-Party Cookies">
                 <p>Some cookies on Coachnest are set by trusted third-party services that we use to operate the Platform:</p>
                 <ul>
-                  <li><strong className="text-white/70">Stripe</strong> — payment processing. Stripe may set cookies to detect fraud and ensure secure transactions. <Link href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Stripe Privacy Policy ↗</Link></li>
+                  <li><strong className="text-white/70">Razorpay</strong> — payment processing. Razorpay may set cookies to detect fraud and ensure secure transactions. <Link href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Razorpay Privacy Policy ↗</Link></li>
                   <li><strong className="text-white/70">Google Analytics</strong> — anonymous usage analytics to help us understand how people use Coachnest. Data is aggregated and not linked to identifiable individuals.</li>
                   <li><strong className="text-white/70">Cloudinary / Unsplash</strong> — image delivery CDNs that may set performance-related cookies.</li>
                 </ul>

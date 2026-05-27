@@ -57,7 +57,7 @@ export async function GET(req: NextRequest) {
         reason:          r.reason,
         adminNotes:      r.adminNotes,
         admin:           r.admin,
-        stripeRefundId:  r.stripeRefundId,
+        razorpayRefundId: r.razorpayRefundId,
         requestedAt:     r.requestedAt,
         reviewedAt:      r.reviewedAt,
         processedAt:     r.processedAt,

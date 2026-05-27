@@ -1,6 +1,6 @@
 /**
  * POST /api/admin/refunds/[id]/approve
- * Approves a PENDING refund request, issues Stripe refund, and processes all
+ * Approves a PENDING refund request, issues a Razorpay refund, and processes all
  * side-effects atomically (enrollment revoke, wallet debit, ledger entries).
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -31,7 +31,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     const status = msg.includes("not found")         ? 404
                  : msg.includes("Cannot approve")    ? 409
                  : msg.includes("already picked up") ? 409
-                 : msg.includes("Stripe")             ? 502
+                 : msg.includes("Razorpay")           ? 502
                  : 500;
     console.error("[POST /api/admin/refunds/[id]/approve]", err);
     return NextResponse.json({ error: msg }, { status });

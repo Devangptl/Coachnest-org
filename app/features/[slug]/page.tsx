@@ -2,7 +2,7 @@
 
 /**
  * /features/[slug] — Feature add-on purchase page.
- * Shows feature details and initiates a Stripe checkout for the purchase.
+ * Shows feature details and initiates a Razorpay checkout for the purchase.
  */
 
 import { useEffect, useState } from "react";
@@ -87,7 +87,7 @@ export default function FeaturePurchasePage() {
 
   function handleBuy() {
     if (!feature) return;
-    // Navigate to in-app Stripe Elements checkout
+    // Navigate to in-app Razorpay checkout
     window.location.href = `/checkout/feature/${feature.slug}`;
   }
 
@@ -218,7 +218,7 @@ export default function FeaturePurchasePage() {
       {/* Trust note */}
       {!feature.hasAccess && (
         <p className="text-center text-muted-foreground text-xs mt-4">
-          Secure checkout via Stripe. You&apos;ll be redirected to complete payment.
+          Secure checkout powered by Razorpay. Card, UPI — all on this page.
         </p>
       )}
     </div>
