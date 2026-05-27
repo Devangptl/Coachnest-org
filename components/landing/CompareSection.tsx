@@ -72,11 +72,11 @@ export default function CompareSection() {
             Compare
           </span>
           <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
-            CoachNest vs{" "}
+            Coachnest vs{" "}
             <span className="text-muted-foreground">the rest</span>
           </h2>
           <p className="text-muted-foreground max-w-md mx-auto text-base leading-relaxed">
-            See why thousands of learners choose CoachNest over other platforms.
+            See why thousands of learners choose Coachnest over other platforms.
           </p>
         </motion.div>
 
@@ -97,13 +97,13 @@ export default function CompareSection() {
               </span>
             </div>
 
-            {/* CoachNest header */}
+            {/* Coachnest header */}
             <div className="relative flex flex-col items-center justify-center py-4 px-2 bg-primary/10 border-x border-primary/20">
               {/* Top accent line */}
               <div className="absolute top-0 inset-x-0 h-[3px] bg-primary rounded-b-sm" />
               <Trophy className="w-4 h-4 text-primary mb-1.5" />
               <span className="text-primary font-bold text-xs sm:text-sm leading-tight text-center">
-                CoachNest
+                Coachnest
               </span>
               <span className="text-primary/50 text-[9px] sm:text-[10px] uppercase tracking-wider mt-0.5 hidden sm:block">
                 Our platform
@@ -139,7 +139,7 @@ export default function CompareSection() {
                 </span>
               </div>
 
-              {/* CoachNest value */}
+              {/* Coachnest value */}
               <div className="flex items-center justify-center py-3.5 bg-primary/[0.04] border-x border-primary/10">
                 <Cell value={row.us} highlight />
               </div>

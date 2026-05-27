@@ -3,9 +3,9 @@ import Link from "next/link";
 import { Briefcase, MapPin, Clock, ArrowRight, Zap, Heart, Coffee } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Careers — CoachNest",
+  title: "Careers — Coachnest",
   description:
-    "Join the CoachNest team and help shape the future of online education.",
+    "Join the Coachnest team and help shape the future of online education.",
 };
 
 const PERKS = [
@@ -49,7 +49,7 @@ const OPENINGS = [
     team: "Partnerships",
     location: "Remote",
     type: "Full-time",
-    desc: "Support and grow our community of instructors — helping them create great content and build successful teaching businesses on CoachNest.",
+    desc: "Support and grow our community of instructors — helping them create great content and build successful teaching businesses on Coachnest.",
   },
 ];
 

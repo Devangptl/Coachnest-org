@@ -170,7 +170,7 @@ export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
   const generatedOn = fmtDate(new Date());
 
   return (
-    <Document title={`Invoice ${invoiceNo} – CoachNest`} author="CoachNest">
+    <Document title={`Invoice ${invoiceNo} – Coachnest`} author="Coachnest">
       <Page size="A4" style={S.page}>
 
         {/* ── Header ─────────────────────────────────────────────── */}
@@ -271,7 +271,7 @@ export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
 
         {/* ── Footer ─────────────────────────────────────────────── */}
         <View style={S.footer} fixed>
-          <Text style={S.footerText}>CoachNest · support@coachnest.com</Text>
+          <Text style={S.footerText}>Coachnest · support@coachnest.com</Text>
           <Text style={S.footerText}>Generated on {generatedOn}</Text>
         </View>
 

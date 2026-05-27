@@ -125,7 +125,7 @@ export default async function BlogDetailPage({ params }: Props) {
     },
     publisher: {
       "@type": "Organization",
-      name: "CoachNest",
+      name: "Coachnest",
       logo: { "@type": "ImageObject", url: `${BASE_URL}/logo.png` },
     },
     ...(tagList.length > 0 ? { keywords: tagList.join(", ") } : {}),

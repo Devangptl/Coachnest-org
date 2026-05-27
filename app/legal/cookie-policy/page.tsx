@@ -3,9 +3,9 @@ import Link from "next/link";
 import { ChevronRight, Cookie } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Cookie Policy — CoachNest",
+  title: "Cookie Policy — Coachnest",
   description:
-    "Learn how CoachNest uses cookies and similar tracking technologies.",
+    "Learn how Coachnest uses cookies and similar tracking technologies.",
 };
 
 const SECTIONS = [
@@ -77,7 +77,7 @@ export default function CookiePolicyPage() {
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
-              This Cookie Policy explains how CoachNest uses cookies and similar tracking technologies
+              This Cookie Policy explains how Coachnest uses cookies and similar tracking technologies
               when you visit our Platform, and how you can control them.
             </p>
           </div>
@@ -112,7 +112,7 @@ export default function CookiePolicyPage() {
               </Section>
 
               <Section id="how-we-use" title="2. How We Use Cookies">
-                <p>CoachNest uses cookies for the following purposes:</p>
+                <p>Coachnest uses cookies for the following purposes:</p>
                 <ul>
                   <li><strong className="text-white/70">Authentication</strong> — to keep you securely signed in during your session.</li>
                   <li><strong className="text-white/70">Security</strong> — to detect and prevent fraudulent activity and protect against attacks.</li>
@@ -171,10 +171,10 @@ export default function CookiePolicyPage() {
               </Section>
 
               <Section id="third-party" title="4. Third-Party Cookies">
-                <p>Some cookies on CoachNest are set by trusted third-party services that we use to operate the Platform:</p>
+                <p>Some cookies on Coachnest are set by trusted third-party services that we use to operate the Platform:</p>
                 <ul>
                   <li><strong className="text-white/70">Stripe</strong> — payment processing. Stripe may set cookies to detect fraud and ensure secure transactions. <Link href="https://stripe.com/privacy" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Stripe Privacy Policy ↗</Link></li>
-                  <li><strong className="text-white/70">Google Analytics</strong> — anonymous usage analytics to help us understand how people use CoachNest. Data is aggregated and not linked to identifiable individuals.</li>
+                  <li><strong className="text-white/70">Google Analytics</strong> — anonymous usage analytics to help us understand how people use Coachnest. Data is aggregated and not linked to identifiable individuals.</li>
                   <li><strong className="text-white/70">Cloudinary / Unsplash</strong> — image delivery CDNs that may set performance-related cookies.</li>
                 </ul>
                 <p>We do not use third-party advertising networks or retargeting cookies.</p>
@@ -190,11 +190,11 @@ export default function CookiePolicyPage() {
                   <li><a href="https://support.apple.com/en-us/guide/safari/sfri11471/mac" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Safari cookie settings ↗</a></li>
                 </ul>
                 <SubHeading>Account Settings</SubHeading>
-                <p>You can opt out of analytics cookies from your CoachNest account settings under <strong className="text-white/70">Privacy Preferences</strong>.</p>
+                <p>You can opt out of analytics cookies from your Coachnest account settings under <strong className="text-white/70">Privacy Preferences</strong>.</p>
               </Section>
 
               <Section id="do-not-track" title="6. Do Not Track Signals">
-                <p>Some browsers include a &quot;Do Not Track&quot; (DNT) feature that signals to websites that you do not want to be tracked. There is currently no uniform standard for how to respond to DNT signals. At this time, CoachNest does not alter its data collection practices when a DNT signal is received, but we will continue to monitor developments in this area.</p>
+                <p>Some browsers include a &quot;Do Not Track&quot; (DNT) feature that signals to websites that you do not want to be tracked. There is currently no uniform standard for how to respond to DNT signals. At this time, Coachnest does not alter its data collection practices when a DNT signal is received, but we will continue to monitor developments in this area.</p>
               </Section>
 
               <Section id="changes" title="7. Changes to This Policy">
@@ -204,7 +204,7 @@ export default function CookiePolicyPage() {
               <Section id="contact" title="8. Contact Us">
                 <p>If you have questions about our use of cookies or this Cookie Policy, please contact us:</p>
                 <div className="rounded-md border border-white/10 bg-white/[.03] p-5 not-prose">
-                  <p className="text-white/60 text-sm mb-1 font-medium">CoachNest Privacy Team</p>
+                  <p className="text-white/60 text-sm mb-1 font-medium">Coachnest Privacy Team</p>
                   <Link href="/contact" className="text-[#d97757]/80 hover:text-[#d97757] text-sm transition-colors">
                     Submit a request via our Contact page →
                   </Link>
@@ -220,7 +220,7 @@ export default function CookiePolicyPage() {
             <div className="grid sm:grid-cols-3 gap-3">
               {[
                 { label: "Privacy Policy", href: "/legal/privacy-policy", desc: "How we collect and protect your data." },
-                { label: "Terms of Service", href: "/legal/terms-of-service", desc: "Rules governing your use of CoachNest." },
+                { label: "Terms of Service", href: "/legal/terms-of-service", desc: "Rules governing your use of Coachnest." },
                 { label: "Refund Policy", href: "/legal/refund-policy", desc: "How to request a refund for purchases." },
               ].map((doc) => (
                 <Link

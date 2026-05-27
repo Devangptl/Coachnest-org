@@ -95,8 +95,8 @@ export default async function InstructorPendingPage() {
             </h1>
             <p className="text-muted-foreground text-sm mt-2 leading-relaxed">
               {isRejected
-                ? "Thank you for your interest in teaching on CoachNest. Unfortunately, your application was not approved at this time."
-                : "Thank you for applying to become an instructor on CoachNest! Our team is reviewing your application and will get back to you within 1–2 business days."}
+                ? "Thank you for your interest in teaching on Coachnest. Unfortunately, your application was not approved at this time."
+                : "Thank you for applying to become an instructor on Coachnest! Our team is reviewing your application and will get back to you within 1–2 business days."}
             </p>
           </div>
 

@@ -10,13 +10,25 @@ import Link from "next/link";
 import OrdersClient from "./OrdersClient";
 
 async function getUserOrders(userId: string) {
-  const [orders, refundRequests] = await Promise.all([
+  const [orders, bookOrders, refundRequests] = await Promise.all([
     prisma.order.findMany({
       where:   { userId },
       include: {
         course:  { select: { id: true, title: true, thumbnail: true } },
         feature: { select: { id: true, name: true, slug: true } },
         coupon:  { select: { code: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    }),
+    prisma.bookOrder.findMany({
+      where:   { userId },
+      include: {
+        coupon: { select: { code: true } },
+        items: {
+          include: {
+            book: { select: { id: true, title: true, slug: true, coverImage: true, fileFormat: true } },
+          },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
@@ -28,12 +40,14 @@ async function getUserOrders(userId: string) {
 
   const refundByOrderId = new Map(refundRequests.map((r) => [r.orderId, r.status]));
 
-  return orders.map((order) => ({
+  const courseAndFeatureOrders = orders.map((order) => ({
     id:               order.id,
     title:            order.course?.title ?? order.feature?.name ?? "Purchase",
-    type:             (order.feature ? "feature" : "course") as "course" | "feature",
+    type:             (order.feature ? "feature" : "course") as "course" | "feature" | "books",
     courseId:         order.course?.id ?? null,
     featureSlug:      order.feature?.slug ?? null,
+    bookCount:        null as number | null,
+    bookFormats:      null as string[] | null,
     thumbnail:        order.course?.thumbnail ?? null,
     amount:           Number(order.amount),
     currency:         order.currency,
@@ -45,6 +59,37 @@ async function getUserOrders(userId: string) {
     refundStatus:     refundByOrderId.get(order.id) ?? null,
     createdAt:        order.createdAt,
   }));
+
+  const bookOrderRows = bookOrders.map((bo) => {
+    const titles  = bo.items.map((i) => i.book.title);
+    const summary = titles.length === 1
+      ? titles[0]
+      : `${titles.length} books: ${titles.slice(0, 2).join(", ")}${titles.length > 2 ? "…" : ""}`;
+    const formats = Array.from(new Set(bo.items.map((i) => i.book.fileFormat)));
+    return {
+      id:               bo.id,
+      title:            summary,
+      type:             "books" as const,
+      courseId:         null,
+      featureSlug:      null,
+      bookCount:        bo.items.length,
+      bookFormats:      formats,
+      thumbnail:        bo.items[0]?.book.coverImage ?? null,
+      amount:           Number(bo.amount),
+      currency:         bo.currency,
+      status:           bo.status,
+      couponCode:       bo.coupon?.code ?? null,
+      discountAmount:   Number(bo.discountAmount || 0),
+      stripePaymentId:  bo.stripePaymentId,
+      hasRefundRequest: false,
+      refundStatus:     null,
+      createdAt:        bo.createdAt,
+    };
+  });
+
+  // Merge and sort by createdAt desc
+  return [...courseAndFeatureOrders, ...bookOrderRows]
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 }
 
 export default async function OrderHistoryPage() {
@@ -62,7 +107,7 @@ export default async function OrderHistoryPage() {
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-foreground">Order History</h1>
         <p className="text-muted-foreground mt-1">
-          View your past purchases and request refunds for eligible courses.
+          All your purchases — courses, books, and add-ons — in one place.
         </p>
       </div>
 
@@ -97,10 +142,16 @@ export default async function OrderHistoryPage() {
         <GlassCard padding="lg">
           <div className="text-center py-8 text-muted-foreground/70">
             <ShoppingCart className="w-12 h-12 mx-auto mb-4 text-muted-foreground/30" />
-            <p className="mb-2">No orders yet.</p>
-            <Link href="/courses" className="text-[#d97757] hover:text-orange-300">
-              Browse Courses
-            </Link>
+            <p className="mb-3">No orders yet.</p>
+            <div className="flex items-center justify-center gap-4 text-sm">
+              <Link href="/courses" className="text-[#d97757] hover:text-orange-300">
+                Browse Courses
+              </Link>
+              <span className="text-muted-foreground/30">·</span>
+              <Link href="/books" className="text-[#d97757] hover:text-orange-300">
+                Browse Books
+              </Link>
+            </div>
           </div>
         </GlassCard>
       )}

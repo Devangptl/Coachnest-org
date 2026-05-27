@@ -4009,7 +4009,7 @@ Same approach works whether you're styling with CSS modules, Tailwind (\`bg-[var
 import Image from "next/image";
 import logo from "@/public/logo.png";
 
-<Image src={logo} alt="CoachNest" />
+<Image src={logo} alt="Coachnest" />
 \`\`\`
 
 Local imports include width/height **at build time** — no dimensions needed.
@@ -4179,10 +4179,10 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://coachnest.dev"),
-  title: { default: "CoachNest", template: "%s — CoachNest" },
+  title: { default: "Coachnest", template: "%s — Coachnest" },
   description: "A modern learning platform.",
   openGraph: {
-    siteName: "CoachNest",
+    siteName: "Coachnest",
     type: "website",
     locale: "en_US",
   },
@@ -4198,7 +4198,7 @@ Per-page override:
 \`\`\`ts
 // app/about/page.tsx
 export const metadata: Metadata = {
-  title: "About us",            // → "About us — CoachNest" via the template
+  title: "About us",            // → "About us — Coachnest" via the template
   description: "Who we are.",
 };
 \`\`\`
@@ -4237,7 +4237,7 @@ export default async function og({ params }: { params: { slug: string } }) {
   return new ImageResponse(
     (
       <div style={{ fontSize: 64, background: "#0a0a0a", color: "white", width: "100%", height: "100%", padding: 60 }}>
-        <p style={{ opacity: 0.7, fontSize: 28 }}>CoachNest</p>
+        <p style={{ opacity: 0.7, fontSize: 28 }}>Coachnest</p>
         <h1>{course?.title}</h1>
       </div>
     ),

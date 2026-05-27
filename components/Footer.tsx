@@ -6,6 +6,7 @@ import ThemeToggle from "./ThemeToggle";
 
 const PLATFORM_LINKS = [
   { label: "Browse Courses",    href: "/courses"  },
+  { label: "Books & Documents", href: "/books"    },
   { label: "Search",            href: "/search"   },
   { label: "Blog",              href: "/blog"     },
   { label: "Become Instructor", href: "/signup"   },
@@ -91,7 +92,7 @@ export default function Footer() {
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/logo.png"
-                alt="CoachNest"
+                alt="Coachnest"
                 className="h-7 w-auto object-contain"
               />
             </Link>
@@ -210,7 +211,7 @@ export default function Footer() {
         <div className="border-t border-white/[0.05] py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5">
             <p className="text-white/20 text-xs">
-              &copy; {new Date().getFullYear()} CoachNest. All rights reserved.
+              &copy; {new Date().getFullYear()} Coachnest. All rights reserved.
             </p>
             <div className="flex items-center gap-1.5 text-white/15 text-xs">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/70 animate-pulse" />

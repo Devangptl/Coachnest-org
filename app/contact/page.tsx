@@ -17,9 +17,9 @@ import {
 import ContactForm from "@/components/contact/ContactForm";
 
 export const metadata: Metadata = {
-  title: "Contact Us — CoachNest",
+  title: "Contact Us — Coachnest",
   description:
-    "Get in touch with the CoachNest team. We're here to help with courses, technical support, partnerships, and more.",
+    "Get in touch with the Coachnest team. We're here to help with courses, technical support, partnerships, and more.",
 };
 
 const CONTACT_CARDS = [

@@ -3,13 +3,13 @@
  * All emails are sent server-side from API routes / services (fire-and-forget).
  *
  * Theme: dark background (#0a0a0a), orange accent (#ea580c → #f97316),
- * matching the CoachNest UI design language.
+ * matching the Coachnest UI design language.
  */
 import { Resend } from "resend";
 import { prisma } from "@/lib/prisma";
 
 const resend   = new Resend(process.env.RESEND_API_KEY || "re_placeholder");
-const FROM     = process.env.EMAIL_FROM ?? "CoachNest <noreply@coachnest.dev>";
+const FROM     = process.env.EMAIL_FROM ?? "Coachnest <noreply@coachnest.dev>";
 const APP      = process.env.NEXT_PUBLIC_APP_URL ?? "https://coachnest.dev";
 const LOGO_URL = process.env.EMAIL_LOGO_URL ?? "https://www.coachnest.in/logo.png";
 
@@ -107,7 +107,7 @@ function badge(text: string, color = "#f97316") {
   return `<span style="display:inline-block;background:${color}1a;border:1px solid ${color}40;color:${color};font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;letter-spacing:0.5px;text-transform:uppercase;">${text}</span>`;
 }
 
-/** Wraps any body HTML in the standard CoachNest email shell. */
+/** Wraps any body HTML in the standard Coachnest email shell. */
 function shell(body: string): string {
   return `<!DOCTYPE html>
 <html lang="en">
@@ -129,7 +129,7 @@ function shell(body: string): string {
       <!-- Wordmark -->
       <div style="margin-bottom:32px;">
         <span style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:22px;font-weight:900;color:#ffffff;letter-spacing:-0.5px;">
-          Coach<span style="color:#f97316;">Nest</span>
+          Coach<span style="color:#f97316;">nest</span>
         </span>
       </div>
 
@@ -143,7 +143,7 @@ function shell(body: string): string {
     <!-- Footer -->
     <tr><td style="padding:24px 0 8px;text-align:center;">
       <p style="font-family:sans-serif;font-size:11px;color:#3d3d3d;margin:0 0 6px;">
-        © ${new Date().getFullYear()} CoachNest — Modern Learning Platform
+        © ${new Date().getFullYear()} Coachnest — Modern Learning Platform
       </p>
       <p style="font-family:sans-serif;font-size:11px;color:#2d2d2d;margin:0;">
         <a href="${APP}/legal/privacy-policy" style="color:#3d3d3d;text-decoration:none;">Privacy Policy</a>
@@ -167,13 +167,13 @@ export async function sendWelcomeEmail(to: string, name: string) {
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? "Welcome to CoachNest — you're in! 🎓",
+    subject: override?.subject ?? "Welcome to Coachnest — you're in! 🎓",
     html: override?.html ?? shell(`
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;letter-spacing:-0.5px;">
         Welcome, ${name}! 👋
       </h1>
       <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
-        Your CoachNest account is ready. Start exploring expert-crafted courses and
+        Your Coachnest account is ready. Start exploring expert-crafted courses and
         level up your skills at your own pace.
       </p>
 
@@ -226,7 +226,7 @@ export async function sendFreeEnrollmentEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `You're enrolled in "${courseTitle}" — CoachNest 🎉`,
+    subject: override?.subject ?? `You're enrolled in "${courseTitle}" — Coachnest 🎉`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Free Enrollment", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -268,7 +268,7 @@ export async function sendPurchaseEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `You're enrolled in "${courseTitle}" — CoachNest`,
+    subject: override?.subject ?? `You're enrolled in "${courseTitle}" — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Enrollment Confirmed")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -291,6 +291,51 @@ export async function sendPurchaseEmail(
       ${btn("Start Learning", `${APP}/courses/${courseId}`)}
     `),
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── 7b. Book purchase confirmation ──────────────────────────────────────────
+
+export async function sendBookPurchaseEmail(
+  to: string,
+  name: string,
+  bookTitles: string[],
+  amount: string,
+) {
+  const titleSummary = bookTitles.length === 1
+    ? `"${bookTitles[0]}"`
+    : `${bookTitles.length} books`;
+
+  const list = bookTitles
+    .map((t) => `<li style="color:#e5e5e5;font-size:14px;line-height:1.7;margin:4px 0;">${t}</li>`)
+    .join("");
+
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: `Your Coachnest purchase: ${titleSummary}`,
+    html: shell(`
+      <p style="margin:0 0 4px;">${badge("Purchase Confirmed")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Your books are ready 📚
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Hi ${name}, your payment was successful. The following ${bookTitles.length === 1 ? "title is" : "titles are"} now available in your library:
+      </p>
+
+      <ul style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;padding:16px 24px;margin:0 0 24px;list-style:disc;">
+        ${list}
+      </ul>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Amount paid", `₹${amount}`)}
+          ${infoRow("Access",      "Perpetual download")}
+        </tbody>
+      </table>
+
+      ${btn("Go to Library", `${APP}/dashboard/library`)}
+    `),
+  });
 }
 
 // ─── 8. Course update / new lesson ───────────────────────────────────────────
@@ -335,7 +380,7 @@ export async function sendContactConfirmationEmail(to: string, name: string) {
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? "We received your message — CoachNest",
+    subject: override?.subject ?? "We received your message — Coachnest",
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Message Received")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -355,7 +400,7 @@ export async function sendContactConfirmationEmail(to: string, name: string) {
         </p>
       </div>
 
-      ${btn("Visit CoachNest", APP)}
+      ${btn("Visit Coachnest", APP)}
     `),
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
@@ -375,7 +420,7 @@ export async function sendContactNotificationToAdmin(
   return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
-    subject: override?.subject ?? `[CoachNest] New inquiry from ${name}`,
+    subject: override?.subject ?? `[Coachnest] New inquiry from ${name}`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("New Contact Inquiry", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
@@ -409,8 +454,8 @@ export async function sendContactReplyEmail(
   replyMessage: string
 ) {
   const subjectLine = originalSubject
-    ? `Re: ${originalSubject} — CoachNest`
-    : "Reply to your inquiry — CoachNest";
+    ? `Re: ${originalSubject} — Coachnest`
+    : "Reply to your inquiry — Coachnest";
   const override = await resolveTemplate("contact-reply", {
     name, originalSubject: originalSubject ?? "", replyMessage,
   });
@@ -493,14 +538,14 @@ export async function sendInstructorApplicationToAdmin(
   return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
-    subject: override?.subject ?? `[CoachNest] New instructor application from ${instructorName}`,
+    subject: override?.subject ?? `[Coachnest] New instructor application from ${instructorName}`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Instructor Application", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
         New Instructor Application
       </h1>
       <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        A new user has applied to become an instructor on CoachNest and is awaiting your review.
+        A new user has applied to become an instructor on Coachnest and is awaiting your review.
       </p>
 
       <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
@@ -526,7 +571,7 @@ export async function sendInstructorApprovedEmail(to: string, name: string) {
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? "Your CoachNest instructor application has been approved! 🎉",
+    subject: override?.subject ?? "Your Coachnest instructor application has been approved! 🎉",
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Application Approved", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -568,14 +613,14 @@ export async function sendInstructorRejectedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? "Update on your CoachNest instructor application",
+    subject: override?.subject ?? "Update on your Coachnest instructor application",
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Application Update", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
         Application Status Update
       </h1>
       <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        Hi ${name}, thank you for applying to become an instructor on CoachNest.
+        Hi ${name}, thank you for applying to become an instructor on Coachnest.
         After careful review, we're unable to approve your application at this time.
       </p>
 
@@ -587,13 +632,13 @@ export async function sendInstructorRejectedEmail(
       ` : ""}
 
       <p style="color:#a3a3a3;font-size:14px;line-height:1.7;margin:0 0 28px;">
-        You can continue using CoachNest as a student and access all available courses.
+        You can continue using Coachnest as a student and access all available courses.
         If you have questions, please reach out to our support team.
       </p>
 
       ${btn("Contact Support", `${APP}/contact`)}
       <p style="color:#525252;font-size:12px;margin:20px 0 0;">
-        Thank you for your interest in teaching on CoachNest.
+        Thank you for your interest in teaching on Coachnest.
       </p>
     `),
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
@@ -614,7 +659,7 @@ export async function sendRefundSubmittedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Refund request received for "${courseTitle}" — CoachNest`,
+    subject: override?.subject ?? `Refund request received for "${courseTitle}" — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Refund Request Received", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -657,7 +702,7 @@ export async function sendRefundProcessedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Your refund for "${courseTitle}" has been processed — CoachNest`,
+    subject: override?.subject ?? `Your refund for "${courseTitle}" has been processed — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Refund Processed", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -701,7 +746,7 @@ export async function sendRefundRejectedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Your refund request for "${courseTitle}" was not approved — CoachNest`,
+    subject: override?.subject ?? `Your refund request for "${courseTitle}" was not approved — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Refund Not Approved", "#ef4444")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -738,7 +783,7 @@ export async function sendPayoutRequestedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Payout request of ₹${amount} received — CoachNest`,
+    subject: override?.subject ?? `Payout request of ₹${amount} received — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Payout Request Submitted", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -768,7 +813,7 @@ export async function sendPayoutApprovedEmail(to: string, name: string, amount: 
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Your payout request of ₹${amount} has been approved — CoachNest`,
+    subject: override?.subject ?? `Your payout request of ₹${amount} has been approved — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Payout Approved", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -805,7 +850,7 @@ export async function sendPayoutRejectedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Your payout request of ₹${amount} was not approved — CoachNest`,
+    subject: override?.subject ?? `Your payout request of ₹${amount} was not approved — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Payout Not Approved", "#ef4444")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -837,7 +882,7 @@ export async function sendPayoutProcessedEmail(to: string, name: string, amount:
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Your payout of ₹${amount} has been transferred — CoachNest`,
+    subject: override?.subject ?? `Your payout of ₹${amount} has been transferred — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Payout Transferred", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -1003,7 +1048,7 @@ export async function sendClassEnrollmentApprovedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `You've been approved to join "${className}" — CoachNest`,
+    subject: override?.subject ?? `You've been approved to join "${className}" — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Enrollment Approved", "#22c55e")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -1037,7 +1082,7 @@ export async function sendClassEnrollmentRejectedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Update on your request to join "${className}" — CoachNest`,
+    subject: override?.subject ?? `Update on your request to join "${className}" — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Enrollment Update", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
@@ -1189,7 +1234,7 @@ export async function sendRefundRequestAdminEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
-    subject: override?.subject ?? `[CoachNest] New refund request from ${studentName}`,
+    subject: override?.subject ?? `[Coachnest] New refund request from ${studentName}`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Refund Request", "#f59e0b")}</p>
       <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
@@ -1227,7 +1272,7 @@ export async function sendCoursePendingReviewAdminEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(adminEmail),
-    subject: override?.subject ?? `[CoachNest] New course pending review from ${instructorName}`,
+    subject: override?.subject ?? `[Coachnest] New course pending review from ${instructorName}`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Course Pending Review", "#6b7280")}</p>
       <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
@@ -1266,7 +1311,7 @@ export async function sendCourseRejectedEmail(
   return send({
     from: FROM,
     to:   resolveRecipient(to),
-    subject: override?.subject ?? `Update on your course "${courseTitle}" — CoachNest`,
+    subject: override?.subject ?? `Update on your course "${courseTitle}" — Coachnest`,
     html: override?.html ?? shell(`
       <p style="margin:0 0 4px;">${badge("Course Not Approved", "#ef4444")}</p>
       <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">

@@ -188,7 +188,7 @@ export async function generateCertificatePDF(data: CertificateData): Promise<Buf
   const helv     = await doc.embedFont(StandardFonts.Helvetica);        // ≈ Montserrat
   const helvBold = await doc.embedFont(StandardFonts.HelveticaBold);
 
-  const org = data.organizationName ?? "CoachNest";
+  const org = data.organizationName ?? "Coachnest";
   const cx  = W / 2;
 
   // Convert an HTML top-edge + font size into a PDF baseline.

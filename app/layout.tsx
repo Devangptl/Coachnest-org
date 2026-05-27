@@ -50,8 +50,8 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "CoachNest — Modern Learning Platform",
-    template: "%s | CoachNest",
+    default: "Coachnest — Modern Learning Platform",
+    template: "%s | Coachnest",
   },
   description:
     "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates — everything you need to level up your career.",
@@ -62,11 +62,11 @@ export const metadata: Metadata = {
     "e-learning",
     "certificates",
     "programming tutorials",
-    "CoachNest",
+    "Coachnest",
   ],
-  authors: [{ name: "CoachNest" }],
-  creator: "CoachNest",
-  publisher: "CoachNest",
+  authors: [{ name: "Coachnest" }],
+  creator: "Coachnest",
+  publisher: "Coachnest",
   robots: {
     index: true,
     follow: true,
@@ -76,8 +76,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: BASE_URL,
-    siteName: "CoachNest",
-    title: "CoachNest — Modern Learning Platform",
+    siteName: "Coachnest",
+    title: "Coachnest — Modern Learning Platform",
     description:
       "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates.",
     images: [
@@ -85,14 +85,14 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1366,
         height: 654,
-        alt: "CoachNest — Modern Learning Platform",
+        alt: "Coachnest — Modern Learning Platform",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CoachNest — Modern Learning Platform",
+    title: "Coachnest — Modern Learning Platform",
     description:
       "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates.",
     images: ["/og-image.png"],

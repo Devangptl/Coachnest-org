@@ -94,7 +94,7 @@ export default function ShareCourseModal({
       color: "text-foreground dark:text-white",
       bg: "hover:bg-secondary",
       href: (url: string) =>
-        `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out this ${kind} — "${title}" on CoachNest`)}`,
+        `https://twitter.com/intent/tweet?url=${encodeURIComponent(url)}&text=${encodeURIComponent(`Check out this ${kind} — "${title}" on Coachnest`)}`,
     },
     {
       label: "LinkedIn",

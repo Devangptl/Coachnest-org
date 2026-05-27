@@ -9,14 +9,14 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
   BookOpen, Users, CheckCircle2, ShoppingBag,
-  ArrowRight, ShoppingCart, Package, Clock,
+  ArrowRight, ShoppingCart, Package, Clock, Library, FileText, Download,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 
-// ─── Purchase data (Courses & Add-ons) ────────────────────────────────────────
+// ─── Purchase data (Courses, Books, & Add-ons) ───────────────────────────────
 
 async function getPurchases(userId: string) {
-  const [enrollments, featurePurchases] = await Promise.all([
+  const [enrollments, featurePurchases, bookPurchases] = await Promise.all([
     prisma.enrollment.findMany({
       where:   { userId },
       include: { course: { select: { id: true, title: true, thumbnail: true, isFree: true } } },
@@ -27,11 +27,23 @@ async function getPurchases(userId: string) {
       include: { feature: { select: { name: true, slug: true, description: true } } },
       orderBy: { purchasedAt: "desc" },
     }),
+    prisma.bookPurchase.findMany({
+      where:   { userId },
+      include: {
+        book: {
+          select: {
+            id: true, title: true, slug: true, author: true,
+            coverImage: true, fileFormat: true, pageCount: true,
+          },
+        },
+      },
+      orderBy: { purchasedAt: "desc" },
+    }),
   ]);
 
   const hasCommunityAccess = featurePurchases.some((fp) => fp.feature.slug === "community");
 
-  return { enrollments, featurePurchases, hasCommunityAccess };
+  return { enrollments, featurePurchases, bookPurchases, hasCommunityAccess };
 }
 
 function fmtDate(date: Date | string) {
@@ -43,7 +55,7 @@ function fmtDate(date: Date | string) {
 // ─── Purchases page view ──────────────────────────────────────────────────────
 
 async function PurchasesPage({ userId }: { userId: string }) {
-  const { enrollments, featurePurchases, hasCommunityAccess } =
+  const { enrollments, featurePurchases, bookPurchases, hasCommunityAccess } =
     await getPurchases(userId);
 
   return (
@@ -57,7 +69,7 @@ async function PurchasesPage({ userId }: { userId: string }) {
       </div>
 
       {/* Summary row */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <GlassCard className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-md bg-orange-500/15 flex items-center justify-center flex-shrink-0">
             <BookOpen className="w-5 h-5 text-[#d97757]" />
@@ -70,7 +82,17 @@ async function PurchasesPage({ userId }: { userId: string }) {
 
         <GlassCard className="flex items-center gap-4">
           <div className="w-10 h-10 rounded-md bg-purple-500/15 flex items-center justify-center flex-shrink-0">
-            <Package className="w-5 h-5 text-purple-400" />
+            <Library className="w-5 h-5 text-purple-400" />
+          </div>
+          <div>
+            <div className="text-2xl font-bold text-foreground">{bookPurchases.length}</div>
+            <div className="text-muted-foreground text-xs">Books</div>
+          </div>
+        </GlassCard>
+
+        <GlassCard className="flex items-center gap-4">
+          <div className="w-10 h-10 rounded-md bg-blue-500/15 flex items-center justify-center flex-shrink-0">
+            <Package className="w-5 h-5 text-blue-400" />
           </div>
           <div>
             <div className="text-2xl font-bold text-foreground">{featurePurchases.length}</div>
@@ -78,7 +100,7 @@ async function PurchasesPage({ userId }: { userId: string }) {
           </div>
         </GlassCard>
 
-        <GlassCard className={`flex items-center gap-4 col-span-2 sm:col-span-1 ${hasCommunityAccess ? "border-emerald-500/20" : ""}`}>
+        <GlassCard className={`flex items-center gap-4 ${hasCommunityAccess ? "border-emerald-500/20" : ""}`}>
           <div className={`w-10 h-10 rounded-md flex items-center justify-center flex-shrink-0 ${hasCommunityAccess ? "bg-emerald-500/15" : "bg-secondary"}`}>
             <Users className={`w-5 h-5 ${hasCommunityAccess ? "text-emerald-400" : "text-muted-foreground"}`} />
           </div>
@@ -93,6 +115,64 @@ async function PurchasesPage({ userId }: { userId: string }) {
           </div>
         </GlassCard>
       </div>
+
+      {/* Books */}
+      <section>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Library className="w-4 h-4 text-purple-400" /> My Books
+          </h2>
+          <Link href="/dashboard/library" className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            Open library <ArrowRight className="w-3 h-3" />
+          </Link>
+        </div>
+
+        {bookPurchases.length > 0 ? (
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {bookPurchases.map((p) => (
+              <li key={p.id} className="flex items-center gap-3 rounded-md border border-border bg-card p-3 hover:border-primary/30 transition-colors">
+                <Link href={`/books/${p.book.slug}`} className="flex-shrink-0">
+                  <div className="h-14 w-10 overflow-hidden rounded-sm border border-border bg-secondary/60">
+                    {p.book.coverImage ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={p.book.coverImage} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-muted-foreground/30">
+                        <BookOpen className="h-4 w-4" />
+                      </div>
+                    )}
+                  </div>
+                </Link>
+                <div className="min-w-0 flex-1">
+                  <Link href={`/books/${p.book.slug}`} className="block text-sm font-semibold text-foreground hover:text-orange-500 transition-colors line-clamp-1">
+                    {p.book.title}
+                  </Link>
+                  <p className="mt-0.5 truncate text-xs text-muted-foreground">by {p.book.author}</p>
+                  <div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
+                    <span className="flex items-center gap-1 px-1.5 py-px rounded-sm bg-secondary/60 border border-border font-semibold uppercase">
+                      <FileText className="w-2.5 h-2.5" /> {p.book.fileFormat}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Download className="w-3 h-3" /> {p.downloads}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" /> {fmtDate(p.purchasedAt)}
+                    </span>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <GlassCard className="text-center py-8">
+            <Library className="w-9 h-9 text-muted-foreground/30 mx-auto mb-2" />
+            <p className="text-muted-foreground text-sm mb-3">No books yet — buy once, download forever.</p>
+            <Link href="/books" className="btn-primary inline-flex items-center gap-2 text-sm">
+              Browse Books <ArrowRight className="w-4 h-4" />
+            </Link>
+          </GlassCard>
+        )}
+      </section>
 
       {/* Feature add-ons */}
       <section>

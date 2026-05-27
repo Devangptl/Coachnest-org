@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Download, ExternalLink, Mail, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Press & Media — CoachNest",
+  title: "Press & Media — Coachnest",
   description:
     "Press resources, media kit, and contact information for journalists and media professionals.",
 };
@@ -11,19 +11,19 @@ export const metadata: Metadata = {
 const COVERAGE = [
   {
     outlet: "TechCrunch",
-    headline: "CoachNest raises $8M to bring expert-led tech education to emerging markets",
+    headline: "Coachnest raises $8M to bring expert-led tech education to emerging markets",
     date: "Jan 2026",
     href: "#",
   },
   {
     outlet: "Product Hunt",
-    headline: "#1 Product of the Day — CoachNest launches its AI-powered learning paths",
+    headline: "#1 Product of the Day — Coachnest launches its AI-powered learning paths",
     date: "Nov 2025",
     href: "#",
   },
   {
     outlet: "Hacker News",
-    headline: "Ask HN: How CoachNest is rethinking online course delivery",
+    headline: "Ask HN: How Coachnest is rethinking online course delivery",
     date: "Sep 2025",
     href: "#",
   },
@@ -64,7 +64,7 @@ export default function PressPage() {
               Media Resources
             </h1>
             <p className="text-white/40 text-lg leading-relaxed max-w-2xl">
-              Everything you need to write about CoachNest — brand assets, company facts,
+              Everything you need to write about Coachnest — brand assets, company facts,
               and a direct line to our press team.
             </p>
           </div>
@@ -159,7 +159,7 @@ export default function PressPage() {
             <p className="text-white/30 text-sm mb-5">Explore our platform or read what our learners are saying.</p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
               <Link href="/about" className="flex items-center gap-2 border border-white/10 hover:border-white/20 text-white/55 hover:text-white/75 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
-                About CoachNest <ArrowRight className="w-4 h-4" />
+                About Coachnest <ArrowRight className="w-4 h-4" />
               </Link>
               <Link href="/courses" className="flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white/55 hover:text-white/75 text-sm font-medium px-5 py-2.5 rounded-lg transition-colors">
                 Browse Courses

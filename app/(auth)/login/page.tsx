@@ -19,7 +19,7 @@ const STATS = [
 ];
 
 const TESTIMONIAL = {
-  quote:    "CoachNest completely changed how I approach learning. I landed my first dev job 4 months after finishing the React course.",
+  quote:    "Coachnest completely changed how I approach learning. I landed my first dev job 4 months after finishing the React course.",
   name:     "Sarah Mitchell",
   role:     "Frontend Developer",
   initials: "SM",
@@ -79,7 +79,7 @@ export default function LoginPage() {
         <div className="flex flex-col items-center justify-center h-full px-10 py-9">
 
           {/* Logo */}
-          <Link href="/"><img src="/logo.png" alt="CoachNest" className="h-7 w-auto object-contain self-start" /></Link>
+          <Link href="/"><img src="/logo.png" alt="Coachnest" className="h-7 w-auto object-contain self-start" /></Link>
         </div>
       </aside>
 
@@ -88,7 +88,7 @@ export default function LoginPage() {
       ══════════════════════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 py-12 bg-background">
         <div className="lg:hidden mb-8">
-          <Link href="/"><img src="/logo.png" alt="CoachNest" className="h-6 w-auto object-contain mx-auto" /></Link>
+          <Link href="/"><img src="/logo.png" alt="Coachnest" className="h-6 w-auto object-contain mx-auto" /></Link>
         </div>
 
         <div className="w-full max-w-[400px] animate-fade-in">

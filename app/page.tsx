@@ -38,7 +38,7 @@ import {
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 
 export const metadata: Metadata = {
-  title: "CoachNest — Learn to Code, Design & Build Your Career",
+  title: "Coachnest — Learn to Code, Design & Build Your Career",
   description:
     "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates. Start learning free today — no credit card required.",
   keywords: [
@@ -49,13 +49,13 @@ export const metadata: Metadata = {
     "earn certificates online",
     "e-learning",
     "instructor-led courses",
-    "CoachNest",
+    "Coachnest",
   ],
   alternates: { canonical: BASE_URL },
   openGraph: {
     type: "website",
     url: BASE_URL,
-    title: "CoachNest — Learn to Code, Design & Build Your Career",
+    title: "Coachnest — Learn to Code, Design & Build Your Career",
     description:
       "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
     images: [
@@ -63,14 +63,14 @@ export const metadata: Metadata = {
         url: "/og-image.png",
         width: 1366,
         height: 654,
-        alt: "CoachNest — Learn to Code, Design & Build Your Career",
+        alt: "Coachnest — Learn to Code, Design & Build Your Career",
         type: "image/png",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "CoachNest — Learn to Code, Design & Build Your Career",
+    title: "Coachnest — Learn to Code, Design & Build Your Career",
     description:
       "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
     images: ["/og-image.png"],
@@ -212,7 +212,7 @@ export default async function HomePage() {
   const websiteJsonLd = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "CoachNest",
+    name: "Coachnest",
     url: BASE_URL,
     description:
       "Expert-crafted online courses with interactive quizzes, progress tracking, and verified certificates.",
@@ -226,7 +226,7 @@ export default async function HomePage() {
   const organizationJsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",
-    name: "CoachNest",
+    name: "Coachnest",
     url: BASE_URL,
     logo: `${BASE_URL}/logo.png`,
     sameAs: [],
@@ -243,7 +243,7 @@ export default async function HomePage() {
     mainEntity: [
       {
         "@type": "Question",
-        name: "Is CoachNest really free to get started?",
+        name: "Is Coachnest really free to get started?",
         acceptedAnswer: {
           "@type": "Answer",
           text: "Yes! You can create a free account and access all our free courses without any credit card. Paid courses are available for purchase individually — no subscription required.",
@@ -498,7 +498,7 @@ export default async function HomePage() {
           <FadeInSection>
             <div className="text-center mb-16">
               <span className="inline-block text-[#d97757] text-sm font-semibold uppercase tracking-widest mb-3">
-                Why CoachNest
+                Why Coachnest
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-4">
                 Everything you need to{" "}
@@ -850,14 +850,14 @@ export default async function HomePage() {
               {
                 name: "Priya Sharma",
                 role: "Frontend Developer at Google",
-                comment: "CoachNest's React course completely changed my career. The hands-on projects and quizzes helped me land my dream job. The certificate was a great addition to my LinkedIn profile.",
+                comment: "Coachnest's React course completely changed my career. The hands-on projects and quizzes helped me land my dream job. The certificate was a great addition to my LinkedIn profile.",
                 rating: 5,
                 avatar: "PS",
               },
               {
                 name: "Alex Chen",
                 role: "Full-Stack Engineer",
-                comment: "I've tried many platforms, but CoachNest stands out. The bite-sized lessons fit perfectly into my busy schedule, and the progress tracking keeps me motivated every day.",
+                comment: "I've tried many platforms, but Coachnest stands out. The bite-sized lessons fit perfectly into my busy schedule, and the progress tracking keeps me motivated every day.",
                 rating: 5,
                 avatar: "AC",
               },
@@ -878,14 +878,14 @@ export default async function HomePage() {
               {
                 name: "Emily Davis",
                 role: "Junior Developer",
-                comment: "As a complete beginner, I was nervous about learning to code. CoachNest made it approachable and fun. The free courses are genuinely high quality — no catch.",
+                comment: "As a complete beginner, I was nervous about learning to code. Coachnest made it approachable and fun. The free courses are genuinely high quality — no catch.",
                 rating: 4,
                 avatar: "ED",
               },
               {
                 name: "Michael Torres",
                 role: "CTO at TechStart",
-                comment: "We onboard all new engineers with CoachNest courses. The structured content and certificates make it easy to track team progress. Enterprise plan is worth every penny.",
+                comment: "We onboard all new engineers with Coachnest courses. The structured content and certificates make it easy to track team progress. Enterprise plan is worth every penny.",
                 rating: 5,
                 avatar: "MT",
               },
@@ -928,7 +928,7 @@ export default async function HomePage() {
 
             <FadeInSection direction="left">
               <span className="inline-block text-[#d97757] text-sm font-semibold uppercase tracking-widest mb-3">
-                Teach on CoachNest
+                Teach on Coachnest
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold text-white mb-6">
                 Share your knowledge,{" "}
@@ -961,7 +961,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          COMPARISON TABLE — Why CoachNest vs Others
+          COMPARISON TABLE — Why Coachnest vs Others
       ═══════════════════════════════════════════════════════════════════════════ */}
       <CompareSection />
 
@@ -986,7 +986,7 @@ export default async function HomePage() {
                 <span className="text-[#d97757]">questions</span>
               </h2>
               <p className="text-muted-foreground/70 text-lg">
-                Everything you need to know about CoachNest.
+                Everything you need to know about Coachnest.
               </p>
             </div>
           </FadeInSection>
@@ -995,7 +995,7 @@ export default async function HomePage() {
             <div className="space-y-3">
               {[
                 {
-                  question: "Is CoachNest really free to get started?",
+                  question: "Is Coachnest really free to get started?",
                   answer: "Yes! You can create a free account and access all our free courses without any credit card. Paid courses are available for purchase individually — no subscription required.",
                 },
                 {

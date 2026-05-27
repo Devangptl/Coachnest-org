@@ -30,6 +30,7 @@ import {
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
+import CartIcon from "./CartIcon";
 import ThemeToggle from "./ThemeToggle";
 import InstructorAvatar from "./InstructorAvatar";
 import { useTheme, type Theme } from "./ThemeProvider";
@@ -169,7 +170,7 @@ export default function NavbarClient({ session }: Props) {
       >
         {/* ── Logo ────────────────────────────────────────────── */}
         <Link href="/" className="flex items-center">
-          <img src="/logo.png" alt="CoachNest" className="h-5 w-auto object-contain" />
+          <img src="/logo.png" alt="Coachnest" className="h-5 w-auto object-contain" />
         </Link>
 
         {/* ── Right side ──────────────────────────────────────── */}
@@ -199,6 +200,9 @@ export default function NavbarClient({ session }: Props) {
 
           {session ? (
             <>
+              <div className="hidden lg:block">
+                <CartIcon />
+              </div>
               <div className="hidden lg:block">
                 <NotificationBell userId={session.userId} />
               </div>

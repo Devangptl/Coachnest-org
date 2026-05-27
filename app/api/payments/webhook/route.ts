@@ -17,6 +17,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyWebhookSignature } from "@/lib/stripe";
 import { handlePaymentSuccess, handlePaymentIntentSuccess } from "@/services/payment.service";
+import { handleBookPaymentIntentSuccess } from "@/services/book-payment.service";
 import {
   handleSubscriptionCheckoutCompleted,
   handleSubscriptionCreated,
@@ -45,7 +46,6 @@ export async function POST(req: NextRequest) {
         const session = event.data.object;
 
         if (session.mode === "payment") {
-          // One-time course purchase
           const paymentIntentId =
             typeof session.payment_intent === "string"
               ? session.payment_intent
@@ -72,11 +72,13 @@ export async function POST(req: NextRequest) {
         await handleSubscriptionDeleted(event);
         break;
 
-      // ── In-app course purchase (PaymentIntent flow) ───────────────────────
+      // ── In-app purchase (PaymentIntent flow) ──────────────────────────────
+      // Books (multi-item cart) vs courses are distinguished by metadata.type.
       case "payment_intent.succeeded": {
         const pi = event.data.object;
-        // Only handle course purchases (identified by orderId in metadata)
-        if (pi.metadata?.orderId) {
+        if (pi.metadata?.type === "books" && pi.metadata.bookOrderId) {
+          await handleBookPaymentIntentSuccess(pi.id);
+        } else if (pi.metadata?.orderId) {
           await handlePaymentIntentSuccess(pi.id);
         }
         break;
