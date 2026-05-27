@@ -4,24 +4,23 @@
  * RazorpayCustomForm
  * ─────────────────────────────────────────────────────────────────────────────
  * A fully custom payment form built on Razorpay Custom Checkout (razorpay.js).
- * Supports Card, UPI, and Net Banking — no Razorpay modal popup.
  *
- * Usage:
- *   <RazorpayCustomForm
- *     orderInfo={{ razorpayOrderId, dbOrderId, amount, currency, key }}
- *     description="Course: React Mastery"
- *     onSuccess={(resp) => verifyAndRedirect(resp)}
- *     onError={(msg) => setError(msg)}
- *     onBack={() => setPhase("summary")}
- *   />
+ * Supported methods — both stay 100% on YOUR page:
+ *   Card  — user enters details here; bank 3DS OTP appears as a small overlay
+ *           (bank-mandated, unavoidable) and resolves back on this page.
+ *   UPI   — user enters VPA; a push notification goes to their phone; they
+ *           approve there; payment.success fires back on this page.
+ *
+ * Net Banking is intentionally excluded — it always redirects the browser to
+ * the bank's website, leaving your UI entirely.
  */
 
 import {
   useEffect, useRef, useState, type ChangeEvent, type FormEvent,
 } from "react";
 import {
-  CreditCard, Smartphone, Building2, Loader2, ShieldCheck, ArrowLeft,
-  CheckCircle2, Eye, EyeOff, AlertCircle,
+  CreditCard, Smartphone, Loader2, ShieldCheck, ArrowLeft,
+  CheckCircle2, Eye, EyeOff, AlertCircle, Lock,
 } from "lucide-react";
 import type {
   RazorpayCustomOptions,
@@ -29,7 +28,6 @@ import type {
   RazorpaySuccessResponse,
   CardPaymentData,
   UpiPaymentData,
-  NetBankingPaymentData,
 } from "@/types/razorpay";
 
 // ── Load razorpay.js ──────────────────────────────────────────────────────────
@@ -37,54 +35,25 @@ import type {
 function useRazorpayCustomScript() {
   const [loaded, setLoaded] = useState(false);
   useEffect(() => {
-    // razorpay.js attaches window.Razorpay just like checkout.js
     if (typeof window !== "undefined" && window.Razorpay) { setLoaded(true); return; }
     const s   = document.createElement("script");
     s.src     = "https://checkout.razorpay.com/v1/razorpay.js";
     s.async   = true;
     s.onload  = () => setLoaded(true);
-    s.onerror = () => console.error("Failed to load Razorpay custom checkout script");
+    s.onerror = () => console.error("Failed to load Razorpay script");
     document.body.appendChild(s);
-    return () => { /* script stays cached */ };
   }, []);
   return loaded;
 }
 
-// ── Bank list (Net Banking) ───────────────────────────────────────────────────
-
-const POPULAR_BANKS = [
-  { code: "HDFC", name: "HDFC Bank" },
-  { code: "ICIC", name: "ICICI Bank" },
-  { code: "SBIN", name: "SBI" },
-  { code: "AXIS", name: "Axis Bank" },
-  { code: "KKBK", name: "Kotak Bank" },
-  { code: "INDB", name: "IndusInd Bank" },
-] as const;
-
-const ALL_BANKS = [
-  ...POPULAR_BANKS,
-  { code: "YESB", name: "Yes Bank" },
-  { code: "IDFB", name: "IDFC First Bank" },
-  { code: "RATN", name: "RBL Bank" },
-  { code: "FDRL", name: "Federal Bank" },
-  { code: "BKID", name: "Bank of India" },
-  { code: "BARB", name: "Bank of Baroda" },
-  { code: "CNRB", name: "Canara Bank" },
-  { code: "PUNB", name: "Punjab National Bank" },
-  { code: "UBIN", name: "Union Bank of India" },
-  { code: "CBIN", name: "Central Bank of India" },
-  { code: "IDIB", name: "Indian Bank" },
-  { code: "IOBA", name: "Indian Overseas Bank" },
-];
-
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type PaymentTab = "card" | "upi" | "netbanking";
+type PaymentTab = "card" | "upi";
 
 export interface RazorpayOrderInfo {
   razorpayOrderId: string;
   dbOrderId:       string;
-  amount:          number;   // in rupees (NOT paise)
+  amount:          number;   // rupees (NOT paise)
   currency:        string;
   key:             string;
 }
@@ -121,37 +90,35 @@ export default function RazorpayCustomForm({
   const [paying,  setPaying]  = useState(false);
   const [formErr, setFormErr] = useState<string | null>(null);
 
-  // Contact details — required by Razorpay createPayment() for every method
+  // ── Shared contact fields (required by Razorpay for every method) ────────
   const [contact, setContact] = useState("");
   const [email,   setEmail]   = useState("");
 
-  // Card fields
+  // ── Card fields ───────────────────────────────────────────────────────────
   const [cardNumber, setCardNumber] = useState("");
   const [expiry,     setExpiry]     = useState("");
   const [cvv,        setCvv]        = useState("");
   const [nameOnCard, setNameOnCard] = useState("");
   const [showCvv,    setShowCvv]    = useState(false);
 
-  // UPI
+  // ── UPI fields ────────────────────────────────────────────────────────────
   const [upiId,     setUpiId]     = useState("");
   const [upiStatus, setUpiStatus] = useState<"idle" | "waiting" | "done">("idle");
 
-  // Net Banking
-  const [selectedBank, setSelectedBank] = useState("");
-  const [bankSearch,   setBankSearch]   = useState("");
-
-  // ── Initialise Razorpay instance once script is loaded ────────────────────
+  // ── Init Razorpay instance once script is loaded ──────────────────────────
 
   useEffect(() => {
     if (!scriptLoaded) return;
+
     const opts: RazorpayCustomOptions = {
       key:         orderInfo.key,
       order_id:    orderInfo.razorpayOrderId,
-      amount:      Math.round(orderInfo.amount * 100), // paise
+      amount:      Math.round(orderInfo.amount * 100), // convert to paise
       currency:    orderInfo.currency ?? "INR",
       name:        "Coachnest",
       description: description ?? "Payment",
     };
+
     const rzp = new window.Razorpay(opts) as unknown as RazorpayCustomInstance;
 
     rzp.on("payment.success", async (resp) => {
@@ -160,7 +127,9 @@ export default function RazorpayCustomForm({
       try {
         await onSuccess(resp);
       } catch (err) {
-        onError(err instanceof Error ? err.message : "Verification failed. Contact support.");
+        const msg = err instanceof Error ? err.message : "Verification failed. Please contact support.";
+        setFormErr(msg);
+        onError(msg);
       }
     });
 
@@ -175,16 +144,19 @@ export default function RazorpayCustomForm({
     rzpRef.current = rzp;
   }, [scriptLoaded, orderInfo, description, onSuccess, onError]);
 
-  // ── Submit handler ────────────────────────────────────────────────────────
+  // ── Submit ────────────────────────────────────────────────────────────────
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
-    if (!rzpRef.current) { setFormErr("Payment gateway not ready. Please wait."); return; }
+    if (!rzpRef.current) {
+      setFormErr("Payment gateway not ready. Please wait a moment and try again.");
+      return;
+    }
     setFormErr(null);
 
-    // ── Validate shared contact fields (required by Razorpay for every method)
+    // Validate shared contact fields
     const phone = contact.replace(/\D/g, "");
-    if (!phone || phone.length < 10) {
+    if (phone.length < 10) {
       setFormErr("Enter a valid 10-digit mobile number.");
       return;
     }
@@ -193,16 +165,16 @@ export default function RazorpayCustomForm({
       return;
     }
 
-    setPaying(true);
-
     if (tab === "card") {
       const raw      = cardNumber.replace(/\s/g, "");
       const [mm, yy] = expiry.split("/");
-      if (raw.length < 13) { setFormErr("Enter a valid card number."); setPaying(false); return; }
-      if (!mm || !yy || mm.length < 2 || yy.length < 2) { setFormErr("Enter a valid expiry date (MM/YY)."); setPaying(false); return; }
-      if (cvv.length < 3) { setFormErr("Enter a valid CVV."); setPaying(false); return; }
-      if (!nameOnCard.trim()) { setFormErr("Enter the name on your card."); setPaying(false); return; }
 
+      if (raw.length < 13)                            { setFormErr("Enter a valid card number.");           return; }
+      if (!mm || !yy || mm.length < 2 || yy.length < 2) { setFormErr("Enter a valid expiry date (MM/YY)."); return; }
+      if (cvv.length < 3)                             { setFormErr("Enter a valid CVV.");                   return; }
+      if (!nameOnCard.trim())                         { setFormErr("Enter the name on your card.");         return; }
+
+      setPaying(true);
       const data: CardPaymentData = {
         method:  "card",
         contact: phone,
@@ -220,10 +192,10 @@ export default function RazorpayCustomForm({
 
     if (tab === "upi") {
       if (!upiId.trim() || !upiId.includes("@")) {
-        setFormErr("Enter a valid UPI ID (e.g. name@bank).");
-        setPaying(false);
+        setFormErr("Enter a valid UPI ID — e.g. yourname@paytm");
         return;
       }
+      setPaying(true);
       setUpiStatus("waiting");
       const data: UpiPaymentData = {
         method:  "upi",
@@ -233,35 +205,23 @@ export default function RazorpayCustomForm({
       };
       rzpRef.current.createPayment(data);
     }
-
-    if (tab === "netbanking") {
-      if (!selectedBank) { setFormErr("Please select your bank."); setPaying(false); return; }
-      const data: NetBankingPaymentData = {
-        method:  "netbanking",
-        bank:    selectedBank,
-        contact: phone,
-        email:   email.trim(),
-      };
-      rzpRef.current.createPayment(data);
-    }
   }
 
-  const filteredBanks = ALL_BANKS.filter(
-    (b) => b.name.toLowerCase().includes(bankSearch.toLowerCase()) ||
-           b.code.toLowerCase().includes(bankSearch.toLowerCase())
-  );
+  // ── Tab class helper ──────────────────────────────────────────────────────
 
   const tabCls = (t: PaymentTab) =>
-    `flex-1 flex flex-col items-center gap-1 py-3 px-2 text-xs font-medium transition-colors border-b-2 ${
+    `flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-medium transition-colors border-b-2 ${
       tab === t
         ? "border-primary text-primary"
         : "border-transparent text-muted-foreground hover:text-foreground"
     }`;
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
   return (
     <div className="rounded-xl border border-border bg-card overflow-hidden">
 
-      {/* Header */}
+      {/* ── Header ────────────────────────────────────────────────────────── */}
       <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-secondary/20">
         {onBack && (
           <button
@@ -273,40 +233,46 @@ export default function RazorpayCustomForm({
             <ArrowLeft className="w-4 h-4" />
           </button>
         )}
-        <div className="flex-1">
+        <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-foreground">Secure Payment</p>
-          <p className="text-xs text-muted-foreground">
-            ₹{orderInfo.amount.toLocaleString("en-IN")} · {description}
+          <p className="text-xs text-muted-foreground truncate">
+            ₹{orderInfo.amount.toLocaleString("en-IN")}
+            {description ? ` · ${description}` : ""}
           </p>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs text-muted-foreground flex-shrink-0">
           <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-          <span>256-bit SSL</span>
+          <span className="hidden sm:inline">256-bit SSL</span>
         </div>
       </div>
 
-      {/* Tab bar */}
+      {/* ── Tab bar: Card | UPI ────────────────────────────────────────────── */}
       <div className="flex border-b border-border">
-        <button type="button" className={tabCls("card")}       onClick={() => { setTab("card");       setFormErr(null); }}>
-          <CreditCard  className="w-4 h-4" />
+        <button
+          type="button"
+          className={tabCls("card")}
+          onClick={() => { setTab("card"); setFormErr(null); }}
+        >
+          <CreditCard className="w-4 h-4" />
           Card
         </button>
-        <button type="button" className={tabCls("upi")}        onClick={() => { setTab("upi");        setFormErr(null); }}>
-          <Smartphone  className="w-4 h-4" />
+        <button
+          type="button"
+          className={tabCls("upi")}
+          onClick={() => { setTab("upi"); setFormErr(null); setUpiStatus("idle"); }}
+        >
+          <Smartphone className="w-4 h-4" />
           UPI
-        </button>
-        <button type="button" className={tabCls("netbanking")} onClick={() => { setTab("netbanking"); setFormErr(null); }}>
-          <Building2   className="w-4 h-4" />
-          Net Banking
         </button>
       </div>
 
-      {/* Form */}
-      <form onSubmit={handleSubmit} className="p-5 space-y-5">
+      {/* ── Form ──────────────────────────────────────────────────────────── */}
+      <form onSubmit={handleSubmit} className="p-5 space-y-4">
 
-        {/* ── Card tab ──────────────────────────────────────────────────── */}
+        {/* ── CARD tab ────────────────────────────────────────────────────── */}
         {tab === "card" && (
           <div className="space-y-3">
+
             {/* Card number */}
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
@@ -317,7 +283,7 @@ export default function RazorpayCustomForm({
                   type="text"
                   inputMode="numeric"
                   autoComplete="cc-number"
-                  placeholder="1234 5678 9012 3456"
+                  placeholder="1234  5678  9012  3456"
                   value={cardNumber}
                   onChange={(e: ChangeEvent<HTMLInputElement>) =>
                     setCardNumber(formatCardNumber(e.target.value))
@@ -334,13 +300,13 @@ export default function RazorpayCustomForm({
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                  Expiry (MM/YY)
+                  Expiry
                 </label>
                 <input
                   type="text"
                   inputMode="numeric"
                   autoComplete="cc-exp"
-                  placeholder="MM/YY"
+                  placeholder="MM / YY"
                   value={expiry}
                   onChange={(e) => setExpiry(formatExpiry(e.target.value))}
                   maxLength={5}
@@ -376,7 +342,7 @@ export default function RazorpayCustomForm({
               </div>
             </div>
 
-            {/* Name */}
+            {/* Name on card */}
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                 Name on Card
@@ -392,8 +358,8 @@ export default function RazorpayCustomForm({
               />
             </div>
 
-            {/* Accepted cards */}
-            <div className="flex items-center gap-2 pt-0.5">
+            {/* Accepted card brands */}
+            <div className="flex items-center gap-2">
               {["VISA", "Mastercard", "RuPay", "Amex"].map((b) => (
                 <span key={b} className="px-1.5 py-0.5 rounded border border-border text-[10px] font-semibold text-muted-foreground bg-secondary/50 tracking-wide">
                   {b}
@@ -403,9 +369,10 @@ export default function RazorpayCustomForm({
           </div>
         )}
 
-        {/* ── UPI tab ───────────────────────────────────────────────────── */}
+        {/* ── UPI tab ─────────────────────────────────────────────────────── */}
         {tab === "upi" && (
           <div className="space-y-3">
+
             <div>
               <label className="block text-xs font-medium text-muted-foreground mb-1.5">
                 UPI ID
@@ -416,37 +383,45 @@ export default function RazorpayCustomForm({
                 autoComplete="off"
                 placeholder="yourname@upi"
                 value={upiId}
-                onChange={(e) => { setUpiId(e.target.value.trim()); setUpiStatus("idle"); }}
+                onChange={(e) => {
+                  setUpiId(e.target.value.trim());
+                  setUpiStatus("idle");
+                  setFormErr(null);
+                }}
                 className="input-glass"
                 disabled={paying}
               />
               <p className="mt-1.5 text-xs text-muted-foreground/70">
-                e.g. mobilenumber@paytm · yourname@okhdfcbank · user@ybl
+                e.g.&nbsp;&nbsp;9999999999@paytm &nbsp;·&nbsp; yourname@okhdfcbank &nbsp;·&nbsp; user@ybl
               </p>
             </div>
 
+            {/* Waiting for phone approval */}
             {upiStatus === "waiting" && (
               <div className="flex items-start gap-3 p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
                 <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-blue-400">Check your UPI app</p>
-                  <p className="text-xs text-blue-400/70 mt-0.5">
-                    A payment request of ₹{orderInfo.amount.toLocaleString("en-IN")} has been sent to{" "}
-                    <strong>{upiId}</strong>. Approve it within 5 minutes.
+                  <p className="text-sm font-semibold text-blue-400">Check your UPI app</p>
+                  <p className="text-xs text-blue-400/70 mt-0.5 leading-relaxed">
+                    A request for{" "}
+                    <span className="font-semibold">₹{orderInfo.amount.toLocaleString("en-IN")}</span>{" "}
+                    was sent to <span className="font-semibold">{upiId}</span>.
+                    Open your UPI app and approve within 5 minutes.
                   </p>
                 </div>
               </div>
             )}
 
+            {/* Approved */}
             {upiStatus === "done" && (
               <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                 <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                <span className="text-sm font-medium">Payment approved!</span>
+                <span className="text-sm font-semibold">Payment approved!</span>
               </div>
             )}
 
-            {/* UPI app logos */}
-            <div className="flex items-center gap-2 pt-1">
+            {/* UPI app hints */}
+            <div className="flex items-center gap-2">
               {["GPay", "PhonePe", "Paytm", "BHIM"].map((app) => (
                 <span key={app} className="px-2 py-0.5 rounded border border-border text-[10px] font-semibold text-muted-foreground bg-secondary/50 tracking-wide">
                   {app}
@@ -456,68 +431,7 @@ export default function RazorpayCustomForm({
           </div>
         )}
 
-        {/* ── Net Banking tab ───────────────────────────────────────────── */}
-        {tab === "netbanking" && (
-          <div className="space-y-3">
-            {/* Popular banks grid */}
-            <p className="text-xs font-medium text-muted-foreground">Popular Banks</p>
-            <div className="grid grid-cols-3 gap-2">
-              {POPULAR_BANKS.map((bank) => (
-                <button
-                  key={bank.code}
-                  type="button"
-                  onClick={() => { setSelectedBank(bank.code); setFormErr(null); }}
-                  className={`p-2.5 rounded-lg border text-xs font-medium transition-colors text-center leading-tight ${
-                    selectedBank === bank.code
-                      ? "border-primary bg-primary/10 text-primary"
-                      : "border-border bg-secondary/30 text-foreground hover:bg-secondary/60"
-                  }`}
-                  disabled={paying}
-                >
-                  {bank.name}
-                </button>
-              ))}
-            </div>
-
-            {/* All banks dropdown */}
-            <div>
-              <label className="block text-xs font-medium text-muted-foreground mb-1.5">
-                All Banks
-              </label>
-              <input
-                type="text"
-                placeholder="Search bank…"
-                value={bankSearch}
-                onChange={(e) => setBankSearch(e.target.value)}
-                className="input-glass mb-1.5"
-                disabled={paying}
-              />
-              <select
-                value={selectedBank}
-                onChange={(e) => { setSelectedBank(e.target.value); setFormErr(null); }}
-                className="select input-glass"
-                disabled={paying}
-              >
-                <option value="">— Select your bank —</option>
-                {filteredBanks.map((b) => (
-                  <option key={b.code} value={b.code}>{b.name}</option>
-                ))}
-              </select>
-            </div>
-
-            {selectedBank && (
-              <p className="text-xs text-muted-foreground/70">
-                You will be redirected to{" "}
-                <strong className="text-foreground/80">
-                  {ALL_BANKS.find((b) => b.code === selectedBank)?.name}
-                </strong>{" "}
-                to complete the payment.
-              </p>
-            )}
-          </div>
-        )}
-
-        {/* ── Contact details (required by Razorpay for every payment method) ── */}
+        {/* ── Contact details (required by Razorpay) ──────────────────────── */}
         <div className="space-y-3 pt-1 border-t border-border">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pt-1">
             Contact Details
@@ -557,7 +471,7 @@ export default function RazorpayCustomForm({
           </div>
         </div>
 
-        {/* ── Error banner ──────────────────────────────────────────────── */}
+        {/* ── Error banner ──────────────────────────────────────────────────── */}
         {formErr && (
           <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-3.5 py-3">
             <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
@@ -565,27 +479,25 @@ export default function RazorpayCustomForm({
           </div>
         )}
 
-        {/* ── Pay button ────────────────────────────────────────────────── */}
+        {/* ── Submit button ──────────────────────────────────────────────────── */}
         <button
           type="submit"
           disabled={paying || !scriptLoaded || upiStatus === "waiting"}
           className="w-full btn-primary py-3 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {paying && upiStatus !== "waiting" ? (
+          {!scriptLoaded ? (
+            <><Loader2 className="w-4 h-4 animate-spin" /> Loading…</>
+          ) : paying && upiStatus !== "waiting" ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
           ) : upiStatus === "waiting" ? (
             <><Loader2 className="w-4 h-4 animate-spin" /> Waiting for UPI approval…</>
           ) : (
-            <><ShieldCheck className="w-4 h-4" />
-              {tab === "netbanking"
-                ? `Continue to Bank`
-                : `Pay ₹${orderInfo.amount.toLocaleString("en-IN")}`}
-            </>
+            <><Lock className="w-4 h-4" /> Pay ₹{orderInfo.amount.toLocaleString("en-IN")}</>
           )}
         </button>
 
-        <p className="text-center text-[11px] text-muted-foreground/60">
-          Secured by Razorpay · Your payment info is encrypted and never stored on our servers
+        <p className="text-center text-[11px] text-muted-foreground/60 leading-relaxed">
+          Secured by Razorpay &nbsp;·&nbsp; Your card details are encrypted and never stored on our servers
         </p>
       </form>
     </div>

@@ -217,7 +217,7 @@ export default function FeatureCheckoutClient({
         <div className="rounded-md border border-border bg-card p-6 sm:p-8">
           <h2 className="text-lg font-bold text-foreground mb-1">Complete your purchase</h2>
           <p className="text-sm text-muted-foreground mb-6">
-            Choose from Card, UPI, or Net Banking — all processed securely on the next step.
+            Pay with Card or UPI — entire checkout stays on this page.
           </p>
 
           {/* Payment method pills */}
@@ -225,7 +225,6 @@ export default function FeatureCheckoutClient({
             {[
               { label: "Card",        sub: "Visa · MC · RuPay" },
               { label: "UPI",         sub: "GPay · PhonePe · Paytm" },
-              { label: "Net Banking", sub: "50+ banks" },
             ].map(({ label, sub }) => (
               <div
                 key={label}
@@ -260,7 +259,7 @@ export default function FeatureCheckoutClient({
 
           <p className="mt-4 text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
-            Powered by Razorpay · UPI · Cards · Net Banking · Wallets
+            Powered by Razorpay · Cards · UPI
           </p>
         </div>
       </div>

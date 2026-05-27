@@ -269,7 +269,7 @@ export default function BooksCheckoutClient({ items, subtotal }: Props) {
         <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
           <h2 className="text-base font-bold text-foreground mb-1">Complete your purchase</h2>
           <p className="text-sm text-muted-foreground mb-5">
-            Choose from Card, UPI, or Net Banking on the next step.
+            Pay with Card or UPI — entire checkout stays on this page.
           </p>
 
           {/* Payment method pills */}
@@ -277,7 +277,6 @@ export default function BooksCheckoutClient({ items, subtotal }: Props) {
             {[
               { label: "Card",        sub: "Visa · MC · RuPay" },
               { label: "UPI",         sub: "GPay · PhonePe · Paytm" },
-              { label: "Net Banking", sub: "50+ banks" },
             ].map(({ label, sub }) => (
               <div
                 key={label}
@@ -305,7 +304,7 @@ export default function BooksCheckoutClient({ items, subtotal }: Props) {
 
           <p className="mt-3 text-center text-[11px] text-muted-foreground/70 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3 h-3" />
-            Powered by Razorpay · UPI · Cards · Net Banking · Wallets
+            Powered by Razorpay · Cards · UPI
           </p>
         </div>
       </div>
