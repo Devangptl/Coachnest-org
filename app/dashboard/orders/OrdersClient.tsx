@@ -6,7 +6,10 @@ import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
 import { formatDate } from "@/lib/utils";
 import Link from "next/link";
-import { ArrowRight, Package, BookOpen, RotateCcw, TrendingDown, FileDown, Loader2 } from "lucide-react";
+import {
+  ArrowRight, Package, BookOpen, RotateCcw, TrendingDown, FileDown,
+  Loader2, Library, FileText,
+} from "lucide-react";
 import RefundRequestModal from "./RefundRequestModal";
 
 const statusVariant: Record<string, "green" | "amber" | "red" | "gray"> = {
@@ -26,9 +29,11 @@ const statusLabel: Record<string, string> = {
 interface Order {
   id:              string;
   title:           string;
-  type:            "course" | "feature";
+  type:            "course" | "feature" | "books";
   courseId:        string | null;
   featureSlug:     string | null;
+  bookCount:       number | null;
+  bookFormats:     string[] | null;
   thumbnail:       string | null;
   amount:          number;
   currency:        string;
@@ -40,6 +45,18 @@ interface Order {
   refundStatus:    string | null;
   createdAt:       string | Date;
 }
+
+const TYPE_LABEL: Record<Order["type"], string> = {
+  course:  "Course",
+  feature: "Add-on",
+  books:   "Books",
+};
+
+const TYPE_BADGE_CLASS: Record<Order["type"], string> = {
+  course:  "bg-blue-500/10 text-blue-400",
+  feature: "bg-orange-500/10 text-[#d97757]",
+  books:   "bg-purple-500/10 text-purple-400",
+};
 
 export default function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [orders,       setOrders]       = useState(initialOrders);
@@ -94,14 +111,17 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
               <img
                 src={order.thumbnail}
                 alt=""
-                className="w-16 h-16 rounded-md object-cover flex-shrink-0"
+                className={`w-16 h-16 object-cover flex-shrink-0 ${order.type === "books" ? "rounded-sm" : "rounded-md"}`}
               />
             ) : (
               <div className="w-16 h-16 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
-                {order.type === "feature"
-                  ? <Package  className="w-6 h-6 text-[#d97757]/50" />
-                  : <BookOpen className="w-6 h-6 text-muted-foreground/30" />
-                }
+                {order.type === "feature" ? (
+                  <Package className="w-6 h-6 text-[#d97757]/50" />
+                ) : order.type === "books" ? (
+                  <Library className="w-6 h-6 text-purple-400/50" />
+                ) : (
+                  <BookOpen className="w-6 h-6 text-muted-foreground/30" />
+                )}
               </div>
             )}
 
@@ -110,13 +130,14 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
               <p className="text-foreground font-semibold text-sm truncate">{order.title}</p>
               <div className="flex items-center gap-3 mt-1 flex-wrap">
                 <span className="text-muted-foreground/70 text-xs">{formatDate(order.createdAt)}</span>
-                <span className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                  order.type === "feature"
-                    ? "bg-orange-500/10 text-[#d97757]"
-                    : "bg-blue-500/10 text-blue-400"
-                }`}>
-                  {order.type === "feature" ? "Add-on" : "Course"}
+                <span className={`text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded ${TYPE_BADGE_CLASS[order.type]}`}>
+                  {TYPE_LABEL[order.type]}
                 </span>
+                {order.type === "books" && order.bookCount && order.bookCount > 1 && (
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <FileText className="w-3 h-3" /> {order.bookCount} items
+                  </span>
+                )}
                 {order.couponCode && (
                   <span className="text-[#d97757] text-xs">Coupon: {order.couponCode}</span>
                 )}
@@ -153,8 +174,8 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
                 {statusLabel[order.status] || order.status}
               </Badge>
 
-              {/* Download invoice — available for all PAID orders */}
-              {order.status === "PAID" && (
+              {/* Download invoice — available for PAID course/feature orders */}
+              {order.status === "PAID" && order.type !== "books" && (
                 <button
                   onClick={() => handleDownloadInvoice(order.id)}
                   disabled={downloading.has(order.id)}
@@ -167,6 +188,17 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
                   }
                   Invoice
                 </button>
+              )}
+
+              {/* Library link — for PAID book orders */}
+              {order.status === "PAID" && order.type === "books" && (
+                <Link
+                  href="/dashboard/library"
+                  className="flex items-center gap-1.5 text-xs font-medium text-purple-400 hover:text-purple-300 border border-purple-400/30 hover:border-purple-400/60 bg-purple-500/5 hover:bg-purple-500/10 px-2.5 py-1.5 rounded-lg transition-all whitespace-nowrap"
+                  title="Open in My Library"
+                >
+                  <Library className="w-3.5 h-3.5" /> Library
+                </Link>
               )}
 
               {/* Course actions */}
