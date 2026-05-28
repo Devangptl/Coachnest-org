@@ -148,13 +148,34 @@ export default function RazorpayCustomForm({
       callback_url: `${window.location.origin}/api/razorpay/upi-return`,
     } as RazorpayCustomOptions) as unknown as RazorpayCustomInstance;
 
-    // 3DS: intercept before Razorpay shows its own overlay
+    // payment.action fires for BOTH card 3DS and UPI intent deep-links.
+    // Distinguish by URL scheme: upi:// / intent:// / tez:// → redirect to UPI app.
+    // Anything else (https://) → bank OTP page → show in our own iframe.
     rzp.on("payment.action", (payload: RazorpayActionPayload) => {
       const url = payload.url ?? payload.redirect?.url;
-      if (url) { setPaying(false); setThreedsUrl(url); }
+      if (!url) return;
+
+      const isUpiDeepLink =
+        url.startsWith("upi://") ||
+        url.startsWith("intent://") ||
+        url.startsWith("tez://") ||    // Google Pay legacy scheme
+        url.startsWith("phonepe://") ||
+        url.startsWith("paytmmp://");
+
+      if (isUpiDeepLink) {
+        // Redirect the page to open the UPI app; /api/razorpay/upi-return
+        // handles the server-side finalisation when the user returns.
+        window.location.href = url;
+        return;
+      }
+
+      // Card 3DS — show bank OTP page in our own iframe modal
+      setPaying(false);
+      setThreedsUrl(url);
     });
 
-    // UPI intent: redirect to the UPI app deep-link
+    // payment.next_action is a secondary event some Razorpay SDK versions fire
+    // for UPI intent. Handle it the same way — redirect to the UPI deep-link.
     rzp.on("payment.next_action", (data: RazorpayNextActionPayload) => {
       if (data?.url) window.location.href = data.url;
     });
