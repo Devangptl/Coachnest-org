@@ -1,45 +1,40 @@
 /**
- * Book Payment Service — multi-item cart flow built around Stripe
- * PaymentIntent (in-app Elements / PaymentElement), mirroring the same
- * pattern used by services/payment.service.ts for course purchases.
+ * Book Payment Service — multi-item cart flow built around Razorpay
+ * Standard Checkout, mirroring the same pattern as payment.service.ts
+ * for course purchases.
  *
  * Flow:
- *   createBookPaymentIntent     → reads cart → builds BookOrder + N items →
- *                                 PaymentIntent (no redirect), returns clientSecret
- *   handleBookPaymentIntentSuccess → webhook OR confirm-book-purchase →
- *                                 mark PAID → create BookPurchase rows →
- *                                 credit instructor wallets → empty cart →
- *                                 notify + email
- *
- * Revenue split: per-item using Book.instructorRevenuePercent. Coupons apply
- * proportionally across items. Referral links are out of scope for v1
- * (organic split only on books).
+ *   createBooksRazorpayOrder   → reads cart → builds BookOrder + N items →
+ *                                Razorpay order → returns { razorpayOrderId, dbOrderId, amount }
+ *   finalizeBookPayment        → called after signature verification →
+ *                                mark PAID → create BookPurchase rows →
+ *                                credit instructor wallets → empty cart →
+ *                                notify + email
  */
 import { prisma } from "@/lib/prisma";
-import { getStripe } from "@/lib/stripe";
+import { getRazorpay } from "@/lib/razorpay";
 import { createNotification } from "@/lib/notifications";
 import { sendBookPurchaseEmail } from "@/lib/email";
 import { clearCart } from "@/services/cart.service";
 
-interface CreateBookPaymentIntentResult {
-  clientSecret: string | null;
-  orderId:      string;
-  amount:       number;
-  subtotal:     number;
-  discount:     number;
-  itemCount:    number;
+interface CreateBooksOrderResult {
+  razorpayOrderId: string;
+  dbOrderId:       string;
+  amount:          number;
+  subtotal:        number;
+  discount:        number;
+  itemCount:       number;
 }
 
-// ─── Create Stripe PaymentIntent for the user's cart ─────────────────────────
+// ─── Create Razorpay order for the user's book cart ──────────────────────────
 
-export async function createBookPaymentIntent(
-  userId:            string,
-  couponCode?:       string,
-  paymentMethodType?: string,
-): Promise<CreateBookPaymentIntentResult> {
+export async function createBooksRazorpayOrder(
+  userId:      string,
+  couponCode?: string
+): Promise<CreateBooksOrderResult> {
   const user = await prisma.user.findUnique({
     where:  { id: userId },
-    select: { id: true, email: true, name: true, stripeCustomerId: true },
+    select: { id: true, email: true, name: true },
   });
   if (!user) throw new Error("User not found");
 
@@ -90,9 +85,7 @@ export async function createBookPaymentIntent(
   let discountAmt = 0;
   let couponId: string | undefined;
   if (couponCode) {
-    const coupon = await prisma.coupon.findUnique({
-      where: { code: couponCode.toUpperCase() },
-    });
+    const coupon = await prisma.coupon.findUnique({ where: { code: couponCode.toUpperCase() } });
     if (!coupon) throw new Error("Invalid coupon code");
     if (coupon.expiresAt && coupon.expiresAt < new Date()) throw new Error("Coupon has expired");
     if (coupon.maxUses && coupon.uses >= coupon.maxUses)   throw new Error("Coupon usage limit reached");
@@ -109,12 +102,17 @@ export async function createBookPaymentIntent(
 
   const finalAmount = Math.max(0, subtotal - discountAmt);
 
+  // Enforce Razorpay minimum amount (₹1 = 100 paise)
+  if (Math.round(finalAmount * 100) < 100) {
+    throw new Error("Minimum order amount is ₹1");
+  }
+
   // Per-item allocation (proportional discount distribution)
   const allocations = lineItems.map((i) => {
-    const ratio = subtotal > 0 ? i.basePrice / subtotal : 0;
-    const itemDiscount = parseFloat((discountAmt * ratio).toFixed(2));
-    const itemFinal    = parseFloat((i.basePrice - itemDiscount).toFixed(2));
-    const pct          = i.book.instructorRevenuePercent ?? 70;
+    const ratio          = subtotal > 0 ? i.basePrice / subtotal : 0;
+    const itemDiscount   = parseFloat((discountAmt * ratio).toFixed(2));
+    const itemFinal      = parseFloat((i.basePrice - itemDiscount).toFixed(2));
+    const pct            = i.book.instructorRevenuePercent ?? 70;
     const instructorRevenue = parseFloat(((itemFinal * pct) / 100).toFixed(2));
     const platformRevenue   = parseFloat((itemFinal - instructorRevenue).toFixed(2));
     return { ...i, itemFinal, instructorRevenue, platformRevenue, pct };
@@ -142,60 +140,38 @@ export async function createBookPaymentIntent(
     },
   });
 
-  // Ensure Stripe customer exists (India RBI export compliance)
-  const stripe       = getStripe();
-  const customerName = user.name ?? user.email;
-  let customerId     = user.stripeCustomerId ?? undefined;
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email:   user.email,
-      name:    customerName,
-      address: { line1: "India", country: "IN" },
-      metadata: { userId: user.id },
-    });
-    customerId = customer.id;
-    await prisma.user.update({ where: { id: user.id }, data: { stripeCustomerId: customerId } });
-  } else {
-    await stripe.customers.update(customerId, {
-      name:    customerName,
-      address: { line1: "India", country: "IN" },
-    });
-  }
-
   const titlesShort = allocations
     .slice(0, 3)
     .map((a) => a.book.title)
     .join(", ") + (allocations.length > 3 ? ` +${allocations.length - 3} more` : "");
 
-  const pi = await stripe.paymentIntents.create({
-    amount:   Math.round(finalAmount * 100),
-    currency: "inr",
-    customer: customerId,
-    ...(paymentMethodType === "upi"
-      ? { payment_method_types: ["upi"] }
-      : { automatic_payment_methods: { enabled: true } }),
-    description:   `Coachnest books: ${titlesShort}`,
-    metadata:      {
+  // Create Razorpay order
+  const razorpay = getRazorpay();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rzpOrder = await (razorpay.orders.create as any)({
+    amount:   Math.round(finalAmount * 100), // paise
+    currency: "INR",
+    receipt:  `books_${order.id}`,
+    notes: {
       bookOrderId: order.id,
       userId,
       type:        "books",
       itemCount:   String(allocations.length),
     },
-    receipt_email: user.email,
   });
 
   await prisma.bookOrder.update({
     where: { id: order.id },
-    data:  { stripePaymentId: pi.id },
+    data:  { razorpayOrderId: rzpOrder.id },
   });
 
   return {
-    clientSecret: pi.client_secret,
-    orderId:      order.id,
-    amount:       finalAmount,
+    razorpayOrderId: rzpOrder.id as string,
+    dbOrderId:       order.id,
+    amount:          finalAmount,
     subtotal,
-    discount:     discountAmt,
-    itemCount:    allocations.length,
+    discount:        discountAmt,
+    itemCount:       allocations.length,
   };
 }
 
@@ -242,20 +218,20 @@ async function creditInstructorWalletForBook(args: {
   });
 }
 
-// ─── Finalize order (called by both webhook + confirm endpoint) ──────────────
+// ─── Finalize book order after Razorpay signature verification ───────────────
 
-async function finalizeBookOrder(orderId: string, paymentIntentId: string) {
+export async function finalizeBookPayment(
+  bookOrderId:       string,
+  razorpayPaymentId: string
+) {
   const order = await prisma.bookOrder.findUnique({
-    where:   { id: orderId },
+    where:   { id: bookOrderId },
     include: {
       user:  { select: { id: true, email: true, name: true } },
       items: {
         include: {
           book: {
-            select: {
-              id: true, title: true, slug: true,
-              createdById: true,
-            },
+            select: { id: true, title: true, slug: true, createdById: true },
           },
         },
       },
@@ -268,7 +244,7 @@ async function finalizeBookOrder(orderId: string, paymentIntentId: string) {
 
   await prisma.bookOrder.update({
     where: { id: order.id },
-    data:  { status: "PAID", stripePaymentId: paymentIntentId },
+    data:  { status: "PAID", razorpayPaymentId },
   });
 
   // Create BookPurchase rows (one per item, idempotent)
@@ -276,11 +252,7 @@ async function finalizeBookOrder(orderId: string, paymentIntentId: string) {
     order.items.map((item) =>
       prisma.bookPurchase.upsert({
         where:  { userId_bookId: { userId: order.userId, bookId: item.bookId } },
-        create: {
-          userId:      order.userId,
-          bookId:      item.bookId,
-          orderItemId: item.id,
-        },
+        create: { userId: order.userId, bookId: item.bookId, orderItemId: item.id },
         update: {},
       }),
     ),
@@ -311,7 +283,7 @@ async function finalizeBookOrder(orderId: string, paymentIntentId: string) {
 
   await clearCart(order.userId).catch(console.error);
 
-  const titles = order.items.map((i) => i.book.title);
+  const titles  = order.items.map((i) => i.book.title);
   const summary = titles.length === 1 ? `"${titles[0]}"` : `${titles.length} books`;
 
   await createNotification({
@@ -336,13 +308,13 @@ async function finalizeBookOrder(orderId: string, paymentIntentId: string) {
   return { success: true, orderId: order.id, alreadyProcessed: false };
 }
 
-// ─── Webhook handler: payment_intent.succeeded ───────────────────────────────
+// ─── Legacy: find BookOrder by Razorpay payment ID (webhook fallback) ─────────
 
-export async function handleBookPaymentIntentSuccess(paymentIntentId: string) {
+export async function handleBookPaymentIntentSuccess(razorpayPaymentId: string) {
   const order = await prisma.bookOrder.findFirst({
-    where:  { stripePaymentId: paymentIntentId },
+    where:  { razorpayPaymentId },
     select: { id: true },
   });
-  if (!order) throw new Error("BookOrder not found for payment intent");
-  return finalizeBookOrder(order.id, paymentIntentId);
+  if (!order) throw new Error("BookOrder not found for payment ID");
+  return finalizeBookPayment(order.id, razorpayPaymentId);
 }

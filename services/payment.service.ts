@@ -1,6 +1,6 @@
 /**
- * Payment Service — orchestrates Stripe Checkout Session creation,
- * webhook-driven enrollment, and notification after a successful purchase.
+ * Payment Service — orchestrates Razorpay order creation, course enrollment,
+ * and post-payment processing.
  *
  * Revenue split rules (stored per-transaction for full auditability):
  *   ORGANIC  → base course setting (70–80 %, default 70 %)
@@ -8,12 +8,12 @@
  *   REFERRAL → 90 % instructor / 10 % platform  (instructor's referral link)
  *   ADS      → base course setting (platform-paid acquisition)
  *
- * After a course sale is confirmed (PAID), the instructor's wallet is credited
+ * After a course sale is confirmed, the instructor's wallet is credited
  * via creditInstructorWallet() and a WalletTransaction record is created.
  */
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
-import { getStripe } from "@/lib/stripe";
+import { getRazorpay } from "@/lib/razorpay";
 import { sendPurchaseEmail } from "@/lib/email";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
 
@@ -41,13 +41,11 @@ async function resolveSplit(
       select: { id: true, instructorId: true, courseId: true, isActive: true },
     });
     if (link && link.isActive) {
-      // Validate: link must belong to the course's instructor
       const course = await prisma.course.findUnique({
         where:  { id: courseId },
         select: { createdById: true },
       });
       if (course && link.instructorId === course.createdById) {
-        // Optional: link may be scoped to a specific course
         if (!link.courseId || link.courseId === courseId) {
           return {
             saleSource:        "REFERRAL",
@@ -84,7 +82,6 @@ async function resolveSplit(
         referralLinkId:    null,
       };
     }
-    // Platform coupon — organic split applies
     return { saleSource: "COUPON", instructorPercent: basePercent, referralLinkId: null };
   }
 
@@ -185,9 +182,9 @@ async function creditInstructorWallet(
   });
 }
 
-// ─── Create Stripe Checkout Session ──────────────────────────────────────────
+// ─── Create Razorpay Order for course purchase ────────────────────────────────
 
-export async function createCheckoutSession(
+export async function createCourseRazorpayOrder(
   userId:        string,
   courseId:      string,
   couponCode?:   string,
@@ -203,8 +200,8 @@ export async function createCheckoutSession(
     where: { id: courseId },
     select: {
       id: true, title: true, price: true,
-      discountPrice: true, isFree: true, thumbnail: true,
-      instructorRevenuePercent: true,
+      discountPrice: true, isFree: true,
+      instructorRevenuePercent: true, createdById: true,
     },
   });
   if (!course)        throw new Error("Course not found");
@@ -245,6 +242,12 @@ export async function createCheckoutSession(
   const instructorRevenue = parseFloat(((finalAmount * instructorPercent) / 100).toFixed(2));
   const platformRevenue   = parseFloat((finalAmount - instructorRevenue).toFixed(2));
 
+  // Enforce Razorpay minimum amount (₹1 = 100 paise)
+  if (Math.round(finalAmount * 100) < 100) {
+    throw new Error("Minimum order amount is ₹1");
+  }
+
+  // Create pending DB order
   const order = await prisma.order.create({
     data: {
       userId,
@@ -262,32 +265,27 @@ export async function createCheckoutSession(
     },
   });
 
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const stripe = getStripe();
-
-  const session = await stripe.checkout.sessions.create({
-    mode:                 "payment",
-    customer_email:       user.email,
-    payment_intent_data:  { description: `Course purchase: ${course.title}` },
-    line_items: [{
-      price_data: {
-        currency:     "inr",
-        unit_amount:  Math.round(finalAmount * 100),
-        product_data: {
-          name: course.title,
-          ...(course.thumbnail ? { images: [course.thumbnail] } : {}),
-        },
-      },
-      quantity: 1,
-    }],
-    metadata:    { orderId: order.id, courseId, userId, type: "course" },
-    success_url: `${appUrl}/checkout/success?type=course&courseId=${courseId}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${appUrl}/checkout/cancel?type=course&courseId=${courseId}`,
+  // Create Razorpay order
+  const razorpay = getRazorpay();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const rzpOrder = await (razorpay.orders.create as any)({
+    amount:   Math.round(finalAmount * 100), // paise
+    currency: "INR",
+    receipt:  `course_${order.id}`,
+    notes: {
+      orderId:  order.id,
+      courseId,
+      userId,
+      type:     "course",
+    },
   });
 
-  await prisma.order.update({ where: { id: order.id }, data: { stripeSessionId: session.id } });
+  await prisma.order.update({
+    where: { id: order.id },
+    data:  { razorpayOrderId: rzpOrder.id },
+  });
 
-  // Increment referral link click count (conversion counted on payment success)
+  // Increment referral link click count
   if (referralLinkId) {
     await prisma.referralLink.update({
       where: { id: referralLinkId },
@@ -295,195 +293,46 @@ export async function createCheckoutSession(
     }).catch(() => null);
   }
 
-  return { orderId: order.id, sessionId: session.id, url: session.url };
+  return {
+    razorpayOrderId: rzpOrder.id as string,
+    dbOrderId:       order.id,
+    amount:          finalAmount,
+    currency:        "INR",
+  };
 }
 
-// ─── Handle PaymentIntent success (in-app course purchase) ───────────────────
+// ─── Finalize course payment after Razorpay signature verification ────────────
 
-export async function handlePaymentIntentSuccess(paymentIntentId: string) {
-  const order = await prisma.order.findFirst({
-    where: { stripePaymentId: paymentIntentId },
+export async function finalizeCoursePayment(
+  dbOrderId:         string,
+  razorpayPaymentId: string
+) {
+  const order = await prisma.order.findUnique({
+    where: { id: dbOrderId },
     include: {
       user:   { select: { email: true, name: true } },
       course: { select: { id: true, title: true, instructorRevenuePercent: true } },
     },
   });
-  if (!order) throw new Error("Order not found for payment intent");
+  if (!order) throw new Error("Order not found");
   if (order.status === "PAID") return { success: true, courseId: order.courseId };
 
+  // Feature purchase — delegate to feature service
   if (order.featureId) {
-    await handleFeaturePaymentSuccess(order.id, paymentIntentId);
-    return { success: true, courseId: null };
-  }
-
-  const userId    = order.userId;
-  const paidAmount = Number(order.amount);
-
-  // Use stored split (set at order creation); fall back to course setting
-  const instructorPct     = Number(order.instructorPercent ?? order.course?.instructorRevenuePercent ?? 70);
-  const instructorRevenue = parseFloat(((paidAmount * instructorPct) / 100).toFixed(2));
-  const platformRevenue   = parseFloat((paidAmount - instructorRevenue).toFixed(2));
-
-  await prisma.order.update({
-    where: { id: order.id },
-    data:  { status: "PAID", instructorRevenue, platformRevenue },
-  });
-
-  await prisma.enrollment.upsert({
-    where:  { userId_courseId: { userId, courseId: order.courseId! } },
-    create: { userId, courseId: order.courseId! },
-    update: {},
-  });
-
-  if (order.couponId) {
-    await prisma.coupon.update({ where: { id: order.couponId }, data: { uses: { increment: 1 } } });
-    await prisma.couponUse.upsert({
-      where:  { userId_couponId: { userId, couponId: order.couponId } },
-      create: { userId, couponId: order.couponId },
-      update: {},
-    });
-  }
-
-  // Count referral conversion
-  if (order.referralLinkId) {
-    await prisma.referralLink.update({
-      where: { id: order.referralLinkId },
-      data:  { conversions: { increment: 1 } },
-    }).catch(() => null);
-  }
-
-  // Credit instructor wallet
-  await creditInstructorWallet({
-    id:                order.id,
-    courseId:          order.courseId,
-    instructorRevenue,
-    saleSource:        order.saleSource,
-    instructorPercent: instructorPct,
-  });
-
-  // Write purchase ledger entries
-  if (order.courseId && order.course) {
-    await createPurchaseLedgerEntries(
-      order.id, userId, order.courseId,
-      paidAmount, instructorRevenue, platformRevenue,
-      order.course.title
-    ).catch(console.error);
-  }
-
-  await createNotification({
-    data: {
-      userId,
-      title: `Enrolled in "${order.course!.title}"`,
-      body:  "Your payment was successful. Start learning now!",
-      type:  "PURCHASE",
-      link:  `/courses/${order.course!.id}`,
-    },
-  });
-
-  if (order.user && order.course) {
-    sendPurchaseEmail(
-      order.user.email, order.user.name,
-      order.course.title, order.amount.toString(), order.course.id
-    ).catch(console.error);
-  }
-
-  return { success: true, courseId: order.courseId };
-}
-
-// ─── Create Stripe Checkout Session for feature add-ons ──────────────────────
-
-export async function createFeatureCheckoutSession(userId: string, featureId: string) {
-  const [user, feature] = await Promise.all([
-    prisma.user.findUnique({
-      where:  { id: userId },
-      select: { id: true, email: true, name: true },
-    }),
-    prisma.platformFeature.findFirst({
-      where:  { OR: [{ id: featureId }, { slug: featureId }] },
-      select: { id: true, name: true, slug: true, price: true, isActive: true },
-    }),
-  ]);
-
-  if (!user)    throw new Error("User not found");
-  if (!feature) throw new Error("Feature not found");
-  if (!feature.isActive) throw new Error("This feature is not currently available");
-
-  const existing = await prisma.featurePurchase.findUnique({
-    where: { userId_featureId: { userId, featureId: feature.id } },
-  });
-  if (existing) throw new Error("You already have access to this feature");
-
-  const amount = Number(feature.price);
-
-  const order = await prisma.order.create({
-    data: {
-      userId,
-      featureId:        feature.id,
-      amount,
-      currency:         "INR",
-      status:           "PENDING",
-      instructorRevenue: 0,
-      platformRevenue:   amount,
-    },
-  });
-
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
-  const stripe  = getStripe();
-
-  const session = await stripe.checkout.sessions.create({
-    mode:                 "payment",
-    customer_email:       user.email,
-    payment_intent_data:  { description: `Platform add-on: ${feature.name}` },
-    line_items: [{
-      price_data: {
-        currency:     "inr",
-        unit_amount:  Math.round(amount * 100),
-        product_data: { name: feature.name },
-      },
-      quantity: 1,
-    }],
-    metadata:    { orderId: order.id, featureId: feature.id, userId, type: "feature" },
-    success_url: `${appUrl}/checkout/success?type=feature&slug=${feature.slug}&session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url:  `${appUrl}/checkout/cancel?type=feature&slug=${feature.slug}`,
-  });
-
-  await prisma.order.update({
-    where: { id: order.id },
-    data:  { stripeSessionId: session.id },
-  });
-
-  return { orderId: order.id, sessionId: session.id, url: session.url };
-}
-
-// ─── Handle successful payment (called from webhook / verify endpoint) ────────
-
-export async function handlePaymentSuccess(sessionId: string, paymentIntentId: string) {
-  const order = await prisma.order.findFirst({
-    where: { stripeSessionId: sessionId },
-    include: {
-      user:   { select: { email: true, name: true } },
-      course: { select: { id: true, title: true, instructorRevenuePercent: true } },
-    },
-  });
-  if (!order) throw new Error("Order not found for session");
-  if (order.status === "PAID") return { success: true, courseId: order.courseId };
-
-  if (order.featureId) {
-    await handleFeaturePaymentSuccess(order.id, paymentIntentId);
+    await handleFeaturePaymentSuccess(order.id, razorpayPaymentId);
     return { success: true, courseId: null };
   }
 
   const userId     = order.userId;
   const paidAmount = Number(order.amount);
 
-  // Use stored split (set at order creation); fall back to course setting
   const instructorPct     = Number(order.instructorPercent ?? order.course?.instructorRevenuePercent ?? 70);
   const instructorRevenue = parseFloat(((paidAmount * instructorPct) / 100).toFixed(2));
   const platformRevenue   = parseFloat((paidAmount - instructorRevenue).toFixed(2));
 
   await prisma.order.update({
     where: { id: order.id },
-    data: { status: "PAID", stripePaymentId: paymentIntentId, instructorRevenue, platformRevenue },
+    data:  { status: "PAID", razorpayPaymentId, instructorRevenue, platformRevenue },
   });
 
   await prisma.enrollment.upsert({
@@ -501,7 +350,6 @@ export async function handlePaymentSuccess(sessionId: string, paymentIntentId: s
     });
   }
 
-  // Count referral conversion
   if (order.referralLinkId) {
     await prisma.referralLink.update({
       where: { id: order.referralLinkId },
@@ -509,7 +357,6 @@ export async function handlePaymentSuccess(sessionId: string, paymentIntentId: s
     }).catch(() => null);
   }
 
-  // Credit instructor wallet
   await creditInstructorWallet({
     id:                order.id,
     courseId:          order.courseId,
@@ -518,7 +365,6 @@ export async function handlePaymentSuccess(sessionId: string, paymentIntentId: s
     instructorPercent: instructorPct,
   });
 
-  // Write purchase ledger entries
   if (order.courseId && order.course) {
     await createPurchaseLedgerEntries(
       order.id, userId, order.courseId,

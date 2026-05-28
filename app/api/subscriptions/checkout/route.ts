@@ -1,6 +1,6 @@
 /**
  * POST /api/subscriptions/checkout
- * Creates a Stripe Subscription Checkout Session.
+ * Stub — subscription plans removed. Returns 410.
  * Body: { plan: "BASIC" | "PRO" | "ENTERPRISE", billing: "monthly" | "yearly" }
  * Returns: { url: string }
  */

@@ -1,6 +1,6 @@
 /**
  * /checkout/feature/[slug]
- * Redirects to Stripe Checkout (hosted page) supporting UPI + cards.
+ * In-app feature checkout using Razorpay Custom Checkout.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";

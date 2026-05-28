@@ -21,7 +21,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       where:   { id },
       include: {
         course: { select: { id: true, title: true, thumbnail: true } },
-        order:  { select: { id: true, amount: true, createdAt: true, stripePaymentId: true } },
+        order:  { select: { id: true, amount: true, createdAt: true, razorpayPaymentId: true } },
         admin:  { select: { name: true } },
       },
     });
@@ -50,7 +50,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
         reason:          rr.reason,
         adminNotes:      rr.adminNotes,
         adminName:       rr.admin?.name ?? null,
-        stripeRefundId:  rr.stripeRefundId,
+        razorpayRefundId: rr.razorpayRefundId,
         requestedAt:     rr.requestedAt,
         reviewedAt:      rr.reviewedAt,
         processedAt:     rr.processedAt,

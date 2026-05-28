@@ -1,6 +1,6 @@
 /**
  * POST /api/subscriptions/cancel
- * Sets cancel_at_period_end=true on Stripe. Access is preserved until the period ends.
+ * Stub — subscription plans removed. Returns 410.
  * Returns the updated subscription record so the UI can display the accurate end date.
  */
 import { NextResponse } from "next/server";

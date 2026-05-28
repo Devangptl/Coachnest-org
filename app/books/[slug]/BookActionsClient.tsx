@@ -111,7 +111,7 @@ export default function BookActionsClient({ bookId, owned, isFree, loggedIn }: P
         {!loggedIn ? "Sign in to buy" : "Add to Cart"}
       </button>
       <p className="text-center text-[11px] text-muted-foreground">
-        🔒 Secure checkout via Stripe · Lifetime download
+        🔒 Secure checkout via Razorpay · Lifetime download
       </p>
       {feedback && (
         <p className={feedback.kind === "err" ? "text-xs text-red-400" : "text-xs text-green-500"}>

@@ -1,6 +1,6 @@
 /**
  * POST /api/subscriptions/portal
- * Creates a Stripe Customer Portal session for managing billing.
+ * Stub — subscription plans removed. Returns 410.
  * Returns: { url: string }
  */
 import { NextResponse } from "next/server";

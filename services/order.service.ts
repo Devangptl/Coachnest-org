@@ -128,8 +128,7 @@ export async function getOrderDetails(orderId: string) {
     couponDiscount: order.coupon?.discount ? Number(order.coupon.discount) : null,
     couponDiscountType: order.coupon?.discountType,
     discountAmount: Number(order.discountAmount || 0),
-    stripeSessionId: order.stripeSessionId,
-    stripePaymentId: order.stripePaymentId,
+    razorpayPaymentId: order.razorpayPaymentId,
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
   };

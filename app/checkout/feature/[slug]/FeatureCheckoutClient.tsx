@@ -1,53 +1,16 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
-import {
-  Elements, PaymentElement,
-  useStripe, useElements,
-} from "@stripe/react-stripe-js";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock, ArrowLeft, Loader2, ShieldCheck,
-  CheckCircle2, ChevronRight, Package, Users, Smartphone,
+  CheckCircle2, ChevronRight, Package, Users,
 } from "lucide-react";
 import Link from "next/link";
-import { stripePromise } from "@/lib/stripe-client";
-
-// ── Stripe appearance (mirrors StripeProvider) ────────────────────────────────
-
-const APPEARANCE_DARK = {
-  theme:     "night" as const,
-  variables: {
-    colorPrimary:    "#d4703f",
-    colorBackground: "#0d0d0d",
-    colorText:       "#e2e8f0",
-    colorDanger:     "#ef4444",
-    fontFamily:      "system-ui, sans-serif",
-    borderRadius:    "8px",
-    spacingUnit:     "4px",
-  },
-  rules: {
-    ".Input": { backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" },
-    ".Input:focus": { border: "1px solid #d4703f", boxShadow: "0 0 0 2px rgba(212,112,63,0.15)" },
-  },
-};
-
-const APPEARANCE_LIGHT = {
-  theme:     "flat" as const,
-  variables: {
-    colorPrimary:    "#d4703f",
-    colorBackground: "#fdf9f5",
-    colorText:       "#1c1411",
-    colorDanger:     "#ef4444",
-    fontFamily:      "system-ui, sans-serif",
-    borderRadius:    "8px",
-    spacingUnit:     "4px",
-  },
-  rules: {
-    ".Input": { backgroundColor: "#f0ece6", border: "1px solid #ddd5c9" },
-    ".Input:focus": { border: "1px solid #d4703f", boxShadow: "0 0 0 2px rgba(212,112,63,0.15)" },
-  },
-};
+import RazorpayCustomForm, {
+  type RazorpayOrderInfo,
+} from "@/components/checkout/RazorpayCustomForm";
+import type { RazorpaySuccessResponse } from "@/types/razorpay";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -64,339 +27,130 @@ const FEATURE_ICON: Record<string, React.ElementType> = {
   community: Users,
 };
 
-// ── Card payment form (inside Elements context) ───────────────────────────────
-
-function CardPaymentForm({
-  featureSlug,
-  amount,
-  onBack,
-}: {
-  featureSlug: string;
-  amount:      number;
-  onBack:      () => void;
-}) {
-  const stripe   = useStripe();
-  const elements = useElements();
-  const router   = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!stripe || !elements) return;
-    setError(null);
-    setLoading(true);
-
-    try {
-      const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
-      const returnUrl = `${appUrl}/checkout/success?type=feature&slug=${featureSlug}`;
-
-      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
-        elements,
-        confirmParams: { return_url: returnUrl },
-        redirect:      "if_required",
-      });
-
-      if (confirmError) throw new Error(confirmError.message);
-
-      if (paymentIntent?.status === "succeeded" || paymentIntent?.status === "processing") {
-        const res  = await fetch("/api/payments/confirm-feature-access", {
-          method:  "POST",
-          headers: { "Content-Type": "application/json" },
-          body:    JSON.stringify({ paymentIntentId: paymentIntent.id }),
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error ?? "Feature access confirmation failed");
-        router.push(`/features/${featureSlug}?success=true`);
-      }
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Payment failed. Please try again.");
-      setLoading(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      <PaymentElement options={{ layout: "tabs" }} />
-      {error && (
-        <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
-          <span className="flex-shrink-0 mt-0.5">⚠</span>
-          {error}
-        </div>
-      )}
-      <div className="flex gap-3 pt-1">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-3 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all disabled:opacity-40"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <button
-          type="submit"
-          disabled={!stripe || loading}
-          className="flex-1 btn-primary py-3 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Processing…</>
-          ) : (
-            <><Lock className="w-4 h-4" /> Pay ₹{amount.toLocaleString("en-IN")}</>
-          )}
-        </button>
-      </div>
-    </form>
-  );
-}
-
-// ── UPI payment form (inside Elements context) ────────────────────────────────
-
-function UpiPaymentForm({
-  clientSecret,
-  featureSlug,
-  amount,
-  onBack,
-}: {
-  clientSecret: string;
-  featureSlug:  string;
-  amount:       number;
-  onBack:       () => void;
-}) {
-  const stripe  = useStripe();
-  const [upiId,   setUpiId]   = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
-
-  const isValidVpa = /^[a-zA-Z0-9._-]{2,}@[a-zA-Z]{3,}$/.test(upiId.trim());
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault();
-    if (!stripe || !isValidVpa) return;
-    setError(null);
-    setLoading(true);
-
-    const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? window.location.origin;
-    const returnUrl = `${appUrl}/checkout/success?type=feature&slug=${featureSlug}`;
-
-    // confirmUpiPayment is the documented Stripe API for UPI collect flow.
-    // @stripe/stripe-js v9 types omit it, but the Stripe.js runtime still supports it.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: stripeError } = await (stripe as any).confirmUpiPayment(clientSecret, {
-      payment_method: { upi: { vpa: upiId.trim() } },
-      return_url:     returnUrl,
-    });
-
-    if (stripeError) {
-      setError(stripeError.message ?? "Payment request failed. Check your UPI ID and try again.");
-      setLoading(false);
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-5">
-      {/* UPI ID input */}
-      <div>
-        <label className="block text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-          UPI ID
-        </label>
-        <div className="relative">
-          <Smartphone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/50 pointer-events-none" />
-          <input
-            type="text"
-            value={upiId}
-            onChange={(e) => { setUpiId(e.target.value); setError(null); }}
-            placeholder="yourname@bank"
-            autoComplete="off"
-            spellCheck={false}
-            className="w-full pl-10 pr-3.5 py-3 bg-secondary/30 border border-border rounded-lg text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/10 transition-all"
-          />
-        </div>
-        <p className="mt-1.5 text-[11px] text-muted-foreground/70">
-          e.g.&nbsp; name@paytm &nbsp;·&nbsp; 9876543210@ybl &nbsp;·&nbsp; user@okaxis
-        </p>
-      </div>
-
-      {/* Supported apps */}
-      <div>
-        <p className="text-xs font-medium text-muted-foreground mb-2">Supported apps</p>
-        <div className="flex flex-wrap gap-2">
-          {["Google Pay", "PhonePe", "Paytm", "BHIM", "Amazon Pay"].map((app) => (
-            <span
-              key={app}
-              className="px-2.5 py-1 rounded-full bg-secondary/50 border border-border text-[11px] text-muted-foreground"
-            >
-              {app}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Info */}
-      <div className="rounded-lg bg-blue-500/8 border border-blue-500/20 px-4 py-3 text-xs text-blue-600 dark:text-blue-400 flex items-start gap-2">
-        <span className="mt-0.5 flex-shrink-0">ℹ️</span>
-        <span>
-          After clicking Pay, a collect request will be sent to your UPI app.
-          Open your app and approve the payment to complete your purchase.
-        </span>
-      </div>
-
-      {error && (
-        <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
-          <span className="flex-shrink-0 mt-0.5">⚠</span>
-          {error}
-        </div>
-      )}
-
-      <div className="flex gap-3 pt-1">
-        <button
-          type="button"
-          onClick={onBack}
-          disabled={loading}
-          className="flex items-center gap-1.5 px-4 py-3 rounded-lg border border-border text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/60 transition-all disabled:opacity-40"
-        >
-          <ArrowLeft className="w-4 h-4" /> Back
-        </button>
-        <button
-          type="submit"
-          disabled={!stripe || !isValidVpa || loading}
-          className="flex-1 btn-primary py-3 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-        >
-          {loading ? (
-            <><Loader2 className="w-4 h-4 animate-spin" /> Sending request…</>
-          ) : (
-            <><Smartphone className="w-4 h-4" /> Pay ₹{amount.toLocaleString("en-IN")} via UPI</>
-          )}
-        </button>
-      </div>
-    </form>
-  );
-}
+type Phase = "summary" | "payment";
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function FeatureCheckoutClient({
   featureId, featureName, featureSlug, description, price, includes,
 }: Props) {
-  const [phase,          setPhase]          = useState<"summary" | "payment">("summary");
-  const [selectedMethod, setSelectedMethod] = useState<"card" | "upi">("card");
-  const [clientSecret,   setClientSecret]   = useState<string | null>(null);
-  const [initiating,     setInitiating]     = useState(false);
-  const [error,          setError]          = useState<string | null>(null);
+  const router = useRouter();
 
-  // Theme detection for Stripe appearance
-  const [isDark, setIsDark] = useState(true);
-  useEffect(() => {
-    const update = () => setIsDark(!document.documentElement.classList.contains("light"));
-    update();
-    const obs = new MutationObserver(update);
-    obs.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
-    return () => obs.disconnect();
-  }, []);
-  const appearance = isDark ? APPEARANCE_DARK : APPEARANCE_LIGHT;
+  const [phase,      setPhase]      = useState<Phase>("summary");
+  const [orderInfo,  setOrderInfo]  = useState<RazorpayOrderInfo | null>(null);
+  const [proceeding, setProceeding] = useState(false);
+  const [error,      setError]      = useState<string | null>(null);
 
-  async function handleProceedToPayment() {
+  const FeatureIcon = FEATURE_ICON[featureSlug] ?? Package;
+
+  // ── Proceed to payment (Phase 1 → Phase 2) ─────────────────────────────────
+
+  async function handleProceed() {
     setError(null);
-    setInitiating(true);
+    setProceeding(true);
     try {
-      const res  = await fetch("/api/payments/create-feature-payment-intent", {
+      const res  = await fetch("/api/razorpay/create-order", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ featureId, paymentMethodType: selectedMethod }),
+        body:    JSON.stringify({ type: "feature", featureId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error ?? "Failed to initialize payment");
-      setClientSecret(data.clientSecret);
+      if (!res.ok) throw new Error(data.error ?? "Failed to create order");
+
+      setOrderInfo({
+        razorpayOrderId: data.razorpayOrderId,
+        dbOrderId:       data.dbOrderId,
+        amount:          data.amount,
+        currency:        data.currency ?? "INR",
+        key:             data.key,
+        type:            "feature",
+      });
       setPhase("payment");
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     } finally {
-      setInitiating(false);
+      setProceeding(false);
     }
   }
 
-  const FeatureIcon = FEATURE_ICON[featureSlug] ?? Package;
+  // ── Verify payment and redirect (Phase 2 success) ─────────────────────────
 
-  // ── Payment phase ──────────────────────────────────────────────────────────
-  if (phase === "payment" && clientSecret) {
+  async function handlePaymentSuccess(response: RazorpaySuccessResponse) {
+    if (!orderInfo) throw new Error("Order info missing");
+    const vRes  = await fetch("/api/razorpay/verify-payment", {
+      method:  "POST",
+      headers: { "Content-Type": "application/json" },
+      body:    JSON.stringify({
+        type:              "feature",
+        razorpayOrderId:   response.razorpay_order_id,
+        razorpayPaymentId: response.razorpay_payment_id,
+        razorpaySignature: response.razorpay_signature,
+        dbOrderId:         orderInfo.dbOrderId,
+      }),
+    });
+    const vData = await vRes.json();
+    if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
+    router.push(`/features/${featureSlug}?success=true`);
+  }
+
+  // ── Phase 2: Payment form ───────────────────────────────────────────────────
+
+  if (phase === "payment" && orderInfo) {
     return (
       <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
-
-        {/* Left: condensed feature summary */}
+        {/* Left: compact feature summary */}
         <div className="lg:col-span-2 space-y-4">
-          <div className="rounded-md border border-border bg-card p-5 space-y-4">
+          <button
+            type="button"
+            onClick={() => setPhase("summary")}
+            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" /> Back to order summary
+          </button>
+
+          <div className="rounded-md border border-border bg-card p-4 space-y-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <FeatureIcon className="w-5 h-5 text-primary" />
+              <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                <FeatureIcon className="w-4.5 h-4.5 text-primary" />
               </div>
               <div>
-                <h3 className="font-bold text-foreground text-base">{featureName}</h3>
-                <p className="text-xs text-muted-foreground">One-time purchase · Lifetime access</p>
+                <h3 className="font-bold text-foreground text-sm">{featureName}</h3>
+                <p className="text-xs text-muted-foreground">One-time · Lifetime access</p>
               </div>
             </div>
-            {description && <p className="text-sm text-muted-foreground">{description}</p>}
           </div>
 
           <div className="rounded-md border border-border bg-secondary/30 p-4 text-sm">
             <div className="flex items-center justify-between font-bold text-foreground">
-              <span>Total today</span>
+              <span>Total</span>
               <span>₹{price.toLocaleString("en-IN")}</span>
             </div>
           </div>
-
-          <div className="flex flex-col gap-2">
-            {[
-              { icon: Lock,        text: "256-bit SSL encryption" },
-              { icon: ShieldCheck, text: "Secured & PCI-compliant via Stripe" },
-            ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-2.5 text-xs text-muted-foreground">
-                <Icon className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
-                {text}
-              </div>
-            ))}
-          </div>
         </div>
 
-        {/* Right: card or UPI form */}
+        {/* Right: custom payment form */}
         <div className="lg:col-span-3">
-          <div className="rounded-md border border-border bg-card p-6 sm:p-8">
-            <h2 className="text-lg font-bold text-foreground mb-1">
-              {selectedMethod === "upi" ? "Pay via UPI" : "Complete payment"}
-            </h2>
-            <p className="text-sm text-muted-foreground mb-6">
-              {selectedMethod === "upi"
-                ? "Enter your UPI ID to receive a payment request on your phone."
-                : "Choose your payment method and enter your details below."}
-            </p>
-
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
-              {selectedMethod === "upi" ? (
-                <UpiPaymentForm
-                  clientSecret={clientSecret}
-                  featureSlug={featureSlug}
-                  amount={price}
-                  onBack={() => setPhase("summary")}
-                />
-              ) : (
-                <CardPaymentForm
-                  featureSlug={featureSlug}
-                  amount={price}
-                  onBack={() => setPhase("summary")}
-                />
-              )}
-            </Elements>
-          </div>
-
-          <p className="mt-3 text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3.5 h-3.5" />
-            Encrypted and processed by Stripe. We never store card details.
-          </p>
+          <RazorpayCustomForm
+            orderInfo={orderInfo}
+            description={`${featureName} — Platform Add-on`}
+            onSuccess={handlePaymentSuccess}
+            onUpiSuccess={async () => router.push(`/features/${featureSlug}?success=true`)}
+            onError={(msg) => setError(msg)}
+            onBack={() => setPhase("summary")}
+          />
+          {error && (
+            <div className="mt-3 flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3">
+              <span className="flex-shrink-0 mt-0.5">⚠</span>
+              {error}
+            </div>
+          )}
         </div>
-
       </div>
     );
   }
 
-  // ── Summary phase ──────────────────────────────────────────────────────────
+  // ── Phase 1: Order summary + proceed button ─────────────────────────────────
+
   return (
     <div className="grid lg:grid-cols-5 gap-8 lg:gap-12 items-start">
 
@@ -450,7 +204,7 @@ export default function FeatureCheckoutClient({
         <div className="flex flex-col gap-2">
           {[
             { icon: Lock,        text: "256-bit SSL encryption" },
-            { icon: ShieldCheck, text: "Secured & PCI-compliant via Stripe" },
+            { icon: ShieldCheck, text: "Secured by Razorpay" },
           ].map(({ icon: Icon, text }) => (
             <div key={text} className="flex items-center gap-2.5 text-xs text-muted-foreground">
               <Icon className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
@@ -460,34 +214,27 @@ export default function FeatureCheckoutClient({
         </div>
       </div>
 
-      {/* Right: selectable payment method tiles + proceed button */}
+      {/* Right: payment method preview + proceed */}
       <div className="lg:col-span-3">
         <div className="rounded-md border border-border bg-card p-6 sm:p-8">
-          <h2 className="text-lg font-bold text-foreground mb-1">Choose payment method</h2>
+          <h2 className="text-lg font-bold text-foreground mb-1">Complete your purchase</h2>
           <p className="text-sm text-muted-foreground mb-6">
-            Select how you&apos;d like to pay and continue to enter your details.
+            Pay with Card or UPI — entire checkout stays on this page.
           </p>
 
-          {/* Selectable payment method tiles */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
-            {([
-              { value: "card", label: "Card", sub: "Visa · Mastercard · Amex",     icon: "💳" },
-              { value: "upi",  label: "UPI",  sub: "Google Pay · PhonePe · Paytm", icon: "📲" },
-            ] as const).map((pm) => (
-              <button
-                key={pm.value}
-                type="button"
-                onClick={() => setSelectedMethod(pm.value)}
-                className={`flex flex-col items-center gap-2 rounded-md border p-4 text-center transition-all ${
-                  selectedMethod === pm.value
-                    ? "border-primary bg-primary/5 ring-1 ring-primary/30"
-                    : "border-border bg-secondary/30 hover:border-border/60 hover:bg-secondary/50"
-                }`}
+          {/* Payment method pills */}
+          <div className="grid grid-cols-3 gap-3 mb-6">
+            {[
+              { label: "Card",        sub: "Visa · MC · RuPay" },
+              { label: "UPI",         sub: "GPay · PhonePe · Paytm" },
+            ].map(({ label, sub }) => (
+              <div
+                key={label}
+                className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border bg-secondary/30 text-center"
               >
-                <span className="text-2xl">{pm.icon}</span>
-                <span className="text-sm font-semibold text-foreground">{pm.label}</span>
-                <span className="text-[11px] text-muted-foreground leading-tight">{pm.sub}</span>
-              </button>
+                <span className="text-xs font-semibold text-foreground">{label}</span>
+                <span className="text-[10px] text-muted-foreground">{sub}</span>
+              </div>
             ))}
           </div>
 
@@ -499,34 +246,23 @@ export default function FeatureCheckoutClient({
           )}
 
           <button
-            onClick={handleProceedToPayment}
-            disabled={initiating}
+            onClick={handleProceed}
+            disabled={proceeding}
             className="w-full btn-primary py-3.5 text-base font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
-            {initiating ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Preparing payment…</>
+            {proceeding ? (
+              <><Loader2 className="w-4 h-4 animate-spin" /> Preparing checkout…</>
             ) : (
               <><Lock className="w-4 h-4" />
-                Pay ₹{price.toLocaleString("en-IN")}
+                Proceed to Pay ₹{price.toLocaleString("en-IN")}
                 <ChevronRight className="w-4 h-4" /></>
             )}
           </button>
 
           <p className="mt-4 text-center text-xs text-muted-foreground/60 flex items-center justify-center gap-1.5">
             <ShieldCheck className="w-3.5 h-3.5" />
-            Encrypted and processed by Stripe. We never store card details.
+            Powered by Razorpay · Cards · UPI
           </p>
-
-          <div className="mt-5 flex items-center justify-center gap-3 flex-wrap">
-            {["VISA", "Mastercard", "Amex", "UPI", "RuPay"].map((brand) => (
-              <span
-                key={brand}
-                className="px-2 py-1 rounded border border-border text-[10px] font-bold text-muted-foreground bg-secondary/50 tracking-wide"
-              >
-                {brand}
-              </span>
-            ))}
-          </div>
         </div>
       </div>
 

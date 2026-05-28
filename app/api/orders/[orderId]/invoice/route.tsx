@@ -67,7 +67,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
       originalAmount:  originalPrice,
       currency:        order.currency,
       couponCode:      order.coupon?.code ?? null,
-      stripePaymentId: order.stripePaymentId,
+      razorpayPaymentId: order.razorpayPaymentId,
       createdAt:       order.createdAt,
     };
 

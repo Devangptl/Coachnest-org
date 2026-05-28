@@ -1,7 +1,6 @@
 /**
  * EnrollButton — Client Component for enrolling in a course.
- * Handles: free enrollment and paid Stripe checkout.
- * Plan functionality (BASIC, PRO, ENTERPRISE) has been removed.
+ * Handles: free enrollment and paid checkout via Razorpay.
  */
 "use client";
 
@@ -95,7 +94,7 @@ export default function EnrollButton({
     if (enrolled || loading) return;
 
     if (!isFree && price) {
-      // Redirect to in-app checkout — no Stripe redirect
+      // Redirect to in-app Razorpay checkout
       const params = new URLSearchParams();
       if (appliedCoupon?.code) params.set("coupon", appliedCoupon.code);
       router.push(`/checkout/course/${courseId}${params.size ? `?${params}` : ""}`);

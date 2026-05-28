@@ -32,7 +32,7 @@ interface RefundRequest {
   reason:           string | null;
   adminNotes:       string | null;
   admin:            { name: string } | null;
-  stripeRefundId:   string | null;
+  razorpayRefundId: string | null;
   requestedAt:      string;
   reviewedAt:       string | null;
   processedAt:      string | null;
@@ -155,7 +155,7 @@ function ActionModal({
 
         {isApprove && (
           <div className="p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg text-xs text-amber-400">
-            This will immediately issue a Stripe refund, revoke course access, and debit the instructor wallet.
+            This will immediately issue a Razorpay refund, revoke course access, and debit the instructor wallet.
           </div>
         )}
 
@@ -357,10 +357,10 @@ function RefundRow({
                     <span className="text-muted-foreground">Sale source</span>
                     <span className="text-foreground">{req.saleSource}</span>
                   </div>
-                  {req.stripeRefundId && (
+                  {req.razorpayRefundId && (
                     <div className="flex justify-between text-xs">
-                      <span className="text-muted-foreground">Stripe refund</span>
-                      <code className="text-blue-400 font-mono">{req.stripeRefundId}</code>
+                      <span className="text-muted-foreground">Razorpay refund</span>
+                      <code className="text-blue-400 font-mono">{req.razorpayRefundId}</code>
                     </div>
                   )}
                 </div>

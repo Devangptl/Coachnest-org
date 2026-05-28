@@ -101,10 +101,10 @@ enum JoinRequestStatus {
 
 enum RefundStatus {
   PENDING    // Student submitted, awaiting admin review
-  PROCESSING // Stripe refund in flight
-  PROCESSED  // Fully complete — Stripe refunded, enrollment revoked, wallet debited
+  PROCESSING // Razorpay refund in flight
+  PROCESSED  // Fully complete — refunded, enrollment revoked, wallet debited
   REJECTED   // Admin rejected the request
-  FAILED     // Stripe refund failed after approval
+  FAILED     // Razorpay refund failed after approval
 }
 
 enum LedgerEntryType {
@@ -209,9 +209,6 @@ model User {
   gameProfile    UserGameProfile?
   userBadges     UserBadge[]
   xpEvents       XpEvent[]
-
-  // Stripe
-  stripeCustomerId String? @unique
 
   // Tour Flags
   hasSeenTour          Boolean  @default(false)
@@ -534,8 +531,9 @@ model Order {
   amount            Decimal     @db.Decimal(10, 2)
   currency          String      @default("INR")
   status            OrderStatus @default(PENDING)
-  stripeSessionId   String?     @unique
-  stripePaymentId   String?     @unique
+  // Razorpay payment fields
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
   couponId          String?
   discountAmount    Decimal?    @db.Decimal(10, 2)
   // Revenue attribution (populated on PAID status)
@@ -1119,11 +1117,11 @@ model RefundRequest {
   adminNotes      String?      @db.Text  // admin review notes
   adminId         String?               // who approved/rejected
 
-  stripeRefundId  String?      @unique  // Stripe refund object ID (set on PROCESSED)
+  razorpayRefundId String?     @unique  // Razorpay refund ID (set on PROCESSED)
 
   requestedAt     DateTime     @default(now())
   reviewedAt      DateTime?    // when admin acted
-  processedAt     DateTime?    // when Stripe refund completed
+  processedAt     DateTime?    // when refund completed
 
   order  Order  @relation(fields: [orderId],   references: [id])
   user   User   @relation(fields: [userId],    references: [id])
@@ -1200,6 +1198,11 @@ model PayoutRequest {
   adminNotes   String?      @db.Text // admin notes on approve/reject
   requestedAt  DateTime     @default(now())
   processedAt  DateTime?
+
+  // Razorpay Route tracking
+  razorpayLinkedAccountId String?        // Route linked account (acc_xxx) — reused across requests
+  razorpayTransferId      String? @unique // Route transfer ID (trf_xxx)
+  razorpayTransferStatus  String?        // pending | on_hold | settled
 
   wallet     InstructorWallet @relation(fields: [walletId], references: [id])
   instructor User             @relation(fields: [instructorId], references: [id])
@@ -1803,15 +1806,16 @@ model CartItem {
 }
 
 model BookOrder {
-  id              String      @id @default(cuid())
-  userId          String
-  amount          Decimal     @db.Decimal(10, 2)
-  subtotal        Decimal     @db.Decimal(10, 2)
-  currency        String      @default("INR")
-  status          OrderStatus @default(PENDING)
-  stripeSessionId String?     @unique
-  stripePaymentId String?     @unique
-  couponId        String?
+  id                String      @id @default(cuid())
+  userId            String
+  amount            Decimal     @db.Decimal(10, 2)
+  subtotal          Decimal     @db.Decimal(10, 2)
+  currency          String      @default("INR")
+  status            OrderStatus @default(PENDING)
+  // Razorpay payment fields
+  razorpayOrderId   String?     @unique
+  razorpayPaymentId String?     @unique
+  couponId          String?
   discountAmount  Decimal?    @db.Decimal(10, 2)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

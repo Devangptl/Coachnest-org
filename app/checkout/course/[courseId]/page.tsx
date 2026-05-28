@@ -1,6 +1,6 @@
 /**
  * /checkout/course/[courseId]?coupon=CODE
- * Redirects to Stripe Checkout (hosted page) supporting UPI + cards.
+ * In-app course checkout using Razorpay Custom Checkout.
  */
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";

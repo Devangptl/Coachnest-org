@@ -73,6 +73,7 @@ export default function PayoutsPage() {
   const [bankAccount, setBankAccount] = useState("");
   const [bankIfsc,    setBankIfsc]    = useState("");
   const [bankName,    setBankName]    = useState("");
+  const [bankPan,     setBankPan]     = useState("");
   const [payNotes,    setPayNotes]    = useState("");
   const [submitting,  setSubmitting]  = useState(false);
   const [payError,    setPayError]    = useState("");
@@ -119,14 +120,14 @@ export default function PayoutsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           amount: Number(amount),
-          bankDetails: { accountHolder: bankHolder, accountNumber: bankAccount, ifsc: bankIfsc, bankName },
+          bankDetails: { accountHolder: bankHolder, accountNumber: bankAccount, ifsc: bankIfsc, bankName, pan: bankPan.toUpperCase() },
           notes: payNotes,
         }),
       });
       const data = await res.json();
       if (!res.ok) { setPayError(data.error); return; }
       setPaySuccess("Payout request submitted! We'll process it within 7 business days.");
-      setAmount(""); setBankHolder(""); setBankAccount(""); setBankIfsc(""); setBankName(""); setPayNotes("");
+      setAmount(""); setBankHolder(""); setBankAccount(""); setBankIfsc(""); setBankName(""); setBankPan(""); setPayNotes("");
       loadAll();
     } finally {
       setSubmitting(false);
@@ -258,6 +259,19 @@ export default function PayoutsPage() {
                   <input required value={bankIfsc} onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
                     className="input-glass w-full" placeholder="SBIN0001234" disabled={hasPending} />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs text-muted-foreground mb-1 block">PAN Number *</label>
+                <input required value={bankPan}
+                  onChange={(e) => setBankPan(e.target.value.toUpperCase())}
+                  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                  maxLength={10}
+                  className="input-glass w-full" placeholder="ABCDE1234F"
+                  disabled={hasPending} />
+                <p className="text-xs text-muted-foreground/60 mt-1">
+                  Required for Razorpay Route KYC and income tax compliance.
+                </p>
               </div>
 
               <div>

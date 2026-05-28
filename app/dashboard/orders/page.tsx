@@ -54,8 +54,8 @@ async function getUserOrders(userId: string) {
     status:           order.status,
     couponCode:       order.coupon?.code ?? null,
     discountAmount:   Number(order.discountAmount || 0),
-    stripePaymentId:  order.stripePaymentId,
-    hasRefundRequest: refundByOrderId.has(order.id),
+    razorpayPaymentId: order.razorpayPaymentId,
+    hasRefundRequest:  refundByOrderId.has(order.id),
     refundStatus:     refundByOrderId.get(order.id) ?? null,
     createdAt:        order.createdAt,
   }));
@@ -80,8 +80,8 @@ async function getUserOrders(userId: string) {
       status:           bo.status,
       couponCode:       bo.coupon?.code ?? null,
       discountAmount:   Number(bo.discountAmount || 0),
-      stripePaymentId:  bo.stripePaymentId,
-      hasRefundRequest: false,
+      razorpayPaymentId: bo.razorpayPaymentId,
+      hasRefundRequest:  false,
       refundStatus:     null,
       createdAt:        bo.createdAt,
     };

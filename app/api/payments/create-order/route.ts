@@ -1,11 +1,13 @@
 /**
  * POST /api/payments/create-order
- * Creates a Stripe Checkout Session for a course purchase.
- * Body: { courseId, couponCode? }
+ * @deprecated Use /api/razorpay/create-order instead.
+ *
+ * Creates a Razorpay order for a course purchase.
+ * Body: { courseId, couponCode?, referralCode? }
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { createCheckoutSession } from "@/services/payment.service";
+import { createCourseRazorpayOrder } from "@/services/payment.service";
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,21 +17,14 @@ export async function POST(req: NextRequest) {
 
     const { courseId, couponCode, referralCode } = await req.json();
     if (!courseId)
-      return NextResponse.json(
-        { error: "courseId is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "courseId is required" }, { status: 400 });
 
-    const result = await createCheckoutSession(
-      session.userId,
-      courseId,
-      couponCode,
-      referralCode
+    const result = await createCourseRazorpayOrder(
+      session.userId, courseId, couponCode, referralCode
     );
-    return NextResponse.json(result);
+    return NextResponse.json({ ...result, key: process.env.RAZORPAY_KEY_ID });
   } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Internal server error";
+    const message = err instanceof Error ? err.message : "Internal server error";
     return NextResponse.json({ error: message }, { status: 400 });
   }
 }

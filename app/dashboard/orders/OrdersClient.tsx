@@ -40,7 +40,7 @@ interface Order {
   status:          string;
   couponCode:      string | null;
   discountAmount:  number;
-  stripePaymentId: string | null;
+  razorpayPaymentId: string | null;
   hasRefundRequest: boolean;   // already has a pending/processed refund
   refundStatus:    string | null;
   createdAt:       string | Date;
@@ -141,9 +141,9 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
                 {order.couponCode && (
                   <span className="text-[#d97757] text-xs">Coupon: {order.couponCode}</span>
                 )}
-                {order.stripePaymentId && (
+                {order.razorpayPaymentId && (
                   <span className="text-muted-foreground/50 text-xs font-mono">
-                    #{order.stripePaymentId.slice(-8)}
+                    #{order.razorpayPaymentId.slice(-8)}
                   </span>
                 )}
                 {/* Refund request status badge */}
