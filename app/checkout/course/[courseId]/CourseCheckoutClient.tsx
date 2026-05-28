@@ -202,7 +202,6 @@ export default function CourseCheckoutClient({
             orderInfo={orderInfo}
             description={courseName}
             onSuccess={handlePaymentSuccess}
-            onUpiSuccess={async () => router.push(`/courses/${courseId}?enrolled=true`)}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />
