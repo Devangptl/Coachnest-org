@@ -72,7 +72,7 @@ async function rzpFetch<T>(
   const res = await fetch(url, {
     method,
     headers,
-    body: body ? JSON.stringify(body) : undefined,
+    body: body && method !== "GET" ? JSON.stringify(body) : undefined,
   });
 
   const data = await res.json() as T & { error?: { description?: string } };
@@ -162,7 +162,61 @@ export async function setupRouteSettlement(
 }
 
 /**
- * Create a Route transfer from your platform's Razorpay balance to a linked account.
+ * Create a UPI collect payment server-to-server (no frontend SDK needed).
+ * Razorpay sends the collect request directly to the user's UPI VPA.
+ * amountRupees in RUPEES — converted to paise internally.
+ */
+export async function createUpiCollect(
+  razorpayOrderId: string,
+  amountRupees:    number,
+  vpa:             string,
+  contact:         string,
+  email:           string,
+  description:     string,
+  ip:              string,
+  userAgent:       string,
+  referer:         string,
+): Promise<{ paymentId: string }> {
+  const data = await rzpFetch<{ razorpay_payment_id: string }>(
+    "POST",
+    "https://api.razorpay.com/v1/payments/create/upi",
+    {
+      amount:      Math.round(amountRupees * 100),
+      currency:    "INR",
+      order_id:    razorpayOrderId,
+      method:      "upi",
+      vpa,
+      contact,
+      email,
+      description,
+      ip,
+      user_agent:  userAgent,
+      referer,
+    },
+  );
+  return { paymentId: data.razorpay_payment_id };
+}
+
+export interface RzpPaymentDetails {
+  id:                string;
+  order_id:          string;
+  status:            string; // created | authorized | captured | failed | refunded
+  amount:            number; // paise
+  method:            string;
+  error_description?: string;
+  error_code?:        string;
+}
+
+/**
+ * Fetch payment details from Razorpay by payment ID.
+ * Used to poll status for server-side UPI collect payments.
+ */
+export async function fetchPaymentDetails(paymentId: string): Promise<RzpPaymentDetails> {
+  return rzpFetch<RzpPaymentDetails>("GET", `https://api.razorpay.com/v1/payments/${paymentId}`);
+}
+
+/**
+ * Create a Razorpay Route transfer to a linked account.
  * amountRupees is in RUPEES — converted to paise internally.
  * Funds settle to the instructor's bank account on the T+2 settlement cycle.
  */

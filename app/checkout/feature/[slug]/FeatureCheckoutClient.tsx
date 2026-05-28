@@ -63,6 +63,7 @@ export default function FeatureCheckoutClient({
         amount:          data.amount,
         currency:        data.currency ?? "INR",
         key:             data.key,
+        type:            "feature",
       });
       setPhase("payment");
     } catch (err: unknown) {
@@ -133,6 +134,7 @@ export default function FeatureCheckoutClient({
             orderInfo={orderInfo}
             description={`${featureName} — Platform Add-on`}
             onSuccess={handlePaymentSuccess}
+            onUpiSuccess={async () => router.push(`/features/${featureSlug}?success=true`)}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />

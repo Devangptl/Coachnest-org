@@ -101,6 +101,7 @@ export default function BooksCheckoutClient({ items, subtotal }: Props) {
         amount:          data.amount,
         currency:        data.currency ?? "INR",
         key:             data.key,
+        type:            "books",
       });
       setPhase("payment");
     } catch (err: unknown) {
@@ -172,6 +173,7 @@ export default function BooksCheckoutClient({ items, subtotal }: Props) {
             orderInfo={orderInfo}
             description={description}
             onSuccess={handlePaymentSuccess}
+            onUpiSuccess={async () => router.push(`/checkout/success?type=books&orderId=${orderInfo.dbOrderId}`)}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />

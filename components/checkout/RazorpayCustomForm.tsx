@@ -1,33 +1,19 @@
 "use client";
 
 /**
- * RazorpayCustomForm
- * ─────────────────────────────────────────────────────────────────────────────
- * 100% custom payment UI — zero Razorpay-branded screens at any step.
+ * RazorpayCustomForm — 100% custom payment UI, zero Razorpay-branded screens.
  *
- * How each method works:
+ *  Card  — uses Razorpay Custom Checkout (rzp.createPayment).
+ *           3DS OTP is shown in our own iframe modal, not Razorpay's overlay.
  *
- *  Card
- *   1. User fills card details in our form.
- *   2. rzp.createPayment() sends card data to Razorpay server-side.
- *   3. If the card requires 3DS OTP (RBI-mandated):
- *      – payment.action fires with the bank's OTP URL.
- *      – We intercept it and show the URL inside OUR styled modal
- *        (bank OTP in an iframe, Razorpay chrome never appears).
- *      – After the user enters OTP, payment.success or payment.error fires.
- *   4. payment.success → verify on backend → redirect.
- *
- *  UPI
- *   1. User enters VPA.
- *   2. rzp.createPayment() sends a collect request to the UPI app.
- *   3. User approves on their phone — no UI appears here at all.
- *   4. payment.success fires → verify on backend → redirect.
- *
- *  Net Banking excluded — always leaves the page (bank website redirect).
+ *  UPI   — fully server-to-server: our backend calls Razorpay S2S API to send
+ *           the collect request. Frontend polls our own status endpoint every
+ *           3 s. No Razorpay.js involved, no popup, no Razorpay UI at all.
  */
 
 import {
-  useEffect, useRef, useState, type ChangeEvent, type FormEvent,
+  useEffect, useRef, useState, useCallback,
+  type ChangeEvent, type FormEvent,
 } from "react";
 import {
   CreditCard, Smartphone, Loader2, ShieldCheck, ArrowLeft,
@@ -68,14 +54,16 @@ export interface RazorpayOrderInfo {
   amount:          number;   // rupees (NOT paise)
   currency:        string;
   key:             string;
+  type:            "course" | "books" | "feature";
 }
 
 interface Props {
-  orderInfo:    RazorpayOrderInfo;
-  description?: string;
-  onSuccess:    (response: RazorpaySuccessResponse) => Promise<void>;
-  onError:      (message: string) => void;
-  onBack?:      () => void;
+  orderInfo:     RazorpayOrderInfo;
+  description?:  string;
+  onSuccess:     (response: RazorpaySuccessResponse) => Promise<void>;
+  onUpiSuccess?: () => Promise<void>; // called when UPI S2S collect is captured
+  onError:       (message: string) => void;
+  onBack?:       () => void;
 }
 
 // ── Formatters ────────────────────────────────────────────────────────────────
@@ -92,10 +80,11 @@ function formatExpiry(raw: string): string {
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function RazorpayCustomForm({
-  orderInfo, description, onSuccess, onError, onBack,
+  orderInfo, description, onSuccess, onUpiSuccess, onError, onBack,
 }: Props) {
-  const scriptLoaded = useRazorpayCustomScript();
-  const rzpRef       = useRef<RazorpayCustomInstance | null>(null);
+  const scriptLoaded   = useRazorpayCustomScript();
+  const rzpRef         = useRef<RazorpayCustomInstance | null>(null);
+  const pollRef        = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const [tab,     setTab]     = useState<PaymentTab>("card");
   const [paying,  setPaying]  = useState(false);
@@ -172,7 +161,82 @@ export default function RazorpayCustomForm({
     rzpRef.current = rzp;
   }, [scriptLoaded, orderInfo, description, onSuccess, onError]);
 
+  // ── UPI collect — stop polling on unmount ─────────────────────────────────
+
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
+
+  // ── UPI server-side collect + status polling ──────────────────────────────
+
+  const startUpiPoll = useCallback((paymentId: string) => {
+    const started = Date.now();
+    const MAX_MS  = 5 * 60 * 1000; // 5 minutes
+
+    pollRef.current = setInterval(async () => {
+      if (Date.now() - started > MAX_MS) {
+        clearInterval(pollRef.current!);
+        setPaying(false);
+        setUpiStatus("idle");
+        setFormErr("Payment timed out. Please try again or contact support.");
+        return;
+      }
+
+      try {
+        const res  = await fetch(
+          `/api/razorpay/payment-status/${paymentId}` +
+          `?type=${orderInfo.type}&dbOrderId=${orderInfo.dbOrderId}`
+        );
+        const data = await res.json();
+
+        if (data.status === "captured") {
+          clearInterval(pollRef.current!);
+          setUpiStatus("done");
+          setPaying(false);
+          if (onUpiSuccess) await onUpiSuccess();
+        } else if (data.status === "failed") {
+          clearInterval(pollRef.current!);
+          setPaying(false);
+          setUpiStatus("idle");
+          setFormErr(data.error ?? "UPI payment failed. Please try again.");
+        }
+        // "pending" → keep polling
+      } catch {
+        // transient network error — keep polling
+      }
+    }, 3000);
+  }, [orderInfo.type, orderInfo.dbOrderId, onUpiSuccess]);
+
   // ── Submit ────────────────────────────────────────────────────────────────
+
+  async function initiateUpiCollect(phone: string, email: string) {
+    setPaying(true);
+    setUpiStatus("waiting");
+    try {
+      const res = await fetch("/api/razorpay/upi-collect", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          razorpayOrderId: orderInfo.razorpayOrderId,
+          amount:          orderInfo.amount,
+          vpa:             upiId.trim(),
+          contact:         phone,
+          email:           email,
+          description:     description ?? "Purchase",
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setFormErr(json.error ?? "Failed to send UPI request.");
+        setPaying(false);
+        setUpiStatus("idle");
+        return;
+      }
+      startUpiPoll(json.paymentId);
+    } catch {
+      setFormErr("Network error. Please try again.");
+      setPaying(false);
+      setUpiStatus("idle");
+    }
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -204,26 +268,7 @@ export default function RazorpayCustomForm({
 
     if (tab === "upi") {
       if (!upiId.trim() || !upiId.includes("@")) { setFormErr("Enter a valid UPI ID — e.g. yourname@paytm"); return; }
-      setPaying(true);
-      setUpiStatus("waiting");
-
-      // Razorpay opens a popup to send + track the UPI collect request.
-      // Returning null (popup blocked) prevents the collect from being sent.
-      // Instead, open it as a 1×1 off-screen window so it can do its work
-      // silently while our own "Check your UPI app" UI stays in focus.
-      const origOpen = window.open.bind(window);
-      window.open = (url?: string | URL, target?: string) => {
-        const popup = origOpen(
-          url,
-          target ?? "_blank",
-          "width=1,height=1,left=-10000,top=-10000,resizable=no,scrollbars=no,toolbar=no"
-        );
-        window.open = origOpen; // restore immediately after first popup
-        return popup;
-      };
-
-      const data: UpiPaymentData = { method: "upi", vpa: upiId.trim(), contact: phone, email: email.trim() };
-      rzpRef.current.createPayment(data);
+      void initiateUpiCollect(phone, email.trim());
     }
   }
 

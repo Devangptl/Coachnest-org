@@ -115,9 +115,10 @@ export default function CourseCheckoutClient({
       setOrderInfo({
         razorpayOrderId: data.razorpayOrderId,
         dbOrderId:       data.dbOrderId,
-        amount:          data.amount,         // rupees (not paise)
+        amount:          data.amount,
         currency:        data.currency ?? "INR",
         key:             data.key,
+        type:            "course",
       });
       setPhase("payment");
     } catch (err: unknown) {
@@ -201,6 +202,7 @@ export default function CourseCheckoutClient({
             orderInfo={orderInfo}
             description={courseName}
             onSuccess={handlePaymentSuccess}
+            onUpiSuccess={async () => router.push(`/courses/${courseId}?enrolled=true`)}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />
