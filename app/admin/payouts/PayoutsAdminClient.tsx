@@ -60,20 +60,27 @@ function ActionModal({
   action,
   onClose,
   onDone,
+  razorpayPayoutsEnabled,
 }: {
-  request: PayoutRequest;
-  action:  "APPROVE" | "REJECT" | "PROCESS";
-  onClose: () => void;
-  onDone:  () => void;
+  request:                PayoutRequest;
+  action:                 "APPROVE" | "REJECT" | "PROCESS";
+  onClose:                () => void;
+  onDone:                 () => void;
+  razorpayPayoutsEnabled: boolean;
 }) {
   const [notes,   setNotes]   = useState(request.adminNotes ?? "");
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
+  const processLabel   = razorpayPayoutsEnabled ? "Send via Razorpay"  : "Mark Processed";
+  const processConfirm = razorpayPayoutsEnabled
+    ? "Initiate bank transfer via Razorpay? Funds will be sent directly to the instructor's bank account."
+    : "Mark this payout as processed? Make sure you have already manually transferred the money.";
+
   const ACTION_CFG = {
-    APPROVE: { label: "Approve",       color: "bg-blue-600 hover:bg-blue-500",    confirm: "Approve this payout request?" },
-    REJECT:  { label: "Reject",        color: "bg-red-600 hover:bg-red-500",      confirm: "Reject & refund balance to instructor?" },
-    PROCESS: { label: "Send via Razorpay", color: "bg-emerald-600 hover:bg-emerald-500", confirm: "Initiate bank transfer via Razorpay? This will immediately transfer funds to the instructor's account." },
+    APPROVE: { label: "Approve",     color: "bg-blue-600 hover:bg-blue-500",       confirm: "Approve this payout request?" },
+    REJECT:  { label: "Reject",      color: "bg-red-600 hover:bg-red-500",         confirm: "Reject & refund balance to instructor?" },
+    PROCESS: { label: processLabel,  color: "bg-emerald-600 hover:bg-emerald-500", confirm: processConfirm },
   };
 
   async function submit() {
@@ -149,9 +156,11 @@ function ActionModal({
 function PayoutRow({
   req,
   onAction,
+  razorpayPayoutsEnabled,
 }: {
-  req:      PayoutRequest;
-  onAction: (req: PayoutRequest, action: "APPROVE" | "REJECT" | "PROCESS") => void;
+  req:                    PayoutRequest;
+  onAction:               (req: PayoutRequest, action: "APPROVE" | "REJECT" | "PROCESS") => void;
+  razorpayPayoutsEnabled: boolean;
 }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = STATUS_CFG[req.status];
@@ -222,7 +231,7 @@ function PayoutRow({
                   onClick={() => onAction(req, "PROCESS")}
                   className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 transition-colors"
                 >
-                  Mark Processed
+                  {razorpayPayoutsEnabled ? "Send via Razorpay" : "Mark Processed"}
                 </button>
                 <button
                   onClick={() => onAction(req, "REJECT")}
@@ -324,13 +333,14 @@ function PayoutRow({
 // ── Main client component ──────────────────────────────────────────────────────
 
 export default function PayoutsAdminClient() {
-  const [requests,   setRequests]   = useState<PayoutRequest[]>([]);
-  const [stats,      setStats]      = useState<StatEntry[]>([]);
-  const [loading,    setLoading]    = useState(true);
-  const [error,      setError]      = useState("");
-  const [filter,     setFilter]     = useState<FilterStatus>("ALL");
-  const [search,     setSearch]     = useState("");
-  const [modal,      setModal]      = useState<{ req: PayoutRequest; action: "APPROVE" | "REJECT" | "PROCESS" } | null>(null);
+  const [requests,              setRequests]              = useState<PayoutRequest[]>([]);
+  const [stats,                 setStats]                 = useState<StatEntry[]>([]);
+  const [razorpayPayoutsEnabled, setRazorpayPayoutsEnabled] = useState(false);
+  const [loading,               setLoading]               = useState(true);
+  const [error,                 setError]                 = useState("");
+  const [filter,                setFilter]                = useState<FilterStatus>("ALL");
+  const [search,                setSearch]                = useState("");
+  const [modal,                 setModal]                 = useState<{ req: PayoutRequest; action: "APPROVE" | "REJECT" | "PROCESS" } | null>(null);
 
   const load = useCallback(async (status?: string) => {
     setLoading(true);
@@ -344,6 +354,7 @@ export default function PayoutsAdminClient() {
       const d = await res.json();
       setRequests(d.requests);
       setStats(d.stats);
+      setRazorpayPayoutsEnabled(d.razorpayPayoutsEnabled ?? false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
@@ -484,6 +495,7 @@ export default function PayoutsAdminClient() {
                   key={req.id}
                   req={req}
                   onAction={(r, a) => setModal({ req: r, action: a })}
+                  razorpayPayoutsEnabled={razorpayPayoutsEnabled}
                 />
               ))}
             </tbody>
@@ -498,6 +510,7 @@ export default function PayoutsAdminClient() {
           action={modal.action}
           onClose={() => setModal(null)}
           onDone={() => { setModal(null); load(filter); }}
+          razorpayPayoutsEnabled={razorpayPayoutsEnabled}
         />
       )}
     </div>

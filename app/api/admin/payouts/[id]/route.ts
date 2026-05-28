@@ -97,58 +97,69 @@ export async function PUT(
       }
     }
 
-    // ── PROCESS — initiate actual Razorpay bank transfer ─────────────────────
+    // ── PROCESS — Razorpay transfer if configured, otherwise manual ──────────
     if (action === "PROCESS") {
       if (request.status !== "APPROVED") {
         return NextResponse.json({ error: "Only APPROVED requests can be processed." }, { status: 400 });
       }
 
-      // Validate bank details are present
-      const bank = request.bankDetails as {
-        accountHolder?: string;
-        accountNumber?: string;
-        ifsc?:          string;
-        bankName?:      string;
-      } | null;
+      const useRazorpay = !!process.env.RAZORPAY_ACCOUNT_NUMBER;
 
-      if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
-        return NextResponse.json(
-          { error: "Bank details are incomplete. Cannot initiate transfer." },
-          { status: 400 }
-        );
-      }
+      let razorpayPayoutId:     string | undefined;
+      let razorpayPayoutStatus: string | undefined;
+      let razorpayContactId:    string | undefined;
+      let razorpayFundAccountId: string | undefined;
 
-      // ── 1. Create RazorpayX Contact ────────────────────────────────────────
-      let contactId = request.razorpayContactId;
-      if (!contactId) {
-        const contact = await createRazorpayContact(
+      if (useRazorpay) {
+        // Validate bank details before attempting transfer
+        const bank = request.bankDetails as {
+          accountHolder?: string;
+          accountNumber?: string;
+          ifsc?:          string;
+          bankName?:      string;
+        } | null;
+
+        if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
+          return NextResponse.json(
+            { error: "Bank details are incomplete. Cannot initiate Razorpay transfer." },
+            { status: 400 }
+          );
+        }
+
+        // 1. Create RazorpayX Contact
+        razorpayContactId = request.razorpayContactId ?? undefined;
+        if (!razorpayContactId) {
+          const contact = await createRazorpayContact(
+            instructorName,
+            instructorEmail ?? `${id}@payouts.internal`,
+          );
+          razorpayContactId = contact.id;
+        }
+
+        // 2. Create Fund Account (bank account linked to contact)
+        razorpayFundAccountId = request.razorpayFundAccountId ?? undefined;
+        if (!razorpayFundAccountId) {
+          const fa = await createRazorpayFundAccount(
+            razorpayContactId,
+            bank.accountHolder,
+            bank.accountNumber,
+            bank.ifsc,
+          );
+          razorpayFundAccountId = fa.id;
+        }
+
+        // 3. Initiate Payout
+        const payout = await createRazorpayPayout(
+          razorpayFundAccountId,
+          amount,
+          id,
           instructorName,
-          instructorEmail ?? `${id}@payouts.internal`,
         );
-        contactId = contact.id;
+        razorpayPayoutId     = payout.id;
+        razorpayPayoutStatus = payout.status;
       }
 
-      // ── 2. Create Fund Account (bank account linked to contact) ───────────
-      let fundAccountId = request.razorpayFundAccountId;
-      if (!fundAccountId) {
-        const fa = await createRazorpayFundAccount(
-          contactId,
-          bank.accountHolder,
-          bank.accountNumber,
-          bank.ifsc,
-        );
-        fundAccountId = fa.id;
-      }
-
-      // ── 3. Initiate Payout ────────────────────────────────────────────────
-      const payout = await createRazorpayPayout(
-        fundAccountId,
-        amount,
-        id,
-        instructorName,
-      );
-
-      // ── 4. Save IDs + update DB atomically ────────────────────────────────
+      // Update DB atomically (works for both manual and Razorpay modes)
       await prisma.$transaction([
         prisma.payoutRequest.update({
           where: { id },
@@ -156,10 +167,10 @@ export async function PUT(
             status:               "PROCESSED",
             adminNotes:           adminNotes?.trim() || null,
             processedAt:          new Date(),
-            razorpayContactId:    contactId,
-            razorpayFundAccountId: fundAccountId,
-            razorpayPayoutId:     payout.id,
-            razorpayPayoutStatus: payout.status,
+            ...(razorpayContactId    && { razorpayContactId }),
+            ...(razorpayFundAccountId && { razorpayFundAccountId }),
+            ...(razorpayPayoutId      && { razorpayPayoutId }),
+            ...(razorpayPayoutStatus  && { razorpayPayoutStatus }),
           },
         }),
         prisma.instructorWallet.update({
@@ -171,8 +182,12 @@ export async function PUT(
             walletId:    request.walletId,
             amount,
             type:        "PAYOUT_PROCESSED",
-            description: `Payout of ₹${amount.toLocaleString()} processed — Razorpay ${payout.id}`,
-            meta:        { razorpayPayoutId: payout.id, razorpayPayoutStatus: payout.status },
+            description: razorpayPayoutId
+              ? `Payout of ₹${amount.toLocaleString()} processed — Razorpay ${razorpayPayoutId}`
+              : `Payout of ₹${amount.toLocaleString()} marked as processed (manual transfer)`,
+            meta: razorpayPayoutId
+              ? { razorpayPayoutId, razorpayPayoutStatus }
+              : {},
           },
         }),
       ]);
@@ -182,9 +197,10 @@ export async function PUT(
       }
 
       return NextResponse.json({
-        message:         `Payout of ₹${amountStr} initiated successfully.`,
-        razorpayPayoutId: payout.id,
-        payoutStatus:    payout.status,
+        message: razorpayPayoutId
+          ? `Payout of ₹${amountStr} initiated via Razorpay.`
+          : `Payout of ₹${amountStr} marked as processed.`,
+        ...(razorpayPayoutId && { razorpayPayoutId, payoutStatus: razorpayPayoutStatus }),
       });
     }
 
