@@ -32,8 +32,6 @@ export async function GET(req: NextRequest) {
     });
 
     return NextResponse.json({
-      // Tell the UI whether automated Razorpay transfers are available
-      razorpayPayoutsEnabled: !!process.env.RAZORPAY_ACCOUNT_NUMBER,
       requests: requests.map((r) => ({
         ...r,
         amount:        Number(r.amount),

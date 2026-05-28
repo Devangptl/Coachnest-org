@@ -1199,11 +1199,10 @@ model PayoutRequest {
   requestedAt  DateTime     @default(now())
   processedAt  DateTime?
 
-  // Razorpay Payouts (RazorpayX) tracking
-  razorpayContactId     String?  // RazorpayX Contact ID (cont_xxx)
-  razorpayFundAccountId String?  // RazorpayX Fund Account ID (fa_xxx)
-  razorpayPayoutId      String?  @unique // RazorpayX Payout ID (pout_xxx)
-  razorpayPayoutStatus  String?  // queued | processing | processed | reversed | failed
+  // Razorpay Route tracking
+  razorpayLinkedAccountId String?        // Route linked account (acc_xxx) — reused across requests
+  razorpayTransferId      String? @unique // Route transfer ID (trf_xxx)
+  razorpayTransferStatus  String?        // pending | on_hold | settled
 
   wallet     InstructorWallet @relation(fields: [walletId], references: [id])
   instructor User             @relation(fields: [instructorId], references: [id])

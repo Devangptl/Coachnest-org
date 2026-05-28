@@ -4,18 +4,18 @@
  *
  * Body: { action: "APPROVE" | "REJECT" | "PROCESS", adminNotes? }
  *
- * APPROVE  → status APPROVED  (balance stays debited, awaiting transfer)
+ * APPROVE  → status APPROVED  (balance held, awaiting transfer)
  * REJECT   → status REJECTED  + refund balance back to instructor wallet
- * PROCESS  → creates RazorpayX Contact + Fund Account + Payout, then
- *             status PROCESSED + totalWithdrawn incremented
+ * PROCESS  → Razorpay Route transfer: creates linked account (first time) +
+ *             requests Route settlement + initiates transfer, then PROCESSED
  */
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import {
-  createRazorpayContact,
-  createRazorpayFundAccount,
-  createRazorpayPayout,
+  createRouteLinkedAccount,
+  setupRouteSettlement,
+  createRouteTransfer,
 } from "@/lib/razorpay";
 import {
   sendPayoutApprovedEmail,
@@ -97,80 +97,79 @@ export async function PUT(
       }
     }
 
-    // ── PROCESS — Razorpay transfer if configured, otherwise manual ──────────
+    // ── PROCESS — Razorpay Route transfer ─────────────────────────────────────
     if (action === "PROCESS") {
       if (request.status !== "APPROVED") {
         return NextResponse.json({ error: "Only APPROVED requests can be processed." }, { status: 400 });
       }
 
-      const useRazorpay = !!process.env.RAZORPAY_ACCOUNT_NUMBER;
+      const bank = request.bankDetails as {
+        accountHolder?: string;
+        accountNumber?: string;
+        ifsc?:          string;
+        bankName?:      string;
+        pan?:           string;
+      } | null;
 
-      let razorpayPayoutId:     string | undefined;
-      let razorpayPayoutStatus: string | undefined;
-      let razorpayContactId:    string | undefined;
-      let razorpayFundAccountId: string | undefined;
-
-      if (useRazorpay) {
-        // Validate bank details before attempting transfer
-        const bank = request.bankDetails as {
-          accountHolder?: string;
-          accountNumber?: string;
-          ifsc?:          string;
-          bankName?:      string;
-        } | null;
-
-        if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
-          return NextResponse.json(
-            { error: "Bank details are incomplete. Cannot initiate Razorpay transfer." },
-            { status: 400 }
-          );
-        }
-
-        // 1. Create RazorpayX Contact
-        razorpayContactId = request.razorpayContactId ?? undefined;
-        if (!razorpayContactId) {
-          const contact = await createRazorpayContact(
-            instructorName,
-            instructorEmail ?? `${id}@payouts.internal`,
-          );
-          razorpayContactId = contact.id;
-        }
-
-        // 2. Create Fund Account (bank account linked to contact)
-        razorpayFundAccountId = request.razorpayFundAccountId ?? undefined;
-        if (!razorpayFundAccountId) {
-          const fa = await createRazorpayFundAccount(
-            razorpayContactId,
-            bank.accountHolder,
-            bank.accountNumber,
-            bank.ifsc,
-          );
-          razorpayFundAccountId = fa.id;
-        }
-
-        // 3. Initiate Payout
-        const payout = await createRazorpayPayout(
-          razorpayFundAccountId,
-          amount,
-          id,
-          instructorName,
+      if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
+        return NextResponse.json(
+          { error: "Bank details are incomplete (accountHolder, accountNumber, IFSC required)." },
+          { status: 400 }
         );
-        razorpayPayoutId     = payout.id;
-        razorpayPayoutStatus = payout.status;
+      }
+      if (!bank?.pan) {
+        return NextResponse.json(
+          { error: "PAN number is missing. Instructor must re-submit the payout request with their PAN." },
+          { status: 400 }
+        );
       }
 
-      // Update DB atomically (works for both manual and Razorpay modes)
+      // Reuse the linked account from a previous processed payout for this instructor
+      let linkedAccountId = request.razorpayLinkedAccountId ?? undefined;
+      if (!linkedAccountId) {
+        const prev = await prisma.payoutRequest.findFirst({
+          where:   { instructorId: request.instructorId, razorpayLinkedAccountId: { not: null } },
+          select:  { razorpayLinkedAccountId: true },
+          orderBy: { requestedAt: "desc" },
+        });
+        linkedAccountId = prev?.razorpayLinkedAccountId ?? undefined;
+      }
+
+      // First-ever Route payout for this instructor — create linked account
+      if (!linkedAccountId) {
+        const account = await createRouteLinkedAccount(
+          instructorEmail ?? `${request.instructorId}@payouts.internal`,
+          instructorName,
+          bank.pan,
+        );
+        linkedAccountId = account.id;
+
+        // Request Route product + configure bank settlement.
+        // Non-blocking — Razorpay may need a short review before activation.
+        // If it fails, the admin can configure it in the Razorpay dashboard.
+        setupRouteSettlement(
+          linkedAccountId,
+          bank.accountHolder,
+          bank.accountNumber,
+          bank.ifsc,
+        ).catch((err) => {
+          console.warn("[PROCESS] setupRouteSettlement failed — settle via Razorpay dashboard:", err?.message);
+        });
+      }
+
+      // Initiate the Route transfer (idempotent — safe to retry on network failure)
+      const transfer = await createRouteTransfer(linkedAccountId, amount, id);
+
       await prisma.$transaction([
         prisma.payoutRequest.update({
           where: { id },
           data:  {
-            status:               "PROCESSED",
-            adminNotes:           adminNotes?.trim() || null,
-            processedAt:          new Date(),
-            ...(razorpayContactId    && { razorpayContactId }),
-            ...(razorpayFundAccountId && { razorpayFundAccountId }),
-            ...(razorpayPayoutId      && { razorpayPayoutId }),
-            ...(razorpayPayoutStatus  && { razorpayPayoutStatus }),
+            status:                  "PROCESSED",
+            adminNotes:              adminNotes?.trim() || null,
+            processedAt:             new Date(),
+            razorpayLinkedAccountId: linkedAccountId,
+            razorpayTransferId:      transfer.id,
+            razorpayTransferStatus:  transfer.status,
           },
         }),
         prisma.instructorWallet.update({
@@ -182,12 +181,8 @@ export async function PUT(
             walletId:    request.walletId,
             amount,
             type:        "PAYOUT_PROCESSED",
-            description: razorpayPayoutId
-              ? `Payout of ₹${amount.toLocaleString()} processed — Razorpay ${razorpayPayoutId}`
-              : `Payout of ₹${amount.toLocaleString()} marked as processed (manual transfer)`,
-            meta: razorpayPayoutId
-              ? { razorpayPayoutId, razorpayPayoutStatus }
-              : {},
+            description: `Payout of ₹${amount.toLocaleString()} transferred via Razorpay Route — ${transfer.id}`,
+            meta:        { razorpayTransferId: transfer.id, razorpayTransferStatus: transfer.status },
           },
         }),
       ]);
@@ -197,10 +192,9 @@ export async function PUT(
       }
 
       return NextResponse.json({
-        message: razorpayPayoutId
-          ? `Payout of ₹${amountStr} initiated via Razorpay.`
-          : `Payout of ₹${amountStr} marked as processed.`,
-        ...(razorpayPayoutId && { razorpayPayoutId, payoutStatus: razorpayPayoutStatus }),
+        message:                `₹${amountStr} transferred via Razorpay Route.`,
+        razorpayTransferId:     transfer.id,
+        razorpayTransferStatus: transfer.status,
       });
     }
 
@@ -208,7 +202,6 @@ export async function PUT(
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Internal server error.";
     console.error("[PUT /api/admin/payouts/:id]", err);
-    // If Razorpay payout call failed, surface the error to the admin
     const status = msg.includes("Razorpay") ? 502 : 500;
     return NextResponse.json({ error: msg }, { status });
   }

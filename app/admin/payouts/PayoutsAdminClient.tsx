@@ -2,7 +2,7 @@
 
 /**
  * PayoutsAdminClient — full admin payout management UI.
- * Actions: APPROVE (PENDING → APPROVED), PROCESS (APPROVED → PROCESSED),
+ * Actions: APPROVE (PENDING → APPROVED), PROCESS (APPROVED → PROCESSED via Razorpay Route),
  *          REJECT (PENDING/APPROVED → REJECTED, refunds balance).
  */
 import { useEffect, useState, useCallback } from "react";
@@ -29,8 +29,9 @@ interface PayoutRequest {
   processedAt:    string | null;
   totalEarned:    number;
   totalWithdrawn: number;
-  razorpayPayoutId:     string | null;
-  razorpayPayoutStatus: string | null;
+  razorpayLinkedAccountId: string | null;
+  razorpayTransferId:      string | null;
+  razorpayTransferStatus:  string | null;
   instructor: {
     id:     string;
     name:   string;
@@ -60,27 +61,32 @@ function ActionModal({
   action,
   onClose,
   onDone,
-  razorpayPayoutsEnabled,
 }: {
-  request:                PayoutRequest;
-  action:                 "APPROVE" | "REJECT" | "PROCESS";
-  onClose:                () => void;
-  onDone:                 () => void;
-  razorpayPayoutsEnabled: boolean;
+  request: PayoutRequest;
+  action:  "APPROVE" | "REJECT" | "PROCESS";
+  onClose: () => void;
+  onDone:  () => void;
 }) {
   const [notes,   setNotes]   = useState(request.adminNotes ?? "");
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState("");
 
-  const processLabel   = razorpayPayoutsEnabled ? "Send via Razorpay"  : "Mark Processed";
-  const processConfirm = razorpayPayoutsEnabled
-    ? "Initiate bank transfer via Razorpay? Funds will be sent directly to the instructor's bank account."
-    : "Mark this payout as processed? Make sure you have already manually transferred the money.";
-
   const ACTION_CFG = {
-    APPROVE: { label: "Approve",     color: "bg-blue-600 hover:bg-blue-500",       confirm: "Approve this payout request?" },
-    REJECT:  { label: "Reject",      color: "bg-red-600 hover:bg-red-500",         confirm: "Reject & refund balance to instructor?" },
-    PROCESS: { label: processLabel,  color: "bg-emerald-600 hover:bg-emerald-500", confirm: processConfirm },
+    APPROVE: {
+      label:   "Approve",
+      color:   "bg-blue-600 hover:bg-blue-500",
+      confirm: "Approve this payout request?",
+    },
+    REJECT: {
+      label:   "Reject",
+      color:   "bg-red-600 hover:bg-red-500",
+      confirm: "Reject & refund balance to instructor?",
+    },
+    PROCESS: {
+      label:   "Transfer via Razorpay Route",
+      color:   "bg-emerald-600 hover:bg-emerald-500",
+      confirm: "Initiate Razorpay Route transfer to instructor's bank account? Funds settle within T+2 business days.",
+    },
   };
 
   async function submit() {
@@ -116,6 +122,12 @@ function ActionModal({
           <p><span className="text-foreground font-medium">{request.instructor.name}</span> — {request.instructor.email}</p>
           <p>Amount: <span className="text-foreground font-semibold">₹{request.amount.toLocaleString()}</span></p>
         </div>
+
+        {action === "PROCESS" && !request.bankDetails?.pan && (
+          <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+            No PAN on file. This request was submitted before PAN was required — ask the instructor to re-submit with their PAN.
+          </p>
+        )}
 
         <div>
           <label className="block text-xs font-medium text-muted-foreground mb-1">Admin Notes (optional)</label>
@@ -156,15 +168,18 @@ function ActionModal({
 function PayoutRow({
   req,
   onAction,
-  razorpayPayoutsEnabled,
 }: {
-  req:                    PayoutRequest;
-  onAction:               (req: PayoutRequest, action: "APPROVE" | "REJECT" | "PROCESS") => void;
-  razorpayPayoutsEnabled: boolean;
+  req:      PayoutRequest;
+  onAction: (req: PayoutRequest, action: "APPROVE" | "REJECT" | "PROCESS") => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const cfg = STATUS_CFG[req.status];
   const Icon = cfg.icon;
+
+  // Filter out PAN from the displayed bank details (shown separately / sensitive)
+  const displayBankDetails = req.bankDetails
+    ? Object.fromEntries(Object.entries(req.bankDetails).filter(([k]) => k !== "pan"))
+    : null;
 
   return (
     <>
@@ -231,7 +246,7 @@ function PayoutRow({
                   onClick={() => onAction(req, "PROCESS")}
                   className="px-2.5 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 transition-colors"
                 >
-                  {razorpayPayoutsEnabled ? "Send via Razorpay" : "Mark Processed"}
+                  Process
                 </button>
                 <button
                   onClick={() => onAction(req, "REJECT")}
@@ -253,17 +268,23 @@ function PayoutRow({
         <tr className="bg-secondary/10">
           <td colSpan={5} className="px-4 pb-4 pt-2">
             <div className="grid sm:grid-cols-2 gap-4 text-sm">
-              {/* Bank details */}
+              {/* Bank details (PAN hidden) */}
               <div>
                 <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Bank Details</p>
-                {req.bankDetails ? (
+                {displayBankDetails && Object.keys(displayBankDetails).length > 0 ? (
                   <div className="space-y-1">
-                    {Object.entries(req.bankDetails).map(([k, v]) => (
+                    {Object.entries(displayBankDetails).map(([k, v]) => (
                       <div key={k} className="flex justify-between">
                         <span className="text-muted-foreground capitalize">{k.replace(/([A-Z])/g, " $1").trim()}:</span>
                         <span className="font-medium text-foreground font-mono">{v}</span>
                       </div>
                     ))}
+                    <div className="flex justify-between">
+                      <span className="text-muted-foreground">PAN:</span>
+                      <span className="font-medium text-foreground font-mono">
+                        {req.bankDetails?.pan ? "✓ on file" : "—"}
+                      </span>
+                    </div>
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-xs">No bank details provided.</p>
@@ -297,24 +318,30 @@ function PayoutRow({
                   )}
                 </div>
 
-                {/* Razorpay Payout reference */}
-                {req.razorpayPayoutId && (
+                {/* Razorpay Route transfer reference */}
+                {req.razorpayTransferId && (
                   <div className="mt-3 pt-3 border-t border-border">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Razorpay Transfer</p>
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Razorpay Route Transfer</p>
                     <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Payout ID</span>
-                        <code className="text-emerald-400 font-mono">{req.razorpayPayoutId}</code>
-                      </div>
-                      {req.razorpayPayoutStatus && (
+                      {req.razorpayLinkedAccountId && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">Transfer Status</span>
+                          <span className="text-muted-foreground">Linked Account</span>
+                          <code className="text-blue-400 font-mono">{req.razorpayLinkedAccountId}</code>
+                        </div>
+                      )}
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Transfer ID</span>
+                        <code className="text-emerald-400 font-mono">{req.razorpayTransferId}</code>
+                      </div>
+                      {req.razorpayTransferStatus && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Status</span>
                           <span className={`font-semibold capitalize ${
-                            req.razorpayPayoutStatus === "processed" ? "text-emerald-400"
-                            : req.razorpayPayoutStatus === "failed"  ? "text-red-400"
+                            req.razorpayTransferStatus === "settled" ? "text-emerald-400"
+                            : req.razorpayTransferStatus === "reversed" ? "text-red-400"
                             : "text-amber-400"
                           }`}>
-                            {req.razorpayPayoutStatus}
+                            {req.razorpayTransferStatus}
                           </span>
                         </div>
                       )}
@@ -333,14 +360,13 @@ function PayoutRow({
 // ── Main client component ──────────────────────────────────────────────────────
 
 export default function PayoutsAdminClient() {
-  const [requests,              setRequests]              = useState<PayoutRequest[]>([]);
-  const [stats,                 setStats]                 = useState<StatEntry[]>([]);
-  const [razorpayPayoutsEnabled, setRazorpayPayoutsEnabled] = useState(false);
-  const [loading,               setLoading]               = useState(true);
-  const [error,                 setError]                 = useState("");
-  const [filter,                setFilter]                = useState<FilterStatus>("ALL");
-  const [search,                setSearch]                = useState("");
-  const [modal,                 setModal]                 = useState<{ req: PayoutRequest; action: "APPROVE" | "REJECT" | "PROCESS" } | null>(null);
+  const [requests, setRequests] = useState<PayoutRequest[]>([]);
+  const [stats,    setStats]    = useState<StatEntry[]>([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState("");
+  const [filter,   setFilter]   = useState<FilterStatus>("ALL");
+  const [search,   setSearch]   = useState("");
+  const [modal,    setModal]    = useState<{ req: PayoutRequest; action: "APPROVE" | "REJECT" | "PROCESS" } | null>(null);
 
   const load = useCallback(async (status?: string) => {
     setLoading(true);
@@ -354,7 +380,6 @@ export default function PayoutsAdminClient() {
       const d = await res.json();
       setRequests(d.requests);
       setStats(d.stats);
-      setRazorpayPayoutsEnabled(d.razorpayPayoutsEnabled ?? false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
     } finally {
@@ -399,10 +424,10 @@ export default function PayoutsAdminClient() {
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Total Requests",   value: totalCount,     sub: "all time",     icon: Users,           color: "text-violet-400",  bg: "bg-violet-500/10",  isCount: true },
-          { label: "Pending Amount",   value: totalPending,   sub: `${countPending} pending`,icon: Clock, color: "text-amber-400",   bg: "bg-amber-500/10"  },
-          { label: "Total Processed",  value: totalProcessed, sub: "disbursed",    icon: ArrowDownToLine, color: "text-emerald-400", bg: "bg-emerald-500/10" },
-          { label: "Total Volume",     value: totalAll,       sub: "all requests", icon: TrendingUp,      color: "text-blue-400",    bg: "bg-blue-500/10"   },
+          { label: "Total Requests",   value: totalCount,     sub: "all time",            icon: Users,           color: "text-violet-400",  bg: "bg-violet-500/10",  isCount: true },
+          { label: "Pending Amount",   value: totalPending,   sub: `${countPending} pending`, icon: Clock,       color: "text-amber-400",   bg: "bg-amber-500/10"  },
+          { label: "Total Processed",  value: totalProcessed, sub: "disbursed",            icon: ArrowDownToLine, color: "text-emerald-400", bg: "bg-emerald-500/10" },
+          { label: "Total Volume",     value: totalAll,       sub: "all requests",         icon: TrendingUp,      color: "text-blue-400",    bg: "bg-blue-500/10"   },
         ].map(({ label, value, sub, icon: Icon, color, bg, isCount }) => (
           <GlassCard key={label} className="flex items-center gap-3">
             <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0", bg)}>
@@ -423,7 +448,6 @@ export default function PayoutsAdminClient() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="flex items-center gap-1 flex-wrap">
           {ALL_STATUSES.map((s) => {
-            const cfg = s !== "ALL" ? STATUS_CFG[s] : null;
             const count = s === "ALL" ? totalCount : (stats.find((x) => x.status === s)?.count ?? 0);
             return (
               <button
@@ -495,7 +519,6 @@ export default function PayoutsAdminClient() {
                   key={req.id}
                   req={req}
                   onAction={(r, a) => setModal({ req: r, action: a })}
-                  razorpayPayoutsEnabled={razorpayPayoutsEnabled}
                 />
               ))}
             </tbody>
@@ -510,7 +533,6 @@ export default function PayoutsAdminClient() {
           action={modal.action}
           onClose={() => setModal(null)}
           onDone={() => { setModal(null); load(filter); }}
-          razorpayPayoutsEnabled={razorpayPayoutsEnabled}
         />
       )}
     </div>
