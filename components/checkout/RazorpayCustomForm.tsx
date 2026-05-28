@@ -1,27 +1,24 @@
 "use client";
 
 /**
- * RazorpayCustomForm — fully custom payment UI with zero Razorpay-branded screens.
+ * RazorpayCustomForm — fully custom payment UI built on Razorpay Custom Checkout.
  *
- * CARD  — Custom Checkout (rzp.createPayment).
- *         3DS / OTP shown in our own iframe modal, not Razorpay's overlay.
- *         On success: payment.success fires → onSuccess() → /api/razorpay/verify-payment.
+ * CARD
+ *   Custom form → rzp.createPayment({ method:"card", ... })
+ *   3DS / OTP shown in our own iframe modal (not Razorpay's overlay)
+ *   payment.success → onSuccess() → /api/razorpay/verify-payment
  *
- * UPI   — Two sub-modes (both show NO Razorpay UI):
+ * UPI INTENT (app buttons — GPay / PhonePe / Paytm / BHIM)
+ *   rzp.createPayment({ method:"upi", "_[flow]":"intent", "_[app]":pkg })
+ *   payment.action fires with upi:// deep-link → window.location.href to UPI app
+ *   On return: payment.success (if page alive) OR /api/razorpay/upi-return
  *
- *   Intent (live keys only)
- *     User taps a UPI app button → rzp.createPayment({ "_[flow]": "intent" })
- *     → payment.next_action fires with UPI deep-link
- *     → window.location.href redirects to GPay / PhonePe / etc.
- *     → after approval, Razorpay POSTs to /api/razorpay/upi-return (server finalises)
- *     → OR payment.success fires if page stays in memory → onSuccess() handles it.
+ * UPI COLLECT (UPI ID input)
+ *   rzp.createPayment({ method:"upi", vpa, ... })
+ *   Razorpay SDK sends collect through their backend (no S2S activation needed)
+ *   payment.success fires when user approves → onSuccess()
  *
- *   Collect (requires S2S API activation — contact Razorpay support)
- *     User enters UPI ID → POST /api/razorpay/upi-collect → poll payment-status
- *     → onUpiSuccess() called when captured (server has already finalised).
- *
- * Test mode (rzp_test_* keys): UPI is disabled with a clear notice.
- * Card works fine in test mode.
+ * Test mode (rzp_test_*): UPI disabled with notice; card works normally.
  */
 
 import {
@@ -81,10 +78,8 @@ export interface RazorpayOrderInfo {
 interface Props {
   orderInfo:     RazorpayOrderInfo;
   description?:  string;
-  /** Called after card payment (or UPI intent if payment.success fires while page is alive) */
+  /** Called when Razorpay confirms payment (card or UPI) — wires signature verification */
   onSuccess:     (response: RazorpaySuccessResponse) => Promise<void>;
-  /** Called after UPI collect S2S polling confirms capture (server already finalised) */
-  onUpiSuccess?: () => Promise<void>;
   onError?:      (message: string) => void;
   onBack?:       () => void;
 }
@@ -102,11 +97,10 @@ function fmtExpiry(v: string) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function RazorpayCustomForm({
-  orderInfo, description, onSuccess, onUpiSuccess, onError, onBack,
+  orderInfo, description, onSuccess, onError, onBack,
 }: Props) {
   const scriptLoaded = useRazorpayScript();
   const rzpRef       = useRef<RazorpayCustomInstance | null>(null);
-  const pollRef      = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // UI state
   const [tab,        setTab]        = useState<"card" | "upi">("card");
@@ -184,6 +178,7 @@ export default function RazorpayCustomForm({
     rzp.on("payment.success", async (resp) => {
       setThreedsUrl(null);
       setPaying(false);
+      setUpiWaiting(false);
       setUpiDone(true);
       try {
         await onSuccess(resp);
@@ -206,9 +201,6 @@ export default function RazorpayCustomForm({
 
     rzpRef.current = rzp;
   }, [scriptLoaded, orderInfo, description, onSuccess, onError]);
-
-  // Stop polling on unmount
-  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
@@ -269,9 +261,11 @@ export default function RazorpayCustomForm({
     rzpRef.current.createPayment(data);
   }
 
-  // ── UPI collect — S2S via UPI ID (requires account activation) ───────────
+  // ── UPI collect — uses Razorpay SDK (no S2S activation needed) ───────────
+  // The SDK calls Razorpay's backend, which sends the UPI collect to the
+  // user's PSP. payment.success fires when the user approves in their UPI app.
 
-  async function handleUpiCollect(e: FormEvent) {
+  function handleUpiCollect(e: FormEvent) {
     e.preventDefault();
     if (!rzpRef.current) { err("Payment gateway not ready. Please refresh and try again."); return; }
     setFormErr(null);
@@ -286,70 +280,14 @@ export default function RazorpayCustomForm({
 
     setPaying(true);
     setUpiWaiting(true);
-    try {
-      const res  = await fetch("/api/razorpay/upi-collect", {
-        method:  "POST",
-        headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({
-          razorpayOrderId: orderInfo.razorpayOrderId,
-          amount:          orderInfo.amount,
-          vpa:             upiId.trim(),
-          contact:         phone,
-          email:           email.trim(),
-          description:     description ?? "Purchase",
-        }),
-      });
-      const json = await res.json();
-      if (!res.ok) {
-        setPaying(false);
-        setUpiWaiting(false);
-        err(json.error ?? "Could not send UPI request. Try an app button above.");
-        return;
-      }
-      startPoll(json.paymentId);
-    } catch {
-      setPaying(false);
-      setUpiWaiting(false);
-      err("Network error. Please try again.");
-    }
-  }
 
-  // ── UPI collect polling ───────────────────────────────────────────────────
-
-  function startPoll(paymentId: string) {
-    const startedAt = Date.now();
-    const TIMEOUT   = 5 * 60 * 1000; // 5 min
-
-    pollRef.current = setInterval(async () => {
-      if (Date.now() - startedAt > TIMEOUT) {
-        clearInterval(pollRef.current!);
-        setPaying(false);
-        setUpiWaiting(false);
-        err("Payment request timed out. Please try again.");
-        return;
-      }
-      try {
-        const res  = await fetch(
-          `/api/razorpay/payment-status/${paymentId}` +
-          `?type=${orderInfo.type}&dbOrderId=${orderInfo.dbOrderId}`
-        );
-        const data = await res.json();
-
-        if (data.status === "captured") {
-          clearInterval(pollRef.current!);
-          setPaying(false);
-          setUpiWaiting(false);
-          setUpiDone(true);
-          if (onUpiSuccess) await onUpiSuccess();
-        } else if (data.status === "failed") {
-          clearInterval(pollRef.current!);
-          setPaying(false);
-          setUpiWaiting(false);
-          err(data.error ?? "UPI payment failed. Please try again.");
-        }
-        // status === "pending" → keep polling
-      } catch { /* network blip — keep polling */ }
-    }, 3_000);
+    rzpRef.current.createPayment({
+      method:  "upi",
+      vpa:     upiId.trim(),
+      contact: phone,
+      email:   email.trim(),
+    });
+    // payment.success or payment.error event will resolve the flow
   }
 
   // ── Styles ────────────────────────────────────────────────────────────────

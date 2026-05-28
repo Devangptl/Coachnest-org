@@ -134,7 +134,6 @@ export default function FeatureCheckoutClient({
             orderInfo={orderInfo}
             description={`${featureName} — Platform Add-on`}
             onSuccess={handlePaymentSuccess}
-            onUpiSuccess={async () => router.push(`/features/${featureSlug}?success=true`)}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />
