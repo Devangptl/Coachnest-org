@@ -207,12 +207,20 @@ export default function RazorpayCustomForm({
       setPaying(true);
       setUpiStatus("waiting");
 
-      // Razorpay's SDK tries to open its hosted status popup for UPI collect via
-      // window.open() even in custom-checkout mode. Suppress it — our UI already
-      // shows the "Check your UPI app" waiting state; payment.success fires
-      // automatically once the user approves the collect request in their UPI app.
+      // Razorpay opens a popup to send + track the UPI collect request.
+      // Returning null (popup blocked) prevents the collect from being sent.
+      // Instead, open it as a 1×1 off-screen window so it can do its work
+      // silently while our own "Check your UPI app" UI stays in focus.
       const origOpen = window.open.bind(window);
-      window.open = () => { window.open = origOpen; return null; };
+      window.open = (url?: string | URL, target?: string) => {
+        const popup = origOpen(
+          url,
+          target ?? "_blank",
+          "width=1,height=1,left=-10000,top=-10000,resizable=no,scrollbars=no,toolbar=no"
+        );
+        window.open = origOpen; // restore immediately after first popup
+        return popup;
+      };
 
       const data: UpiPaymentData = { method: "upi", vpa: upiId.trim(), contact: phone, email: email.trim() };
       rzpRef.current.createPayment(data);
