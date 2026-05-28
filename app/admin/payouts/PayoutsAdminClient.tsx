@@ -29,6 +29,8 @@ interface PayoutRequest {
   processedAt:    string | null;
   totalEarned:    number;
   totalWithdrawn: number;
+  razorpayPayoutId:     string | null;
+  razorpayPayoutStatus: string | null;
   instructor: {
     id:     string;
     name:   string;
@@ -71,7 +73,7 @@ function ActionModal({
   const ACTION_CFG = {
     APPROVE: { label: "Approve",       color: "bg-blue-600 hover:bg-blue-500",    confirm: "Approve this payout request?" },
     REJECT:  { label: "Reject",        color: "bg-red-600 hover:bg-red-500",      confirm: "Reject & refund balance to instructor?" },
-    PROCESS: { label: "Mark Processed",color: "bg-emerald-600 hover:bg-emerald-500", confirm: "Mark transfer as completed?" },
+    PROCESS: { label: "Send via Razorpay", color: "bg-emerald-600 hover:bg-emerald-500", confirm: "Initiate bank transfer via Razorpay? This will immediately transfer funds to the instructor's account." },
   };
 
   async function submit() {
@@ -285,6 +287,31 @@ function PayoutRow({
                     </div>
                   )}
                 </div>
+
+                {/* Razorpay Payout reference */}
+                {req.razorpayPayoutId && (
+                  <div className="mt-3 pt-3 border-t border-border">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5">Razorpay Transfer</p>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Payout ID</span>
+                        <code className="text-emerald-400 font-mono">{req.razorpayPayoutId}</code>
+                      </div>
+                      {req.razorpayPayoutStatus && (
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Transfer Status</span>
+                          <span className={`font-semibold capitalize ${
+                            req.razorpayPayoutStatus === "processed" ? "text-emerald-400"
+                            : req.razorpayPayoutStatus === "failed"  ? "text-red-400"
+                            : "text-amber-400"
+                          }`}>
+                            {req.razorpayPayoutStatus}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </td>
