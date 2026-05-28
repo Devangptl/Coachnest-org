@@ -75,10 +75,24 @@ async function rzpFetch<T>(
     body: body && method !== "GET" ? JSON.stringify(body) : undefined,
   });
 
-  const data = await res.json() as T & { error?: { description?: string } };
+  const data = await res.json() as T & { error?: { description?: string; code?: string } };
   if (!res.ok) {
     const msg = (data as any)?.error?.description ?? `Razorpay API error ${res.status}`;
-    throw new Error(`Razorpay Route: ${msg}`);
+    // 404 on UPI S2S endpoint means the feature is not enabled on this account
+    if (res.status === 404 && url.includes("/payments/create/upi")) {
+      throw new Error(
+        "Server-to-Server UPI payments are not enabled on your Razorpay account. " +
+        "Contact Razorpay support (support@razorpay.com) to enable 'API-based payments' for your account."
+      );
+    }
+    // 404 on Route/accounts endpoint means Route is not activated
+    if (res.status === 404 && url.includes("/accounts")) {
+      throw new Error(
+        "Razorpay Route is not activated on your account. " +
+        "Go to Razorpay Dashboard → Route → Get Started to enable it, then retry."
+      );
+    }
+    throw new Error(msg);
   }
   return data;
 }
