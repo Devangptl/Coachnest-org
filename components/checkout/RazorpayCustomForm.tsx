@@ -510,68 +510,85 @@ export default function RazorpayCustomForm({
           )}
 
           {/* ── UPI ────────────────────────────────────────────────────────── */}
-          {tab === "upi" && (
-            <div className="space-y-3">
+          {tab === "upi" && (() => {
+            const isTestMode = orderInfo.key.startsWith("rzp_test_");
 
-              {/* UPI app shortcut buttons — intent flow, no Razorpay UI */}
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Tap to open your UPI app
-                </p>
-                <div className="grid grid-cols-4 gap-2">
-                  {UPI_APPS.map((app) => (
-                    <button
-                      key={app.id}
-                      type="button"
-                      onClick={() => handleUpiIntent(app.pkg)}
-                      disabled={paying || !scriptLoaded}
-                      className="flex flex-col items-center gap-1 py-3 px-1 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/60 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      <span className="text-xs font-semibold text-foreground">{app.name}</span>
-                    </button>
-                  ))}
+            if (isTestMode) {
+              return (
+                <div className="rounded-lg bg-amber-500/10 border border-amber-500/25 px-4 py-4 space-y-1.5">
+                  <p className="text-sm font-semibold text-amber-500">UPI not available in test mode</p>
+                  <p className="text-xs text-amber-500/80 leading-relaxed">
+                    Razorpay test keys do not support UPI payments. Switch to your{" "}
+                    <strong>live Razorpay keys</strong> to accept UPI in production.
+                    Use <strong>card payment</strong> to test the checkout flow right now.
+                  </p>
                 </div>
-              </div>
+              );
+            }
 
-              {/* Divider */}
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <div className="flex-1 h-px bg-border" />
-                <span className="text-[11px] whitespace-nowrap">or enter UPI ID</span>
-                <div className="flex-1 h-px bg-border" />
-              </div>
+            return (
+              <div className="space-y-3">
 
-              {/* UPI ID collect input */}
-              <div>
-                <input
-                  type="text" inputMode="email" autoComplete="off"
-                  placeholder="yourname@paytm / user@ybl"
-                  value={upiId}
-                  onChange={(e) => { setUpiId(e.target.value.trim()); setUpiStatus("idle"); setFormErr(null); }}
-                  className="input-glass" disabled={paying}
-                />
-              </div>
-
-              {/* Status indicators */}
-              {upiStatus === "waiting" && (
-                <div className="flex items-start gap-3 p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
-                  <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-sm font-semibold text-blue-400">Opening your UPI app…</p>
-                    <p className="text-xs text-blue-400/70 mt-0.5 leading-relaxed">
-                      Approve the ₹{orderInfo.amount.toLocaleString("en-IN")} request in your app.
-                    </p>
+                {/* UPI app shortcut buttons — intent flow, no Razorpay UI */}
+                <div>
+                  <p className="text-xs font-medium text-muted-foreground mb-2">
+                    Tap to open your UPI app
+                  </p>
+                  <div className="grid grid-cols-4 gap-2">
+                    {UPI_APPS.map((app) => (
+                      <button
+                        key={app.id}
+                        type="button"
+                        onClick={() => handleUpiIntent(app.pkg)}
+                        disabled={paying || !scriptLoaded}
+                        className="flex flex-col items-center gap-1 py-3 px-1 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/60 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <span className="text-xs font-semibold text-foreground">{app.name}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
-              )}
 
-              {upiStatus === "done" && (
-                <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
-                  <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
-                  <span className="text-sm font-semibold">Payment approved!</span>
+                {/* Divider */}
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-[11px] whitespace-nowrap">or enter UPI ID</span>
+                  <div className="flex-1 h-px bg-border" />
                 </div>
-              )}
-            </div>
-          )}
+
+                {/* UPI ID collect input */}
+                <div>
+                  <input
+                    type="text" inputMode="email" autoComplete="off"
+                    placeholder="yourname@paytm / user@ybl"
+                    value={upiId}
+                    onChange={(e) => { setUpiId(e.target.value.trim()); setUpiStatus("idle"); setFormErr(null); }}
+                    className="input-glass" disabled={paying}
+                  />
+                </div>
+
+                {/* Status indicators */}
+                {upiStatus === "waiting" && (
+                  <div className="flex items-start gap-3 p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
+                    <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-blue-400">Opening your UPI app…</p>
+                      <p className="text-xs text-blue-400/70 mt-0.5 leading-relaxed">
+                        Approve the ₹{orderInfo.amount.toLocaleString("en-IN")} request in your app.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {upiStatus === "done" && (
+                  <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
+                    <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
+                    <span className="text-sm font-semibold">Payment approved!</span>
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* ── Contact Details (required by Razorpay) ─────────────────────── */}
           <div className="space-y-3 pt-1 border-t border-border">
@@ -617,7 +634,7 @@ export default function RazorpayCustomForm({
           {/* ── Pay button ─────────────────────────────────────────────────── */}
           <button
             type="submit"
-            disabled={paying || !scriptLoaded || upiStatus === "waiting"}
+            disabled={paying || !scriptLoaded || upiStatus === "waiting" || (tab === "upi" && orderInfo.key.startsWith("rzp_test_"))}
             className="w-full btn-primary py-3 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {!scriptLoaded ? (
