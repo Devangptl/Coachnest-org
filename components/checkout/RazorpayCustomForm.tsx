@@ -147,7 +147,7 @@ export default function RazorpayCustomForm({
 
     // ── payment.success ───────────────────────────────────────────────────
     rzp.on("payment.success", async (resp) => {
-      setThreedsUrl(null);          // close 3DS modal if it was open
+      setThreedsUrl(null);
       setPaying(false);
       setUpiStatus("done");
       try {
@@ -161,7 +161,7 @@ export default function RazorpayCustomForm({
 
     // ── payment.error ─────────────────────────────────────────────────────
     rzp.on("payment.error", (resp) => {
-      setThreedsUrl(null);          // close 3DS modal if it was open
+      setThreedsUrl(null);
       setPaying(false);
       setUpiStatus("idle");
       const msg = resp.error?.description ?? "Payment failed. Please try again.";
@@ -206,6 +206,14 @@ export default function RazorpayCustomForm({
       if (!upiId.trim() || !upiId.includes("@")) { setFormErr("Enter a valid UPI ID — e.g. yourname@paytm"); return; }
       setPaying(true);
       setUpiStatus("waiting");
+
+      // Razorpay's SDK tries to open its hosted status popup for UPI collect via
+      // window.open() even in custom-checkout mode. Suppress it — our UI already
+      // shows the "Check your UPI app" waiting state; payment.success fires
+      // automatically once the user approves the collect request in their UPI app.
+      const origOpen = window.open.bind(window);
+      window.open = () => { window.open = origOpen; return null; };
+
       const data: UpiPaymentData = { method: "upi", vpa: upiId.trim(), contact: phone, email: email.trim() };
       rzpRef.current.createPayment(data);
     }
