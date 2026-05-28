@@ -202,6 +202,15 @@ export async function PUT(
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Internal server error.";
     console.error("[PUT /api/admin/payouts/:id]", err);
+
+    // Surface a clear activation message for the most common Route setup error
+    if (msg.includes("not found on the server") || msg.includes("404")) {
+      return NextResponse.json(
+        { error: "Razorpay Route is not activated on your account. Go to Razorpay Dashboard → Route → Get Started to enable it, then retry." },
+        { status: 502 }
+      );
+    }
+
     const status = msg.includes("Razorpay") ? 502 : 500;
     return NextResponse.json({ error: msg }, { status });
   }
