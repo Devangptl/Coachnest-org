@@ -8,11 +8,6 @@
  *   3DS / OTP shown in our own iframe modal (not Razorpay's overlay)
  *   payment.success → onSuccess() → /api/razorpay/verify-payment
  *
- * UPI INTENT (app buttons — GPay / PhonePe / Paytm / BHIM)
- *   rzp.createPayment({ method:"upi", "_[flow]":"intent", "_[app]":pkg })
- *   payment.action fires with upi:// deep-link → window.location.href to UPI app
- *   On return: payment.success (if page alive) OR /api/razorpay/upi-return
- *
  * UPI COLLECT (UPI ID input)
  *   rzp.createPayment({ method:"upi", vpa, ... })
  *   Razorpay SDK sends collect through their backend (no S2S activation needed)
@@ -33,20 +28,9 @@ import type {
   RazorpayCustomOptions,
   RazorpayCustomInstance,
   RazorpayActionPayload,
-  RazorpayNextActionPayload,
   RazorpaySuccessResponse,
   CardPaymentData,
-  UpiIntentPaymentData,
 } from "@/types/razorpay";
-
-// ── UPI app shortcuts (intent flow) ───────────────────────────────────────────
-
-const UPI_APPS = [
-  { id: "gpay",    name: "GPay",    pkg: "com.google.android.apps.nbu.paisa.user" },
-  { id: "phonepe", name: "PhonePe", pkg: "com.phonepe.app" },
-  { id: "paytm",   name: "Paytm",   pkg: "net.one97.paytm" },
-  { id: "bhim",    name: "BHIM",    pkg: "in.org.npci.upiapp" },
-] as const;
 
 // ── Razorpay.js script loader ─────────────────────────────────────────────────
 
@@ -168,13 +152,7 @@ export default function RazorpayCustomForm({
       setThreedsUrl(url);
     });
 
-    // payment.next_action is a secondary event some Razorpay SDK versions fire
-    // for UPI intent. Handle it the same way — redirect to the UPI deep-link.
-    rzp.on("payment.next_action", (data: RazorpayNextActionPayload) => {
-      if (data?.url) window.location.href = data.url;
-    });
-
-    // Success (card or UPI intent when page stays in memory)
+    // Success (card or UPI collect)
     rzp.on("payment.success", async (resp) => {
       setThreedsUrl(null);
       setPaying(false);
@@ -238,27 +216,6 @@ export default function RazorpayCustomForm({
       email:   email.trim(),
       card:    { number: raw, expiry_month: mm, expiry_year: yy, cvv, name: nameOnCard.trim() },
     } as CardPaymentData);
-  }
-
-  // ── UPI intent — opens UPI app directly (no Razorpay UI) ─────────────────
-
-  function handleUpiIntent(packageName?: string) {
-    if (!rzpRef.current) { err("Payment gateway not ready. Please refresh and try again."); return; }
-    setFormErr(null);
-
-    const phone = validateContact();
-    if (!phone) return;
-
-    setPaying(true);
-    const data = {
-      method:    "upi",
-      "_[flow]": "intent",
-      contact:   phone,
-      email:     email.trim(),
-    } as UpiIntentPaymentData & Record<string, string>;
-    if (packageName) data["_[app]"] = packageName;
-
-    rzpRef.current.createPayment(data);
   }
 
   // ── UPI collect — uses Razorpay SDK (no S2S activation needed) ───────────
@@ -499,33 +456,6 @@ export default function RazorpayCustomForm({
               </div>
             ) : (
               <form onSubmit={handleUpiCollect} className="space-y-4">
-
-                {/* UPI app intent buttons */}
-                <div>
-                  <p className="text-xs font-medium text-muted-foreground mb-2">
-                    Tap to open your UPI app
-                  </p>
-                  <div className="grid grid-cols-4 gap-2">
-                    {UPI_APPS.map(app => (
-                      <button
-                        key={app.id}
-                        type="button"
-                        onClick={() => handleUpiIntent(app.pkg)}
-                        disabled={paying || !scriptLoaded}
-                        className="flex items-center justify-center py-3 px-1 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/60 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <span className="text-xs font-semibold text-foreground">{app.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Divider */}
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 h-px bg-border" />
-                  <span className="text-[11px] text-muted-foreground whitespace-nowrap">or enter UPI ID</span>
-                  <div className="flex-1 h-px bg-border" />
-                </div>
 
                 {/* UPI ID collect */}
                 <div>
