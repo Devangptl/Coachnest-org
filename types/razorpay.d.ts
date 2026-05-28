@@ -65,12 +65,13 @@ export interface RazorpayInstance {
 // ── Custom Checkout (razorpay.js) ─────────────────────────────────────────────
 
 export interface RazorpayCustomOptions {
-  key:          string;
-  order_id:     string;
-  amount?:      number;   // paise — used by Razorpay for display/validation
-  currency?:    string;
-  name?:        string;
-  description?: string;
+  key:           string;
+  order_id:      string;
+  amount?:       number;   // paise — used by Razorpay for display/validation
+  currency?:     string;
+  name?:         string;
+  description?:  string;
+  callback_url?: string;  // fallback redirect after UPI intent or redirect-based payment
   prefill?: { name?: string; email?: string; contact?: string };
   notes?:   Record<string, string>;
 }
@@ -95,10 +96,17 @@ export interface CardPaymentData {
 export interface UpiPaymentData {
   method:  "upi";
   vpa:     string;    // Virtual Payment Address e.g. "user@paytm"
-  /** Required by Razorpay — 10-digit mobile number */
   contact: string;
-  /** Required by Razorpay — customer email */
   email:   string;
+}
+
+/** UPI intent-flow payload — opens UPI app directly, no Razorpay UI */
+export interface UpiIntentPaymentData {
+  method:        "upi";
+  "_[flow]":     "intent";
+  "_[app]"?:     string;  // Android package name e.g. "com.google.android.apps.nbu.paisa.user"
+  contact:       string;
+  email:         string;
 }
 
 /** Net-banking payload for `rzp.createPayment()` */
@@ -111,7 +119,7 @@ export interface NetBankingPaymentData {
   email:   string;
 }
 
-export type RazorpayPaymentData = CardPaymentData | UpiPaymentData | NetBankingPaymentData;
+export type RazorpayPaymentData = CardPaymentData | UpiPaymentData | UpiIntentPaymentData | NetBankingPaymentData;
 
 /**
  * Fired by razorpay.js when a card payment needs 3DS / OTP action.
@@ -128,17 +136,20 @@ export interface RazorpayActionPayload {
   };
 }
 
+/** Fired by razorpay.js for UPI intent — contains the deep-link URL to open the UPI app */
+export interface RazorpayNextActionPayload {
+  action: "redirect";
+  url:    string;  // e.g. "upi://pay?..." or "tez://upi/pay?..."
+}
+
 export interface RazorpayCustomInstance {
   /** Submit payment details to Razorpay. May trigger 3DS via payment.action. */
   createPayment(data: RazorpayPaymentData): void;
-  on(event: "payment.success", callback: (r: RazorpaySuccessResponse) => void): void;
-  on(event: "payment.error",   callback: (r: RazorpayErrorResponse)   => void): void;
-  /**
-   * Fired when 3DS authentication is required for a card payment.
-   * Handle this yourself to avoid Razorpay's default overlay — render
-   * payload.url (or payload.redirect.url) inside your own iframe/modal.
-   */
-  on(event: "payment.action",  callback: (r: RazorpayActionPayload)   => void): void;
+  on(event: "payment.success",     callback: (r: RazorpaySuccessResponse)    => void): void;
+  on(event: "payment.error",       callback: (r: RazorpayErrorResponse)      => void): void;
+  on(event: "payment.action",      callback: (r: RazorpayActionPayload)      => void): void;
+  /** Fired for UPI intent — redirect to r.url to open the UPI app */
+  on(event: "payment.next_action", callback: (r: RazorpayNextActionPayload)  => void): void;
 }
 
 // ── Window augmentation ───────────────────────────────────────────────────────

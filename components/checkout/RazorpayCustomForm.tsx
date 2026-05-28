@@ -3,12 +3,17 @@
 /**
  * RazorpayCustomForm — 100% custom payment UI, zero Razorpay-branded screens.
  *
- *  Card  — uses Razorpay Custom Checkout (rzp.createPayment).
- *           3DS OTP is shown in our own iframe modal, not Razorpay's overlay.
+ *  Card  — Razorpay Custom Checkout (rzp.createPayment).
+ *           3DS OTP shown in our own iframe modal, not Razorpay's overlay.
  *
- *  UPI   — fully server-to-server: our backend calls Razorpay S2S API to send
- *           the collect request. Frontend polls our own status endpoint every
- *           3 s. No Razorpay.js involved, no popup, no Razorpay UI at all.
+ *  UPI   — two modes, both show no Razorpay UI:
+ *    Intent  — user taps an app button (GPay / PhonePe / etc.); we call
+ *              rzp.createPayment with "_[flow]":"intent", listen to
+ *              payment.next_action, then redirect window.location.href to the
+ *              UPI deep-link URL. Razorpay POSTs result to /api/razorpay/upi-return.
+ *              Works on any standard Razorpay account — no special activation.
+ *    Collect — user enters a UPI ID; we POST to our own /api/razorpay/upi-collect
+ *              (S2S). Requires Razorpay to enable "API-based payments" for the account.
  */
 
 import {
@@ -23,10 +28,20 @@ import type {
   RazorpayCustomOptions,
   RazorpayCustomInstance,
   RazorpayActionPayload,
+  RazorpayNextActionPayload,
   RazorpaySuccessResponse,
   CardPaymentData,
-  UpiPaymentData,
+  UpiIntentPaymentData,
 } from "@/types/razorpay";
+
+// ── UPI app definitions (intent flow) ─────────────────────────────────────────
+
+const UPI_APPS = [
+  { id: "gpay",    name: "GPay",    pkg: "com.google.android.apps.nbu.paisa.user" },
+  { id: "phonepe", name: "PhonePe", pkg: "com.phonepe.app" },
+  { id: "paytm",   name: "Paytm",   pkg: "net.one97.paytm" },
+  { id: "bhim",    name: "BHIM",    pkg: "in.org.npci.upiapp" },
+] as const;
 
 // ── Load razorpay.js (custom checkout SDK) ────────────────────────────────────
 
@@ -114,12 +129,15 @@ export default function RazorpayCustomForm({
     if (!scriptLoaded) return;
 
     const opts: RazorpayCustomOptions = {
-      key:         orderInfo.key,
-      order_id:    orderInfo.razorpayOrderId,
-      amount:      Math.round(orderInfo.amount * 100), // paise
-      currency:    orderInfo.currency ?? "INR",
-      name:        "Coachnest",
-      description: description ?? "Payment",
+      key:          orderInfo.key,
+      order_id:     orderInfo.razorpayOrderId,
+      amount:       Math.round(orderInfo.amount * 100), // paise
+      currency:     orderInfo.currency ?? "INR",
+      name:         "Coachnest",
+      description:  description ?? "Payment",
+      // Fallback URL after UPI intent: Razorpay POSTs here when the user
+      // returns from the UPI app and the JS callback can't fire (page was unloaded).
+      callback_url: `${window.location.origin}/api/razorpay/upi-return`,
     };
 
     const rzp = new window.Razorpay(opts) as unknown as RazorpayCustomInstance;
@@ -156,6 +174,15 @@ export default function RazorpayCustomForm({
       const msg = resp.error?.description ?? "Payment failed. Please try again.";
       setFormErr(msg);
       onError(msg);
+    });
+
+    // ── payment.next_action — UPI intent deep-link redirect ───────────────
+    // Fired when Razorpay is ready to hand off to the UPI app.
+    // We redirect the whole page; after approval Razorpay POSTs to callback_url.
+    rzp.on("payment.next_action", (data: RazorpayNextActionPayload) => {
+      if (data?.url) {
+        window.location.href = data.url;
+      }
     });
 
     rzpRef.current = rzp;
@@ -236,6 +263,27 @@ export default function RazorpayCustomForm({
       setPaying(false);
       setUpiStatus("idle");
     }
+  }
+
+  function handleUpiIntent(packageName?: string) {
+    if (!rzpRef.current) { setFormErr("Payment gateway not ready. Please wait and try again."); return; }
+    const phone = contact.replace(/\D/g, "");
+    if (phone.length < 10)                     { setFormErr("Enter a valid 10-digit mobile number."); return; }
+    if (!email.trim() || !email.includes("@")) { setFormErr("Enter a valid email address.");          return; }
+
+    setFormErr(null);
+    setPaying(true);
+    setUpiStatus("waiting");
+
+    const data: UpiIntentPaymentData = {
+      method:    "upi",
+      "_[flow]": "intent",
+      contact:   phone,
+      email:     email.trim(),
+    };
+    if (packageName) (data as unknown as Record<string, string>)["_[app]"] = packageName;
+
+    rzpRef.current.createPayment(data);
   }
 
   function handleSubmit(e: FormEvent) {
@@ -464,29 +512,53 @@ export default function RazorpayCustomForm({
           {/* ── UPI ────────────────────────────────────────────────────────── */}
           {tab === "upi" && (
             <div className="space-y-3">
+
+              {/* UPI app shortcut buttons — intent flow, no Razorpay UI */}
               <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1.5">UPI ID</label>
+                <p className="text-xs font-medium text-muted-foreground mb-2">
+                  Tap to open your UPI app
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {UPI_APPS.map((app) => (
+                    <button
+                      key={app.id}
+                      type="button"
+                      onClick={() => handleUpiIntent(app.pkg)}
+                      disabled={paying || !scriptLoaded}
+                      className="flex flex-col items-center gap-1 py-3 px-1 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/60 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <span className="text-xs font-semibold text-foreground">{app.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Divider */}
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[11px] whitespace-nowrap">or enter UPI ID</span>
+                <div className="flex-1 h-px bg-border" />
+              </div>
+
+              {/* UPI ID collect input */}
+              <div>
                 <input
                   type="text" inputMode="email" autoComplete="off"
-                  placeholder="yourname@upi"
+                  placeholder="yourname@paytm / user@ybl"
                   value={upiId}
                   onChange={(e) => { setUpiId(e.target.value.trim()); setUpiStatus("idle"); setFormErr(null); }}
                   className="input-glass" disabled={paying}
                 />
-                <p className="mt-1.5 text-xs text-muted-foreground/70">
-                  e.g.&nbsp; 9999999999@paytm &nbsp;·&nbsp; yourname@okhdfcbank &nbsp;·&nbsp; user@ybl
-                </p>
               </div>
 
+              {/* Status indicators */}
               {upiStatus === "waiting" && (
                 <div className="flex items-start gap-3 p-3.5 rounded-lg bg-blue-500/10 border border-blue-500/20">
                   <Loader2 className="w-4 h-4 text-blue-400 animate-spin flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-sm font-semibold text-blue-400">Check your UPI app</p>
+                    <p className="text-sm font-semibold text-blue-400">Opening your UPI app…</p>
                     <p className="text-xs text-blue-400/70 mt-0.5 leading-relaxed">
-                      A request for <span className="font-semibold">₹{orderInfo.amount.toLocaleString("en-IN")}</span>{" "}
-                      was sent to <span className="font-semibold">{upiId}</span>.
-                      Approve it within 5 minutes.
+                      Approve the ₹{orderInfo.amount.toLocaleString("en-IN")} request in your app.
                     </p>
                   </div>
                 </div>
@@ -498,12 +570,6 @@ export default function RazorpayCustomForm({
                   <span className="text-sm font-semibold">Payment approved!</span>
                 </div>
               )}
-
-              <div className="flex items-center gap-2">
-                {["GPay", "PhonePe", "Paytm", "BHIM"].map((app) => (
-                  <span key={app} className="px-2 py-0.5 rounded border border-border text-[10px] font-semibold text-muted-foreground bg-secondary/50 tracking-wide">{app}</span>
-                ))}
-              </div>
             </div>
           )}
 
