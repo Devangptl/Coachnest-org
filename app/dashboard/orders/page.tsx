@@ -104,33 +104,33 @@ export default async function OrderHistoryPage() {
 
   return (
     <div>
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Order History</h1>
-        <p className="text-muted-foreground mt-1">
+      <div className="mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Order History</h1>
+        <p className="text-muted-foreground mt-1 text-sm sm:text-base">
           All your purchases — courses, books, and add-ons — in one place.
         </p>
       </div>
 
       {/* Summary */}
-      <div className="grid grid-cols-2 gap-4 mb-8">
-        <GlassCard className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-            <ShoppingCart className="w-6 h-6 text-blue-400" />
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+        <GlassCard padding="sm" className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
+            <ShoppingCart className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-foreground">{orders.length}</div>
-            <div className="text-muted-foreground text-sm">Total Orders</div>
+            <div className="text-xl sm:text-2xl font-bold text-foreground">{orders.length}</div>
+            <div className="text-muted-foreground text-xs sm:text-sm">Total Orders</div>
           </div>
         </GlassCard>
-        <GlassCard className="flex items-center gap-4">
-          <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-            <Receipt className="w-6 h-6 text-emerald-400" />
+        <GlassCard padding="sm" className="flex items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
+            <Receipt className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400" />
           </div>
           <div>
-            <div className="text-2xl font-bold text-foreground">
+            <div className="text-xl sm:text-2xl font-bold text-foreground">
               ₹{totalSpent.toLocaleString("en-IN")}
             </div>
-            <div className="text-muted-foreground text-sm">Total Spent</div>
+            <div className="text-muted-foreground text-xs sm:text-sm">Total Spent</div>
           </div>
         </GlassCard>
       </div>
