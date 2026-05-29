@@ -39,7 +39,7 @@ export default async function FeaturesPage() {
   const ownedCount = features.filter((f) => f.owned).length;
 
   return (
-    <div className="max-w-3xl mx-auto py-10 px-4">
+    <div className="pt-4 pb-16 max-w-3xl mx-auto">
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-muted-foreground text-sm mb-3">

@@ -96,7 +96,7 @@ export default function FeaturePurchasePage() {
 
   if (loading) {
     return (
-      <div className="max-w-xl mx-auto py-16 px-4">
+      <div className="pt-4 pb-16 max-w-xl mx-auto">
         <div className="animate-pulse space-y-4">
           <div className="h-8 w-48 bg-secondary rounded-lg" />
           <div className="h-64 bg-secondary rounded-md" />
@@ -108,7 +108,7 @@ export default function FeaturePurchasePage() {
 
   if (error || !feature) {
     return (
-      <div className="max-w-xl mx-auto py-16 px-4 text-center">
+      <div className="pt-4 pb-16 max-w-xl mx-auto text-center">
         <AlertCircle className="w-12 h-12 text-muted-foreground/40 mx-auto mb-4" />
         <h1 className="text-xl font-bold text-foreground mb-2">Feature not found</h1>
         <p className="text-muted-foreground text-sm mb-6">{error ?? "This add-on doesn't exist or is no longer available."}</p>
@@ -120,7 +120,7 @@ export default function FeaturePurchasePage() {
   }
 
   return (
-    <div className="max-w-xl mx-auto py-10 px-4">
+    <div className="pt-4 pb-16 max-w-xl mx-auto">
       {/* Breadcrumb */}
       <div className="flex items-center gap-2 text-muted-foreground text-sm mb-6">
         <Link href="/features" className="hover:text-foreground transition-colors flex items-center gap-1">
