@@ -51,6 +51,7 @@ export default async function FeatureCheckoutPage({ params }: PageProps) {
           description={feature.description}
           price={Number(feature.price)}
           includes={FEATURE_INCLUDES[feature.slug] ?? []}
+          userEmail={session.email}
         />
       </main>
     </div>

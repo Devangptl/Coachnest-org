@@ -25,15 +25,16 @@ export interface CheckoutItem {
 }
 
 interface Props {
-  items:    CheckoutItem[];
-  subtotal: number;
+  items:      CheckoutItem[];
+  subtotal:   number;
+  userEmail?: string;
 }
 
 type Phase = "summary" | "payment";
 
 // ─── Main client ─────────────────────────────────────────────────────────────
 
-export default function BooksCheckoutClient({ items, subtotal }: Props) {
+export default function BooksCheckoutClient({ items, subtotal, userEmail }: Props) {
   const router = useRouter();
 
   // Phases
@@ -172,6 +173,7 @@ export default function BooksCheckoutClient({ items, subtotal }: Props) {
           <RazorpayCustomForm
             orderInfo={orderInfo}
             description={description}
+            prefillEmail={userEmail}
             onSuccess={handlePaymentSuccess}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}

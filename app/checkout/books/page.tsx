@@ -46,7 +46,7 @@ export default async function BooksCheckoutPage() {
         Review your order and complete payment to unlock your library.
       </p>
 
-      <BooksCheckoutClient items={items} subtotal={cart.subtotal} />
+      <BooksCheckoutClient items={items} subtotal={cart.subtotal} userEmail={session.email} />
     </div>
   );
 }
