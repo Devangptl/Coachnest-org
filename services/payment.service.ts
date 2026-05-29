@@ -315,7 +315,10 @@ export async function finalizeCoursePayment(
     },
   });
   if (!order) throw new Error("Order not found");
-  if (order.status === "PAID") return { success: true, courseId: order.courseId };
+  // PAID = already finalised; REFUNDED = do not re-process or re-enroll
+  if (order.status === "PAID" || order.status === "REFUNDED") {
+    return { success: true, courseId: order.courseId };
+  }
 
   // Feature purchase — delegate to feature service
   if (order.featureId) {

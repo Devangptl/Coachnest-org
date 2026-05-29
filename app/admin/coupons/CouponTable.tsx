@@ -3,8 +3,8 @@
 import { useState } from "react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
-import { Copy, Eye, Trash2, Pencil } from "lucide-react";
-import { formatDate } from "@/lib/utils";
+import { Copy, Eye, Trash2, Pencil, Tag, Calendar, Hash, TrendingDown } from "lucide-react";
+import { formatDate, cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 import Link from "next/link";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
@@ -15,16 +15,11 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
 
   const getStatusVariant = (status: string) => {
     switch (status) {
-      case "ACTIVE":
-        return "green";
-      case "EXPIRED":
-        return "red";
-      case "DISABLED":
-        return "amber";
-      case "UNLIMITED":
-        return "blue";
-      default:
-        return "gray";
+      case "ACTIVE":    return "green"  as const;
+      case "EXPIRED":   return "red"    as const;
+      case "DISABLED":  return "amber"  as const;
+      case "UNLIMITED": return "blue"   as const;
+      default:          return "gray"   as const;
     }
   };
 
@@ -35,15 +30,13 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
 
   const handleDelete = async (id: string) => {
     if (!await confirm("Are you sure you want to delete this coupon?", { title: "Delete Coupon", confirmText: "Delete" })) return;
-
     setLoading(id);
     try {
       const res = await fetch(`/api/admin/coupons/${id}`, { method: "DELETE" });
       if (!res.ok) throw new Error("Failed to delete");
       toast.success("Coupon deleted successfully!");
-      // Refresh page
       window.location.reload();
-    } catch (error) {
+    } catch {
       toast.error("Error deleting coupon");
     } finally {
       setLoading(null);
@@ -51,59 +44,54 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
   };
 
   return (
-    <div className="overflow-x-auto">
-    <div className="min-w-[560px]">
     <div className="divide-y divide-border/50">
       {coupons.map((coupon) => (
         <div
           key={coupon.id}
-          className="grid grid-cols-12 gap-4 items-center px-4 py-3 hover:bg-secondary transition-colors"
+          className="px-4 py-3.5 hover:bg-secondary/30 transition-colors"
         >
-          {/* Code */}
-          <div className="col-span-2 min-w-0 flex items-center gap-2">
-            <code className="text-[#d97757] font-mono text-sm">{coupon.code}</code>
-            <button
-              onClick={() => copyCode(coupon.code)}
-              className="text-muted-foreground/70 hover:text-foreground transition-colors"
-              title="Copy code"
-            >
-              <Copy className="w-3 h-3" />
-            </button>
-          </div>
-
-          {/* Discount */}
-          <div className="col-span-1">
-            <span className="text-foreground font-semibold">
+          {/* Row 1: code + copy | discount */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Tag className="w-3.5 h-3.5 text-[#d97757] flex-shrink-0" />
+              <code className="text-[#d97757] font-mono text-sm font-semibold">{coupon.code}</code>
+              <button
+                onClick={() => copyCode(coupon.code)}
+                className="text-muted-foreground/60 hover:text-foreground transition-colors flex-shrink-0"
+                title="Copy code"
+              >
+                <Copy className="w-3.5 h-3.5" />
+              </button>
+            </div>
+            <span className="text-base font-bold text-foreground flex-shrink-0">
               {coupon.discountType === "PERCENTAGE"
                 ? `${coupon.discount}%`
                 : `₹${coupon.discount.toLocaleString("en-IN")}`}
             </span>
           </div>
 
-          {/* Uses */}
-          <div className="col-span-1 text-sm text-muted-foreground">
-            {coupon.maxUses ? `${coupon.uses}/${coupon.maxUses}` : "Unlimited"}
+          {/* Row 2: status + uses + expires + discount given */}
+          <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+            <Badge variant={getStatusVariant(coupon.status)}>{coupon.status}</Badge>
+
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Hash className="w-3 h-3" />
+              {coupon.maxUses ? `${coupon.uses}/${coupon.maxUses} uses` : "Unlimited uses"}
+            </span>
+
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <Calendar className="w-3 h-3" />
+              {coupon.expiresAt ? formatDate(coupon.expiresAt) : "Never expires"}
+            </span>
+
+            <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+              <TrendingDown className="w-3 h-3 text-emerald-400" />
+              ₹{coupon.totalDiscountGiven.toLocaleString("en-IN")} given
+            </span>
           </div>
 
-          {/* Expires */}
-          <div className="col-span-1 text-sm text-muted-foreground">
-            {coupon.expiresAt ? formatDate(coupon.expiresAt) : "Never"}
-          </div>
-
-          {/* Status */}
-          <div className="col-span-1">
-            <Badge variant={getStatusVariant(coupon.status)}>
-              {coupon.status}
-            </Badge>
-          </div>
-
-          {/* Discount Given */}
-          <div className="col-span-1 text-sm text-muted-foreground">
-            ₹{coupon.totalDiscountGiven.toLocaleString("en-IN")}
-          </div>
-
-          {/* Actions */}
-          <div className="col-span-3 flex items-center justify-end gap-2">
+          {/* Row 3: actions */}
+          <div className="mt-2 flex items-center gap-1">
             <Link href={`/admin/coupons/${coupon.id}`}>
               <Button size="icon" variant="ghost" title="View usage">
                 <Eye className="w-4 h-4" />
@@ -126,8 +114,6 @@ export default function CouponTable({ coupons }: { coupons: any[] }) {
           </div>
         </div>
       ))}
-    </div>
-    </div>
     </div>
   );
 }
