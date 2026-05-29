@@ -5,15 +5,14 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   Lock, ArrowLeft, BookOpen, Tag, X, Loader2, ShieldCheck,
-  ChevronRight, Receipt, Library,
+  ChevronRight, Library,
 } from "lucide-react";
 import RazorpayCustomForm, {
   type RazorpayOrderInfo,
 } from "@/components/checkout/RazorpayCustomForm";
 import type { RazorpaySuccessResponse } from "@/types/razorpay";
 import { calcProcessingFee, PROCESSING_FEE_LABEL } from "@/lib/fees";
-
-// ── Types ─────────────────────────────────────────────────────────────────────
+import { cn } from "@/lib/utils";
 
 export interface CheckoutItem {
   bookId:        string;
@@ -33,16 +32,12 @@ interface Props {
 
 type Phase = "summary" | "payment";
 
-// ─── Main client ─────────────────────────────────────────────────────────────
-
 export default function BooksCheckoutClient({ items, subtotal, userEmail }: Props) {
   const router = useRouter();
 
-  // Phases
   const [phase,     setPhase]     = useState<Phase>("summary");
   const [orderInfo, setOrderInfo] = useState<RazorpayOrderInfo | null>(null);
 
-  // Coupon
   const [couponCode,    setCouponCode]    = useState("");
   const [couponLoading, setCouponLoading] = useState(false);
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -50,9 +45,8 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  const baseTotal    = items.reduce((s, i) => s + i.price, 0);
-  const itemDiscount = baseTotal - subtotal;
-  // Goods total (after item + coupon discounts), the 2% processing fee, and payable
+  const baseTotal     = items.reduce((s, i) => s + i.price, 0);
+  const itemDiscount  = baseTotal - subtotal;
   const goodsTotal    = appliedCoupon ? Math.max(0, subtotal - appliedCoupon.discount) : subtotal;
   const processingFee = calcProcessingFee(goodsTotal);
   const displayPrice  = goodsTotal + processingFee;
@@ -60,8 +54,6 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
 
   const [proceeding, setProceeding] = useState(false);
   const [error,      setError]      = useState<string | null>(null);
-
-  // ── Coupon ──────────────────────────────────────────────────────────────────
 
   async function handleApplyCoupon() {
     if (!couponCode.trim() || couponLoading) return;
@@ -85,8 +77,6 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
     }
   }
 
-  // ── Proceed to payment (Phase 1 → Phase 2) ─────────────────────────────────
-
   async function handleProceed(e: FormEvent) {
     e.preventDefault();
     setError(null);
@@ -99,7 +89,6 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "Failed to create order");
-
       setOrderInfo({
         razorpayOrderId: data.razorpayOrderId,
         dbOrderId:       data.dbOrderId,
@@ -115,8 +104,6 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
       setProceeding(false);
     }
   }
-
-  // ── Verify payment and redirect (Phase 2 success — card) ─────────────────
 
   async function handlePaymentSuccess(response: RazorpaySuccessResponse) {
     if (!orderInfo) throw new Error("Order info missing");
@@ -136,7 +123,6 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
     router.push(`/checkout/success?type=books&orderId=${orderInfo.dbOrderId}`);
   }
 
-  // UPI S2S — order already finalised server-side; just redirect
   function handleUpiCaptured() {
     if (orderInfo) router.push(`/checkout/success?type=books&orderId=${orderInfo.dbOrderId}`);
   }
@@ -148,7 +134,6 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
   if (phase === "payment" && orderInfo) {
     return (
       <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 items-start">
-        {/* Left: compact order recap */}
         <aside className="lg:col-span-2 space-y-3">
           <button
             type="button"
@@ -158,29 +143,22 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
             <ArrowLeft className="w-3.5 h-3.5" /> Back to order summary
           </button>
 
-          <OrderRecap items={items} />
+          {/* Book list */}
+          <BookList items={items} />
 
-          <div className="rounded-lg border border-border bg-card p-4 space-y-2 text-sm">
-            <Row label={`Items (${items.length})`} value={`₹${baseTotal.toLocaleString("en-IN")}`} />
-            {itemDiscount > 0 && (
-              <Row label="Item discounts" value={`−₹${itemDiscount.toLocaleString("en-IN")}`} positive />
-            )}
-            {appliedCoupon && (
-              <Row label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />
-            )}
-            {processingFee > 0 && (
-              <Row label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />
-            )}
-            <div className="border-t border-border pt-2 flex items-baseline justify-between">
-              <span className="text-muted-foreground">Total</span>
-              <span className="text-xl font-bold text-foreground">
-                ₹{displayPrice.toLocaleString("en-IN")}
-              </span>
+          {/* Price recap */}
+          <div className="rounded-lg border border-border bg-card px-4 py-3 space-y-1.5 text-sm">
+            <PriceRow label={`Items (${items.length})`} value={`₹${baseTotal.toLocaleString("en-IN")}`} />
+            {itemDiscount > 0 && <PriceRow label="Item discounts" value={`−₹${itemDiscount.toLocaleString("en-IN")}`} positive />}
+            {appliedCoupon && <PriceRow label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />}
+            {processingFee > 0 && <PriceRow label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />}
+            <div className="flex justify-between border-t border-border pt-2 mt-1">
+              <span className="font-semibold text-foreground">Total</span>
+              <span className="font-bold text-lg text-foreground">₹{displayPrice.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </aside>
 
-        {/* Right: custom payment form */}
         <div className="lg:col-span-3">
           <RazorpayCustomForm
             orderInfo={orderInfo}
@@ -191,7 +169,7 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />
-          {error && <div className="mt-3"><InlineError msg={error} /></div>}
+          {error && <InlineError msg={error} className="mt-3" />}
         </div>
       </div>
     );
@@ -201,32 +179,29 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
 
   return (
     <form onSubmit={handleProceed} className="grid lg:grid-cols-5 gap-6 lg:gap-8 items-start">
-      {/* Order summary */}
+
+      {/* Left: books + coupon + totals */}
       <aside className="lg:col-span-2 space-y-3">
-        <OrderRecap items={items} />
+        <BookList items={items} />
 
         {/* Coupon */}
-        <div className="rounded-lg border border-border bg-card p-4">
-          <p className="label flex items-center gap-1.5">
+        <div className="rounded-lg border border-border bg-card p-4 space-y-3">
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
             <Tag className="w-3 h-3" /> Coupon code
           </p>
           {appliedCoupon ? (
             <div className="flex items-center justify-between bg-emerald-500/10 border border-emerald-500/25 rounded-md px-3 py-2">
               <div className="flex items-center gap-2 min-w-0">
                 <Tag className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm truncate">
-                  {appliedCoupon.code}
-                </span>
-                <span className="text-emerald-600/80 dark:text-emerald-400/80 text-xs whitespace-nowrap">
-                  −₹{appliedCoupon.discount.toLocaleString("en-IN")}
-                </span>
+                <span className="text-emerald-600 dark:text-emerald-400 font-semibold text-sm truncate">{appliedCoupon.code}</span>
+                <span className="text-emerald-600/70 dark:text-emerald-400/70 text-xs whitespace-nowrap">−₹{appliedCoupon.discount.toLocaleString("en-IN")}</span>
               </div>
               <button
                 type="button"
                 onClick={() => { setAppliedCoupon(null); setCouponCode(""); }}
-                className="p-1 rounded-md hover:bg-emerald-500/20 text-emerald-500/70 hover:text-emerald-500"
+                className="p-1 rounded-md hover:bg-emerald-500/20 text-emerald-500/60 hover:text-emerald-500 transition-colors"
               >
-                <X className="w-3.5 h-3.5" />
+                <X className="w-3 h-3" />
               </button>
             </div>
           ) : (
@@ -243,103 +218,94 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
                 type="button"
                 onClick={handleApplyCoupon}
                 disabled={couponLoading || !couponCode.trim()}
-                className="btn-secondary !text-xs"
+                className="btn-secondary !text-xs whitespace-nowrap"
               >
                 {couponLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : "Apply"}
               </button>
             </div>
           )}
-          {couponError && <p className="mt-2 text-xs text-red-500">{couponError}</p>}
+          {couponError && <p className="text-xs text-red-500">{couponError}</p>}
         </div>
 
-        {/* Totals */}
-        <div className="rounded-lg border border-border bg-card p-4 space-y-2 text-sm">
-          <h3 className="label flex items-center gap-1.5 !mb-2">
-            <Receipt className="w-3 h-3" /> Order Summary
-          </h3>
-          <Row label={`Items (${items.length})`} value={`₹${baseTotal.toLocaleString("en-IN")}`} />
-          {itemDiscount > 0 && (
-            <Row label="Item discounts" value={`−₹${itemDiscount.toLocaleString("en-IN")}`} positive />
-          )}
-          {appliedCoupon && (
-            <Row label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />
-          )}
-          {processingFee > 0 && (
-            <Row label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />
-          )}
-          <div className="border-t border-border pt-2 flex items-baseline justify-between">
-            <span className="text-muted-foreground">Total today</span>
-            <span className="text-xl font-bold text-foreground">
-              ₹{displayPrice.toLocaleString("en-IN")}
-            </span>
+        {/* Price breakdown */}
+        <div className="rounded-lg border border-border bg-card px-4 py-3 space-y-1.5 text-sm">
+          <PriceRow label={`Items (${items.length})`} value={`₹${baseTotal.toLocaleString("en-IN")}`} />
+          {itemDiscount > 0 && <PriceRow label="Item discounts" value={`−₹${itemDiscount.toLocaleString("en-IN")}`} positive />}
+          {appliedCoupon && <PriceRow label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />}
+          {processingFee > 0 && <PriceRow label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />}
+          <div className="flex justify-between border-t border-border pt-2 mt-1">
+            <span className="font-bold text-foreground">Total today</span>
+            <span className="font-bold text-lg text-foreground">₹{displayPrice.toLocaleString("en-IN")}</span>
           </div>
           {totalSavings > 0 && (
-            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center pt-1">
-              You save ₹{totalSavings.toLocaleString("en-IN")}!
+            <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium text-center pt-0.5">
+              You save ₹{totalSavings.toLocaleString("en-IN")}
             </p>
           )}
         </div>
-
-        <TrustSignals />
       </aside>
 
-      {/* Proceed button */}
+      {/* Right: CTA panel */}
       <div className="lg:col-span-3">
-        <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
-          <h2 className="text-base font-bold text-foreground mb-1">Complete your purchase</h2>
-          <p className="text-sm text-muted-foreground mb-5">
-            Pay with Card or UPI — entire checkout stays on this page.
-          </p>
+        <div className="rounded-lg border border-border bg-card p-6 space-y-6">
 
-          {/* Payment method pills */}
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            {[
-              { label: "Card",        sub: "Visa · MC · RuPay" },
-              { label: "UPI",         sub: "GPay · PhonePe · Paytm" },
-            ].map(({ label, sub }) => (
-              <div
-                key={label}
-                className="flex flex-col items-center gap-1 p-3 rounded-lg border border-border bg-secondary/30 text-center"
-              >
-                <span className="text-xs font-semibold text-foreground">{label}</span>
-                <span className="text-[10px] text-muted-foreground">{sub}</span>
-              </div>
-            ))}
+          {/* Amount */}
+          <div>
+            <p className="text-sm text-muted-foreground mb-1">Order total</p>
+            <p className="text-4xl font-bold text-foreground tracking-tight">
+              ₹{displayPrice.toLocaleString("en-IN")}
+            </p>
+            {processingFee > 0 && (
+              <p className="text-xs text-muted-foreground mt-1">
+                Includes ₹{processingFee.toLocaleString("en-IN")} processing fee
+              </p>
+            )}
           </div>
 
-          {error && <div className="mb-4"><InlineError msg={error} /></div>}
+          {error && <InlineError msg={error} />}
 
           <button
             type="submit"
             disabled={proceeding}
-            className="btn-primary !w-full !py-3 !text-base !font-bold justify-center"
+            className="btn-primary !w-full !py-4 !text-base !font-bold justify-center"
           >
             {proceeding ? (
-              <><Loader2 className="w-4 h-4 animate-spin" /> Preparing checkout…</>
+              <><Loader2 className="w-4 h-4 animate-spin" />Preparing checkout…</>
             ) : (
-              <><Lock className="w-4 h-4" /> Proceed to Pay ₹{displayPrice.toLocaleString("en-IN")} <ChevronRight className="w-4 h-4" /></>
+              <><Lock className="w-4 h-4" />Pay ₹{displayPrice.toLocaleString("en-IN")} securely<ChevronRight className="w-4 h-4" /></>
             )}
           </button>
 
-          <p className="mt-3 text-center text-[11px] text-muted-foreground/70 flex items-center justify-center gap-1.5">
-            <ShieldCheck className="w-3 h-3" />
-            Powered by Razorpay · Cards · UPI
-          </p>
+          {/* Trust */}
+          <div className="border-t border-border pt-4 flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
+            {[
+              { icon: Lock,        text: "256-bit SSL" },
+              { icon: ShieldCheck, text: "Secured by Razorpay" },
+              { icon: Library,     text: "Lifetime download access" },
+            ].map(({ icon: Icon, text }) => (
+              <div key={text} className="flex items-center gap-1.5 text-xs text-muted-foreground/60">
+                <Icon className="w-3.5 h-3.5 flex-shrink-0" />
+                {text}
+              </div>
+            ))}
+          </div>
+
         </div>
       </div>
+
     </form>
   );
 }
 
-// ─── Small inline components ─────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-function OrderRecap({ items }: { items: CheckoutItem[] }) {
+function BookList({ items }: { items: CheckoutItem[] }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <h3 className="label flex items-center gap-1.5 !mb-3">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5 mb-3">
         <Library className="w-3 h-3" /> Your books ({items.length})
       </h3>
-      <ul className="space-y-2.5">
+      <ul className="space-y-3">
         {items.map((item) => {
           const finalPrice = item.discountPrice ?? item.price;
           return (
@@ -359,7 +325,7 @@ function OrderRecap({ items }: { items: CheckoutItem[] }) {
               <div className="flex-1 min-w-0">
                 <Link
                   href={`/books/${item.slug}`}
-                  className="block text-xs font-semibold text-foreground hover:text-orange-500 transition-colors line-clamp-2 leading-snug"
+                  className="block text-xs font-semibold text-foreground hover:text-[#d97757] transition-colors line-clamp-2 leading-snug"
                 >
                   {item.title}
                 </Link>
@@ -376,38 +342,21 @@ function OrderRecap({ items }: { items: CheckoutItem[] }) {
   );
 }
 
-function TrustSignals() {
-  return (
-    <ul className="space-y-1.5 px-1">
-      {[
-        { icon: Lock,        text: "256-bit SSL encryption" },
-        { icon: ShieldCheck, text: "Secured by Razorpay" },
-        { icon: Library,     text: "Lifetime download access" },
-      ].map(({ icon: Icon, text }) => (
-        <li key={text} className="flex items-center gap-2 text-xs text-muted-foreground">
-          <Icon className="w-3.5 h-3.5 text-muted-foreground/50 flex-shrink-0" />
-          {text}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-function Row({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
+function PriceRow({ label, value, positive }: { label: string; value: string; positive?: boolean }) {
   return (
     <div className="flex items-center justify-between">
       <span className="text-muted-foreground">{label}</span>
-      <span className={positive ? "text-emerald-500 font-medium" : "text-foreground font-medium"}>
+      <span className={cn("font-medium", positive ? "text-emerald-500" : "text-foreground")}>
         {value}
       </span>
     </div>
   );
 }
 
-function InlineError({ msg }: { msg: string }) {
+function InlineError({ msg, className }: { msg: string; className?: string }) {
   return (
-    <div className="flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-md px-3.5 py-2.5">
-      <span className="flex-shrink-0 mt-0.5">⚠</span>
+    <div className={cn("flex items-start gap-2.5 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3", className)}>
+      <ShieldCheck className="w-4 h-4 flex-shrink-0 mt-0.5" />
       {msg}
     </div>
   );
