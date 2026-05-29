@@ -323,6 +323,17 @@ export default function RazorpayCustomForm({
             error?: string;
           };
 
+          // Stop polling immediately on any non-transient error (4xx)
+          if (!pollRes.ok && pollRes.status >= 400 && pollRes.status < 500) {
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+            setUpiWaiting(false);
+            setPaying(false);
+            const msg = pollData.error ?? "Payment check failed. Please contact support.";
+            setFormErr(msg);
+            onErrorRef.current?.(msg);
+            return;
+          }
+
           if (pollData.status === "captured") {
             if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
             setUpiWaiting(false);
@@ -338,7 +349,7 @@ export default function RazorpayCustomForm({
             onErrorRef.current?.(msg);
           }
           // "pending" — keep polling until countdown expires
-        } catch { /* network hiccup during poll — keep trying */ }
+        } catch { /* transient network hiccup — keep trying */ }
       }, 3000);
 
     } catch (error) {
