@@ -126,7 +126,7 @@ export default function InstructorEarningsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Earnings</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Earnings</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">
           Track your revenue, wallet balance, and payout history.
         </p>
@@ -272,33 +272,26 @@ export default function InstructorEarningsPage() {
       {perCourse.length > 0 && (
         <GlassCard>
           <h2 className="text-base font-semibold text-foreground mb-4">Revenue by Course</h2>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b border-border text-muted-foreground text-left">
-                  <th className="pb-2 font-medium pr-4">Course</th>
-                  <th className="pb-2 font-medium text-right">Sales</th>
-                  <th className="pb-2 font-medium text-right">Your Cut</th>
-                  <th className="pb-2 font-medium text-right">Platform</th>
-                  <th className="pb-2 font-medium text-right">Your %</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border">
-                {perCourse.map((c) => (
-                  <tr key={c.courseId} className="hover:bg-secondary/30 transition-colors">
-                    <td className="py-2.5 pr-4 font-medium text-foreground max-w-[200px] truncate">{c.title}</td>
-                    <td className="py-2.5 text-right text-muted-foreground">{c.orders}</td>
-                    <td className="py-2.5 text-right text-emerald-400 font-semibold">₹{c.earnings.toLocaleString()}</td>
-                    <td className="py-2.5 text-right text-muted-foreground">₹{c.platformCut.toLocaleString()}</td>
-                    <td className="py-2.5 text-right">
-                      <span className="text-xs bg-orange-500/10 text-[#d97757] px-2 py-0.5 rounded-full">
-                        {c.revenuePercent}%
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="space-y-0 divide-y divide-border/50">
+            {perCourse.map((c) => (
+              <div key={c.courseId} className="py-3 first:pt-0 last:pb-0 hover:bg-secondary/20 transition-colors -mx-4 px-4 rounded-lg">
+                {/* Course title | your cut */}
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-medium text-foreground line-clamp-2 flex-1">{c.title}</p>
+                  <p className="text-sm font-bold text-emerald-400 flex-shrink-0">
+                    +₹{c.earnings.toLocaleString()}
+                  </p>
+                </div>
+                {/* Meta: sales · platform · your% */}
+                <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
+                  <span>{c.orders} sale{c.orders !== 1 ? "s" : ""}</span>
+                  <span>·</span>
+                  <span>Platform ₹{c.platformCut.toLocaleString()}</span>
+                  <span>·</span>
+                  <span className="text-[#d97757] font-semibold">{c.revenuePercent}% your cut</span>
+                </div>
+              </div>
+            ))}
           </div>
         </GlassCard>
       )}

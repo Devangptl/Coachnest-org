@@ -1,11 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { formatDate } from "@/lib/utils";
-import { Badge } from "@/components/ui/Badge";
+import { formatDate, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/Button";
 import Avatar from "@/components/Avatar";
-import { User, Eye, BookOpen, Award, Star, Mail } from "lucide-react";
+import { Eye, BookOpen, Award, Star, Mail, Zap } from "lucide-react";
 import { useState } from "react";
 import SendNotificationModal from "./SendNotificationModal";
 
@@ -28,92 +27,88 @@ interface Student {
   };
 }
 
+function MetaChip({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <span className={cn(
+      "inline-flex items-center gap-1 text-[10px] font-semibold uppercase tracking-wide px-2 py-0.5 rounded-full border",
+      className,
+    )}>
+      {children}
+    </span>
+  );
+}
+
 export default function StudentTable({ students }: { students: Student[] }) {
   const [notifyStudent, setNotifyStudent] = useState<Student | null>(null);
 
   return (
     <>
-      <div className="overflow-x-auto">
-      <div className="min-w-[680px]">
-      {/* Header */}
-      <div className="grid grid-cols-12 gap-4 px-4 py-2 text-muted-foreground/70 text-xs font-semibold uppercase tracking-wider border-b border-border">
-        <div className="col-span-3">Student</div>
-        <div className="col-span-1 text-center">Courses</div>
-        <div className="col-span-1 text-center">Certs</div>
-        <div className="col-span-1 text-center">Reviews</div>
-        <div className="col-span-2 text-center">XP / Level</div>
-        <div className="col-span-2 text-center">Joined</div>
-        <div className="col-span-2 text-right">Actions</div>
-      </div>
-
       <div className="divide-y divide-border/50">
         {students.map((student) => (
-          <div
-            key={student.id}
-            className="grid grid-cols-12 gap-4 px-4 py-3.5 items-center hover:bg-secondary transition-colors"
-          >
-            {/* Avatar + name */}
-            <div className="col-span-3 flex items-center gap-3 min-w-0">
-              <Avatar
-                name={student.name}
-                avatar={student.avatar}
-                seed={student.id}
-                size="w-9 h-9"
-                className="flex-shrink-0"
-              />
-              <div className="min-w-0">
-                <p className="text-foreground text-sm font-medium truncate">
-                  {student.name}
-                </p>
-                <p className="text-muted-foreground/70 text-xs truncate">{student.email}</p>
+          <div key={student.id} className="px-4 py-3.5 hover:bg-secondary/30 transition-colors">
+            {/* Row 1: avatar + name/email | XP */}
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <Avatar
+                  name={student.name}
+                  avatar={student.avatar}
+                  seed={student.id}
+                  size="w-9 h-9"
+                  className="flex-shrink-0"
+                />
+                <div className="min-w-0">
+                  <p className="text-foreground text-sm font-medium truncate">{student.name}</p>
+                  <p className="text-muted-foreground/70 text-xs truncate">{student.email}</p>
+                </div>
               </div>
-            </div>
-
-            {/* Enrollments */}
-            <div className="col-span-1 text-center">
-              <Badge variant={student._count.enrollments > 0 ? "blue" : "gray"}>
-                {student._count.enrollments}
-              </Badge>
-            </div>
-
-            {/* Certificates */}
-            <div className="col-span-1 text-center">
-              <Badge variant={student._count.certificates > 0 ? "green" : "gray"}>
-                {student._count.certificates}
-              </Badge>
-            </div>
-
-            {/* Reviews */}
-            <div className="col-span-1 text-center">
-              <Badge variant={student._count.reviews > 0 ? "amber" : "gray"}>
-                {student._count.reviews}
-              </Badge>
-            </div>
-
-            {/* XP / Level */}
-            <div className="col-span-2 text-center">
-              <div className="flex flex-col items-center gap-0.5">
-                <span className="text-xs font-bold text-[#d97757]">
-                  {student.xp > 0 ? `${student.xp.toLocaleString()} XP` : "—"}
-                </span>
-                {student.xp > 0 && (
-                  <span className="text-[10px] text-muted-foreground">
-                    Lv.{student.level} · {student.levelLabel}
-                    {student.streak > 0 && ` · 🔥${student.streak}`}
-                  </span>
+              <div className="text-right flex-shrink-0">
+                {student.xp > 0 ? (
+                  <>
+                    <p className="text-sm font-bold text-[#d97757]">{student.xp.toLocaleString()} XP</p>
+                    <p className="text-[10px] text-muted-foreground">Lv.{student.level} · {student.levelLabel}</p>
+                  </>
+                ) : (
+                  <p className="text-xs text-muted-foreground/50">No XP</p>
                 )}
               </div>
             </div>
 
-            {/* Joined date */}
-            <div className="col-span-2 text-center">
-              <span className="text-muted-foreground/70 text-xs">
-                {formatDate(student.createdAt)}
-              </span>
+            {/* Row 2: stats chips + joined date */}
+            <div className="mt-2 flex flex-wrap items-center gap-1.5">
+              <MetaChip className={cn(
+                "border",
+                student._count.enrollments > 0
+                  ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                  : "bg-secondary text-muted-foreground border-border"
+              )}>
+                <BookOpen className="w-2.5 h-2.5" /> {student._count.enrollments}
+              </MetaChip>
+              <MetaChip className={cn(
+                "border",
+                student._count.certificates > 0
+                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  : "bg-secondary text-muted-foreground border-border"
+              )}>
+                <Award className="w-2.5 h-2.5" /> {student._count.certificates}
+              </MetaChip>
+              <MetaChip className={cn(
+                "border",
+                student._count.reviews > 0
+                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                  : "bg-secondary text-muted-foreground border-border"
+              )}>
+                <Star className="w-2.5 h-2.5" /> {student._count.reviews}
+              </MetaChip>
+              {student.streak > 0 && (
+                <MetaChip className="bg-orange-500/10 text-[#d97757] border-orange-500/20">
+                  🔥 {student.streak}
+                </MetaChip>
+              )}
+              <span className="text-[11px] text-muted-foreground/60 ml-1">{formatDate(student.createdAt)}</span>
             </div>
 
-            {/* Actions */}
-            <div className="col-span-2 flex items-center justify-end gap-1">
+            {/* Row 3: actions */}
+            <div className="mt-2 flex items-center gap-1">
               <Link href={`/admin/students/${student.id}`}>
                 <Button size="icon" variant="ghost" title="View Profile">
                   <Eye className="w-4 h-4" />
@@ -131,10 +126,7 @@ export default function StudentTable({ students }: { students: Student[] }) {
           </div>
         ))}
       </div>
-      </div>
-      </div>
 
-      {/* Notification Modal */}
       {notifyStudent && (
         <SendNotificationModal
           studentId={notifyStudent.id}
