@@ -11,6 +11,7 @@ import RazorpayCustomForm, {
   type RazorpayOrderInfo,
 } from "@/components/checkout/RazorpayCustomForm";
 import type { RazorpaySuccessResponse } from "@/types/razorpay";
+import { calcProcessingFee, PROCESSING_FEE_LABEL } from "@/lib/fees";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -43,6 +44,10 @@ export default function FeatureCheckoutClient({
   const [error,      setError]      = useState<string | null>(null);
 
   const FeatureIcon = FEATURE_ICON[featureSlug] ?? Package;
+
+  // 2% processing fee added on top of the feature price → final payable amount
+  const processingFee = calcProcessingFee(price);
+  const payable       = price + processingFee;
 
   // ── Proceed to payment (Phase 1 → Phase 2) ─────────────────────────────────
 
@@ -126,10 +131,20 @@ export default function FeatureCheckoutClient({
             </div>
           </div>
 
-          <div className="rounded-md border border-border bg-secondary/30 p-4 text-sm">
-            <div className="flex items-center justify-between font-bold text-foreground">
-              <span>Total</span>
+          <div className="rounded-md border border-border bg-secondary/30 p-4 space-y-2.5 text-sm">
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>{featureName}</span>
               <span>₹{price.toLocaleString("en-IN")}</span>
+            </div>
+            {processingFee > 0 && (
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>{PROCESSING_FEE_LABEL}</span>
+                <span>₹{processingFee.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            <div className="border-t border-border pt-2.5 flex items-center justify-between font-bold text-foreground">
+              <span>Total</span>
+              <span>₹{payable.toLocaleString("en-IN")}</span>
             </div>
           </div>
         </div>
@@ -202,9 +217,15 @@ export default function FeatureCheckoutClient({
             <span>{featureName}</span>
             <span>₹{price.toLocaleString("en-IN")}</span>
           </div>
+          {processingFee > 0 && (
+            <div className="flex items-center justify-between text-muted-foreground">
+              <span>{PROCESSING_FEE_LABEL}</span>
+              <span>₹{processingFee.toLocaleString("en-IN")}</span>
+            </div>
+          )}
           <div className="border-t border-border pt-2.5 flex items-center justify-between font-bold text-foreground">
             <span>Total today</span>
-            <span>₹{price.toLocaleString("en-IN")}</span>
+            <span>₹{payable.toLocaleString("en-IN")}</span>
           </div>
         </div>
 
@@ -261,7 +282,7 @@ export default function FeatureCheckoutClient({
               <><Loader2 className="w-4 h-4 animate-spin" /> Preparing checkout…</>
             ) : (
               <><Lock className="w-4 h-4" />
-                Proceed to Pay ₹{price.toLocaleString("en-IN")}
+                Proceed to Pay ₹{payable.toLocaleString("en-IN")}
                 <ChevronRight className="w-4 h-4" /></>
             )}
           </button>

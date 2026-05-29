@@ -536,6 +536,8 @@ model Order {
   razorpayPaymentId String?     @unique
   couponId          String?
   discountAmount    Decimal?    @db.Decimal(10, 2)
+  // Processing fee added on top of the goods total (included in `amount`)
+  processingFee     Decimal?    @db.Decimal(10, 2)
   // Revenue attribution (populated on PAID status)
   instructorRevenue Decimal?    @db.Decimal(10, 2)
   platformRevenue   Decimal?    @db.Decimal(10, 2)
@@ -1817,6 +1819,8 @@ model BookOrder {
   razorpayPaymentId String?     @unique
   couponId          String?
   discountAmount  Decimal?    @db.Decimal(10, 2)
+  // Processing fee added on top of the goods total (included in `amount`)
+  processingFee   Decimal?    @db.Decimal(10, 2)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
