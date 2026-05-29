@@ -42,9 +42,12 @@ export default async function FeatureCheckoutPage({ params }: PageProps) {
   if (existing) redirect(`/features/${slug}?success=true`);
 
   return (
-    <div className="min-h-screen bg-background">
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:py-16">
-        <FeatureCheckoutClient
+    <div className="pt-4 pb-16 max-w-5xl mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Checkout</h1>
+      <p className="text-sm text-muted-foreground mb-6">
+        Review your order and complete payment to unlock this feature.
+      </p>
+      <FeatureCheckoutClient
           featureId={feature.id}
           featureName={feature.name}
           featureSlug={feature.slug}
@@ -53,7 +56,6 @@ export default async function FeatureCheckoutPage({ params }: PageProps) {
           includes={FEATURE_INCLUDES[feature.slug] ?? []}
           userEmail={session.email}
         />
-      </main>
     </div>
   );
 }
