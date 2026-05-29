@@ -6,6 +6,7 @@
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
 import { getRazorpay } from "@/lib/razorpay";
+import { calcProcessingFee } from "@/lib/fees";
 
 // ─── Create Razorpay order for a feature purchase ─────────────────────────────
 
@@ -32,7 +33,11 @@ export async function createFeatureRazorpayOrder(
   });
   if (existing) throw new Error("You already have access to this feature.");
 
-  const amount = Number(feature.price);
+  const basePrice = Number(feature.price);
+
+  // Processing fee (2%) added on top of the price → final payable amount
+  const processingFee = calcProcessingFee(basePrice);
+  const amount        = parseFloat((basePrice + processingFee).toFixed(2));
 
   // Enforce Razorpay minimum amount (₹1 = 100 paise)
   if (Math.round(amount * 100) < 100) {
@@ -47,6 +52,7 @@ export async function createFeatureRazorpayOrder(
       amount,
       currency:          "INR",
       status:            "PENDING",
+      processingFee,
       instructorRevenue: 0,
       platformRevenue:   amount,
     },
@@ -76,6 +82,8 @@ export async function createFeatureRazorpayOrder(
     razorpayOrderId: rzpOrder.id as string,
     dbOrderId:       order.id,
     amount,
+    subtotal:        basePrice,
+    processingFee,
     currency:        "INR",
     featureSlug:     feature.slug,
     featureName:     feature.name,

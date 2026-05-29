@@ -15,6 +15,7 @@ import RazorpayCustomForm, {
 import type { RazorpaySuccessResponse } from "@/types/razorpay";
 import GlassCard from "@/components/GlassCard";
 import { cn } from "@/lib/utils";
+import { calcProcessingFee, PROCESSING_FEE_LABEL } from "@/lib/fees";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -52,9 +53,12 @@ export default function CourseCheckoutClient({
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  const displayPrice = appliedCoupon
+  // Goods total (after sale + coupon), the 2% processing fee, and final payable
+  const goodsTotal = appliedCoupon
     ? Math.max(0, initialPrice - appliedCoupon.discount)
     : initialPrice;
+  const processingFee = calcProcessingFee(goodsTotal);
+  const displayPrice  = goodsTotal + processingFee;
 
   const [proceeding, setProceeding] = useState(false);
   const [error,      setError]      = useState<string | null>(null);
@@ -158,7 +162,7 @@ export default function CourseCheckoutClient({
   }
 
   const hasDiscount = originalPrice > initialPrice || appliedCoupon;
-  const savings     = originalPrice - displayPrice;
+  const savings     = originalPrice - goodsTotal;
 
   // ── Phase 2: Payment form ───────────────────────────────────────────────────
 
@@ -201,6 +205,14 @@ export default function CourseCheckoutClient({
                   <span className="text-xs">Coupon ({appliedCoupon.code})</span>
                   <span className="text-xs font-medium">
                     −₹{appliedCoupon.discount.toLocaleString("en-IN")}
+                  </span>
+                </div>
+              )}
+              {processingFee > 0 && (
+                <div className="flex items-center justify-between text-muted-foreground">
+                  <span className="text-xs">{PROCESSING_FEE_LABEL}</span>
+                  <span className="text-xs font-medium">
+                    ₹{processingFee.toLocaleString("en-IN")}
                   </span>
                 </div>
               )}
@@ -365,6 +377,12 @@ export default function CourseCheckoutClient({
               <div className="flex items-center justify-between text-emerald-600 dark:text-emerald-400">
                 <span>Coupon ({appliedCoupon.code})</span>
                 <span className="font-medium">−₹{appliedCoupon.discount.toLocaleString("en-IN")}</span>
+              </div>
+            )}
+            {processingFee > 0 && (
+              <div className="flex items-center justify-between text-muted-foreground">
+                <span>{PROCESSING_FEE_LABEL}</span>
+                <span className="font-medium">₹{processingFee.toLocaleString("en-IN")}</span>
               </div>
             )}
             <div className="border-t border-border pt-2.5 flex items-center justify-between">

@@ -16,6 +16,7 @@ import { createNotification } from "@/lib/notifications";
 import { getRazorpay } from "@/lib/razorpay";
 import { sendPurchaseEmail } from "@/lib/email";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
+import { calcProcessingFee } from "@/lib/fees";
 
 // ─── Revenue split constants ──────────────────────────────────────────────────
 
@@ -234,16 +235,21 @@ export async function createCourseRazorpayOrder(
     couponId = coupon.id;
   }
 
+  // Processing fee (2%) added on top of the goods total → final payable amount
+  const processingFee = calcProcessingFee(finalAmount);
+  const payable       = parseFloat((finalAmount + processingFee).toFixed(2));
+
   // Resolve dynamic split
   const basePercent = course.instructorRevenuePercent ?? 70;
   const { saleSource, instructorPercent, referralLinkId } =
     await resolveSplit(courseId, basePercent, couponId ?? null, referralCode ?? null);
 
+  // Instructor earns on the goods total; the processing fee goes to the platform
   const instructorRevenue = parseFloat(((finalAmount * instructorPercent) / 100).toFixed(2));
-  const platformRevenue   = parseFloat((finalAmount - instructorRevenue).toFixed(2));
+  const platformRevenue   = parseFloat((payable - instructorRevenue).toFixed(2));
 
   // Enforce Razorpay minimum amount (₹1 = 100 paise)
-  if (Math.round(finalAmount * 100) < 100) {
+  if (Math.round(payable * 100) < 100) {
     throw new Error("Minimum order amount is ₹1");
   }
 
@@ -252,11 +258,12 @@ export async function createCourseRazorpayOrder(
     data: {
       userId,
       courseId,
-      amount:            finalAmount,
+      amount:            payable,
       currency:          "INR",
       status:            "PENDING",
       couponId,
       discountAmount:    discountAmt > 0 ? discountAmt : undefined,
+      processingFee,
       instructorRevenue,
       platformRevenue,
       saleSource,
@@ -269,7 +276,7 @@ export async function createCourseRazorpayOrder(
   const razorpay = getRazorpay();
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rzpOrder = await (razorpay.orders.create as any)({
-    amount:   Math.round(finalAmount * 100), // paise
+    amount:   Math.round(payable * 100), // paise
     currency: "INR",
     receipt:  `course_${order.id}`,
     notes: {
@@ -296,7 +303,9 @@ export async function createCourseRazorpayOrder(
   return {
     razorpayOrderId: rzpOrder.id as string,
     dbOrderId:       order.id,
-    amount:          finalAmount,
+    amount:          payable,
+    subtotal:        finalAmount,
+    processingFee,
     currency:        "INR",
   };
 }

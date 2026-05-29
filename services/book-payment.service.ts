@@ -16,6 +16,7 @@ import { getRazorpay } from "@/lib/razorpay";
 import { createNotification } from "@/lib/notifications";
 import { sendBookPurchaseEmail } from "@/lib/email";
 import { clearCart } from "@/services/cart.service";
+import { calcProcessingFee } from "@/lib/fees";
 
 interface CreateBooksOrderResult {
   razorpayOrderId: string;
@@ -23,6 +24,7 @@ interface CreateBooksOrderResult {
   amount:          number;
   subtotal:        number;
   discount:        number;
+  processingFee:   number;
   itemCount:       number;
 }
 
@@ -100,7 +102,11 @@ export async function createBooksRazorpayOrder(
     couponId = coupon.id;
   }
 
-  const finalAmount = Math.max(0, subtotal - discountAmt);
+  const goodsTotal = Math.max(0, subtotal - discountAmt);
+
+  // Processing fee (2%) added on top of the goods total → final payable amount
+  const processingFee = calcProcessingFee(goodsTotal);
+  const finalAmount   = parseFloat((goodsTotal + processingFee).toFixed(2));
 
   // Enforce Razorpay minimum amount (₹1 = 100 paise)
   if (Math.round(finalAmount * 100) < 100) {
@@ -128,6 +134,7 @@ export async function createBooksRazorpayOrder(
       status:         "PENDING",
       couponId,
       discountAmount: discountAmt > 0 ? discountAmt : undefined,
+      processingFee,
       items: {
         create: allocations.map((a) => ({
           bookId:            a.book.id,
@@ -171,6 +178,7 @@ export async function createBooksRazorpayOrder(
     amount:          finalAmount,
     subtotal,
     discount:        discountAmt,
+    processingFee,
     itemCount:       allocations.length,
   };
 }

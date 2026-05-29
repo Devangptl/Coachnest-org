@@ -11,6 +11,7 @@ import RazorpayCustomForm, {
   type RazorpayOrderInfo,
 } from "@/components/checkout/RazorpayCustomForm";
 import type { RazorpaySuccessResponse } from "@/types/razorpay";
+import { calcProcessingFee, PROCESSING_FEE_LABEL } from "@/lib/fees";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -51,8 +52,11 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
 
   const baseTotal    = items.reduce((s, i) => s + i.price, 0);
   const itemDiscount = baseTotal - subtotal;
-  const displayPrice = appliedCoupon ? Math.max(0, subtotal - appliedCoupon.discount) : subtotal;
-  const totalSavings = baseTotal - displayPrice;
+  // Goods total (after item + coupon discounts), the 2% processing fee, and payable
+  const goodsTotal    = appliedCoupon ? Math.max(0, subtotal - appliedCoupon.discount) : subtotal;
+  const processingFee = calcProcessingFee(goodsTotal);
+  const displayPrice  = goodsTotal + processingFee;
+  const totalSavings  = baseTotal - goodsTotal;
 
   const [proceeding, setProceeding] = useState(false);
   const [error,      setError]      = useState<string | null>(null);
@@ -164,6 +168,9 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
             {appliedCoupon && (
               <Row label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />
             )}
+            {processingFee > 0 && (
+              <Row label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />
+            )}
             <div className="border-t border-border pt-2 flex items-baseline justify-between">
               <span className="text-muted-foreground">Total</span>
               <span className="text-xl font-bold text-foreground">
@@ -256,6 +263,9 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
           )}
           {appliedCoupon && (
             <Row label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />
+          )}
+          {processingFee > 0 && (
+            <Row label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />
           )}
           <div className="border-t border-border pt-2 flex items-baseline justify-between">
             <span className="text-muted-foreground">Total today</span>
