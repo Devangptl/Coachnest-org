@@ -12,12 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import {
-  createRouteLinkedAccount,
-  setupRouteSettlement,
-  setupRouteSettlementVpa,
-  createRouteTransfer,
-} from "@/lib/razorpay";
+import { createPayoutLink } from "@/lib/razorpay";
 import {
   sendPayoutApprovedEmail,
   sendPayoutRejectedEmail,
@@ -98,97 +93,35 @@ export async function PUT(
       }
     }
 
-    // ── PROCESS — Razorpay Route transfer ─────────────────────────────────────
+    // ── PROCESS — Razorpay Payout Link ───────────────────────────────────────
     if (action === "PROCESS") {
       if (request.status !== "APPROVED") {
         return NextResponse.json({ error: "Only APPROVED requests can be processed." }, { status: 400 });
       }
-
-      const bank = request.bankDetails as {
-        payoutMethod?:  "bank" | "upi";
-        accountHolder?: string;
-        accountNumber?: string;
-        ifsc?:          string;
-        bankName?:      string;
-        pan?:           string;
-        vpa?:           string;
-      } | null;
-
-      const payoutMethod = bank?.payoutMethod ?? "bank";
-
-      if (!bank?.pan) {
-        return NextResponse.json(
-          { error: "PAN number is missing. Instructor must re-submit the payout request with their PAN." },
-          { status: 400 }
-        );
+      if (!instructorEmail) {
+        return NextResponse.json({ error: "Instructor email not found." }, { status: 400 });
       }
 
-      if (payoutMethod === "upi") {
-        if (!bank?.vpa) {
-          return NextResponse.json(
-            { error: "UPI VPA is missing. Instructor must re-submit the payout request with their UPI ID." },
-            { status: 400 }
-          );
-        }
-      } else {
-        if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
-          return NextResponse.json(
-            { error: "Bank details are incomplete (accountHolder, accountNumber, IFSC required)." },
-            { status: 400 }
-          );
-        }
-      }
-
-      // Reuse the linked account from a previous processed payout for this instructor
-      let linkedAccountId = request.razorpayLinkedAccountId ?? undefined;
-      if (!linkedAccountId) {
-        const prev = await prisma.payoutRequest.findFirst({
-          where:   { instructorId: request.instructorId, razorpayLinkedAccountId: { not: null } },
-          select:  { razorpayLinkedAccountId: true },
-          orderBy: { requestedAt: "desc" },
-        });
-        linkedAccountId = prev?.razorpayLinkedAccountId ?? undefined;
-      }
-
-      // First-ever Route payout for this instructor — create linked account
-      if (!linkedAccountId) {
-        const account = await createRouteLinkedAccount(
-          instructorEmail ?? `${request.instructorId}@payouts.internal`,
-          instructorName,
-          bank.pan,
-        );
-        linkedAccountId = account.id;
-
-        // Request Route product + configure settlement (non-blocking)
-        if (payoutMethod === "upi") {
-          setupRouteSettlementVpa(linkedAccountId, bank.vpa!).catch((err) => {
-            console.warn("[PROCESS] setupRouteSettlementVpa failed — settle via Razorpay dashboard:", err?.message);
-          });
-        } else {
-          setupRouteSettlement(
-            linkedAccountId,
-            bank.accountHolder!,
-            bank.accountNumber!,
-            bank.ifsc!,
-          ).catch((err) => {
-            console.warn("[PROCESS] setupRouteSettlement failed — settle via Razorpay dashboard:", err?.message);
-          });
-        }
-      }
-
-      // Initiate the Route transfer (idempotent — safe to retry on network failure)
-      const transfer = await createRouteTransfer(linkedAccountId, amount, id);
+      // Create payout link — Razorpay emails it to the instructor who then
+      // enters their own bank/UPI details on Razorpay's hosted page
+      const link = await createPayoutLink(
+        amount,
+        instructorName,
+        instructorEmail,
+        `Payout of ₹${amountStr} from Coachnest`,
+        id,
+      );
 
       await prisma.$transaction([
         prisma.payoutRequest.update({
           where: { id },
           data:  {
-            status:                  "PROCESSED",
-            adminNotes:              adminNotes?.trim() || null,
-            processedAt:             new Date(),
-            razorpayLinkedAccountId: linkedAccountId,
-            razorpayTransferId:      transfer.id,
-            razorpayTransferStatus:  transfer.status,
+            status:                 "PROCESSED",
+            adminNotes:             adminNotes?.trim() || null,
+            processedAt:            new Date(),
+            razorpayTransferId:     link.id,
+            razorpayTransferStatus: link.status,
+            bankDetails:            { payoutLinkId: link.id, payoutLinkUrl: link.short_url },
           },
         }),
         prisma.instructorWallet.update({
@@ -200,8 +133,8 @@ export async function PUT(
             walletId:    request.walletId,
             amount,
             type:        "PAYOUT_PROCESSED",
-            description: `Payout of ₹${amount.toLocaleString()} transferred via Razorpay Route — ${transfer.id}`,
-            meta:        { razorpayTransferId: transfer.id, razorpayTransferStatus: transfer.status },
+            description: `Payout of ₹${amount.toLocaleString()} — payout link sent to ${instructorEmail}`,
+            meta:        { payoutLinkId: link.id, payoutLinkUrl: link.short_url },
           },
         }),
       ]);
@@ -211,9 +144,10 @@ export async function PUT(
       }
 
       return NextResponse.json({
-        message:                `₹${amountStr} transferred via Razorpay Route.`,
-        razorpayTransferId:     transfer.id,
-        razorpayTransferStatus: transfer.status,
+        message:       `Payout link sent to ${instructorEmail}.`,
+        payoutLinkId:  link.id,
+        payoutLinkUrl: link.short_url,
+        status:        link.status,
       });
     }
 
@@ -221,14 +155,6 @@ export async function PUT(
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Internal server error.";
     console.error("[PUT /api/admin/payouts/:id]", err);
-
-    // Surface a clear activation message for the most common Route setup error
-    if (msg.includes("not found on the server") || msg.includes("404")) {
-      return NextResponse.json(
-        { error: "Razorpay Route is not activated on your account. Go to Razorpay Dashboard → Route → Get Started to enable it, then retry." },
-        { status: 502 }
-      );
-    }
 
     const status = msg.includes("Razorpay") ? 502 : 500;
     return NextResponse.json({ error: msg }, { status });

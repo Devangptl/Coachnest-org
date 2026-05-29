@@ -3,11 +3,11 @@
 /**
  * /instructor/payouts — payout requests + referral link management
  */
-import { useEffect, useState, FormEvent, useRef } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import {
   Wallet, ArrowDownToLine, Plus, Copy, Check,
   Link2, Loader2, AlertCircle, Trash2, ExternalLink,
-  Clock, CheckCircle2, XCircle, RefreshCw, Tag, Building2, Smartphone,
+  Clock, CheckCircle2, XCircle, Tag,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { Select } from "@/components/ui/Select";
@@ -19,6 +19,7 @@ interface PayoutRequest {
   id: string; amount: number; status: string;
   notes: string | null; adminNotes: string | null;
   requestedAt: string; processedAt: string | null;
+  bankDetails?: { payoutLinkUrl?: string } | null;
 }
 
 interface ReferralLink {
@@ -68,23 +69,11 @@ export default function PayoutsPage() {
   const [tab,      setTab]      = useState<"payouts" | "referrals">("payouts");
 
   // Payout form
-  const [amount,       setAmount]       = useState("");
-  const [payoutMethod, setPayoutMethod] = useState<"bank" | "upi">("bank");
-  const [bankHolder,   setBankHolder]   = useState("");
-  const [bankAccount,  setBankAccount]  = useState("");
-  const [bankIfsc,     setBankIfsc]     = useState("");
-  const [bankName,     setBankName]     = useState("");
-  const [bankPan,      setBankPan]      = useState("");
-  const [upiVpa,       setUpiVpa]       = useState("");
-  const [payNotes,     setPayNotes]     = useState("");
-  const [submitting,   setSubmitting]   = useState(false);
-  const [payError,     setPayError]     = useState("");
-  const [paySuccess,   setPaySuccess]   = useState("");
-
-  // IFSC live validation
-  const [ifscStatus,   setIfscStatus]   = useState<"idle" | "loading" | "ok" | "error">("idle");
-  const [ifscBranch,   setIfscBranch]   = useState("");
-  const ifscTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [amount,     setAmount]     = useState("");
+  const [payNotes,   setPayNotes]   = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [payError,   setPayError]   = useState("");
+  const [paySuccess, setPaySuccess] = useState("");
 
   // Referral form
   const [refCourse,   setRefCourse]   = useState("");
@@ -115,47 +104,6 @@ export default function PayoutsPage() {
 
   useEffect(() => { loadAll(); }, []);
 
-  // ── IFSC live validation (debounced 600 ms) ──────────────────────────────────
-  useEffect(() => {
-    const ifsc = bankIfsc.trim().toUpperCase();
-    if (ifscTimer.current) clearTimeout(ifscTimer.current);
-
-    if (ifsc.length === 0) {
-      setIfscStatus("idle");
-      setIfscBranch("");
-      return;
-    }
-    if (ifsc.length < 11) {
-      setIfscStatus("idle");
-      setIfscBranch("");
-      return;
-    }
-
-    setIfscStatus("loading");
-    setIfscBranch("");
-
-    ifscTimer.current = setTimeout(async () => {
-      try {
-        const res  = await fetch(`/api/ifsc/${ifsc}`);
-        const data = await res.json();
-        if (!res.ok) {
-          setIfscStatus("error");
-          setIfscBranch("");
-          return;
-        }
-        if (data.bank && !bankName) setBankName(data.bank);
-        setIfscBranch(`${data.branch}${data.city ? ", " + data.city : ""}`);
-        setIfscStatus("ok");
-      } catch {
-        setIfscStatus("error");
-        setIfscBranch("");
-      }
-    }, 600);
-
-    return () => { if (ifscTimer.current) clearTimeout(ifscTimer.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [bankIfsc]);
-
   // ── Submit payout request ────────────────────────────────────────────────────
   async function handlePayoutSubmit(e: FormEvent) {
     e.preventDefault();
@@ -163,20 +111,15 @@ export default function PayoutsPage() {
     setPayError("");
     setPaySuccess("");
     try {
-      const bankDetails = payoutMethod === "upi"
-        ? { payoutMethod: "upi", vpa: upiVpa.trim().toLowerCase(), pan: bankPan.toUpperCase() }
-        : { payoutMethod: "bank", accountHolder: bankHolder, accountNumber: bankAccount, ifsc: bankIfsc, bankName, pan: bankPan.toUpperCase() };
-
       const res = await fetch("/api/instructor/payout-requests", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: Number(amount), bankDetails, notes: payNotes }),
+        body: JSON.stringify({ amount: Number(amount), notes: payNotes }),
       });
       const data = await res.json();
       if (!res.ok) { setPayError(data.error); return; }
-      setPaySuccess("Payout request submitted! We'll process it within 7 business days.");
-      setAmount(""); setBankHolder(""); setBankAccount(""); setBankIfsc(""); setBankName(""); setBankPan(""); setUpiVpa(""); setPayNotes("");
-      setIfscStatus("idle"); setIfscBranch("");
+      setPaySuccess("Request submitted! Once approved, you'll receive a payout link on your email to claim funds via bank or UPI.");
+      setAmount(""); setPayNotes("");
       loadAll();
     } finally {
       setSubmitting(false);
@@ -273,6 +216,10 @@ export default function PayoutsPage() {
             )}
 
             <form onSubmit={handlePayoutSubmit} className="space-y-3">
+              <div className="text-xs text-muted-foreground bg-secondary/50 border border-border rounded-lg px-3 py-2.5">
+                Once your request is approved, you'll receive a <strong className="text-foreground">secure payout link</strong> on your registered email. Click it to enter your bank account or UPI details and claim your funds — no bank details needed here.
+              </div>
+
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">Amount (₹) *</label>
                 <input type="number" required min={MIN_PAYOUT} value={amount}
@@ -281,119 +228,6 @@ export default function PayoutsPage() {
                   disabled={hasPending} />
                 <p className="text-xs text-muted-foreground/60 mt-1">
                   Available: ₹{(wallet?.balance ?? 0).toLocaleString()} · Min: ₹{MIN_PAYOUT.toLocaleString()}
-                </p>
-              </div>
-
-              {/* Payout method toggle */}
-              <div>
-                <label className="text-xs text-muted-foreground mb-1.5 block">Payout Method *</label>
-                <div className="flex gap-2">
-                  {(["bank", "upi"] as const).map((m) => (
-                    <button
-                      key={m}
-                      type="button"
-                      disabled={hasPending}
-                      onClick={() => setPayoutMethod(m)}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border text-sm font-medium transition-all",
-                        payoutMethod === m
-                          ? "border-[#d97757] bg-[#d97757]/10 text-[#d97757]"
-                          : "border-border text-muted-foreground hover:text-foreground hover:border-border/80",
-                        hasPending && "opacity-50 cursor-not-allowed",
-                      )}
-                    >
-                      {m === "bank" ? <Building2 className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
-                      {m === "bank" ? "Bank Account" : "UPI"}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Bank account fields */}
-              {payoutMethod === "bank" && (
-                <>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Account Holder *</label>
-                      <input required value={bankHolder} onChange={(e) => setBankHolder(e.target.value)}
-                        className="input-glass w-full" placeholder="Full name" disabled={hasPending} />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Bank Name *</label>
-                      <input required value={bankName} onChange={(e) => setBankName(e.target.value)}
-                        className="input-glass w-full" placeholder="e.g. HDFC Bank" disabled={hasPending} />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">Account Number *</label>
-                      <input required value={bankAccount} onChange={(e) => setBankAccount(e.target.value)}
-                        className="input-glass w-full" placeholder="XXXXXXXXXX" disabled={hasPending} />
-                    </div>
-                    <div>
-                      <label className="text-xs text-muted-foreground mb-1 block">IFSC Code *</label>
-                      <div className="relative">
-                        <input
-                          required
-                          value={bankIfsc}
-                          onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
-                          maxLength={11}
-                          className={cn(
-                            "input-glass w-full pr-8",
-                            ifscStatus === "ok"    && "border-emerald-500/50",
-                            ifscStatus === "error" && "border-red-500/50",
-                          )}
-                          placeholder="SBIN0001234"
-                          disabled={hasPending}
-                        />
-                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                          {ifscStatus === "loading" && <Loader2    className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
-                          {ifscStatus === "ok"      && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                          {ifscStatus === "error"   && <XCircle    className="w-3.5 h-3.5 text-red-400" />}
-                        </span>
-                      </div>
-                      {ifscStatus === "ok" && ifscBranch && (
-                        <p className="text-[11px] text-emerald-400/80 mt-1 flex items-center gap-1">
-                          <Building2 className="w-3 h-3" /> {ifscBranch}
-                        </p>
-                      )}
-                      {ifscStatus === "error" && (
-                        <p className="text-[11px] text-red-400 mt-1">IFSC code not found. Please double-check.</p>
-                      )}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* UPI VPA field */}
-              {payoutMethod === "upi" && (
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">UPI ID (VPA) *</label>
-                  <input
-                    required
-                    value={upiVpa}
-                    onChange={(e) => setUpiVpa(e.target.value)}
-                    className="input-glass w-full"
-                    placeholder="yourname@upi"
-                    disabled={hasPending}
-                  />
-                  <p className="text-xs text-muted-foreground/60 mt-1">
-                    e.g. 9876543210@paytm, yourname@oksbi, yourname@ybl
-                  </p>
-                </div>
-              )}
-
-              <div>
-                <label className="text-xs text-muted-foreground mb-1 block">PAN Number *</label>
-                <input required value={bankPan}
-                  onChange={(e) => setBankPan(e.target.value.toUpperCase())}
-                  pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
-                  maxLength={10}
-                  className="input-glass w-full" placeholder="ABCDE1234F"
-                  disabled={hasPending} />
-                <p className="text-xs text-muted-foreground/60 mt-1">
-                  Required for Razorpay Route KYC and income tax compliance.
                 </p>
               </div>
 
@@ -438,6 +272,16 @@ export default function PayoutsPage() {
                       </p>
                       {p.adminNotes && (
                         <p className="text-xs text-muted-foreground/70 mt-1 italic">"{p.adminNotes}"</p>
+                      )}
+                      {p.status === "PROCESSED" && p.bankDetails?.payoutLinkUrl && (
+                        <a
+                          href={p.bankDetails.payoutLinkUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="mt-2 inline-flex items-center gap-1.5 text-xs font-medium text-[#d97757] hover:underline"
+                        >
+                          <ExternalLink className="w-3 h-3" /> Claim Payout
+                        </a>
                       )}
                     </div>
                   );

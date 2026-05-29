@@ -27,13 +27,14 @@ import { handleFeaturePaymentSuccess } from "@/services/feature.service";
 import { createNotification } from "@/lib/notifications";
 
 // ── Webhook events handled ──────────────────────────────────────────────────
-// payment.captured   — finalize order (primary safety net)
-// order.paid         — finalize order (redundant backup)
-// payment.failed     — log only
-// refund.processed   — confirm razorpayRefundId on RefundRequest
-// refund.failed      — mark RefundRequest back to FAILED so admin can retry
-// transfer.settled   — Route transfer settled to instructor bank; update status
-// transfer.failed    — Route transfer failed; reset PayoutRequest to APPROVED for retry
+// payment.captured      — finalize order (primary safety net)
+// order.paid            — finalize order (redundant backup)
+// payment.failed        — log only
+// refund.processed      — confirm razorpayRefundId on RefundRequest
+// refund.failed         — mark RefundRequest back to FAILED so admin can retry
+// payout_link.processed — payout link claimed; update razorpayTransferStatus
+// transfer.settled      — Route transfer settled to instructor bank; update status
+// transfer.failed       — Route transfer failed; reset PayoutRequest to APPROVED for retry
 
 export const runtime = "nodejs";
 
@@ -104,6 +105,65 @@ export async function POST(req: NextRequest) {
         data:  { status: "FAILED" },
       }).catch(() => null);
       console.warn("[webhook] refund.failed for request", refundReqId, entity?.id);
+    }
+    return OK();
+  }
+
+  // ── Payout link events ───────────────────────────────────────────────────
+  if (eventName === "payout_link.processed") {
+    const entity       = (payload as any)?.payout_link?.entity;
+    const payoutLinkId = entity?.id as string | undefined;
+    if (payoutLinkId) {
+      await prisma.payoutRequest.updateMany({
+        where: { razorpayTransferId: payoutLinkId },
+        data:  { razorpayTransferStatus: "processed" },
+      }).catch(() => null);
+    }
+    return OK();
+  }
+
+  if (eventName === "payout_link.cancelled" || eventName === "payout_link.expired") {
+    const entity       = (payload as any)?.payout_link?.entity;
+    const payoutLinkId = entity?.id as string | undefined;
+    if (payoutLinkId) {
+      const pr = await prisma.payoutRequest.findFirst({
+        where:   { razorpayTransferId: payoutLinkId },
+        include: { wallet: true },
+      }).catch(() => null);
+
+      if (pr && pr.status === "PROCESSED") {
+        const amount = Number(pr.amount);
+        const state  = eventName.split(".")[1]; // "cancelled" | "expired"
+        await prisma.$transaction([
+          prisma.payoutRequest.update({
+            where: { id: pr.id },
+            data:  { status: "APPROVED", razorpayTransferStatus: state },
+          }),
+          prisma.instructorWallet.update({
+            where: { id: pr.walletId },
+            data:  { balance: { increment: amount }, totalWithdrawn: { decrement: amount } },
+          }),
+          prisma.walletTransaction.create({
+            data: {
+              walletId:    pr.walletId,
+              amount,
+              type:        "CREDIT",
+              description: `Payout link ${state} — ₹${amount.toLocaleString()} returned to wallet`,
+              meta:        { payoutLinkId },
+            },
+          }),
+        ]).catch(() => null);
+
+        createNotification({
+          data: {
+            userId: pr.instructorId,
+            title:  `Payout Link ${state.charAt(0).toUpperCase() + state.slice(1)}`,
+            body:   `Your payout link of ₹${amount.toLocaleString("en-IN")} has ${state}. The amount has been returned to your wallet — please submit a new payout request.`,
+            type:   "SYSTEM",
+            link:   "/instructor/payouts",
+          },
+        }).catch(() => null);
+      }
     }
     return OK();
   }

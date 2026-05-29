@@ -273,3 +273,45 @@ export async function createRouteTransfer(
     `transfer-${payoutRequestId}`, // idempotency key — safe to retry
   );
 }
+
+// ── Payout Links ──────────────────────────────────────────────────────────────
+
+export interface RzpPayoutLink {
+  id:        string;
+  short_url: string;
+  status:    string; // created | processing | processed | cancelled | expired
+}
+
+/**
+ * Create a Razorpay Payout Link and email it to the instructor.
+ * The instructor clicks the link and enters their own bank/UPI details —
+ * no bank details need to be collected on our side.
+ * Requires RazorpayX to be activated on the merchant account.
+ */
+export async function createPayoutLink(
+  amountRupees:    number,
+  instructorName:  string,
+  instructorEmail: string,
+  description:     string,
+  payoutRequestId: string,
+): Promise<RzpPayoutLink> {
+  return rzpFetch<RzpPayoutLink>(
+    "POST",
+    "https://api.razorpay.com/v1/payout-links",
+    {
+      amount:      Math.round(amountRupees * 100),
+      currency:    "INR",
+      accept_only: "payout",
+      description,
+      contact: {
+        name:  instructorName,
+        email: instructorEmail,
+        type:  "employee",
+      },
+      send_sms:   false,
+      send_email: true,
+      notes:      { payoutRequestId },
+    },
+    `payout-link-${payoutRequestId}`,
+  );
+}
