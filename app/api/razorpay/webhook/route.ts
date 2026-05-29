@@ -25,6 +25,13 @@ import { finalizeCoursePayment } from "@/services/payment.service";
 import { finalizeBookPayment } from "@/services/book-payment.service";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
 
+// ── Webhook events handled ──────────────────────────────────────────────────
+// payment.captured  — finalize order (primary safety net)
+// order.paid        — finalize order (redundant backup)
+// payment.failed    — log only
+// refund.processed  — confirm razorpayRefundId on RefundRequest
+// refund.failed     — mark RefundRequest back to FAILED so admin can retry
+
 export const runtime = "nodejs";
 
 // Razorpay expects a 200 response quickly — return 200 for all recognised
@@ -68,6 +75,33 @@ export async function POST(req: NextRequest) {
   if (eventName === "payment.failed") {
     const payment = (payload as any)?.payment?.entity;
     console.warn("[webhook] payment.failed", payment?.id, payment?.error_description);
+    return OK();
+  }
+
+  // ── Refund events ───────────────────────────────────────────────────────
+  if (eventName === "refund.processed") {
+    const entity = (payload as any)?.refund?.entity;
+    const rzpRefundId    = entity?.id            as string | undefined;
+    const refundReqId    = entity?.notes?.refundRequestId as string | undefined;
+    if (rzpRefundId && refundReqId) {
+      await prisma.refundRequest.updateMany({
+        where: { id: refundReqId, status: "PROCESSING" },
+        data:  { razorpayRefundId: rzpRefundId },
+      }).catch(() => null);
+    }
+    return OK();
+  }
+
+  if (eventName === "refund.failed") {
+    const entity      = (payload as any)?.refund?.entity;
+    const refundReqId = entity?.notes?.refundRequestId as string | undefined;
+    if (refundReqId) {
+      await prisma.refundRequest.updateMany({
+        where: { id: refundReqId, status: "PROCESSING" },
+        data:  { status: "FAILED" },
+      }).catch(() => null);
+      console.warn("[webhook] refund.failed for request", refundReqId, entity?.id);
+    }
     return OK();
   }
 

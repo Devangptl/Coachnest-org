@@ -65,7 +65,7 @@ function ActionModal({
   onDone,
 }: {
   request: RefundRequest;
-  action:  "APPROVE" | "REJECT";
+  action:  "APPROVE" | "REJECT" | "RETRY";
   onClose: () => void;
   onDone:  () => void;
 }) {
@@ -74,6 +74,7 @@ function ActionModal({
   const [error,   setError]   = useState("");
 
   const isApprove = action === "APPROVE";
+  const isRetry   = action === "RETRY";
 
   async function submit() {
     setLoading(true);
@@ -81,17 +82,19 @@ function ActionModal({
     try {
       const endpoint = isApprove
         ? `/api/admin/refunds/${request.id}/approve`
-        : `/api/admin/refunds/${request.id}/reject`;
+        : isRetry
+          ? `/api/admin/refunds/${request.id}/retry`
+          : `/api/admin/refunds/${request.id}/reject`;
 
       const res = await fetch(endpoint, {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body:    JSON.stringify({ adminNotes: notes }),
+        body:    isRetry ? "{}" : JSON.stringify({ adminNotes: notes }),
       });
 
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed.");
-      toast.success(data.message || (isApprove ? "Refund processed!" : "Request rejected."));
+      toast.success(data.message || (isApprove || isRetry ? "Refund processed!" : "Request rejected."));
       onDone();
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
@@ -105,7 +108,7 @@ function ActionModal({
       <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={onClose} />
       <div className="relative bg-card border border-border rounded-md shadow-2xl w-full max-w-lg p-6 space-y-4">
         <h2 className="text-lg font-semibold text-foreground">
-          {isApprove ? "Approve & Process Refund" : "Reject Refund Request"}
+          {isApprove ? "Approve & Process Refund" : isRetry ? "Retry Failed Refund" : "Reject Refund Request"}
         </h2>
 
         {/* Summary */}
@@ -158,19 +161,26 @@ function ActionModal({
             This will immediately issue a Razorpay refund, revoke course access, and debit the instructor wallet.
           </div>
         )}
+        {isRetry && (
+          <div className="p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg text-xs text-orange-400">
+            The previous Razorpay call failed. This will re-attempt the refund. Only use if the original payment was not already refunded in Razorpay.
+          </div>
+        )}
 
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Admin Notes (optional)
-          </label>
-          <textarea
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            rows={3}
-            placeholder={isApprove ? "Internal note for this refund…" : "Reason for rejection (shown to student)…"}
-            className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-orange-500 resize-none"
-          />
-        </div>
+        {!isRetry && (
+          <div>
+            <label className="block text-xs font-medium text-muted-foreground mb-1">
+              Admin Notes (optional)
+            </label>
+            <textarea
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              rows={3}
+              placeholder={isApprove ? "Internal note for this refund…" : "Reason for rejection (shown to student)…"}
+              className="w-full bg-secondary border border-border rounded-lg px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-orange-500 resize-none"
+            />
+          </div>
+        )}
 
         {error && (
           <p className="text-sm text-red-400 flex items-center gap-1.5">
@@ -190,13 +200,15 @@ function ActionModal({
             disabled={loading}
             className={cn(
               "flex-1 px-4 py-2 rounded-lg text-sm font-medium text-white transition-all disabled:opacity-50",
-              isApprove ? "bg-emerald-600 hover:bg-emerald-500" : "bg-red-600 hover:bg-red-500"
+              isApprove ? "bg-emerald-600 hover:bg-emerald-500"
+              : isRetry  ? "bg-orange-600 hover:bg-orange-500"
+              :             "bg-red-600 hover:bg-red-500"
             )}
           >
             {loading ? (
               <Loader2 className="w-4 h-4 animate-spin mx-auto" />
             ) : (
-              isApprove ? "Approve & Refund" : "Reject Request"
+              isApprove ? "Approve & Refund" : isRetry ? "Retry Refund" : "Reject Request"
             )}
           </button>
         </div>
@@ -232,7 +244,7 @@ function RefundRow({
   onAction,
 }: {
   req:      RefundRequest;
-  onAction: (req: RefundRequest, action: "APPROVE" | "REJECT") => void;
+  onAction: (req: RefundRequest, action: "APPROVE" | "REJECT" | "RETRY") => void;
 }) {
   const [expanded, setExpanded] = useState(false);
   const cfg  = STATUS_CFG[req.status];
@@ -309,6 +321,14 @@ function RefundRow({
                   Reject
                 </button>
               </>
+            )}
+            {req.status === "FAILED" && (
+              <button
+                onClick={() => onAction(req, "RETRY")}
+                className="px-2.5 py-1 rounded-lg bg-orange-500/10 text-orange-400 text-xs font-medium hover:bg-orange-500/20 transition-colors flex items-center gap-1"
+              >
+                <RotateCcw className="w-3 h-3" /> Retry
+              </button>
             )}
             <button className="p-1 text-muted-foreground hover:text-foreground transition-colors">
               {expanded ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
@@ -401,7 +421,7 @@ export default function RefundsAdminClient() {
   const [error,    setError]    = useState("");
   const [filter,   setFilter]   = useState<FilterStatus>("ALL");
   const [search,   setSearch]   = useState("");
-  const [modal,    setModal]    = useState<{ req: RefundRequest; action: "APPROVE" | "REJECT" } | null>(null);
+  const [modal,    setModal]    = useState<{ req: RefundRequest; action: "APPROVE" | "REJECT" | "RETRY" } | null>(null);
 
   const load = useCallback(async (status?: string) => {
     setLoading(true);
