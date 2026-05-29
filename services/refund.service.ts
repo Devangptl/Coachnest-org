@@ -280,10 +280,9 @@ export async function approveAndProcessRefund(
 
   // ── Atomic DB update ─────────────────────────────────────────────────────────
   await prisma.$transaction(async (tx) => {
-    // 1. Revoke course enrollment
+    // 1. Revoke course enrollment — no .catch: if this fails the whole tx rolls back
     await tx.enrollment
-      .deleteMany({ where: { userId: rr.userId, courseId: rr.courseId } })
-      .catch(() => null);
+      .deleteMany({ where: { userId: rr.userId, courseId: rr.courseId } });
 
     // 2. Debit instructor wallet (proportional share only).
     // Clamp to available balance — wallet must not go negative if the

@@ -139,7 +139,8 @@ async function finalizeByRazorpayOrderId(
   });
 
   if (order) {
-    if (order.status === "PAID") return; // already done
+    // PAID = already finalised; REFUNDED = do not re-process or re-enroll
+    if (order.status === "PAID" || order.status === "REFUNDED") return;
 
     if (order.featureId) {
       await handleFeaturePaymentSuccess(order.id, rzpPaymentId);
@@ -157,7 +158,7 @@ async function finalizeByRazorpayOrderId(
   });
 
   if (bookOrder) {
-    if (bookOrder.status === "PAID") return;
+    if (bookOrder.status === "PAID" || bookOrder.status === "REFUNDED") return;
     await finalizeBookPayment(bookOrder.id, rzpPaymentId);
     return;
   }
