@@ -48,11 +48,12 @@ export default async function CourseCheckoutPage({ params, searchParams }: PageP
     : Number(course.price);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Top bar */}
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-10 lg:py-16">
-        <CourseCheckoutClient
+    <div className="pt-4 pb-16 max-w-5xl mx-auto">
+      <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Checkout</h1>
+      <p className="text-sm text-muted-foreground mb-6">
+        Review your order and complete payment to get instant access.
+      </p>
+      <CourseCheckoutClient
           courseId={courseId}
           courseName={course.title}
           instructorName={course.createdBy?.name ?? "Instructor"}
@@ -63,7 +64,6 @@ export default async function CourseCheckoutPage({ params, searchParams }: PageP
           initialCoupon={coupon}
           userEmail={session.email}
         />
-      </main>
     </div>
   );
 }
