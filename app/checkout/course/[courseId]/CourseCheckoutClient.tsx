@@ -24,6 +24,7 @@ interface Props {
   price:          number;
   originalPrice:  number;
   initialCoupon?: string;
+  userEmail?:     string;
 }
 
 type Phase = "summary" | "payment";
@@ -32,7 +33,7 @@ type Phase = "summary" | "payment";
 
 export default function CourseCheckoutClient({
   courseId, courseName, instructorName, lessonCount,
-  thumbnail, price: initialPrice, originalPrice, initialCoupon,
+  thumbnail, price: initialPrice, originalPrice, initialCoupon, userEmail,
 }: Props) {
   const router = useRouter();
 
@@ -201,6 +202,7 @@ export default function CourseCheckoutClient({
           <RazorpayCustomForm
             orderInfo={orderInfo}
             description={courseName}
+            prefillEmail={userEmail}
             onSuccess={handlePaymentSuccess}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}

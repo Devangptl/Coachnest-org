@@ -21,6 +21,7 @@ interface Props {
   description: string | null;
   price:       number;
   includes:    string[];
+  userEmail?:  string;
 }
 
 const FEATURE_ICON: Record<string, React.ElementType> = {
@@ -32,7 +33,7 @@ type Phase = "summary" | "payment";
 // ── Main component ─────────────────────────────────────────────────────────────
 
 export default function FeatureCheckoutClient({
-  featureId, featureName, featureSlug, description, price, includes,
+  featureId, featureName, featureSlug, description, price, includes, userEmail,
 }: Props) {
   const router = useRouter();
 
@@ -133,6 +134,7 @@ export default function FeatureCheckoutClient({
           <RazorpayCustomForm
             orderInfo={orderInfo}
             description={`${featureName} — Platform Add-on`}
+            prefillEmail={userEmail}
             onSuccess={handlePaymentSuccess}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}

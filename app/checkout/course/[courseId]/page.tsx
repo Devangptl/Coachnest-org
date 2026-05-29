@@ -61,6 +61,7 @@ export default async function CourseCheckoutPage({ params, searchParams }: PageP
           price={price}
           originalPrice={Number(course.price)}
           initialCoupon={coupon}
+          userEmail={session.email}
         />
       </main>
     </div>
