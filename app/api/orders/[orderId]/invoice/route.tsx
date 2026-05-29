@@ -54,21 +54,24 @@ export async function GET(_req: NextRequest, { params }: Params) {
 
     const paid          = Number(order.amount);
     const discount      = Number(order.discountAmount ?? 0);
-    const originalPrice = paid + discount;
+    const processingFee = Number(order.processingFee ?? 0);
+    // Goods price before any discount (the list price shown in the table)
+    const originalPrice = paid - processingFee + discount;
 
     const invoice: InvoiceData = {
-      orderId:         order.id,
-      customerName:    order.user.name,
-      customerEmail:   order.user.email,
-      itemTitle:       order.course?.title ?? order.feature?.name ?? "Purchase",
-      itemType:        order.featureId ? "feature" : "course",
-      amount:          paid,
-      discountAmount:  discount,
-      originalAmount:  originalPrice,
-      currency:        order.currency,
-      couponCode:      order.coupon?.code ?? null,
+      orderId:           order.id,
+      customerName:      order.user.name,
+      customerEmail:     order.user.email,
+      itemTitle:         order.course?.title ?? order.feature?.name ?? "Purchase",
+      itemType:          order.featureId ? "feature" : "course",
+      amount:            paid,
+      discountAmount:    discount,
+      processingFee,
+      originalAmount:    originalPrice,
+      currency:          order.currency,
+      couponCode:        order.coupon?.code ?? null,
       razorpayPaymentId: order.razorpayPaymentId,
-      createdAt:       order.createdAt,
+      createdAt:         order.createdAt,
     };
 
     const element = <InvoiceDocument invoice={invoice} /> as React.ReactElement<DocumentProps>;

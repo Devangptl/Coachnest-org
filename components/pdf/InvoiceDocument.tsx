@@ -1,207 +1,297 @@
 /**
  * InvoiceDocument — @react-pdf/renderer component for purchase invoices.
- * Renders an A4 PDF with brand header, itemisation, discount, totals,
- * and payment reference. Uses built-in PDF fonts (no external fetch).
+ *
+ * Layout: A4, brand-orange accent bar at top, two-column header,
+ * bill-to / invoice-meta info row, itemised table, full totals breakdown
+ * (including processing fee), payment reference, and fixed footer.
  */
 import path from "path";
 import { Document, Page, View, Text, Image, StyleSheet } from "@react-pdf/renderer";
 
 const LOGO_PATH = path.join(process.cwd(), "public", "logo.png");
 
+const BRAND   = "#d97757";
+const INK     = "#111827";
+const MUTED   = "#6b7280";
+const FAINT   = "#9ca3af";
+const BORDER  = "#e5e7eb";
+const SURFACE = "#f9fafb";
+const GREEN   = "#15803d";
+const GREENBG = "#dcfce7";
+
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const S = StyleSheet.create({
   page: {
     backgroundColor: "#ffffff",
-    paddingTop: 52,
-    paddingBottom: 52,
-    paddingHorizontal: 52,
+    paddingTop:       64,
+    paddingBottom:    60,
+    paddingHorizontal: 48,
     fontFamily: "Helvetica",
-    fontSize: 11,
-    color: "#111827",
+    fontSize:   10,
+    color:      INK,
   },
 
-  // Header
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start" },
-  logo: { width: 120, height: "auto", objectFit: "contain" },
-  invoiceLabel: { fontSize: 22, fontFamily: "Helvetica-Bold", color: "#111827", textAlign: "right" },
-  invoiceNo: { fontSize: 9, color: "#6b7280", textAlign: "right", marginTop: 3, fontFamily: "Courier" },
+  // ── Brand accent bar (absolutely positioned, bleeds to page edge) ──────────
+  accentBar: {
+    position:        "absolute",
+    top:             0,
+    left:            0,
+    right:           0,
+    height:          6,
+    backgroundColor: BRAND,
+  },
 
-  // Divider
-  hr: { height: 1, backgroundColor: "#e5e7eb", marginVertical: 20 },
-  hrThin: { height: 1, backgroundColor: "#f3f4f6", marginVertical: 8 },
+  // ── Header ────────────────────────────────────────────────────────────────
+  header: {
+    flexDirection:   "row",
+    justifyContent:  "space-between",
+    alignItems:      "flex-start",
+    marginBottom:    24,
+  },
+  headerLeft: { flexDirection: "column", gap: 4 },
+  logo:       { width: 110, height: "auto", objectFit: "contain", marginBottom: 6 },
+  companyName:  { fontSize: 9, color: MUTED },
+  companyEmail: { fontSize: 9, color: MUTED },
 
-  // Two-column info row
-  infoRow: { flexDirection: "row", justifyContent: "space-between", marginBottom: 20 },
-  infoBlock: { flexDirection: "column" },
-  infoRight: { flexDirection: "column", alignItems: "flex-end" },
-  label: {
-    fontSize: 8,
-    fontFamily: "Helvetica-Bold",
-    color: "#9ca3af",
+  headerRight:    { flexDirection: "column", alignItems: "flex-end", gap: 3 },
+  invoiceTitle:   { fontSize: 26, fontFamily: "Helvetica-Bold", color: INK, letterSpacing: 2 },
+  invoiceNumber:  { fontSize: 9,  fontFamily: "Courier", color: MUTED, marginTop: 2 },
+  invoiceDate:    { fontSize: 9,  color: MUTED, marginTop: 1 },
+
+  // ── Divider ───────────────────────────────────────────────────────────────
+  hr:     { height: 1, backgroundColor: BORDER, marginVertical: 18 },
+  hrThin: { height: 1, backgroundColor: "#f3f4f6", marginVertical: 6 },
+
+  // ── Bill To / Status row ──────────────────────────────────────────────────
+  metaRow: {
+    flexDirection:  "row",
+    justifyContent: "space-between",
+    marginBottom:   20,
+  },
+  metaBlock: { flexDirection: "column" },
+
+  sectionLabel: {
+    fontSize:      7.5,
+    fontFamily:    "Helvetica-Bold",
+    color:         FAINT,
     textTransform: "uppercase",
     letterSpacing: 1,
-    marginBottom: 4,
+    marginBottom:  5,
   },
-  value: { fontSize: 11, color: "#111827" },
-  valueSub: { fontSize: 10, color: "#6b7280", marginTop: 2 },
+  metaName:  { fontSize: 11, fontFamily: "Helvetica-Bold", color: INK },
+  metaEmail: { fontSize: 9,  color: MUTED, marginTop: 3 },
 
   // Status badge
   paidBadge: {
-    backgroundColor: "#dcfce7",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 3,
-    alignSelf: "flex-end",
+    backgroundColor: GREENBG,
+    paddingHorizontal: 10,
+    paddingVertical:    4,
+    borderRadius:       4,
+    alignSelf:         "flex-start",
+    marginTop:          5,
   },
-  paidText: { fontSize: 9, fontFamily: "Helvetica-Bold", color: "#15803d" },
+  paidText: {
+    fontSize:   8.5,
+    fontFamily: "Helvetica-Bold",
+    color:      GREEN,
+    letterSpacing: 1,
+  },
 
-  // Table
+  // ── Items table ───────────────────────────────────────────────────────────
+  tableWrap: {
+    borderWidth:  1,
+    borderColor:  BORDER,
+    borderRadius: 4,
+    overflow:     "hidden",
+    marginBottom: 4,
+  },
   tableHeader: {
-    flexDirection: "row",
-    backgroundColor: "#f9fafb",
+    flexDirection:   "row",
+    backgroundColor: SURFACE,
     paddingVertical: 8,
     paddingHorizontal: 12,
-    borderRadius: 4,
-    marginBottom: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: BORDER,
   },
   tableRow: {
-    flexDirection: "row",
+    flexDirection:   "row",
     paddingVertical: 12,
     paddingHorizontal: 12,
   },
   thText: {
-    fontSize: 8,
-    fontFamily: "Helvetica-Bold",
-    color: "#6b7280",
+    fontSize:      7.5,
+    fontFamily:    "Helvetica-Bold",
+    color:         MUTED,
     textTransform: "uppercase",
     letterSpacing: 0.5,
   },
-  tdText: { fontSize: 11, color: "#111827" },
-  tdSub: { fontSize: 9, color: "#9ca3af", marginTop: 3 },
-  colItem: { flex: 1 },
-  colQty: { width: 48, textAlign: "center" },
-  colAmt: { width: 88, textAlign: "right" },
+  tdText: { fontSize: 10, color: INK },
+  tdSub:  { fontSize: 8.5, color: FAINT, marginTop: 3 },
+  colDesc: { flex: 1 },
+  colQty:  { width: 40,  textAlign: "center" },
+  colUnit: { width: 90,  textAlign: "right" },
+  colAmt:  { width: 90,  textAlign: "right" },
 
-  // Totals
-  totalsWrap: { marginTop: 8, alignItems: "flex-end" },
-  totalsRow: { flexDirection: "row", marginBottom: 5 },
-  totalsKey: { width: 130, textAlign: "right", paddingRight: 16, color: "#6b7280", fontSize: 11 },
-  totalsVal: { width: 88, textAlign: "right", fontSize: 11 },
-  totalsFinalKey: {
-    width: 130,
-    textAlign: "right",
-    paddingRight: 16,
-    fontFamily: "Helvetica-Bold",
-    fontSize: 13,
+  // ── Totals ────────────────────────────────────────────────────────────────
+  totalsWrap: { marginTop: 10, alignItems: "flex-end" },
+  totalsInner: {
+    width:       270,
+    borderWidth: 1,
+    borderColor: BORDER,
+    borderRadius: 4,
+    overflow:    "hidden",
   },
-  totalsFinalVal: {
-    width: 88,
-    textAlign: "right",
-    fontFamily: "Helvetica-Bold",
-    fontSize: 13,
-    color: "#ea580c",
+  totalsRow: {
+    flexDirection:   "row",
+    justifyContent:  "space-between",
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+  },
+  totalsRowAlt: {
+    flexDirection:   "row",
+    justifyContent:  "space-between",
+    paddingVertical: 7,
+    paddingHorizontal: 14,
+    backgroundColor: SURFACE,
+  },
+  totalsKey: { fontSize: 9.5, color: MUTED },
+  totalsVal: { fontSize: 9.5, color: INK,  fontFamily: "Helvetica-Bold" },
+  totalsKeyDiscount: { fontSize: 9.5, color: GREEN },
+  totalsValDiscount: { fontSize: 9.5, color: GREEN, fontFamily: "Helvetica-Bold" },
+
+  totalsFinalRow: {
+    flexDirection:   "row",
+    justifyContent:  "space-between",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: "#fff7ed",
+    borderTopWidth:  1,
+    borderTopColor:  BORDER,
+  },
+  totalsFinalKey: { fontSize: 11, fontFamily: "Helvetica-Bold", color: INK },
+  totalsFinalVal: { fontSize: 11, fontFamily: "Helvetica-Bold", color: BRAND },
+
+  // ── Payment reference ─────────────────────────────────────────────────────
+  refWrap:  { marginTop: 20 },
+  refValue: {
+    fontFamily: "Courier",
+    fontSize:   8.5,
+    color:      MUTED,
+    backgroundColor: SURFACE,
+    paddingHorizontal: 8,
+    paddingVertical:   5,
+    borderRadius: 3,
+    marginTop: 4,
+    borderWidth: 1,
+    borderColor: BORDER,
   },
 
-  // Payment ref
-  refWrap: { marginTop: 4 },
-  refValue: { fontFamily: "Courier", fontSize: 9, color: "#374151" },
-
-  // Thank-you
+  // ── Thank-you ─────────────────────────────────────────────────────────────
   thankYou: {
-    marginTop: 36,
-    textAlign: "center",
-    fontSize: 12,
+    marginTop:  28,
+    textAlign:  "center",
+    fontSize:   11,
     fontFamily: "Helvetica-Bold",
-    color: "#ea580c",
+    color:      BRAND,
+  },
+  thankYouSub: {
+    textAlign: "center",
+    fontSize:  8.5,
+    color:     FAINT,
+    marginTop: 4,
   },
 
-  // Footer
+  // ── Footer ────────────────────────────────────────────────────────────────
   footer: {
     position: "absolute",
-    bottom: 36,
-    left: 52,
-    right: 52,
-    flexDirection: "row",
+    bottom:   30,
+    left:     48,
+    right:    48,
+    flexDirection:  "row",
     justifyContent: "space-between",
+    alignItems:     "center",
     borderTopWidth: 1,
-    borderTopColor: "#e5e7eb",
-    paddingTop: 12,
+    borderTopColor: BORDER,
+    paddingTop:     10,
   },
-  footerText: { fontSize: 8, color: "#9ca3af" },
+  footerText:      { fontSize: 7.5, color: FAINT },
+  footerTextRight: { fontSize: 7.5, color: FAINT, textAlign: "right" },
 });
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function currency(n: number) {
-  // Use "INR " prefix — built-in PDF fonts don't carry the ₹ glyph
+function fmt(n: number) {
   return `INR ${n.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
 function fmtDate(d: Date | string) {
   return new Date(d).toLocaleDateString("en-IN", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
+    year: "numeric", month: "long", day: "numeric",
   });
 }
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
 export interface InvoiceData {
-  orderId:         string;
-  customerName:    string;
-  customerEmail:   string;
-  itemTitle:       string;
-  itemType:        "course" | "feature";
-  amount:          number; // final amount paid
-  discountAmount:  number;
-  originalAmount:  number; // amount + discountAmount
-  currency:        string;
-  couponCode:      string | null;
+  orderId:           string;
+  customerName:      string;
+  customerEmail:     string;
+  itemTitle:         string;
+  itemType:          "course" | "feature";
+  amount:            number;   // final total paid (incl. processingFee)
+  discountAmount:    number;
+  processingFee:     number;
+  originalAmount:    number;   // goods price before discount (amount - processingFee + discountAmount)
+  currency:          string;
+  couponCode:        string | null;
   razorpayPaymentId: string | null;
-  createdAt:       Date | string;
+  createdAt:         Date | string;
 }
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
-  const invoiceNo = `INV-${invoice.orderId.slice(-10).toUpperCase()}`;
+  const invoiceNo   = `INV-${invoice.orderId.slice(-10).toUpperCase()}`;
   const generatedOn = fmtDate(new Date());
+  const hasDiscount = invoice.discountAmount > 0;
+  const hasFee      = invoice.processingFee > 0;
+  const hasAdjustments = hasDiscount || hasFee;
 
   return (
     <Document title={`Invoice ${invoiceNo} – Coachnest`} author="Coachnest">
       <Page size="A4" style={S.page}>
 
+        {/* ── Brand accent bar ────────────────────────────────────── */}
+        <View style={S.accentBar} fixed />
+
         {/* ── Header ─────────────────────────────────────────────── */}
         <View style={S.header}>
-          <Image src={LOGO_PATH} style={S.logo} />
-          <View>
-            <Text style={S.invoiceLabel}>INVOICE</Text>
-            <Text style={S.invoiceNo}>{invoiceNo}</Text>
+          <View style={S.headerLeft}>
+            <Image src={LOGO_PATH} style={S.logo} />
+            <Text style={S.companyName}>Coachnest Education Pvt. Ltd.</Text>
+            <Text style={S.companyEmail}>support@coachnest.com · coachnest.com</Text>
+          </View>
+          <View style={S.headerRight}>
+            <Text style={S.invoiceTitle}>INVOICE</Text>
+            <Text style={S.invoiceNumber}>{invoiceNo}</Text>
+            <Text style={S.invoiceDate}>Date: {fmtDate(invoice.createdAt)}</Text>
           </View>
         </View>
 
         <View style={S.hr} />
 
-        {/* ── Billing info + Invoice details ─────────────────────── */}
-        <View style={S.infoRow}>
-          <View style={S.infoBlock}>
-            <Text style={S.label}>Billed To</Text>
-            <Text style={S.value}>{invoice.customerName}</Text>
-            <Text style={S.valueSub}>{invoice.customerEmail}</Text>
+        {/* ── Bill To + Status ────────────────────────────────────── */}
+        <View style={S.metaRow}>
+          <View style={S.metaBlock}>
+            <Text style={S.sectionLabel}>Billed To</Text>
+            <Text style={S.metaName}>{invoice.customerName}</Text>
+            <Text style={S.metaEmail}>{invoice.customerEmail}</Text>
           </View>
-
-          <View style={S.infoRight}>
-            <View style={{ marginBottom: 10, alignItems: "flex-end" }}>
-              <Text style={S.label}>Invoice Date</Text>
-              <Text style={S.value}>{fmtDate(invoice.createdAt)}</Text>
-            </View>
-            <View style={{ marginBottom: 10, alignItems: "flex-end" }}>
-              <Text style={S.label}>Status</Text>
-              <View style={S.paidBadge}>
-                <Text style={S.paidText}>PAID</Text>
-              </View>
+          <View style={[S.metaBlock, { alignItems: "flex-end" }]}>
+            <Text style={S.sectionLabel}>Payment Status</Text>
+            <View style={S.paidBadge}>
+              <Text style={S.paidText}>PAID</Text>
             </View>
           </View>
         </View>
@@ -209,70 +299,86 @@ export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
         <View style={S.hr} />
 
         {/* ── Items table ────────────────────────────────────────── */}
-        <View style={S.tableHeader}>
-          <Text style={[S.thText, S.colItem]}>Description</Text>
-          <Text style={[S.thText, S.colQty]}>Qty</Text>
-          <Text style={[S.thText, S.colAmt]}>Amount</Text>
-        </View>
-
-        <View style={S.tableRow}>
-          <View style={S.colItem}>
-            <Text style={S.tdText}>{invoice.itemTitle}</Text>
-            <Text style={S.tdSub}>
-              {invoice.itemType === "course" ? "Online Course" : "Platform Add-on"} · Lifetime Access
-            </Text>
+        <View style={S.tableWrap}>
+          <View style={S.tableHeader}>
+            <Text style={[S.thText, S.colDesc]}>Description</Text>
+            <Text style={[S.thText, S.colQty]}>Qty</Text>
+            <Text style={[S.thText, S.colUnit]}>Unit Price</Text>
+            <Text style={[S.thText, S.colAmt]}>Amount</Text>
           </View>
-          <Text style={[S.tdText, S.colQty]}>1</Text>
-          <Text style={[S.tdText, S.colAmt]}>
-            {currency(invoice.discountAmount > 0 ? invoice.originalAmount : invoice.amount)}
-          </Text>
-        </View>
 
-        <View style={S.hrThin} />
+          <View style={S.tableRow}>
+            <View style={S.colDesc}>
+              <Text style={S.tdText}>{invoice.itemTitle}</Text>
+              <Text style={S.tdSub}>
+                {invoice.itemType === "course" ? "Online Course" : "Platform Add-on"} · Lifetime Access
+              </Text>
+            </View>
+            <Text style={[S.tdText, S.colQty]}>1</Text>
+            <Text style={[S.tdText, S.colUnit]}>{fmt(invoice.originalAmount)}</Text>
+            <Text style={[S.tdText, S.colAmt]}>{fmt(invoice.originalAmount)}</Text>
+          </View>
+        </View>
 
         {/* ── Totals ─────────────────────────────────────────────── */}
         <View style={S.totalsWrap}>
-          {invoice.discountAmount > 0 && (
-            <>
-              <View style={S.totalsRow}>
-                <Text style={S.totalsKey}>Subtotal</Text>
-                <Text style={S.totalsVal}>{currency(invoice.originalAmount)}</Text>
+          <View style={S.totalsInner}>
+            {!hasAdjustments ? (
+              /* No adjustments — just show the total */
+              <View style={S.totalsFinalRow}>
+                <Text style={S.totalsFinalKey}>Total Paid</Text>
+                <Text style={S.totalsFinalVal}>{fmt(invoice.amount)}</Text>
               </View>
-              <View style={S.totalsRow}>
-                <Text style={[S.totalsKey, { color: "#15803d" }]}>
-                  Discount{invoice.couponCode ? ` (${invoice.couponCode})` : ""}
-                </Text>
-                <Text style={[S.totalsVal, { color: "#15803d" }]}>
-                  -{currency(invoice.discountAmount)}
-                </Text>
-              </View>
-              <View style={S.hrThin} />
-            </>
-          )}
+            ) : (
+              <>
+                <View style={S.totalsRow}>
+                  <Text style={S.totalsKey}>Subtotal</Text>
+                  <Text style={S.totalsVal}>{fmt(invoice.originalAmount)}</Text>
+                </View>
 
-          <View style={[S.totalsRow, { marginTop: 4 }]}>
-            <Text style={S.totalsFinalKey}>Total Paid</Text>
-            <Text style={S.totalsFinalVal}>{currency(invoice.amount)}</Text>
+                {hasDiscount && (
+                  <View style={S.totalsRowAlt}>
+                    <Text style={S.totalsKeyDiscount}>
+                      Discount{invoice.couponCode ? ` (${invoice.couponCode})` : ""}
+                    </Text>
+                    <Text style={S.totalsValDiscount}>-{fmt(invoice.discountAmount)}</Text>
+                  </View>
+                )}
+
+                {hasFee && (
+                  <View style={S.totalsRow}>
+                    <Text style={S.totalsKey}>Processing Fee (2%)</Text>
+                    <Text style={S.totalsVal}>{fmt(invoice.processingFee)}</Text>
+                  </View>
+                )}
+
+                <View style={S.totalsFinalRow}>
+                  <Text style={S.totalsFinalKey}>Total Paid</Text>
+                  <Text style={S.totalsFinalVal}>{fmt(invoice.amount)}</Text>
+                </View>
+              </>
+            )}
           </View>
         </View>
-
-        <View style={S.hr} />
 
         {/* ── Payment reference ──────────────────────────────────── */}
         {invoice.razorpayPaymentId && (
           <View style={S.refWrap}>
-            <Text style={S.label}>Payment Reference</Text>
+            <Text style={S.sectionLabel}>Payment Reference</Text>
             <Text style={S.refValue}>{invoice.razorpayPaymentId}</Text>
           </View>
         )}
 
         {/* ── Thank-you ──────────────────────────────────────────── */}
         <Text style={S.thankYou}>Thank you for your purchase!</Text>
+        <Text style={S.thankYouSub}>
+          This is a computer-generated invoice and does not require a signature.
+        </Text>
 
         {/* ── Footer ─────────────────────────────────────────────── */}
         <View style={S.footer} fixed>
           <Text style={S.footerText}>Coachnest · support@coachnest.com</Text>
-          <Text style={S.footerText}>Generated on {generatedOn}</Text>
+          <Text style={S.footerTextRight}>Generated on {generatedOn}</Text>
         </View>
 
       </Page>
