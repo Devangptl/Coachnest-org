@@ -7,7 +7,7 @@ import { useEffect, useState, FormEvent, useRef } from "react";
 import {
   Wallet, ArrowDownToLine, Plus, Copy, Check,
   Link2, Loader2, AlertCircle, Trash2, ExternalLink,
-  Clock, CheckCircle2, XCircle, RefreshCw, Tag, Building2,
+  Clock, CheckCircle2, XCircle, RefreshCw, Tag, Building2, Smartphone,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { Select } from "@/components/ui/Select";
@@ -68,16 +68,18 @@ export default function PayoutsPage() {
   const [tab,      setTab]      = useState<"payouts" | "referrals">("payouts");
 
   // Payout form
-  const [amount,      setAmount]      = useState("");
-  const [bankHolder,  setBankHolder]  = useState("");
-  const [bankAccount, setBankAccount] = useState("");
-  const [bankIfsc,    setBankIfsc]    = useState("");
-  const [bankName,    setBankName]    = useState("");
-  const [bankPan,     setBankPan]     = useState("");
-  const [payNotes,    setPayNotes]    = useState("");
-  const [submitting,  setSubmitting]  = useState(false);
-  const [payError,    setPayError]    = useState("");
-  const [paySuccess,  setPaySuccess]  = useState("");
+  const [amount,       setAmount]       = useState("");
+  const [payoutMethod, setPayoutMethod] = useState<"bank" | "upi">("bank");
+  const [bankHolder,   setBankHolder]   = useState("");
+  const [bankAccount,  setBankAccount]  = useState("");
+  const [bankIfsc,     setBankIfsc]     = useState("");
+  const [bankName,     setBankName]     = useState("");
+  const [bankPan,      setBankPan]      = useState("");
+  const [upiVpa,       setUpiVpa]       = useState("");
+  const [payNotes,     setPayNotes]     = useState("");
+  const [submitting,   setSubmitting]   = useState(false);
+  const [payError,     setPayError]     = useState("");
+  const [paySuccess,   setPaySuccess]   = useState("");
 
   // IFSC live validation
   const [ifscStatus,   setIfscStatus]   = useState<"idle" | "loading" | "ok" | "error">("idle");
@@ -161,19 +163,19 @@ export default function PayoutsPage() {
     setPayError("");
     setPaySuccess("");
     try {
+      const bankDetails = payoutMethod === "upi"
+        ? { payoutMethod: "upi", vpa: upiVpa.trim().toLowerCase(), pan: bankPan.toUpperCase() }
+        : { payoutMethod: "bank", accountHolder: bankHolder, accountNumber: bankAccount, ifsc: bankIfsc, bankName, pan: bankPan.toUpperCase() };
+
       const res = await fetch("/api/instructor/payout-requests", {
         method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: Number(amount),
-          bankDetails: { accountHolder: bankHolder, accountNumber: bankAccount, ifsc: bankIfsc, bankName, pan: bankPan.toUpperCase() },
-          notes: payNotes,
-        }),
+        body: JSON.stringify({ amount: Number(amount), bankDetails, notes: payNotes }),
       });
       const data = await res.json();
       if (!res.ok) { setPayError(data.error); return; }
       setPaySuccess("Payout request submitted! We'll process it within 7 business days.");
-      setAmount(""); setBankHolder(""); setBankAccount(""); setBankIfsc(""); setBankName(""); setBankPan(""); setPayNotes("");
+      setAmount(""); setBankHolder(""); setBankAccount(""); setBankIfsc(""); setBankName(""); setBankPan(""); setUpiVpa(""); setPayNotes("");
       setIfscStatus("idle"); setIfscBranch("");
       loadAll();
     } finally {
@@ -282,57 +284,105 @@ export default function PayoutsPage() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Account Holder *</label>
-                  <input required value={bankHolder} onChange={(e) => setBankHolder(e.target.value)}
-                    className="input-glass w-full" placeholder="Full name" disabled={hasPending} />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Bank Name *</label>
-                  <input required value={bankName} onChange={(e) => setBankName(e.target.value)}
-                    className="input-glass w-full" placeholder="e.g. HDFC Bank" disabled={hasPending} />
+              {/* Payout method toggle */}
+              <div>
+                <label className="text-xs text-muted-foreground mb-1.5 block">Payout Method *</label>
+                <div className="flex gap-2">
+                  {(["bank", "upi"] as const).map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      disabled={hasPending}
+                      onClick={() => setPayoutMethod(m)}
+                      className={cn(
+                        "flex-1 flex items-center justify-center gap-2 py-2 rounded-lg border text-sm font-medium transition-all",
+                        payoutMethod === m
+                          ? "border-[#d97757] bg-[#d97757]/10 text-[#d97757]"
+                          : "border-border text-muted-foreground hover:text-foreground hover:border-border/80",
+                        hasPending && "opacity-50 cursor-not-allowed",
+                      )}
+                    >
+                      {m === "bank" ? <Building2 className="w-3.5 h-3.5" /> : <Smartphone className="w-3.5 h-3.5" />}
+                      {m === "bank" ? "Bank Account" : "UPI"}
+                    </button>
+                  ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">Account Number *</label>
-                  <input required value={bankAccount} onChange={(e) => setBankAccount(e.target.value)}
-                    className="input-glass w-full" placeholder="XXXXXXXXXX" disabled={hasPending} />
-                </div>
-                <div>
-                  <label className="text-xs text-muted-foreground mb-1 block">IFSC Code *</label>
-                  <div className="relative">
-                    <input
-                      required
-                      value={bankIfsc}
-                      onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
-                      maxLength={11}
-                      className={cn(
-                        "input-glass w-full pr-8",
-                        ifscStatus === "ok"    && "border-emerald-500/50",
-                        ifscStatus === "error" && "border-red-500/50",
-                      )}
-                      placeholder="SBIN0001234"
-                      disabled={hasPending}
-                    />
-                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
-                      {ifscStatus === "loading" && <Loader2    className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
-                      {ifscStatus === "ok"      && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
-                      {ifscStatus === "error"   && <XCircle    className="w-3.5 h-3.5 text-red-400" />}
-                    </span>
+              {/* Bank account fields */}
+              {payoutMethod === "bank" && (
+                <>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Account Holder *</label>
+                      <input required value={bankHolder} onChange={(e) => setBankHolder(e.target.value)}
+                        className="input-glass w-full" placeholder="Full name" disabled={hasPending} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Bank Name *</label>
+                      <input required value={bankName} onChange={(e) => setBankName(e.target.value)}
+                        className="input-glass w-full" placeholder="e.g. HDFC Bank" disabled={hasPending} />
+                    </div>
                   </div>
-                  {ifscStatus === "ok" && ifscBranch && (
-                    <p className="text-[11px] text-emerald-400/80 mt-1 flex items-center gap-1">
-                      <Building2 className="w-3 h-3" /> {ifscBranch}
-                    </p>
-                  )}
-                  {ifscStatus === "error" && (
-                    <p className="text-[11px] text-red-400 mt-1">IFSC code not found. Please double-check.</p>
-                  )}
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">Account Number *</label>
+                      <input required value={bankAccount} onChange={(e) => setBankAccount(e.target.value)}
+                        className="input-glass w-full" placeholder="XXXXXXXXXX" disabled={hasPending} />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground mb-1 block">IFSC Code *</label>
+                      <div className="relative">
+                        <input
+                          required
+                          value={bankIfsc}
+                          onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
+                          maxLength={11}
+                          className={cn(
+                            "input-glass w-full pr-8",
+                            ifscStatus === "ok"    && "border-emerald-500/50",
+                            ifscStatus === "error" && "border-red-500/50",
+                          )}
+                          placeholder="SBIN0001234"
+                          disabled={hasPending}
+                        />
+                        <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                          {ifscStatus === "loading" && <Loader2    className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
+                          {ifscStatus === "ok"      && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                          {ifscStatus === "error"   && <XCircle    className="w-3.5 h-3.5 text-red-400" />}
+                        </span>
+                      </div>
+                      {ifscStatus === "ok" && ifscBranch && (
+                        <p className="text-[11px] text-emerald-400/80 mt-1 flex items-center gap-1">
+                          <Building2 className="w-3 h-3" /> {ifscBranch}
+                        </p>
+                      )}
+                      {ifscStatus === "error" && (
+                        <p className="text-[11px] text-red-400 mt-1">IFSC code not found. Please double-check.</p>
+                      )}
+                    </div>
+                  </div>
+                </>
+              )}
+
+              {/* UPI VPA field */}
+              {payoutMethod === "upi" && (
+                <div>
+                  <label className="text-xs text-muted-foreground mb-1 block">UPI ID (VPA) *</label>
+                  <input
+                    required
+                    value={upiVpa}
+                    onChange={(e) => setUpiVpa(e.target.value)}
+                    className="input-glass w-full"
+                    placeholder="yourname@upi"
+                    disabled={hasPending}
+                  />
+                  <p className="text-xs text-muted-foreground/60 mt-1">
+                    e.g. 9876543210@paytm, yourname@oksbi, yourname@ybl
+                  </p>
                 </div>
-              </div>
+              )}
 
               <div>
                 <label className="text-xs text-muted-foreground mb-1 block">PAN Number *</label>

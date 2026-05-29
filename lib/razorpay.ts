@@ -176,6 +176,28 @@ export async function setupRouteSettlement(
 }
 
 /**
+ * Request Route product for a linked account and configure UPI VPA settlement.
+ * Alternative to setupRouteSettlement for instructors who prefer UPI payouts.
+ * Called once per instructor after createRouteLinkedAccount.
+ */
+export async function setupRouteSettlementVpa(
+  linkedAccountId: string,
+  vpa:             string,
+): Promise<void> {
+  await rzpFetch(
+    "POST",
+    `https://api.razorpay.com/v2/accounts/${linkedAccountId}/products`,
+    {
+      product_name:  "route",
+      requested_at:  Math.floor(Date.now() / 1000),
+      settlements: {
+        vpa: vpa.toLowerCase(),
+      },
+    },
+  );
+}
+
+/**
  * Create a UPI collect payment server-to-server (no frontend SDK needed).
  * Razorpay sends the collect request directly to the user's UPI VPA.
  * amountRupees in RUPEES — converted to paise internally.

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import {
   createRouteLinkedAccount,
   setupRouteSettlement,
+  setupRouteSettlementVpa,
   createRouteTransfer,
 } from "@/lib/razorpay";
 import {
@@ -104,24 +105,38 @@ export async function PUT(
       }
 
       const bank = request.bankDetails as {
+        payoutMethod?:  "bank" | "upi";
         accountHolder?: string;
         accountNumber?: string;
         ifsc?:          string;
         bankName?:      string;
         pan?:           string;
+        vpa?:           string;
       } | null;
 
-      if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
-        return NextResponse.json(
-          { error: "Bank details are incomplete (accountHolder, accountNumber, IFSC required)." },
-          { status: 400 }
-        );
-      }
+      const payoutMethod = bank?.payoutMethod ?? "bank";
+
       if (!bank?.pan) {
         return NextResponse.json(
           { error: "PAN number is missing. Instructor must re-submit the payout request with their PAN." },
           { status: 400 }
         );
+      }
+
+      if (payoutMethod === "upi") {
+        if (!bank?.vpa) {
+          return NextResponse.json(
+            { error: "UPI VPA is missing. Instructor must re-submit the payout request with their UPI ID." },
+            { status: 400 }
+          );
+        }
+      } else {
+        if (!bank?.accountNumber || !bank?.ifsc || !bank?.accountHolder) {
+          return NextResponse.json(
+            { error: "Bank details are incomplete (accountHolder, accountNumber, IFSC required)." },
+            { status: 400 }
+          );
+        }
       }
 
       // Reuse the linked account from a previous processed payout for this instructor
@@ -144,17 +159,21 @@ export async function PUT(
         );
         linkedAccountId = account.id;
 
-        // Request Route product + configure bank settlement.
-        // Non-blocking — Razorpay may need a short review before activation.
-        // If it fails, the admin can configure it in the Razorpay dashboard.
-        setupRouteSettlement(
-          linkedAccountId,
-          bank.accountHolder,
-          bank.accountNumber,
-          bank.ifsc,
-        ).catch((err) => {
-          console.warn("[PROCESS] setupRouteSettlement failed — settle via Razorpay dashboard:", err?.message);
-        });
+        // Request Route product + configure settlement (non-blocking)
+        if (payoutMethod === "upi") {
+          setupRouteSettlementVpa(linkedAccountId, bank.vpa!).catch((err) => {
+            console.warn("[PROCESS] setupRouteSettlementVpa failed — settle via Razorpay dashboard:", err?.message);
+          });
+        } else {
+          setupRouteSettlement(
+            linkedAccountId,
+            bank.accountHolder!,
+            bank.accountNumber!,
+            bank.ifsc!,
+          ).catch((err) => {
+            console.warn("[PROCESS] setupRouteSettlement failed — settle via Razorpay dashboard:", err?.message);
+          });
+        }
       }
 
       // Initiate the Route transfer (idempotent — safe to retry on network failure)
