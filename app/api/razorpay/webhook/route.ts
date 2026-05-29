@@ -24,13 +24,16 @@ import { prisma } from "@/lib/prisma";
 import { finalizeCoursePayment } from "@/services/payment.service";
 import { finalizeBookPayment } from "@/services/book-payment.service";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
+import { createNotification } from "@/lib/notifications";
 
 // ── Webhook events handled ──────────────────────────────────────────────────
-// payment.captured  — finalize order (primary safety net)
-// order.paid        — finalize order (redundant backup)
-// payment.failed    — log only
-// refund.processed  — confirm razorpayRefundId on RefundRequest
-// refund.failed     — mark RefundRequest back to FAILED so admin can retry
+// payment.captured   — finalize order (primary safety net)
+// order.paid         — finalize order (redundant backup)
+// payment.failed     — log only
+// refund.processed   — confirm razorpayRefundId on RefundRequest
+// refund.failed      — mark RefundRequest back to FAILED so admin can retry
+// transfer.settled   — Route transfer settled to instructor bank; update status
+// transfer.failed    — Route transfer failed; reset PayoutRequest to APPROVED for retry
 
 export const runtime = "nodejs";
 
@@ -101,6 +104,90 @@ export async function POST(req: NextRequest) {
         data:  { status: "FAILED" },
       }).catch(() => null);
       console.warn("[webhook] refund.failed for request", refundReqId, entity?.id);
+    }
+    return OK();
+  }
+
+  // ── Route transfer events ────────────────────────────────────────────────
+  if (eventName === "transfer.settled") {
+    const entity     = (payload as any)?.transfer?.entity;
+    const transferId = entity?.id as string | undefined;
+    if (transferId) {
+      const pr = await prisma.payoutRequest.findUnique({
+        where:  { razorpayTransferId: transferId },
+        select: { id: true, amount: true, instructorId: true },
+      }).catch(() => null);
+
+      if (pr) {
+        await prisma.payoutRequest.update({
+          where: { id: pr.id },
+          data:  { razorpayTransferStatus: "settled" },
+        }).catch(() => null);
+
+        const amt = Number(pr.amount).toLocaleString("en-IN");
+        createNotification({
+          data: {
+            userId: pr.instructorId,
+            title:  "Payout Settled",
+            body:   `Your payout of ₹${amt} has been settled to your bank account.`,
+            type:   "SYSTEM",
+            link:   "/instructor/payouts",
+          },
+        }).catch(() => null);
+      }
+    }
+    return OK();
+  }
+
+  if (eventName === "transfer.failed") {
+    const entity     = (payload as any)?.transfer?.entity;
+    const transferId = entity?.id as string | undefined;
+    if (transferId) {
+      const pr = await prisma.payoutRequest.findUnique({
+        where:   { razorpayTransferId: transferId },
+        include: { wallet: true },
+      }).catch(() => null);
+
+      if (pr && pr.status === "PROCESSED") {
+        const amount = Number(pr.amount);
+        await prisma.$transaction([
+          // Reset to APPROVED so admin can retry PROCESS
+          prisma.payoutRequest.update({
+            where: { id: pr.id },
+            data:  { status: "APPROVED", razorpayTransferStatus: "failed" },
+          }),
+          // Return amount to wallet balance; undo totalWithdrawn increment
+          prisma.instructorWallet.update({
+            where: { id: pr.walletId },
+            data:  {
+              balance:        { increment: amount },
+              totalWithdrawn: { decrement: amount },
+            },
+          }),
+          prisma.walletTransaction.create({
+            data: {
+              walletId:    pr.walletId,
+              amount,
+              type:        "CREDIT",
+              description: `Transfer reversal — Route transfer ${transferId} failed`,
+              meta:        { razorpayTransferId: transferId },
+            },
+          }),
+        ]).catch(() => null);
+
+        const amt = amount.toLocaleString("en-IN");
+        createNotification({
+          data: {
+            userId: pr.instructorId,
+            title:  "Payout Transfer Failed",
+            body:   `Your payout of ₹${amt} could not be transferred. The amount has been returned to your wallet. Please contact support or re-submit the request.`,
+            type:   "SYSTEM",
+            link:   "/instructor/payouts",
+          },
+        }).catch(() => null);
+
+        console.error("[webhook] transfer.failed — payout", pr.id, "transfer", transferId);
+      }
     }
     return OK();
   }

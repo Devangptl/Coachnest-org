@@ -3,11 +3,11 @@
 /**
  * /instructor/payouts — payout requests + referral link management
  */
-import { useEffect, useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent, useRef } from "react";
 import {
   Wallet, ArrowDownToLine, Plus, Copy, Check,
   Link2, Loader2, AlertCircle, Trash2, ExternalLink,
-  Clock, CheckCircle2, XCircle, RefreshCw, Tag,
+  Clock, CheckCircle2, XCircle, RefreshCw, Tag, Building2,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import { Select } from "@/components/ui/Select";
@@ -79,6 +79,11 @@ export default function PayoutsPage() {
   const [payError,    setPayError]    = useState("");
   const [paySuccess,  setPaySuccess]  = useState("");
 
+  // IFSC live validation
+  const [ifscStatus,   setIfscStatus]   = useState<"idle" | "loading" | "ok" | "error">("idle");
+  const [ifscBranch,   setIfscBranch]   = useState("");
+  const ifscTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   // Referral form
   const [refCourse,   setRefCourse]   = useState("");
   const [refLabel,    setRefLabel]    = useState("");
@@ -108,6 +113,47 @@ export default function PayoutsPage() {
 
   useEffect(() => { loadAll(); }, []);
 
+  // ── IFSC live validation (debounced 600 ms) ──────────────────────────────────
+  useEffect(() => {
+    const ifsc = bankIfsc.trim().toUpperCase();
+    if (ifscTimer.current) clearTimeout(ifscTimer.current);
+
+    if (ifsc.length === 0) {
+      setIfscStatus("idle");
+      setIfscBranch("");
+      return;
+    }
+    if (ifsc.length < 11) {
+      setIfscStatus("idle");
+      setIfscBranch("");
+      return;
+    }
+
+    setIfscStatus("loading");
+    setIfscBranch("");
+
+    ifscTimer.current = setTimeout(async () => {
+      try {
+        const res  = await fetch(`/api/ifsc/${ifsc}`);
+        const data = await res.json();
+        if (!res.ok) {
+          setIfscStatus("error");
+          setIfscBranch("");
+          return;
+        }
+        if (data.bank && !bankName) setBankName(data.bank);
+        setIfscBranch(`${data.branch}${data.city ? ", " + data.city : ""}`);
+        setIfscStatus("ok");
+      } catch {
+        setIfscStatus("error");
+        setIfscBranch("");
+      }
+    }, 600);
+
+    return () => { if (ifscTimer.current) clearTimeout(ifscTimer.current); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [bankIfsc]);
+
   // ── Submit payout request ────────────────────────────────────────────────────
   async function handlePayoutSubmit(e: FormEvent) {
     e.preventDefault();
@@ -128,6 +174,7 @@ export default function PayoutsPage() {
       if (!res.ok) { setPayError(data.error); return; }
       setPaySuccess("Payout request submitted! We'll process it within 7 business days.");
       setAmount(""); setBankHolder(""); setBankAccount(""); setBankIfsc(""); setBankName(""); setBankPan(""); setPayNotes("");
+      setIfscStatus("idle"); setIfscBranch("");
       loadAll();
     } finally {
       setSubmitting(false);
@@ -256,8 +303,34 @@ export default function PayoutsPage() {
                 </div>
                 <div>
                   <label className="text-xs text-muted-foreground mb-1 block">IFSC Code *</label>
-                  <input required value={bankIfsc} onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
-                    className="input-glass w-full" placeholder="SBIN0001234" disabled={hasPending} />
+                  <div className="relative">
+                    <input
+                      required
+                      value={bankIfsc}
+                      onChange={(e) => setBankIfsc(e.target.value.toUpperCase())}
+                      maxLength={11}
+                      className={cn(
+                        "input-glass w-full pr-8",
+                        ifscStatus === "ok"    && "border-emerald-500/50",
+                        ifscStatus === "error" && "border-red-500/50",
+                      )}
+                      placeholder="SBIN0001234"
+                      disabled={hasPending}
+                    />
+                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none">
+                      {ifscStatus === "loading" && <Loader2    className="w-3.5 h-3.5 text-muted-foreground animate-spin" />}
+                      {ifscStatus === "ok"      && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />}
+                      {ifscStatus === "error"   && <XCircle    className="w-3.5 h-3.5 text-red-400" />}
+                    </span>
+                  </div>
+                  {ifscStatus === "ok" && ifscBranch && (
+                    <p className="text-[11px] text-emerald-400/80 mt-1 flex items-center gap-1">
+                      <Building2 className="w-3 h-3" /> {ifscBranch}
+                    </p>
+                  )}
+                  {ifscStatus === "error" && (
+                    <p className="text-[11px] text-red-400 mt-1">IFSC code not found. Please double-check.</p>
+                  )}
                 </div>
               </div>
 
