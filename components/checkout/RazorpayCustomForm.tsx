@@ -8,10 +8,13 @@
  *   3DS / OTP shown in our own iframe modal (not Razorpay's overlay)
  *   payment.success → onSuccess() → /api/razorpay/verify-payment
  *
- * UPI COLLECT (UPI ID input)
- *   rzp.createPayment({ method:"upi", vpa, ... })
- *   Razorpay SDK sends collect through their backend (no S2S activation needed)
- *   payment.success fires when user approves → onSuccess()
+ * UPI COLLECT (fully custom — no Razorpay popup)
+ *   POST /api/razorpay/upi-collect (server-to-server) → paymentId
+ *   Poll GET /api/razorpay/payment-status/[paymentId] every 3 s
+ *   Order is finalised server-side by the poll endpoint
+ *   On "captured" → onUpiCaptured() (just redirect — no client-side verify needed)
+ *   Requires Razorpay S2S UPI to be activated on the merchant account.
+ *   Until activated: shows a clear "not available yet" notice.
  *
  * Test mode (rzp_test_*): UPI disabled with notice; card works normally.
  */
@@ -93,8 +96,11 @@ export interface RazorpayOrderInfo {
 interface Props {
   orderInfo:       RazorpayOrderInfo;
   description?:    string;
-  prefillEmail?:   string;   // pre-populate email from logged-in session
+  prefillEmail?:   string;
+  /** Card payment — fires with Razorpay signature; call /api/razorpay/verify-payment */
   onSuccess:       (response: RazorpaySuccessResponse) => Promise<void>;
+  /** UPI S2S collect — order already finalised server-side; just redirect */
+  onUpiCaptured?:  () => void;
   onError?:        (message: string) => void;
   onBack?:         () => void;
 }
@@ -112,16 +118,23 @@ function fmtExpiry(v: string) {
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function RazorpayCustomForm({
-  orderInfo, description, prefillEmail, onSuccess, onError, onBack,
+  orderInfo, description, prefillEmail,
+  onSuccess, onUpiCaptured, onError, onBack,
 }: Props) {
   const { loaded: scriptLoaded, scriptErr } = useRazorpayScript();
   const rzpRef = useRef<RazorpayCustomInstance | null>(null);
 
-  // Stable refs for callbacks — prevents Razorpay instance recreation on every parent render
-  const onSuccessRef = useRef(onSuccess);
-  const onErrorRef   = useRef(onError);
-  useEffect(() => { onSuccessRef.current = onSuccess; }, [onSuccess]);
-  useEffect(() => { onErrorRef.current  = onError;   }, [onError]);
+  // Stable refs for callbacks
+  const onSuccessRef     = useRef(onSuccess);
+  const onUpiCapturedRef = useRef(onUpiCaptured);
+  const onErrorRef       = useRef(onError);
+  useEffect(() => { onSuccessRef.current     = onSuccess;     }, [onSuccess]);
+  useEffect(() => { onUpiCapturedRef.current = onUpiCaptured; }, [onUpiCaptured]);
+  useEffect(() => { onErrorRef.current       = onError;       }, [onError]);
+
+  // Polling interval ref — cleared on timeout, failure, success, or unmount
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => () => { if (pollRef.current) clearInterval(pollRef.current); }, []);
 
   // UI state
   const [tab,          setTab]          = useState<"card" | "upi">("card");
@@ -133,7 +146,7 @@ export default function RazorpayCustomForm({
   const [threedsUrl,   setThreedsUrl]   = useState<string | null>(null);
   const [iframeLoaded, setIframeLoaded] = useState(false);
 
-  // Shared contact fields — prefill email from session if provided
+  // Shared contact fields
   const [contact, setContact] = useState("");
   const [email,   setEmail]   = useState(prefillEmail ?? "");
 
@@ -144,7 +157,7 @@ export default function RazorpayCustomForm({
   const [nameOnCard, setNameOnCard] = useState("");
   const [showCvv,    setShowCvv]    = useState(false);
 
-  // UPI collect field
+  // UPI field
   const [upiId, setUpiId] = useState("");
 
   const isTestMode = orderInfo.key.startsWith("rzp_test_");
@@ -158,6 +171,7 @@ export default function RazorpayCustomForm({
       setUpiCountdown(prev => {
         if (prev <= 1) {
           clearInterval(timer);
+          if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
           setPaying(false);
           setUpiWaiting(false);
           setFormErr("UPI request timed out. Please try again.");
@@ -169,43 +183,31 @@ export default function RazorpayCustomForm({
     return () => clearInterval(timer);
   }, [upiWaiting]);
 
-  // ── Reset iframe loader state when a new 3DS URL arrives ─────────────────
+  // ── Reset iframe loader on new 3DS URL ────────────────────────────────────
 
   useEffect(() => {
     if (threedsUrl) setIframeLoaded(false);
   }, [threedsUrl]);
 
-  // ── Init Razorpay — wire all event listeners once ─────────────────────────
-  // Callbacks are NOT in the dep array — accessed via stable refs instead.
+  // ── Init Razorpay for CARD payments only ──────────────────────────────────
+  // UPI uses S2S server-side — the SDK is not involved in UPI at all.
 
   useEffect(() => {
     if (!scriptLoaded) return;
 
     const rzp = new window.Razorpay({
-      key:          orderInfo.key,
-      order_id:     orderInfo.razorpayOrderId,
-      amount:       Math.round(orderInfo.amount * 100),
-      currency:     orderInfo.currency ?? "INR",
-      name:         "Coachnest",
-      description:  description ?? "Payment",
-      callback_url: `${window.location.origin}/api/razorpay/upi-return`,
+      key:         orderInfo.key,
+      order_id:    orderInfo.razorpayOrderId,
+      amount:      Math.round(orderInfo.amount * 100),
+      currency:    orderInfo.currency ?? "INR",
+      name:        "Coachnest",
+      description: description ?? "Payment",
     } as RazorpayCustomOptions) as unknown as RazorpayCustomInstance;
 
-    // payment.action: card 3DS (https://) or UPI intent deep-link (upi://)
+    // Fires only for card 3DS — UPI no longer uses rzp.createPayment
     rzp.on("payment.action", (payload: RazorpayActionPayload) => {
       const url = payload.url ?? payload.redirect?.url;
       if (!url) return;
-
-      const isUpiDeepLink =
-        url.startsWith("upi://") ||
-        url.startsWith("intent://") ||
-        url.startsWith("tez://") ||
-        url.startsWith("phonepe://") ||
-        url.startsWith("paytmmp://");
-
-      if (isUpiDeepLink) { window.location.href = url; return; }
-
-      // Card 3DS — show bank OTP page in our own iframe modal
       setPaying(false);
       setThreedsUrl(url);
     });
@@ -213,7 +215,6 @@ export default function RazorpayCustomForm({
     rzp.on("payment.success", async (resp) => {
       setThreedsUrl(null);
       setPaying(false);
-      setUpiWaiting(false);
       setUpiDone(true);
       try {
         await onSuccessRef.current(resp);
@@ -228,7 +229,6 @@ export default function RazorpayCustomForm({
     rzp.on("payment.error", (resp) => {
       setThreedsUrl(null);
       setPaying(false);
-      setUpiWaiting(false);
       const msg = mapRazorpayError(resp.error?.code, resp.error?.description);
       setFormErr(msg);
       onErrorRef.current?.(msg);
@@ -274,11 +274,12 @@ export default function RazorpayCustomForm({
     } as CardPaymentData);
   }
 
-  // ── UPI collect ───────────────────────────────────────────────────────────
+  // ── UPI collect — fully custom, no Razorpay popup ────────────────────────
+  // Calls our server-side S2S route, then polls payment-status every 3 seconds.
+  // Razorpay S2S must be activated on the merchant account for this to work.
 
-  function handleUpiCollect(e: FormEvent) {
+  async function handleUpiCollect(e: FormEvent) {
     e.preventDefault();
-    if (!rzpRef.current) { err("Payment gateway not ready. Please refresh and try again."); return; }
     setFormErr(null);
 
     const phone = validateContact();
@@ -292,12 +293,61 @@ export default function RazorpayCustomForm({
     setPaying(true);
     setUpiWaiting(true);
 
-    rzpRef.current.createPayment({
-      method:  "upi",
-      vpa:     upiId.trim(),
-      contact: phone,
-      email:   email.trim(),
-    });
+    try {
+      const res = await fetch("/api/razorpay/upi-collect", {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({
+          razorpayOrderId: orderInfo.razorpayOrderId,
+          amount:          orderInfo.amount,
+          vpa:             upiId.trim(),
+          contact:         phone,
+          email:           email.trim(),
+          description:     description ?? "Payment",
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error ?? "Failed to initiate UPI payment.");
+
+      const { paymentId } = data as { paymentId: string };
+
+      // Poll payment status every 3 seconds
+      pollRef.current = setInterval(async () => {
+        try {
+          const pollRes = await fetch(
+            `/api/razorpay/payment-status/${paymentId}` +
+            `?type=${orderInfo.type}&dbOrderId=${orderInfo.dbOrderId}`
+          );
+          const pollData = await pollRes.json() as {
+            status: "pending" | "captured" | "failed";
+            error?: string;
+          };
+
+          if (pollData.status === "captured") {
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+            setUpiWaiting(false);
+            setUpiDone(true);
+            onUpiCapturedRef.current?.();
+
+          } else if (pollData.status === "failed") {
+            if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+            setUpiWaiting(false);
+            setPaying(false);
+            const msg = pollData.error ?? "Payment failed. Please try again.";
+            setFormErr(msg);
+            onErrorRef.current?.(msg);
+          }
+          // "pending" — keep polling until countdown expires
+        } catch { /* network hiccup during poll — keep trying */ }
+      }, 3000);
+
+    } catch (error) {
+      setUpiWaiting(false);
+      setPaying(false);
+      const msg = error instanceof Error ? error.message : "Failed to initiate UPI payment.";
+      setFormErr(msg);
+      onErrorRef.current?.(msg);
+    }
   }
 
   // ── Styles ────────────────────────────────────────────────────────────────
@@ -317,8 +367,8 @@ export default function RazorpayCustomForm({
         <AlertCircle className="w-8 h-8 text-red-500 mx-auto" />
         <p className="text-sm font-semibold text-foreground">Payment gateway failed to load</p>
         <p className="text-xs text-muted-foreground">
-          This is usually caused by an ad-blocker or network issue. Disable your ad-blocker
-          or try a different network, then reload.
+          This is usually caused by an ad-blocker or network issue. Disable your
+          ad-blocker or try a different network, then reload.
         </p>
         <button
           type="button"
@@ -365,7 +415,6 @@ export default function RazorpayCustomForm({
                 sandbox="allow-forms allow-scripts allow-same-origin allow-popups"
                 onLoad={() => setIframeLoaded(true)}
               />
-              {/* Loader hides once iframe fires onLoad */}
               {!iframeLoaded && (
                 <div className="absolute inset-0 flex items-center justify-center bg-white">
                   <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
@@ -428,7 +477,6 @@ export default function RazorpayCustomForm({
           <form onSubmit={handleCardSubmit} className="p-5 space-y-4">
             <div className="space-y-3">
 
-              {/* Card number */}
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">Card Number</label>
                 <div className="relative">
@@ -443,7 +491,6 @@ export default function RazorpayCustomForm({
                 </div>
               </div>
 
-              {/* Expiry + CVV */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1.5">Expiry</label>
@@ -472,7 +519,6 @@ export default function RazorpayCustomForm({
                 </div>
               </div>
 
-              {/* Name */}
               <div>
                 <label className="block text-xs font-medium text-muted-foreground mb-1.5">Name on Card</label>
                 <input
@@ -483,7 +529,6 @@ export default function RazorpayCustomForm({
                 />
               </div>
 
-              {/* Brand chips */}
               <div className="flex items-center gap-2">
                 {["VISA", "Mastercard", "RuPay", "Amex"].map(b => (
                   <span key={b} className="px-1.5 py-0.5 rounded border border-border text-[10px] font-semibold text-muted-foreground bg-secondary/50 tracking-wide">{b}</span>
@@ -518,7 +563,7 @@ export default function RazorpayCustomForm({
           </form>
         )}
 
-        {/* ── UPI form ─────────────────────────────────────────────────────── */}
+        {/* ── UPI form — custom UI, no Razorpay popup ──────────────────────── */}
         {tab === "upi" && (
           <div className="p-5 space-y-4">
 
@@ -534,7 +579,6 @@ export default function RazorpayCustomForm({
             ) : (
               <form onSubmit={handleUpiCollect} className="space-y-4">
 
-                {/* UPI ID input */}
                 <div>
                   <label className="block text-xs font-medium text-muted-foreground mb-1.5">UPI ID</label>
                   <input
@@ -546,7 +590,7 @@ export default function RazorpayCustomForm({
                   />
                 </div>
 
-                {/* UPI waiting — countdown + status */}
+                {/* Waiting for UPI approval */}
                 {upiWaiting && !upiDone && (
                   <div className="rounded-lg bg-blue-500/10 border border-blue-500/20 p-3.5 space-y-2">
                     <div className="flex items-start gap-3">
@@ -554,8 +598,8 @@ export default function RazorpayCustomForm({
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-blue-400">Check your UPI app</p>
                         <p className="text-xs text-blue-400/70 mt-0.5">
-                          A request for ₹{orderInfo.amount.toLocaleString("en-IN")} was sent to{" "}
-                          <strong>{upiId}</strong>. Approve it to complete payment.
+                          A collect request for ₹{orderInfo.amount.toLocaleString("en-IN")} was
+                          sent to <strong>{upiId}</strong>. Open your UPI app and approve it.
                         </p>
                       </div>
                     </div>
@@ -568,6 +612,7 @@ export default function RazorpayCustomForm({
                   </div>
                 )}
 
+                {/* Payment approved */}
                 {upiDone && (
                   <div className="flex items-center gap-2.5 p-3.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400">
                     <CheckCircle2 className="w-4 h-4 flex-shrink-0" />
@@ -584,7 +629,7 @@ export default function RazorpayCustomForm({
 
                 <button
                   type="submit"
-                  disabled={paying || !scriptLoaded || upiDone}
+                  disabled={paying || upiDone}
                   className="w-full btn-primary py-3 text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {paying ? (

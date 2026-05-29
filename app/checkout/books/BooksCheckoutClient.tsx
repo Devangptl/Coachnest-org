@@ -112,7 +112,7 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
     }
   }
 
-  // ── Verify payment and redirect (Phase 2 success) ─────────────────────────
+  // ── Verify payment and redirect (Phase 2 success — card) ─────────────────
 
   async function handlePaymentSuccess(response: RazorpaySuccessResponse) {
     if (!orderInfo) throw new Error("Order info missing");
@@ -130,6 +130,11 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
     const vData = await vRes.json();
     if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
     router.push(`/checkout/success?type=books&orderId=${orderInfo.dbOrderId}`);
+  }
+
+  // UPI S2S — order already finalised server-side; just redirect
+  function handleUpiCaptured() {
+    if (orderInfo) router.push(`/checkout/success?type=books&orderId=${orderInfo.dbOrderId}`);
   }
 
   const description = `${items.length} book${items.length !== 1 ? "s" : ""}`;
@@ -175,6 +180,7 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
             description={description}
             prefillEmail={userEmail}
             onSuccess={handlePaymentSuccess}
+            onUpiCaptured={handleUpiCaptured}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />
