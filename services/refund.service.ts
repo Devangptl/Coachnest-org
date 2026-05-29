@@ -30,6 +30,17 @@ import {
 const MAX_REFUND_PROGRESS_PCT = 80; // ≥ 80 % → ineligible
 const REFUND_WINDOW_DAYS      = 30; // purchase must be within 30 days
 
+// Razorpay SDK throws plain objects, not Error instances
+function rzpErrMsg(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (err && typeof err === "object") {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const e = err as any;
+    return e?.error?.description ?? e?.description ?? e?.message ?? JSON.stringify(e);
+  }
+  return String(err);
+}
+
 // ─── Progress helper ──────────────────────────────────────────────────────────
 
 export async function calculateCourseProgress(userId: string, courseId: string) {
@@ -256,7 +267,7 @@ export async function approveAndProcessRefund(
         data:  { status: "FAILED" },
       });
       throw new Error(
-        `Razorpay refund failed: ${err instanceof Error ? err.message : String(err)}`
+        `Razorpay refund failed: ${rzpErrMsg(err)}`
       );
     }
   }
@@ -546,7 +557,7 @@ export async function retryFailedRefund(
         data:  { status: "FAILED" },
       });
       throw new Error(
-        `Razorpay refund failed: ${err instanceof Error ? err.message : String(err)}`
+        `Razorpay refund failed: ${rzpErrMsg(err)}`
       );
     }
   }
