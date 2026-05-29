@@ -94,6 +94,11 @@ export default function FeatureCheckoutClient({
     router.push(`/features/${featureSlug}?success=true`);
   }
 
+  // UPI S2S — order already finalised server-side; just redirect
+  function handleUpiCaptured() {
+    router.push(`/features/${featureSlug}?success=true`);
+  }
+
   // ── Phase 2: Payment form ───────────────────────────────────────────────────
 
   if (phase === "payment" && orderInfo) {
@@ -136,6 +141,7 @@ export default function FeatureCheckoutClient({
             description={`${featureName} — Platform Add-on`}
             prefillEmail={userEmail}
             onSuccess={handlePaymentSuccess}
+            onUpiCaptured={handleUpiCaptured}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />

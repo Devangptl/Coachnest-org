@@ -129,7 +129,7 @@ export default function CourseCheckoutClient({
     }
   }
 
-  // ── Verify payment and redirect (Phase 2 success) ─────────────────────────
+  // ── Verify payment and redirect (Phase 2 success — card) ─────────────────
 
   async function handlePaymentSuccess(response: RazorpaySuccessResponse) {
     if (!orderInfo) throw new Error("Order info missing");
@@ -146,6 +146,11 @@ export default function CourseCheckoutClient({
     });
     const vData = await vRes.json();
     if (!vRes.ok) throw new Error(vData.error ?? "Payment verification failed");
+    router.push(`/courses/${courseId}?enrolled=true`);
+  }
+
+  // UPI S2S — order already finalised server-side; just redirect
+  function handleUpiCaptured() {
     router.push(`/courses/${courseId}?enrolled=true`);
   }
 
@@ -204,6 +209,7 @@ export default function CourseCheckoutClient({
             description={courseName}
             prefillEmail={userEmail}
             onSuccess={handlePaymentSuccess}
+            onUpiCaptured={handleUpiCaptured}
             onError={(msg) => setError(msg)}
             onBack={() => setPhase("summary")}
           />

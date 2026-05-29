@@ -28,6 +28,7 @@ import {
 } from "@/lib/email";
 
 const MAX_REFUND_PROGRESS_PCT = 80; // ≥ 80 % → ineligible
+const REFUND_WINDOW_DAYS      = 30; // purchase must be within 30 days
 
 // ─── Progress helper ──────────────────────────────────────────────────────────
 
@@ -51,16 +52,23 @@ export async function calculateCourseProgress(userId: string, courseId: string) 
 
 export async function checkRefundEligibility(userId: string, orderId: string) {
   const order = await prisma.order.findUnique({
-    where: { id: orderId },
-    include: {
-      course: { select: { id: true, title: true } },
-    },
+    where:   { id: orderId },
+    include: { course: { select: { id: true, title: true } } },
   });
 
   if (!order)                  throw new Error("Order not found.");
   if (order.userId !== userId) throw new Error("Unauthorized.");
   if (!order.courseId)         throw new Error("Only course orders are eligible for refund.");
   if (order.status !== "PAID") throw new Error("Only PAID orders can be refunded.");
+
+  // 30-day purchase window
+  const daysSincePurchase = (Date.now() - order.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysSincePurchase > REFUND_WINDOW_DAYS) {
+    return {
+      eligible: false,
+      reason:   `Your purchase was ${Math.floor(daysSincePurchase)} days ago. Refunds are only available within ${REFUND_WINDOW_DAYS} days of purchase.`,
+    } as const;
+  }
 
   // Check existing request
   const existing = await prisma.refundRequest.findUnique({
@@ -266,34 +274,43 @@ export async function approveAndProcessRefund(
       .deleteMany({ where: { userId: rr.userId, courseId: rr.courseId } })
       .catch(() => null);
 
-    // 2. Debit instructor wallet (proportional share only)
+    // 2. Debit instructor wallet (proportional share only).
+    // Clamp to available balance — wallet must not go negative if the
+    // instructor already withdrew their earnings.
     if (instructorLoss > 0 && instructorId) {
       const wallet = await tx.instructorWallet.findUnique({
         where: { userId: instructorId },
       });
       if (wallet) {
-        await tx.instructorWallet.update({
-          where: { id: wallet.id },
-          data:  {
-            balance:     { decrement: instructorLoss },
-            totalEarned: { decrement: instructorLoss },
-          },
-        });
-        await tx.walletTransaction.create({
-          data: {
-            walletId:    wallet.id,
-            orderId:     rr.order.id,
-            amount:      instructorLoss,
-            type:        "DEBIT",
-            description: `Refund reversal (${rr.refundPercent}% of order) — "${courseTitle}"`,
-            meta: {
-              refundRequestId: rr.id,
-              progressPercent: Number(rr.progressPercent),
-              refundPercent:   Number(rr.refundPercent),
-              courseTitle,
+        const actualDebit = parseFloat(
+          Math.min(instructorLoss, Math.max(0, Number(wallet.balance))).toFixed(2)
+        );
+        if (actualDebit > 0) {
+          await tx.instructorWallet.update({
+            where: { id: wallet.id },
+            data:  {
+              balance:     { decrement: actualDebit },
+              totalEarned: { decrement: actualDebit },
             },
-          },
-        });
+          });
+          await tx.walletTransaction.create({
+            data: {
+              walletId:    wallet.id,
+              orderId:     rr.order.id,
+              amount:      actualDebit,
+              type:        "DEBIT",
+              description: `Refund reversal (${rr.refundPercent}% of order) — "${courseTitle}"`,
+              meta: {
+                refundRequestId: rr.id,
+                progressPercent: Number(rr.progressPercent),
+                refundPercent:   Number(rr.refundPercent),
+                courseTitle,
+                // record full obligation even when balance was insufficient
+                fullInstructorLoss: instructorLoss,
+              },
+            },
+          });
+        }
       }
     }
 
@@ -470,6 +487,163 @@ export async function getAdminRefundList(opts: {
   ]);
 
   return { requests, total };
+}
+
+// ─── Admin: retry a FAILED refund ────────────────────────────────────────────
+// Only the Razorpay call failed on the first attempt — the DB transaction
+// (enrollment revoke, wallet debit, ledger entries) was never executed,
+// so it is safe to re-run the full flow.
+
+export async function retryFailedRefund(
+  refundRequestId: string,
+  adminId:         string,
+) {
+  const rr = await prisma.refundRequest.findUnique({
+    where:   { id: refundRequestId },
+    include: {
+      order:  true,
+      course: { select: { createdById: true, title: true } },
+      user:   { select: { name: true, email: true } },
+    },
+  });
+
+  if (!rr) throw new Error("Refund request not found.");
+  if (rr.status !== "FAILED")
+    throw new Error(`Cannot retry a ${rr.status} refund. Only FAILED requests can be retried.`);
+  if (rr.order.status === "REFUNDED")
+    throw new Error("Order is already marked REFUNDED — no retry needed.");
+
+  // Optimistic lock back to PROCESSING
+  const updated = await prisma.refundRequest.updateMany({
+    where: { id: refundRequestId, status: "FAILED" },
+    data:  { status: "PROCESSING" },
+  });
+  if (updated.count === 0) throw new Error("Refund status changed concurrently. Please refresh.");
+
+  // ── Re-issue Razorpay refund ──────────────────────────────────────────────
+  let razorpayRefundId: string | undefined;
+
+  if (rr.order.razorpayPaymentId) {
+    try {
+      const razorpay  = getRazorpay();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const rzpRefund = await (razorpay.payments.refund as any)(
+        rr.order.razorpayPaymentId,
+        {
+          amount: Math.round(Number(rr.refundAmount) * 100),
+          speed:  "normal",
+          notes: {
+            refundRequestId: rr.id,
+            orderId:         rr.order.id,
+            retry:           "true",
+          },
+        }
+      );
+      razorpayRefundId = rzpRefund.id as string;
+    } catch (err: unknown) {
+      await prisma.refundRequest.update({
+        where: { id: refundRequestId },
+        data:  { status: "FAILED" },
+      });
+      throw new Error(
+        `Razorpay refund failed: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+  }
+
+  const instructorLoss = parseFloat(Number(rr.instructorLoss).toFixed(2));
+  const platformLoss   = parseFloat(Number(rr.platformLoss).toFixed(2));
+  const refundAmount   = parseFloat(Number(rr.refundAmount).toFixed(2));
+  const instructorId   = rr.course?.createdById;
+  const courseTitle    = rr.course?.title ?? "Unknown Course";
+
+  // ── Atomic DB finalization (same as first-time approval) ─────────────────
+  await prisma.$transaction(async (tx) => {
+    await tx.enrollment
+      .deleteMany({ where: { userId: rr.userId, courseId: rr.courseId } })
+      .catch(() => null);
+
+    if (instructorLoss > 0 && instructorId) {
+      const wallet = await tx.instructorWallet.findUnique({ where: { userId: instructorId } });
+      if (wallet) {
+        const actualDebit = parseFloat(
+          Math.min(instructorLoss, Math.max(0, Number(wallet.balance))).toFixed(2)
+        );
+        if (actualDebit > 0) {
+          await tx.instructorWallet.update({
+            where: { id: wallet.id },
+            data:  { balance: { decrement: actualDebit }, totalEarned: { decrement: actualDebit } },
+          });
+          await tx.walletTransaction.create({
+            data: {
+              walletId:    wallet.id,
+              orderId:     rr.order.id,
+              amount:      actualDebit,
+              type:        "DEBIT",
+              description: `Refund reversal (retry) — "${courseTitle}"`,
+              meta: { refundRequestId: rr.id, retry: true, fullInstructorLoss: instructorLoss },
+            },
+          });
+        }
+      }
+    }
+
+    await tx.ledgerEntry.createMany({
+      data: [
+        {
+          orderId: rr.order.id, refundRequestId: rr.id,
+          userId: rr.userId,    courseId: rr.courseId,
+          type:   "REFUND",
+          amount: refundAmount,
+          description: `Refund issued (retry) — ${rr.refundPercent}% of ₹${rr.originalAmount}`,
+          meta: { progressPercent: Number(rr.progressPercent), refundPercent: Number(rr.refundPercent), razorpayRefundId, retry: true },
+        },
+        {
+          orderId: rr.order.id, refundRequestId: rr.id,
+          userId: rr.userId,    courseId: rr.courseId,
+          type:   "REFUND_REVERSAL_INSTRUCTOR",
+          amount: instructorLoss,
+          description: `Instructor share reversed (retry) — ₹${instructorLoss}`,
+          meta: { courseTitle, refundRequestId: rr.id, retry: true },
+        },
+        {
+          orderId: rr.order.id, refundRequestId: rr.id,
+          userId: rr.userId,    courseId: rr.courseId,
+          type:   "REFUND_REVERSAL_PLATFORM",
+          amount: platformLoss,
+          description: `Platform share reversed (retry) — ₹${platformLoss}`,
+          meta: { courseTitle, refundRequestId: rr.id, retry: true },
+        },
+      ],
+    });
+
+    await tx.order.update({ where: { id: rr.order.id }, data: { status: "REFUNDED" } });
+    await tx.refundRequest.update({
+      where: { id: refundRequestId },
+      data:  { status: "PROCESSED", razorpayRefundId, processedAt: new Date(), adminId },
+    });
+  });
+
+  createNotification({
+    data: {
+      userId: rr.userId,
+      title:  "Refund Processed",
+      body:   `Your refund of ₹${refundAmount.toLocaleString("en-IN")} has been processed. Funds will arrive within 5–10 business days.`,
+      type:   "SYSTEM",
+      link:   "/dashboard/orders",
+    },
+  }).catch(() => null);
+
+  if (rr.user?.email) {
+    sendRefundProcessedEmail(
+      rr.user.email,
+      rr.user.name ?? "Student",
+      rr.course.title,
+      refundAmount.toLocaleString("en-IN"),
+    ).catch(() => null);
+  }
+
+  return { success: true, refundAmount, razorpayRefundId };
 }
 
 // ─── Get instructor refund impact ────────────────────────────────────────────

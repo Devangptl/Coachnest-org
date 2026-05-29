@@ -101,7 +101,7 @@ export default function RefundPolicyPage() {
                 <p>You are eligible for a full refund if <strong>all</strong> of the following conditions are met:</p>
                 <ul>
                   <li>Your refund request is submitted within <strong className="text-white/70">30 calendar days</strong> of the original purchase date.</li>
-                  <li>You have completed <strong className="text-white/70">less than 30%</strong> of the course content.</li>
+                  <li>You have completed <strong className="text-white/70">less than 80%</strong> of the course content.</li>
                   <li>You have not previously received a refund for the same course.</li>
                   <li>The purchase was made directly on Coachnest (not through a third-party bundle or partner site).</li>
                 </ul>
@@ -112,7 +112,7 @@ export default function RefundPolicyPage() {
                 <p>Refunds will <strong className="text-white/70">not</strong> be granted in the following circumstances:</p>
                 <ul>
                   <li>Refund requests submitted more than 30 days after the purchase date.</li>
-                  <li>Courses where more than 30% of lessons have been completed or marked as watched.</li>
+                  <li>Courses where 80% or more of lessons have been completed or marked as watched.</li>
                   <li>Courses purchased as part of a bundle or promotional package (unless explicitly stated otherwise).</li>
                   <li>Courses purchased with a coupon providing 100% discount (free coupon enrolments).</li>
                   <li>Accounts that have been suspended or terminated for violating our <Link href="/legal/terms-of-service" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Terms of Service</Link>.</li>
