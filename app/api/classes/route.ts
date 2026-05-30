@@ -42,17 +42,56 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ classes: enrollments.map((e) => e.class) });
   }
 
-  // Public browse
-  const classes = await prisma.class.findMany({
-    where: { status: "PUBLISHED", visibility: "PUBLIC" },
-    include: {
-      instructor: { select: { id: true, name: true, avatar: true } },
-      _count: { select: { courses: true, enrollments: true } },
-    },
-    orderBy: { createdAt: "desc" },
-    take: 50,
+  // Public browse — filters: q, joinMode, priceType, sort, page
+  const q         = url.searchParams.get("q")?.trim();
+  const joinMode  = url.searchParams.get("joinMode") ?? "";
+  const priceType = url.searchParams.get("priceType") ?? ""; // "free" | "paid"
+  const sort      = url.searchParams.get("sort") ?? "newest";
+  const page      = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
+  const perPage   = 24;
+
+  const VALID_JOIN = new Set(["OPEN", "APPROVAL_REQUIRED", "INVITE_ONLY"]);
+
+  const where = {
+    status:     "PUBLISHED" as const,
+    visibility: "PUBLIC"    as const,
+    ...(q ? { OR: [
+      { name:        { contains: q, mode: "insensitive" as const } },
+      { description: { contains: q, mode: "insensitive" as const } },
+    ] } : {}),
+    ...(VALID_JOIN.has(joinMode) ? { joinMode: joinMode as "OPEN" | "APPROVAL_REQUIRED" | "INVITE_ONLY" } : {}),
+    ...(priceType === "free" ? { isPaid: false } : {}),
+    ...(priceType === "paid" ? { isPaid: true  } : {}),
+  };
+
+  const orderBy =
+    sort === "popular"
+      ? ({ enrollments: { _count: "desc" } } as const)
+      : sort === "largest"
+        ? ({ courses: { _count: "desc" } } as const)
+        : ({ createdAt: "desc" } as const);
+
+  const [classes, total] = await Promise.all([
+    prisma.class.findMany({
+      where,
+      include: {
+        instructor: { select: { id: true, name: true, avatar: true } },
+        _count: { select: { courses: true, enrollments: true } },
+      },
+      orderBy,
+      skip: (page - 1) * perPage,
+      take: perPage,
+    }),
+    prisma.class.count({ where }),
+  ]);
+
+  return NextResponse.json({
+    classes,
+    total,
+    page,
+    totalPages: Math.max(1, Math.ceil(total / perPage)),
+    hasMore: page * perPage < total,
   });
-  return NextResponse.json({ classes });
 }
 
 export async function POST(req: NextRequest) {
