@@ -46,6 +46,7 @@ export async function GET(req: NextRequest) {
   }
 
   const q = url.searchParams.get("q")?.trim();
+  const sort = url.searchParams.get("sort") ?? "newest";
   const page = Math.max(1, parseInt(url.searchParams.get("page") || "1", 10));
   const perPage = 24;
 
@@ -54,11 +55,18 @@ export async function GET(req: NextRequest) {
     ...(q ? { title: { contains: q, mode: "insensitive" as const } } : {}),
   };
 
+  const orderBy =
+    sort === "popular"
+      ? ({ followers: { _count: "desc" } } as const)
+      : sort === "largest"
+        ? ({ items: { _count: "desc" } } as const)
+        : ({ createdAt: "desc" } as const);
+
   const [playlists, total] = await Promise.all([
     prisma.coursePlaylist.findMany({
       where,
       include: cardInclude,
-      orderBy: { createdAt: "desc" },
+      orderBy,
       skip: (page - 1) * perPage,
       take: perPage,
     }),
@@ -69,6 +77,7 @@ export async function GET(req: NextRequest) {
     playlists: await withDurations(playlists),
     total,
     page,
+    totalPages: Math.max(1, Math.ceil(total / perPage)),
     hasMore: page * perPage < total,
   });
 }
