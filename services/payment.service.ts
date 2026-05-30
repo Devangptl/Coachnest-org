@@ -338,9 +338,13 @@ export async function finalizeCoursePayment(
   const userId     = order.userId;
   const paidAmount = Number(order.amount);
 
-  const instructorPct     = Number(order.instructorPercent ?? order.course?.instructorRevenuePercent ?? 70);
-  const instructorRevenue = parseFloat(((paidAmount * instructorPct) / 100).toFixed(2));
-  const platformRevenue   = parseFloat((paidAmount - instructorRevenue).toFixed(2));
+  // Use the revenue figures stored at order-creation time (calculated on goods-only total,
+  // excluding the 2% processing fee). Fall back to re-deriving for legacy orders.
+  const instructorPct = Number(order.instructorPercent ?? order.course?.instructorRevenuePercent ?? 70);
+  const instructorRevenue = order.instructorRevenue != null
+    ? Number(order.instructorRevenue)
+    : parseFloat((((paidAmount / 1.02) * instructorPct) / 100).toFixed(2));
+  const platformRevenue = parseFloat((paidAmount - instructorRevenue).toFixed(2));
 
   await prisma.order.update({
     where: { id: order.id },

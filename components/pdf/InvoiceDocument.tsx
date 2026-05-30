@@ -269,8 +269,7 @@ export default function InvoiceDocument({ invoice }: { invoice: InvoiceData }) {
         <View style={S.header}>
           <View style={S.headerLeft}>
             <Image src={LOGO_PATH} style={S.logo} />
-            <Text style={S.companyName}>Coachnest Education Pvt. Ltd.</Text>
-            <Text style={S.companyEmail}>support@coachnest.com · coachnest.com</Text>
+            <Text style={S.companyEmail}>support@coachnest.com · www.coachnest.in</Text>
           </View>
           <View style={S.headerRight}>
             <Text style={S.invoiceTitle}>INVOICE</Text>
