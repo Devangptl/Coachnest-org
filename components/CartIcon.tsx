@@ -1,16 +1,17 @@
 "use client";
 
-import Link from "next/link";
 import { ShoppingCart } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { openCartDrawer } from "./CartDrawer";
 
 export default function CartIcon({ className }: { className?: string }) {
   const { cart } = useCart();
   const count = cart.count;
 
   return (
-    <Link
-      href="/cart"
+    <button
+      type="button"
+      onClick={openCartDrawer}
       aria-label={`Shopping cart (${count} item${count === 1 ? "" : "s"})`}
       className={
         "relative flex h-9 w-9 items-center justify-center rounded-lg border border-transparent text-muted-foreground hover:bg-secondary hover:text-foreground hover:border-border transition-all " +
@@ -23,6 +24,6 @@ export default function CartIcon({ className }: { className?: string }) {
           {count > 99 ? "99+" : count}
         </span>
       )}
-    </Link>
+    </button>
   );
 }

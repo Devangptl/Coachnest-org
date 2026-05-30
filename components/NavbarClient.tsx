@@ -31,6 +31,7 @@ import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
 import CartIcon from "./CartIcon";
+import CartDrawer, { useCartOpenListener } from "./CartDrawer";
 import ThemeToggle from "./ThemeToggle";
 import InstructorAvatar from "./InstructorAvatar";
 import { useTheme, type Theme } from "./ThemeProvider";
@@ -111,7 +112,11 @@ export default function NavbarClient({ session }: Props) {
   const [mobileOpen,   setMobileOpen]   = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchOpen,   setSearchOpen]   = useState(false);
+  const [cartOpen,     setCartOpen]     = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  // Global event — any component can open the cart drawer via openCartDrawer()
+  useCartOpenListener(() => setCartOpen(true));
 
   // Scroll listener for navbar background
   useEffect(() => {
@@ -149,6 +154,7 @@ export default function NavbarClient({ session }: Props) {
   useEffect(() => {
     setMobileOpen(false);
     setUserMenuOpen(false);
+    setCartOpen(false);
   }, [pathname]);
 
   async function handleLogout() {
@@ -200,9 +206,7 @@ export default function NavbarClient({ session }: Props) {
 
           {session ? (
             <>
-              <div className="hidden lg:block">
-                <CartIcon />
-              </div>
+              <CartIcon />
               <div className="hidden lg:block">
                 <NotificationBell userId={session.userId} />
               </div>
@@ -540,6 +544,9 @@ export default function NavbarClient({ session }: Props) {
 
       {/* ── Search modal (global, rendered at nav level) ─── */}
       <SearchModal open={searchOpen} onClose={() => setSearchOpen(false)} />
+
+      {/* ── Cart drawer (global, rendered at nav level) ───── */}
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </nav>
   );
 }

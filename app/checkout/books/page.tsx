@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { ArrowLeft, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getCart } from "@/services/cart.service";
 import BooksCheckoutClient, { type CheckoutItem } from "./BooksCheckoutClient";
@@ -18,7 +17,7 @@ export default async function BooksCheckoutPage() {
   if (!session) redirect("/login?from=/checkout/books");
 
   const cart = await getCart(session.userId);
-  if (cart.count === 0) redirect("/cart");
+  if (cart.count === 0) redirect("/books");
 
   const items: CheckoutItem[] = cart.items.map((i) => ({
     bookId:        i.bookId,
@@ -32,12 +31,6 @@ export default async function BooksCheckoutPage() {
 
   return (
     <div className="pt-4 pb-16 max-w-5xl mx-auto">
-      <Link
-        href="/cart"
-        className="mb-3 inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" /> Back to cart
-      </Link>
       <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2.5 mb-1">
         <ShoppingCart className="w-6 h-6 text-orange-500" />
         Checkout

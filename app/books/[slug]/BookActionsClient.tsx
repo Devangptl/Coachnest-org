@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { Loader2, ShoppingCart, BookOpen, Download, Lock, Check } from "lucide-react";
 import { useCart } from "@/hooks/useCart";
+import { openCartDrawer } from "@/components/CartDrawer";
 
 interface Props {
   bookId:   string;
@@ -47,7 +48,7 @@ export default function BookActionsClient({ bookId, owned, isFree, loggedIn }: P
       setFeedback({ kind: "err", msg: result.error });
     } else {
       setFeedback({ kind: "ok", msg: "Added to cart" });
-      setTimeout(() => router.push("/cart"), 600);
+      setTimeout(() => openCartDrawer(), 600);
     }
   }
 
