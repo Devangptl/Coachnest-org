@@ -176,7 +176,9 @@ export default function NavbarClient({ session }: Props) {
       >
         {/* ── Logo ────────────────────────────────────────────── */}
         <Link href="/" className="flex items-center">
-          <img src="/logo.png" alt="Coachnest" className="h-5 w-auto object-contain" />
+          {/* Desktop: full logo, Mobile: icon only */}
+          <img src="/logo.png" alt="Coachnest" className="hidden sm:block h-5 w-auto object-contain" />
+          <img src="/icon.png" alt="Coachnest" className="block sm:hidden h-7 w-7 object-contain" />
         </Link>
 
         {/* ── Right side ──────────────────────────────────────── */}
