@@ -26,12 +26,13 @@ import {
   Sun,
   Moon,
   Monitor,
+  ShoppingCart,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
-import CartIcon from "./CartIcon";
-import CartDrawer, { useCartOpenListener } from "./CartDrawer";
+import CartDrawer, { useCartOpenListener, openCartDrawer } from "./CartDrawer";
+import { useCart } from "@/hooks/useCart";
 import ThemeToggle from "./ThemeToggle";
 import InstructorAvatar from "./InstructorAvatar";
 import { useTheme, type Theme } from "./ThemeProvider";
@@ -113,6 +114,8 @@ export default function NavbarClient({ session }: Props) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [searchOpen,   setSearchOpen]   = useState(false);
   const [cartOpen,     setCartOpen]     = useState(false);
+  const { cart } = useCart();
+  const cartCount = cart.count;
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   // Global event — any component can open the cart drawer via openCartDrawer()
@@ -208,7 +211,6 @@ export default function NavbarClient({ session }: Props) {
 
           {session ? (
             <>
-              <CartIcon />
               <div className="hidden lg:block">
                 <NotificationBell userId={session.userId} />
               </div>
@@ -301,6 +303,28 @@ export default function NavbarClient({ session }: Props) {
                             </Link>
                           );
                         })}
+
+                        {/* Cart */}
+                        <button
+                          onClick={() => {
+                            setUserMenuOpen(false);
+                            openCartDrawer();
+                          }}
+                          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                        >
+                          <div className="relative">
+                            <ShoppingCart className="w-4 h-4" />
+                            {cartCount > 0 && (
+                              <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-orange-500 px-0.5 text-[9px] font-bold leading-none text-white">
+                                {cartCount > 99 ? "99+" : cartCount}
+                              </span>
+                            )}
+                          </div>
+                          My Cart
+                          {cartCount > 0 && (
+                            <span className="ml-auto text-xs text-orange-400 font-medium">{cartCount}</span>
+                          )}
+                        </button>
                       </div>
 
                       {/* Theme switcher */}
