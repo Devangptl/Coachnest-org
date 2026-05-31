@@ -293,7 +293,7 @@ export default function PlaylistBrowseGrid() {
               ? Array.from({ length: 12 }).map((_, i) => (
                   <div
                     key={i}
-                    className="h-44 rounded-md bg-card border border-border/60 animate-pulse"
+                    className="skeleton h-44 rounded-md border border-border/60"
                   />
                 ))
               : playlists.map((p, i) => (

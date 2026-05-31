@@ -4,7 +4,7 @@ export default function PlaylistsLoading() {
   return (
     <div className="pt-4 pb-32">
       {/* Header — matches h1 (icon + text-xl) and subtitle */}
-      <div className="mb-6 animate-pulse">
+      <div className="mb-6">
         <div className="flex items-center gap-2 mb-2">
           <Skeleton className="w-5 h-5 rounded-md" />
           <Skeleton className="h-6 w-40 rounded-md" />
@@ -19,7 +19,7 @@ export default function PlaylistsLoading() {
             {Array.from({ length: 12 }).map((_, i) => (
               <Skeleton
                 key={i}
-                className="h-44 rounded-md bg-card border border-border/60"
+                className="h-44 rounded-md border border-border/60"
               />
             ))}
           </div>
@@ -30,13 +30,13 @@ export default function PlaylistsLoading() {
       <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-[calc(100%-2rem)] max-w-3xl">
         <div className="w-full flex items-center bg-background/80 backdrop-blur-2xl border border-border/60 shadow-[0_2px_12px_rgba(0,0,0,0.12)] rounded-full p-1.5">
           <div className="flex items-center gap-2 flex-1 px-4 min-w-0 py-2">
-            <Skeleton className="w-4 h-4 rounded-full animate-pulse flex-shrink-0" />
-            <Skeleton className="h-3.5 w-40 rounded-md animate-pulse" />
+            <Skeleton className="w-4 h-4 rounded-full flex-shrink-0" />
+            <Skeleton className="h-3.5 w-40 rounded-md" />
           </div>
           <div className="w-px h-5 bg-border/50 mx-0.5 flex-shrink-0" />
           <div className="flex items-center gap-1.5 pl-3 pr-4 py-2.5">
-            <Skeleton className="w-4 h-4 rounded-md animate-pulse" />
-            <Skeleton className="hidden sm:block h-3.5 w-12 rounded-md animate-pulse" />
+            <Skeleton className="w-4 h-4 rounded-md" />
+            <Skeleton className="hidden sm:block h-3.5 w-12 rounded-md" />
           </div>
         </div>
       </div>
