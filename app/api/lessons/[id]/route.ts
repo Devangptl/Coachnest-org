@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       },
     });
 
-    revalidateTag("course-lessons");
+    revalidateTag("course-lessons", "max");
 
     return NextResponse.json({ lesson });
   } catch (error) {
@@ -52,7 +52,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     const { id } = await params;
     await prisma.lesson.delete({ where: { id } });
 
-    revalidateTag("course-lessons");
+    revalidateTag("course-lessons", "max");
 
     return NextResponse.json({ message: "Lesson deleted." });
   } catch (error) {

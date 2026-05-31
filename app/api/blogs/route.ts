@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    revalidateTag("blogs");
+    revalidateTag("blogs", "max");
     return NextResponse.json({ blog }, { status: 201 });
   } catch (error) {
     console.error("[POST /api/blogs]", error);

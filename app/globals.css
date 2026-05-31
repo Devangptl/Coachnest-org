@@ -544,14 +544,14 @@ html.light .text-white { color: hsl(var(--foreground)); }
 /* Restore genuine white for elements on coloured backgrounds */
 html.light .bg-orange-600.text-white,
 html.light .bg-orange-500.text-white,
-html.light .bg-[#d97757].text-white,
+html.light .bg-\[\#d97757\].text-white,
 html.light .bg-red-600.text-white,
 html.light .bg-red-500.text-white,
 html.light .bg-emerald-600.text-white,
 html.light .bg-emerald-500.text-white,
 html.light .from-orange-600.text-white,
 html.light .from-orange-500.text-white,
-html.light .from-[#d97757].text-white { color: #ffffff; }
+html.light .from-\[\#d97757\].text-white { color: #ffffff; }
 
 /* Utility-class buttons — light mode: opaque orange bg + white text */
 html.light .btn-primary {
@@ -646,10 +646,10 @@ html.light .badge-red    { background-color: #fdecea; color: #b71c1c; border-col
 html.light .badge-blue   { background-color: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
 
 /* ── Coloured text — boost contrast on cream ─────────────────────────────── */
-html.light .#d97757\/60  { color: rgb(194 65 12 / 0.80); }
-html.light .#d97757\/70  { color: rgb(194 65 12 / 0.88); }
-html.light .#d97757\/80  { color: rgb(194 65 12 / 0.95); }
-html.light .#d97757      { color: #c2410c; }
+html.light .text-\[\#d97757\]\/60  { color: rgb(194 65 12 / 0.80); }
+html.light .text-\[\#d97757\]\/70  { color: rgb(194 65 12 / 0.88); }
+html.light .text-\[\#d97757\]\/80  { color: rgb(194 65 12 / 0.95); }
+html.light .text-\[\#d97757\]      { color: #c2410c; }
 html.light .text-orange-300      { color: #c2550e; }
 html.light .text-orange-500      { color: #b83d0a; }
 
@@ -796,7 +796,7 @@ html.light .hero-gradient-text {
 
 /* Ensure the form-panel link / forgot-password orange is readable on light bg */
 html.light .text-orange-500 { color: #b84800; }
-html.light .hover\:#d97757:hover { color: #c2550e; }
+html.light .hover\:text-\[\#d97757\]:hover { color: #c2550e; }
 
 /* ═══════════════════════════════════════════════════════════════════════════════
    MARKDOWN TEXT EDITOR — textarea-based markdown editing mode
