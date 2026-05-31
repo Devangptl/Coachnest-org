@@ -52,7 +52,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     ),
   );
 
-  revalidateTag("course-lessons");
+  revalidateTag("course-lessons", "max");
 
   return NextResponse.json({ ok: true });
 }

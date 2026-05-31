@@ -86,7 +86,7 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    revalidateTag("course-lessons");
+    revalidateTag("course-lessons", "max");
 
     // Notify enrolled students if the course is published (fire-and-forget)
     prisma.course.findUnique({

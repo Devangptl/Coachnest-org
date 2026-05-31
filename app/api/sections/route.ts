@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
       data: { courseId, title: title.trim(), order: count + 1 },
     });
 
-    revalidateTag("course-lessons");
+    revalidateTag("course-lessons", "max");
 
     return NextResponse.json({ section }, { status: 201 });
   } catch (error) {
