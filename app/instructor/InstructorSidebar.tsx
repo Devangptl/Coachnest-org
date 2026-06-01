@@ -1,13 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
-  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo, Library,
+  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo, Library, Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
+import { channels, events } from "@/lib/realtime/channels";
 
 const navItems = [
   { label: "Overview",      href: "/instructor",              icon: LayoutDashboard, exact: true },
@@ -21,11 +23,39 @@ const navItems = [
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
   { label: "Refunds",       href: "/instructor/refunds",      icon: TrendingDown },
   { label: "Payouts",       href: "/instructor/payouts",      icon: Wallet },
+  { label: "Notifications", href: "/instructor/notifications", icon: Bell },
   { label: "My Profile",    href: "/instructor/profile",      icon: UserCircle },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function useUnreadCount(userId?: string) {
+  const [unread, setUnread] = useState(0);
+
+  const fetchUnread = useCallback(async () => {
+    try {
+      const res = await fetch("/api/notifications?limit=1", { cache: "no-store" });
+      if (!res.ok) return;
+      const data = await res.json();
+      setUnread(data.unread ?? 0);
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUnread();
+  }, [fetchUnread]);
+
+  useRealtimeChannel(userId ? channels.userNotifications(userId) : null, {
+    [events.notificationCreated]: fetchUnread,
+    [events.notificationRead]: fetchUnread,
+  });
+
+  return unread;
+}
+
+function NavLinks({ onNavigate, userId }: { onNavigate?: () => void; userId?: string }) {
   const pathname = usePathname();
+  const unread = useUnreadCount(userId);
   return (
     <nav className="flex flex-col gap-1">
       {navItems.map((item) => {
@@ -33,6 +63,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
           ? pathname === item.href
           : pathname === item.href || pathname.startsWith(item.href + "/");
         const Icon = item.icon;
+        const isNotifications = item.href === "/instructor/notifications";
         return (
           <Link
             key={item.href}
@@ -46,7 +77,12 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             )}
           >
             <Icon className={cn("w-4 h-4", isActive ? "text-amber-400" : "text-muted-foreground")} />
-            {item.label}
+            <span className="flex-1">{item.label}</span>
+            {isNotifications && unread > 0 && (
+              <span className="text-[10px] font-bold bg-amber-500 text-black rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
+                {unread > 9 ? "9+" : unread}
+              </span>
+            )}
           </Link>
         );
       })}
@@ -54,7 +90,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   );
 }
 
-export default function InstructorSidebar() {
+export default function InstructorSidebar({ userId }: { userId?: string }) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
 
@@ -72,7 +108,7 @@ export default function InstructorSidebar() {
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Instructor Panel
           </p>
-          <NavLinks />
+          <NavLinks userId={userId} />
         </div>
       </aside>
 
@@ -98,7 +134,7 @@ export default function InstructorSidebar() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <NavLinks onNavigate={() => setMobileOpen(false)} />
+            <NavLinks userId={userId} onNavigate={() => setMobileOpen(false)} />
           </div>
         </div>
       )}

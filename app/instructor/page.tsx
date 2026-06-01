@@ -9,18 +9,28 @@ import GlassCard from "@/components/GlassCard";
 import Avatar from "@/components/Avatar";
 import { formatDate } from "@/lib/utils";
 import InstructorAlerts from "./InstructorAlerts";
+import { instructorScopedCourseWhere } from "@/services/collaboration.service";
 
 async function getStats(userId: string) {
+  const courseScope = instructorScopedCourseWhere(userId);
+
   const [courses, totalStudents, reviews, profile] = await Promise.all([
     prisma.course.findMany({
-      where:   { createdById: userId },
-      include: { _count: { select: { enrollments: true, lessons: true } }, reviews: { select: { rating: true } } },
+      where:   courseScope,
+      include: {
+        _count: { select: { enrollments: true, lessons: true } },
+        reviews: { select: { rating: true } },
+        collaborators: {
+          where: { userId },
+          select: { role: true, acceptedAt: true },
+        },
+      },
       orderBy: { createdAt: "desc" },
       take: 5,
     }),
-    prisma.enrollment.count({ where: { course: { createdById: userId } } }),
+    prisma.enrollment.count({ where: { course: courseScope } }),
     prisma.review.findMany({
-      where:  { course: { createdById: userId } },
+      where:  { course: courseScope },
       select: { rating: true },
     }),
     prisma.user.findUnique({
@@ -34,7 +44,7 @@ async function getStats(userId: string) {
     }),
   ]);
 
-  const totalCourses = await prisma.course.count({ where: { createdById: userId } });
+  const totalCourses = await prisma.course.count({ where: courseScope });
   const avgRating = reviews.length
     ? reviews.reduce((s, r) => s + r.rating, 0) / reviews.length
     : 0;
@@ -44,7 +54,8 @@ async function getStats(userId: string) {
 
 export default async function InstructorDashboard() {
   const session = await getSession();
-  const { courses, totalStudents, totalCourses, avgRating, profile } = await getStats(session!.userId);
+  const userId = session!.userId;
+  const { courses, totalStudents, totalCourses, avgRating, profile } = await getStats(userId);
 
   const stats = [
     { label: "Total Courses",  value: totalCourses,                       icon: BookOpen, color: "text-blue-400",  bg: "bg-blue-500/10"  },
@@ -144,7 +155,14 @@ export default async function InstructorDashboard() {
                     </div>
                   )}
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{course.title}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-foreground truncate">{course.title}</p>
+                      {course.createdById !== userId && course.collaborators[0] && (
+                        <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex-shrink-0">
+                          {course.collaborators[0].role.replace(/_/g, " ")}
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground/60 mt-0.5">
                       {course._count.lessons} lessons · {course._count.enrollments} students · {formatDate(course.createdAt)}
                     </p>

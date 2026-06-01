@@ -1493,11 +1493,12 @@ export async function sendCollaborationInviteEmail(opts: {
   const acceptLink = `${APP}/dashboard/invitations?token=${opts.token}`;
   const roleLabel  = opts.role.replace(/_/g, " ").toLowerCase();
   const override   = await resolveTemplate("collaboration-invite", {
-    courseTitle: opts.courseTitle,
-    inviterName: opts.inviterName,
-    role:        roleLabel,
+    courseTitle:  opts.courseTitle,
+    inviterName:  opts.inviterName,
+    role:         roleLabel,
     revenueShare: String(opts.revenueShare),
-    link:        acceptLink,
+    message:      opts.message?.trim() || "No personal message included.",
+    link:         acceptLink,
   });
 
   return send({

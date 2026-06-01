@@ -35,7 +35,15 @@ const TYPE_META: Record<string, { icon: React.ElementType; color: string; bg: st
   ACTIVITY:      { icon: Zap,            color: "text-yellow-500",  bg: "bg-yellow-500/10"  },
 };
 
-export default function NotificationBell({ userId }: { userId: string }) {
+export default function NotificationBell({
+  userId,
+  role,
+}: {
+  userId: string;
+  role?: "STUDENT" | "INSTRUCTOR" | "ADMIN";
+}) {
+  const viewAllHref =
+    role === "INSTRUCTOR" ? "/instructor/notifications" : "/dashboard/notifications";
   const [open,          setOpen]          = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unread,        setUnread]        = useState(0);
@@ -206,7 +214,7 @@ export default function NotificationBell({ userId }: { userId: string }) {
             {/* Footer */}
             <div className="border-t border-border px-4 py-2.5">
               <Link
-                href="/dashboard/notifications"
+                href={viewAllHref}
                 onClick={() => setOpen(false)}
                 className="block text-center text-xs text-primary hover:text-primary/80 font-medium transition-colors"
               >

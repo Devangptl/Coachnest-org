@@ -6,17 +6,13 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import GlassCard from "@/components/GlassCard";
 import { PlusCircle, BookOpen, Edit2, Eye, FileUp } from "lucide-react";
+import { instructorScopedCourseWhere } from "@/services/collaboration.service";
 import { formatDate } from "@/lib/utils";
 import DeleteInstructorCourseButton from "./DeleteInstructorCourseButton";
 
 async function getCourses(userId: string) {
   return prisma.course.findMany({
-    where: {
-      OR: [
-        { createdById: userId },
-        { collaborators: { some: { userId, acceptedAt: { not: null } } } },
-      ],
-    },
+    where: instructorScopedCourseWhere(userId),
     include: {
       _count: { select: { lessons: true, enrollments: true } },
       collaborators: {

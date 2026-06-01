@@ -10,6 +10,7 @@ import {
   getInstructorCourseProgressStats,
   getInstructorQuizStats,
 } from "@/services/analytics.service";
+import { instructorScopedCourseWhere } from "@/services/collaboration.service";
 
 const InstructorAnalyticsDashboard = dynamic(
   () => import("./InstructorAnalyticsDashboard"),
@@ -29,9 +30,10 @@ const InstructorAnalyticsDashboard = dynamic(
 );
 
 async function getAnalytics(userId: string) {
+  const courseScope = instructorScopedCourseWhere(userId);
   const [courses, totalStudents, reviews] = await Promise.all([
     prisma.course.findMany({
-      where: { createdById: userId },
+      where: courseScope,
       include: {
         _count: { select: { enrollments: true, reviews: true } },
         reviews: { select: { rating: true } },
@@ -39,9 +41,9 @@ async function getAnalytics(userId: string) {
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.enrollment.count({ where: { course: { createdById: userId } } }),
+    prisma.enrollment.count({ where: { course: courseScope } }),
     prisma.review.findMany({
-      where: { course: { createdById: userId } },
+      where: { course: courseScope },
       select: { rating: true },
     }),
   ]);

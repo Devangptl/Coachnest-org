@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { sendFreeEnrollmentEmail } from "@/lib/email";
+import { notifyCourseInstructors } from "@/lib/notifications";
 
 // ─── GET — list my enrollments ────────────────────────────────────────────────
 export async function GET() {
@@ -127,6 +128,18 @@ export async function POST(req: NextRequest) {
     if (!alreadyEnrolled && !isPaid) {
       sendFreeEnrollmentEmail(user.email, user.name ?? "there", course.title, courseId)
         .catch((e) => console.error("[email] free-enrollment:", e));
+    }
+
+    // Notify the teaching team on every new enrollment (free or paid path
+    // through enrollments; paid path also goes through finalizeCoursePayment).
+    if (!alreadyEnrolled) {
+      notifyCourseInstructors({
+        courseId,
+        title: `New enrollment in "${course.title}"`,
+        body: `${user.name ?? "A student"} just enrolled${isPaid ? "" : " in your free course"}.`,
+        type: "PURCHASE",
+        link: `/instructor/students`,
+      }).catch(console.error);
     }
 
     return NextResponse.json({ enrollment }, { status: 201 });

@@ -18,7 +18,7 @@
  *   - Enrollment deleted, instructor wallet debited, ledger entries written atomically
  */
 import { prisma } from "@/lib/prisma";
-import { createNotification } from "@/lib/notifications";
+import { createNotification, notifyCourseInstructors } from "@/lib/notifications";
 import { getRazorpay } from "@/lib/razorpay";
 import {
   sendRefundSubmittedEmail,
@@ -206,6 +206,15 @@ export async function createRefundRequest(
       amountStr,
       refundRequest.id,
     ).catch(() => null);
+
+    // Notify the teaching team so the instructor sees impending wallet impact.
+    notifyCourseInstructors({
+      courseId: order.courseId!,
+      title: `Refund requested for "${courseTitle}"`,
+      body: `${user.name ?? "A student"} requested a refund of ₹${amountStr} (${Number(progressPercent).toFixed(0)}% progress).`,
+      type: "SYSTEM",
+      link: "/instructor/refunds",
+    }).catch(() => null);
   }
 
   return refundRequest;
