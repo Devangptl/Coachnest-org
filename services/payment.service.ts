@@ -17,6 +17,10 @@ import { getRazorpay } from "@/lib/razorpay";
 import { sendPurchaseEmail } from "@/lib/email";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
 import { calcProcessingFee } from "@/lib/fees";
+import {
+  calculatePlatformDiscount,
+  getActivePlatformOffer,
+} from "@/services/platform-offer.service";
 
 // ─── Revenue split constants ──────────────────────────────────────────────────
 
@@ -235,6 +239,20 @@ export async function createCourseRazorpayOrder(
     couponId = coupon.id;
   }
 
+  // Auto-apply the active platform-wide offer on top of any coupon. The
+  // value is computed server-side from the DB so the client cannot tamper
+  // with it.
+  const offer = await getActivePlatformOffer("COURSES");
+  let platformOfferId: string | undefined;
+  let platformOfferDiscount = 0;
+  if (offer && finalAmount > 0) {
+    platformOfferDiscount = calculatePlatformDiscount(offer, finalAmount);
+    if (platformOfferDiscount > 0) {
+      finalAmount     = Math.max(0, finalAmount - platformOfferDiscount);
+      platformOfferId = offer.id;
+    }
+  }
+
   // Processing fee (2%) added on top of the goods total → final payable amount
   const processingFee = calcProcessingFee(finalAmount);
   const payable       = parseFloat((finalAmount + processingFee).toFixed(2));
@@ -258,11 +276,13 @@ export async function createCourseRazorpayOrder(
     data: {
       userId,
       courseId,
-      amount:            payable,
-      currency:          "INR",
-      status:            "PENDING",
+      amount:                payable,
+      currency:              "INR",
+      status:                "PENDING",
       couponId,
-      discountAmount:    discountAmt > 0 ? discountAmt : undefined,
+      discountAmount:        discountAmt > 0 ? discountAmt : undefined,
+      platformOfferId,
+      platformOfferDiscount: platformOfferDiscount > 0 ? platformOfferDiscount : undefined,
       processingFee,
       instructorRevenue,
       platformRevenue,
@@ -307,6 +327,8 @@ export async function createCourseRazorpayOrder(
     subtotal:        finalAmount,
     processingFee,
     currency:        "INR",
+    platformOfferDiscount,
+    platformOfferTitle: offer?.title ?? null,
   };
 }
 

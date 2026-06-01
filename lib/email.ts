@@ -1407,3 +1407,75 @@ export async function sendCourseCompletedEmail(
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
+// ─── Platform-wide promotional offer announcement ────────────────────────────
+
+export async function sendPlatformOfferEmail(
+  to: string,
+  name: string,
+  offer: {
+    title:        string;
+    description:  string | null;
+    discountType: "PERCENTAGE" | "FIXED";
+    discountValue: number;
+    endsAt:       Date | null;
+    ctaText:      string;
+    ctaUrl:       string;
+  },
+) {
+  const discountLabel =
+    offer.discountType === "PERCENTAGE"
+      ? `${offer.discountValue}% OFF`
+      : `₹${offer.discountValue.toLocaleString("en-IN")} OFF`;
+
+  const endsLine = offer.endsAt
+    ? `Hurry — offer ends ${new Intl.DateTimeFormat("en-IN", {
+        day: "numeric", month: "short", year: "numeric",
+      }).format(offer.endsAt)}.`
+    : "Limited-time offer — grab it while it lasts.";
+
+  const ctaUrl = offer.ctaUrl.startsWith("http")
+    ? offer.ctaUrl
+    : `${APP}${offer.ctaUrl.startsWith("/") ? "" : "/"}${offer.ctaUrl}`;
+
+  const override = await resolveTemplate("platform-offer-announcement", {
+    name,
+    offerTitle:       offer.title,
+    offerDescription: offer.description ?? "",
+    discountLabel,
+    endsLine,
+    ctaText:          offer.ctaText,
+    ctaUrl,
+  });
+
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `${discountLabel} on Coachnest — ${offer.title}`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Limited Offer")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        ${offer.title}
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Hi ${name}, we just launched a platform-wide offer for you —
+        <strong style="color:#f97316;">${discountLabel}</strong>${offer.description ? `. ${offer.description}` : ""}.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Discount", discountLabel)}
+          ${infoRow("Applies",  "Automatically at checkout")}
+          ${offer.endsAt ? infoRow(
+            "Ends",
+            new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(offer.endsAt),
+          ) : ""}
+        </tbody>
+      </table>
+
+      <p style="color:#a3a3a3;font-size:13px;line-height:1.6;margin:0 0 22px;">${endsLine}</p>
+
+      ${btn(offer.ctaText, ctaUrl)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+

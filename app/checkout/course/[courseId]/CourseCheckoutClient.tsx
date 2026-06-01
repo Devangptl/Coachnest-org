@@ -4,7 +4,7 @@ import { useState, FormEvent, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock, ArrowLeft, BookOpen, Tag, X,
-  Loader2, ShieldCheck, ChevronRight, Calendar,
+  Loader2, ShieldCheck, ChevronRight, Calendar, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
@@ -26,6 +26,7 @@ interface Props {
   originalPrice:  number;
   initialCoupon?: string;
   userEmail?:     string;
+  platformOffer?: { id: string; title: string; discount: number } | null;
 }
 
 type Phase = "summary" | "payment";
@@ -33,6 +34,7 @@ type Phase = "summary" | "payment";
 export default function CourseCheckoutClient({
   courseId, courseName, instructorName, lessonCount,
   thumbnail, price: initialPrice, originalPrice, initialCoupon, userEmail,
+  platformOffer,
 }: Props) {
   const router = useRouter();
 
@@ -46,11 +48,13 @@ export default function CourseCheckoutClient({
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  const goodsTotal    = appliedCoupon ? Math.max(0, initialPrice - appliedCoupon.discount) : initialPrice;
-  const processingFee = calcProcessingFee(goodsTotal);
-  const displayPrice  = goodsTotal + processingFee;
-  const hasDiscount   = originalPrice > initialPrice || !!appliedCoupon;
-  const savings       = originalPrice - goodsTotal;
+  const afterCoupon         = appliedCoupon ? Math.max(0, initialPrice - appliedCoupon.discount) : initialPrice;
+  const offerDiscount       = platformOffer ? Math.min(platformOffer.discount, afterCoupon) : 0;
+  const goodsTotal          = Math.max(0, afterCoupon - offerDiscount);
+  const processingFee       = calcProcessingFee(goodsTotal);
+  const displayPrice        = goodsTotal + processingFee;
+  const hasDiscount         = originalPrice > initialPrice || !!appliedCoupon || offerDiscount > 0;
+  const savings             = originalPrice - goodsTotal;
 
   const [proceeding, setProceeding] = useState(false);
   const [error,      setError]      = useState<string | null>(null);
@@ -174,6 +178,12 @@ export default function CourseCheckoutClient({
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                   <span className="text-xs">Coupon ({appliedCoupon.code})</span>
                   <span className="text-xs font-medium">−₹{appliedCoupon.discount.toLocaleString("en-IN")}</span>
+                </div>
+              )}
+              {platformOffer && offerDiscount > 0 && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                  <span className="text-xs">Offer · {platformOffer.title}</span>
+                  <span className="text-xs font-medium">−₹{offerDiscount.toLocaleString("en-IN")}</span>
                 </div>
               )}
               {processingFee > 0 && (
@@ -310,6 +320,14 @@ export default function CourseCheckoutClient({
                   <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                     <span>Coupon ({appliedCoupon.code})</span>
                     <span className="font-medium">−₹{appliedCoupon.discount.toLocaleString("en-IN")}</span>
+                  </div>
+                )}
+                {platformOffer && offerDiscount > 0 && (
+                  <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                    <span className="flex items-center gap-1.5">
+                      <Sparkles className="w-3 h-3" /> {platformOffer.title}
+                    </span>
+                    <span className="font-medium">−₹{offerDiscount.toLocaleString("en-IN")}</span>
                   </div>
                 )}
                 {processingFee > 0 && (

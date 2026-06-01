@@ -3,6 +3,10 @@ import { redirect } from "next/navigation";
 import { ShoppingCart } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { getCart } from "@/services/cart.service";
+import {
+  calculatePlatformDiscount,
+  getActivePlatformOffer,
+} from "@/services/platform-offer.service";
 import BooksCheckoutClient, { type CheckoutItem } from "./BooksCheckoutClient";
 
 export const metadata: Metadata = {
@@ -29,6 +33,17 @@ export default async function BooksCheckoutPage() {
     discountPrice: i.book.discountPrice ? Number(i.book.discountPrice) : null,
   }));
 
+  // Preview the active platform offer; payment service recomputes the
+  // authoritative discount at order creation time.
+  const offerRow = await getActivePlatformOffer("BOOKS");
+  const platformOffer = offerRow
+    ? {
+        id:       offerRow.id,
+        title:    offerRow.title,
+        discount: calculatePlatformDiscount(offerRow, cart.subtotal),
+      }
+    : null;
+
   return (
     <div className="pt-4 pb-16 max-w-5xl mx-auto">
       <h1 className="text-2xl sm:text-3xl font-bold text-foreground flex items-center gap-2.5 mb-1">
@@ -39,7 +54,12 @@ export default async function BooksCheckoutPage() {
         Review your order and complete payment to unlock your library.
       </p>
 
-      <BooksCheckoutClient items={items} subtotal={cart.subtotal} userEmail={session.email} />
+      <BooksCheckoutClient
+        items={items}
+        subtotal={cart.subtotal}
+        userEmail={session.email}
+        platformOffer={platformOffer && platformOffer.discount > 0 ? platformOffer : null}
+      />
     </div>
   );
 }
