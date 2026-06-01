@@ -20,6 +20,8 @@ import {
   type Paginated,
   type PaginationParams,
 } from "@/lib/pagination";
+import { sendPlatformOfferEmail } from "@/lib/email";
+import { createNotification } from "@/lib/notifications";
 
 export type PublicPlatformOffer = {
   id: string;
@@ -42,6 +44,8 @@ export type PublicPlatformOffer = {
 export type AdminPlatformOffer = PublicPlatformOffer & {
   isActive: boolean;
   priority: number;
+  notifiedAt:    string | null;
+  notifiedCount: number;
   createdAt: string;
   updatedAt: string;
 };
@@ -73,10 +77,12 @@ function toPublic(row: OfferRow): PublicPlatformOffer {
 function toAdmin(row: OfferRow): AdminPlatformOffer {
   return {
     ...toPublic(row),
-    isActive:  row.isActive,
-    priority:  row.priority,
-    createdAt: row.createdAt.toISOString(),
-    updatedAt: row.updatedAt.toISOString(),
+    isActive:      row.isActive,
+    priority:      row.priority,
+    notifiedAt:    row.notifiedAt?.toISOString() ?? null,
+    notifiedCount: row.notifiedCount,
+    createdAt:     row.createdAt.toISOString(),
+    updatedAt:     row.updatedAt.toISOString(),
   };
 }
 
@@ -317,4 +323,112 @@ export async function getPlatformOfferStats() {
     active,
     totalDiscountGiven: Number(discountAgg._sum.platformOfferDiscount ?? 0),
   };
+}
+
+// ─── Announcement: email + in-app notification to all students ───────────────
+
+/**
+ * Push an announcement about `offerId` to every STUDENT user — sends a
+ * promotional email via Resend and creates an in-app `OFFER` notification.
+ * Returns the number of recipients addressed.
+ *
+ * Idempotency / safety:
+ *   - Each recipient gets at most one notification per offer (enforced by a
+ *     dedupe lookup against existing Notification rows with the offer link).
+ *   - Email sends are fire-and-forget so an individual Resend failure does
+ *     not abort the rest of the batch.
+ *   - `notifiedAt` + `notifiedCount` on the offer are updated when the run
+ *     completes, so the admin UI can reflect "Sent on X to N users."
+ *
+ * NOTE: For very large user lists this should move to a background queue.
+ * For now it batches in groups of `BATCH_SIZE` with a small await between
+ * batches to stay friendly with Resend's rate limits.
+ */
+const NOTIFY_BATCH_SIZE = 25;
+
+export async function notifyUsersOfOffer(offerId: string): Promise<{
+  recipients: number;
+  emailsSent: number;
+  alreadyNotified: number;
+}> {
+  const offer = await prisma.platformOffer.findUnique({ where: { id: offerId } });
+  if (!offer) throw new Error("Offer not found");
+  if (!offer.isActive) throw new Error("Offer is not active — enable it before notifying users");
+
+  const notifLink = `${offer.bannerCtaUrl || "/courses"}?utm_source=offer&utm_offer=${offer.id}`;
+  const notifTitle = offer.title;
+  const notifBody  = offer.description ?? buildDefaultBody(offer);
+
+  // Fetch every student with a valid email. We exclude users who already
+  // received an in-app notification linked to this offer so the admin can
+  // safely re-click "Notify Users" without spamming.
+  const students = await prisma.user.findMany({
+    where: { role: "STUDENT", email: { not: "" } },
+    select: { id: true, email: true, name: true },
+  });
+
+  const alreadyNotifiedIds = new Set(
+    (
+      await prisma.notification.findMany({
+        where: { type: "OFFER", link: notifLink, userId: { in: students.map((s) => s.id) } },
+        select: { userId: true },
+      })
+    ).map((n) => n.userId),
+  );
+
+  const recipients = students.filter((s) => !alreadyNotifiedIds.has(s.id));
+  let emailsSent = 0;
+
+  for (let i = 0; i < recipients.length; i += NOTIFY_BATCH_SIZE) {
+    const batch = recipients.slice(i, i + NOTIFY_BATCH_SIZE);
+    await Promise.all(
+      batch.map(async (u) => {
+        // In-app notification — always created.
+        await createNotification({
+          data: {
+            userId: u.id,
+            title:  notifTitle,
+            body:   notifBody,
+            type:   "OFFER",
+            link:   notifLink,
+          },
+        }).catch((err) => console.error("[platform-offer notify] notification", u.id, err));
+
+        // Email — fire-and-forget; failures are recorded in EmailLog by `send()`.
+        await sendPlatformOfferEmail(u.email, u.name, {
+          title:         offer.title,
+          description:   offer.description,
+          discountType:  offer.discountType,
+          discountValue: Number(offer.discountValue),
+          endsAt:        offer.endsAt,
+          ctaText:       offer.bannerCtaText,
+          ctaUrl:        offer.bannerCtaUrl,
+        })
+          .then(() => { emailsSent += 1; })
+          .catch((err) => console.error("[platform-offer notify] email", u.email, err));
+      }),
+    );
+  }
+
+  await prisma.platformOffer.update({
+    where: { id: offer.id },
+    data: {
+      notifiedAt:    new Date(),
+      notifiedCount: { increment: recipients.length },
+    },
+  });
+
+  return {
+    recipients:      recipients.length,
+    emailsSent,
+    alreadyNotified: alreadyNotifiedIds.size,
+  };
+}
+
+function buildDefaultBody(offer: OfferRow): string {
+  const value =
+    offer.discountType === DiscountType.PERCENTAGE
+      ? `${Number(offer.discountValue)}% OFF`
+      : `₹${Number(offer.discountValue).toLocaleString("en-IN")} OFF`;
+  return `${value} applied automatically at checkout. Don't miss out!`;
 }

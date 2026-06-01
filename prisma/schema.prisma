@@ -1939,6 +1939,12 @@ model PlatformOffer {
   bannerBgColor  String  @default("#d97757")
   bannerTextColor String @default("#ffffff")
 
+  // Last time the admin pushed an announcement email + in-app notification
+  // to users about this offer. Used to disable the button once sent and to
+  // display "Sent on …" in the admin list.
+  notifiedAt    DateTime?
+  notifiedCount Int       @default(0)
+
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 

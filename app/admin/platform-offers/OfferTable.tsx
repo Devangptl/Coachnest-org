@@ -4,7 +4,7 @@ import { useState, useTransition } from "react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import {
-  Pencil, Trash2, Calendar, BadgePercent, Layers, Megaphone,
+  Pencil, Trash2, Calendar, BadgePercent, Layers, Megaphone, Send,
 } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
@@ -33,6 +33,41 @@ export default function OfferTable({ offers }: { offers: AdminPlatformOffer[] })
       startTransition(() => window.location.reload());
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Update failed");
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  async function handleNotify(offer: AdminPlatformOffer) {
+    if (!offer.isActive) {
+      toast.error("Enable the offer before notifying users.");
+      return;
+    }
+    const ok = await confirm(
+      `Send a promotional email + in-app notification to every student about "${offer.title}"? Users already notified for this offer will be skipped.`,
+      { title: "Notify Users", confirmText: "Send" },
+    );
+    if (!ok) return;
+
+    setBusyId(offer.id);
+    try {
+      const res = await fetch(`/api/admin/platform-offers/${offer.id}/notify`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) {
+        toast.error(data.error ?? "Notify failed");
+        return;
+      }
+      const { recipients, alreadyNotified } = data.data as {
+        recipients: number; emailsSent: number; alreadyNotified: number;
+      };
+      if (recipients === 0) {
+        toast.success(`No new recipients (${alreadyNotified} already notified).`);
+      } else {
+        toast.success(`Notification queued for ${recipients} user${recipients === 1 ? "" : "s"}.`);
+      }
+      startTransition(() => window.location.reload());
+    } catch {
+      toast.error("Network error");
     } finally {
       setBusyId(null);
     }
@@ -124,6 +159,13 @@ export default function OfferTable({ offers }: { offers: AdminPlatformOffer[] })
                   banner on
                 </span>
               )}
+
+              {offer.notifiedAt && (
+                <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                  <Send className="w-3 h-3" />
+                  Notified {offer.notifiedCount.toLocaleString()} on {formatDate(offer.notifiedAt)}
+                </span>
+              )}
             </div>
 
             <div className="mt-2 flex items-center gap-1">
@@ -134,6 +176,17 @@ export default function OfferTable({ offers }: { offers: AdminPlatformOffer[] })
                 onClick={() => toggleActive(offer)}
               >
                 {offer.isActive ? "Disable" : "Enable"}
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                disabled={!offer.isActive}
+                loading={busyId === offer.id}
+                onClick={() => handleNotify(offer)}
+                title={offer.isActive ? "Email + in-app notification to all students" : "Enable the offer first"}
+              >
+                <Send className="w-3.5 h-3.5 mr-1" />
+                {offer.notifiedAt ? "Re-notify" : "Notify Users"}
               </Button>
               <Link href={`/admin/platform-offers/${offer.id}/edit`}>
                 <Button size="icon" variant="ghost" title="Edit">
