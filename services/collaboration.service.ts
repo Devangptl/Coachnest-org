@@ -638,6 +638,21 @@ export async function getMyPendingInvites(email: string) {
   }));
 }
 
+/**
+ * Prisma `where` fragment matching every course this user is part of —
+ * either as the owner OR as an accepted collaborator. Reuse this in
+ * instructor-scoped queries so collaborated courses appear consistently
+ * across dashboard, analytics, students, etc.
+ */
+export function instructorScopedCourseWhere(userId: string): Prisma.CourseWhereInput {
+  return {
+    OR: [
+      { createdById: userId },
+      { collaborators: { some: { userId, acceptedAt: { not: null } } } },
+    ],
+  };
+}
+
 export async function getMyCollaboratedCourses(userId: string) {
   const collabs = await prisma.courseCollaborator.findMany({
     where: { userId, acceptedAt: { not: null } },

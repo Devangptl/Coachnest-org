@@ -4,6 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { startOfMonth, startOfWeek, subMonths, subWeeks, format } from "date-fns";
+import { instructorScopedCourseWhere } from "@/services/collaboration.service";
 
 // ─── Admin-wide analytics ─────────────────────────────────────────────────────
 
@@ -121,7 +122,7 @@ export async function getUserGrowth(months = 6) {
 
 export async function getInstructorStats(instructorId: string) {
   const courses = await prisma.course.findMany({
-    where: { createdById: instructorId },
+    where: instructorScopedCourseWhere(instructorId),
     select: {
       id: true,
       title: true,
@@ -172,7 +173,7 @@ export async function getInstructorMonthlyEnrollments(instructorId: string, mont
   const since = subMonths(startOfMonth(new Date()), months - 1);
   const courseIds = (
     await prisma.course.findMany({
-      where: { createdById: instructorId },
+      where: instructorScopedCourseWhere(instructorId),
       select: { id: true },
     })
   ).map((c) => c.id);
@@ -200,7 +201,7 @@ export async function getInstructorMonthlyEnrollments(instructorId: string, mont
  */
 export async function getInstructorCourseProgressStats(instructorId: string) {
   const courses = await prisma.course.findMany({
-    where: { createdById: instructorId, status: "PUBLISHED" },
+    where: { AND: [instructorScopedCourseWhere(instructorId), { status: "PUBLISHED" }] },
     select: {
       id: true,
       title: true,
@@ -273,7 +274,7 @@ export async function getInstructorCourseProgressStats(instructorId: string) {
  */
 export async function getInstructorQuizStats(instructorId: string) {
   const courses = await prisma.course.findMany({
-    where: { createdById: instructorId, status: "PUBLISHED" },
+    where: { AND: [instructorScopedCourseWhere(instructorId), { status: "PUBLISHED" }] },
     select: {
       id: true,
       title: true,
@@ -313,7 +314,7 @@ export async function getInstructorQuizStats(instructorId: string) {
  */
 export async function getInstructorStudentsWithProgress(instructorId: string) {
   const enrollments = await prisma.enrollment.findMany({
-    where: { course: { createdById: instructorId } },
+    where: { course: instructorScopedCourseWhere(instructorId) },
     include: {
       user: { select: { id: true, name: true, email: true, avatar: true } },
       course: {
