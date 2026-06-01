@@ -9,6 +9,14 @@ import FollowInstructorButton from "@/components/FollowInstructorButton";
 import InstructorHoverCard from "@/components/InstructorHoverCard";
 import InstructorAvatar from "@/components/InstructorAvatar";
 
+interface CoInstructor {
+  id: string;
+  name: string;
+  avatar: string | null;
+  headline: string | null;
+  role: string;
+}
+
 interface Props {
   title: string;
   description: string;
@@ -18,6 +26,7 @@ interface Props {
   instructorName: string;
   instructorId: string;
   instructorAvatar?: string | null;
+  coInstructors?: CoInstructor[];
   lessonCount: number;
   totalDuration: number;
   enrollmentCount: number;
@@ -50,6 +59,7 @@ export default function CourseHero({
   instructorName,
   instructorId,
   instructorAvatar,
+  coInstructors = [],
   lessonCount,
   totalDuration,
   enrollmentCount,
@@ -217,6 +227,31 @@ export default function CourseHero({
               isLoggedIn={isLoggedIn}
               showCount
             />
+
+            {coInstructors.length > 0 && (
+              <div className="flex items-center gap-3 ml-2 sm:ml-4 pl-3 sm:pl-4 border-l border-border dark:border-white/[0.08]">
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground/60 dark:text-white/35 font-medium">
+                  With
+                </p>
+                <div className="flex -space-x-2">
+                  {coInstructors.slice(0, 4).map((co) => (
+                    <InstructorHoverCard
+                      key={co.id}
+                      instructorId={co.id}
+                      instructorName={co.name}
+                      className="relative inline-block ring-2 ring-background rounded-full"
+                    >
+                      <InstructorAvatar name={co.name} avatar={co.avatar} seed={co.id} />
+                    </InstructorHoverCard>
+                  ))}
+                  {coInstructors.length > 4 && (
+                    <div className="relative inline-flex items-center justify-center w-9 h-9 rounded-full bg-secondary text-xs font-semibold text-muted-foreground ring-2 ring-background">
+                      +{coInstructors.length - 4}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </motion.div>
 
         </div>

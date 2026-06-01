@@ -41,7 +41,6 @@ enum OrderStatus {
   REFUNDED
 }
 
-
 enum LessonType {
   VIDEO
   TEXT
@@ -81,10 +80,10 @@ enum NotifType {
 }
 
 enum SaleSource {
-  ORGANIC   // discovered via platform
-  REFERRAL  // student came via instructor's referral link
-  COUPON    // instructor's own coupon used
-  ADS       // platform-paid acquisition
+  ORGANIC // discovered via platform
+  REFERRAL // student came via instructor's referral link
+  COUPON // instructor's own coupon used
+  ADS // platform-paid acquisition
 }
 
 enum PayoutStatus {
@@ -106,26 +105,26 @@ enum JoinRequestStatus {
 }
 
 enum RefundStatus {
-  PENDING    // Student submitted, awaiting admin review
+  PENDING // Student submitted, awaiting admin review
   PROCESSING // Razorpay refund in flight
-  PROCESSED  // Fully complete — refunded, enrollment revoked, wallet debited
-  REJECTED   // Admin rejected the request
-  FAILED     // Razorpay refund failed after approval
+  PROCESSED // Fully complete — refunded, enrollment revoked, wallet debited
+  REJECTED // Admin rejected the request
+  FAILED // Razorpay refund failed after approval
 }
 
 enum LedgerEntryType {
-  PURCHASE                   // Student paid for course
-  PLATFORM_FEE               // Platform share on purchase
-  INSTRUCTOR_EARNING         // Instructor share on purchase
-  REFUND                     // Refund issued to student
+  PURCHASE // Student paid for course
+  PLATFORM_FEE // Platform share on purchase
+  INSTRUCTOR_EARNING // Instructor share on purchase
+  REFUND // Refund issued to student
   REFUND_REVERSAL_INSTRUCTOR // Instructor share clawed back on refund
-  REFUND_REVERSAL_PLATFORM   // Platform share clawed back on refund
+  REFUND_REVERSAL_PLATFORM // Platform share clawed back on refund
 }
 
 enum InstructorStatus {
-  PENDING   // Awaiting admin approval
-  APPROVED  // Approved and active
-  REJECTED  // Application rejected
+  PENDING // Awaiting admin approval
+  APPROVED // Approved and active
+  REJECTED // Application rejected
 }
 
 enum PlaylistVisibility {
@@ -137,6 +136,23 @@ enum BookFileFormat {
   PDF
   EPUB
   DOCX
+}
+
+// ─── Course Collaboration ─────────────────────────────────────────────────────
+
+enum CourseCollaboratorRole {
+  OWNER // primary instructor — created the course (mirrors createdById)
+  CO_INSTRUCTOR // full edit, share in revenue, appears on course page
+  EDITOR // can edit content but not manage collaborators or split
+  VIEWER // read-only access to course internals
+}
+
+enum CollaborationInviteStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  REVOKED
+  EXPIRED
 }
 
 // ─── Organization (Multi-tenant) ──────────────────────────────────────────────
@@ -177,20 +193,20 @@ model OrganizationMember {
 // ─── User ─────────────────────────────────────────────────────────────────────
 
 model User {
-  id        String   @id @default(cuid())
-  name      String
-  email     String   @unique
-  password  String?  // null for Supabase Auth users (password stored in auth.users)
-  avatar    String?
-  bio       String?  @db.Text
-  headline  String?
-  website   String?
-  role      Role     @default(STUDENT)
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  password     String? // null for Supabase Auth users (password stored in auth.users)
+  avatar       String?
+  bio          String?       @db.Text
+  headline     String?
+  website      String?
+  role         Role          @default(STUDENT)
   // Sub-role for admins — null for non-admins. Defaults to SUPER_ADMIN
   // when a user is first promoted to ADMIN (see /api/admin/admins/[id]/sub-role).
   adminSubRole AdminSubRole?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
 
   // Instructor approval workflow
   instructorStatus       InstructorStatus?
@@ -198,10 +214,10 @@ model User {
   instructorReviewedAt   DateTime?
   instructorRejectReason String?           @db.Text
 
-  organizations  OrganizationMember[]
-  courses        Course[]             @relation("CourseInstructor")
-  enrollments    Enrollment[]
-  orders         Order[]
+  organizations OrganizationMember[]
+  courses       Course[]             @relation("CourseInstructor")
+  enrollments   Enrollment[]
+  orders        Order[]
 
   reviews        Review[]
   wishlist       Wishlist[]
@@ -217,28 +233,28 @@ model User {
   xpEvents       XpEvent[]
 
   // Tour Flags
-  hasSeenTour          Boolean  @default(false)
-  hasSeenCommunityTour Boolean  @default(false)
+  hasSeenTour          Boolean @default(false)
+  hasSeenCommunityTour Boolean @default(false)
 
   // Onboarding
-  hasCompletedOnboarding          Boolean  @default(false)
+  hasCompletedOnboarding           Boolean  @default(false)
   hasCompletedInstructorOnboarding Boolean  @default(false)
-  teachingTopics                  String[] @default([])
+  teachingTopics                   String[] @default([])
 
   // Feature add-on purchases
-  featurePurchases      FeaturePurchase[]
+  featurePurchases FeaturePurchase[]
 
   // Professions
-  professions           UserProfession[]
+  professions UserProfession[]
 
   // Revenue sharing
-  instructorWallet  InstructorWallet?
-  payoutRequests    PayoutRequest[]
-  referralLinks     ReferralLink[]
+  instructorWallet InstructorWallet?
+  payoutRequests   PayoutRequest[]
+  referralLinks    ReferralLink[]
 
   // Refunds
-  refundRequests    RefundRequest[]
-  adminRefunds      RefundRequest[] @relation("RefundAdmin")
+  refundRequests RefundRequest[]
+  adminRefunds   RefundRequest[] @relation("RefundAdmin")
 
   // Community
   forumThreads          ForumThread[]
@@ -255,39 +271,45 @@ model User {
   groupJoinRequests     GroupJoinRequest[]
 
   // Media Library
-  mediaAssets           MediaAsset[]
+  mediaAssets MediaAsset[]
 
   // Instructor follows (student → instructor)
-  followedInstructors   UserInstructorFollow[] @relation("StudentFollows")
-  followers             UserInstructorFollow[] @relation("InstructorFollowers")
+  followedInstructors UserInstructorFollow[] @relation("StudentFollows")
+  followers           UserInstructorFollow[] @relation("InstructorFollowers")
 
   // Class / Cohort management
-  classesOwned        Class[]              @relation("ClassInstructor")
-  classAssistantships ClassAssistant[]
-  classEnrollments    ClassEnrollment[]
-  liveSessionsHosted  LiveSession[]        @relation("LiveSessionHost")
-  attendanceRecords   Attendance[]
-  announcements       Announcement[]       @relation("AnnouncementAuthor")
-  discussions         Discussion[]         @relation("DiscussionAuthor")
-  classMessages       Message[]            @relation("MessageAuthor")
-  discussionVotes     DiscussionVote[]
-  classXpEvents       ClassXpEvent[]
-  classCertificates   ClassCertificate[]
-  assignmentsCreated  Assignment[]             @relation("AssignmentAuthor")
+  classesOwned          Class[]                @relation("ClassInstructor")
+  classAssistantships   ClassAssistant[]
+  classEnrollments      ClassEnrollment[]
+  liveSessionsHosted    LiveSession[]          @relation("LiveSessionHost")
+  attendanceRecords     Attendance[]
+  announcements         Announcement[]         @relation("AnnouncementAuthor")
+  discussions           Discussion[]           @relation("DiscussionAuthor")
+  classMessages         Message[]              @relation("MessageAuthor")
+  discussionVotes       DiscussionVote[]
+  classXpEvents         ClassXpEvent[]
+  classCertificates     ClassCertificate[]
+  assignmentsCreated    Assignment[]           @relation("AssignmentAuthor")
   assignmentSubmissions AssignmentSubmission[] @relation("AssignmentSubmitter")
-  assignmentsGraded   AssignmentSubmission[]   @relation("AssignmentGrader")
+  assignmentsGraded     AssignmentSubmission[] @relation("AssignmentGrader")
 
   // Course Playlists
   coursePlaylists CoursePlaylist[]       @relation("PlaylistOwner")
   playlistFollows CoursePlaylistFollow[]
 
   // Books module
-  books          Book[]          @relation("BookAuthor")
-  bookOrders     BookOrder[]
-  bookPurchases  BookPurchase[]
-  bookReviews    BookReview[]
-  bookWishlist   BookWishlist[]
-  cart           Cart?
+  books         Book[]         @relation("BookAuthor")
+  bookOrders    BookOrder[]
+  bookPurchases BookPurchase[]
+  bookReviews   BookReview[]
+  bookWishlist  BookWishlist[]
+  cart          Cart?
+
+  // Course collaboration
+  courseCollaborations   CourseCollaborator[]        @relation("CourseCollaboratorUser")
+  courseCollabsAddedByMe CourseCollaborator[]        @relation("CourseCollaboratorAddedBy")
+  courseInvitesSent      CourseCollaborationInvite[] @relation("CourseInviteSender")
+  courseActivityLogs     CourseActivityLog[]         @relation("CourseActivityLogUser")
 
   @@map("users")
 }
@@ -329,27 +351,27 @@ model CourseTag {
 // ─── Course ───────────────────────────────────────────────────────────────────
 
 model Course {
-  id                       String        @id @default(cuid())
-  title                    String
-  slug                     String        @unique
-  description              String        @db.Text
-  shortDesc                String?
-  thumbnail                String?
-  previewVideo             String?
-  status                   ContentStatus @default(DRAFT)
-  price                    Decimal?      @db.Decimal(10, 2)
-  discountPrice            Decimal?      @db.Decimal(10, 2)
-  isFree                   Boolean       @default(false)
+  id            String        @id @default(cuid())
+  title         String
+  slug          String        @unique
+  description   String        @db.Text
+  shortDesc     String?
+  thumbnail     String?
+  previewVideo  String?
+  status        ContentStatus @default(DRAFT)
+  price         Decimal?      @db.Decimal(10, 2)
+  discountPrice Decimal?      @db.Decimal(10, 2)
+  isFree        Boolean       @default(false)
 
-  level                    String        @default("beginner")
-  language                 String        @default("English")
-  totalDuration            Int           @default(0)
-  totalLessons             Int           @default(0)
+  level                    String   @default("beginner")
+  language                 String   @default("English")
+  totalDuration            Int      @default(0)
+  totalLessons             Int      @default(0)
   // Revenue split: instructor gets this %, platform gets (100 - instructorRevenuePercent)%
   // Configurable per-course (default 70). Valid range: 70–80.
-  instructorRevenuePercent Int           @default(70)
-  createdAt                DateTime      @default(now())
-  updatedAt                DateTime      @updatedAt
+  instructorRevenuePercent Int      @default(70)
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   categoryId     String?
   createdById    String
@@ -371,8 +393,89 @@ model Course {
   refundRequests RefundRequest[]
   classCourses   ClassCourse[]
   playlistItems  CoursePlaylistItem[]
+  collaborators  CourseCollaborator[]
+  collabInvites  CourseCollaborationInvite[]
+  activityLogs   CourseActivityLog[]
 
   @@map("courses")
+}
+
+// ─── Course Collaborator (course ↔ instructor mapping) ────────────────────────
+
+model CourseCollaborator {
+  id           String                 @id @default(cuid())
+  courseId     String
+  userId       String
+  role         CourseCollaboratorRole @default(CO_INSTRUCTOR)
+  // Configurable revenue share (percent of the instructor pool, 0-100). The
+  // sum of revenueShare across active collaborators (incl. OWNER) should
+  // equal 100 — validated at the service layer.
+  revenueShare Decimal                @default(0) @db.Decimal(5, 2)
+  // Whether this collaborator should be shown publicly on the course page.
+  isPublic     Boolean                @default(true)
+  addedById    String? // who invited / added this collaborator
+  acceptedAt   DateTime? // null until the user accepts an invite
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  course  Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user    User   @relation("CourseCollaboratorUser", fields: [userId], references: [id], onDelete: Cascade)
+  addedBy User?  @relation("CourseCollaboratorAddedBy", fields: [addedById], references: [id])
+
+  @@unique([courseId, userId])
+  @@index([userId])
+  @@index([courseId, role])
+  @@map("course_collaborators")
+}
+
+// ─── Course Collaboration Invite ──────────────────────────────────────────────
+// Outstanding invite (by email) — supports inviting users that don't yet
+// have an account. Resolved to a CourseCollaborator row on acceptance.
+
+model CourseCollaborationInvite {
+  id           String                    @id @default(cuid())
+  courseId     String
+  email        String
+  token        String                    @unique
+  role         CourseCollaboratorRole    @default(CO_INSTRUCTOR)
+  revenueShare Decimal                   @default(0) @db.Decimal(5, 2)
+  invitedById  String
+  status       CollaborationInviteStatus @default(PENDING)
+  message      String?                   @db.Text
+  expiresAt    DateTime
+  acceptedAt   DateTime?
+  declinedAt   DateTime?
+  revokedAt    DateTime?
+  createdAt    DateTime                  @default(now())
+  updatedAt    DateTime                  @updatedAt
+
+  course    Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  invitedBy User   @relation("CourseInviteSender", fields: [invitedById], references: [id], onDelete: Cascade)
+
+  @@index([courseId, status])
+  @@index([email, status])
+  @@map("course_collaboration_invites")
+}
+
+// ─── Course Activity Log ──────────────────────────────────────────────────────
+// Append-only audit log of mutations performed on a course by any
+// instructor (owner or collaborator). Used by the collaboration UI and
+// the admin monitoring view.
+
+model CourseActivityLog {
+  id        String   @id @default(cuid())
+  courseId  String
+  userId    String
+  action    String // e.g. "course.updated", "lesson.created", "collaborator.added"
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  user   User   @relation("CourseActivityLogUser", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([courseId, createdAt])
+  @@index([userId])
+  @@map("course_activity_logs")
 }
 
 // ─── Section ──────────────────────────────────────────────────────────────────
@@ -400,7 +503,7 @@ model Lesson {
   order       Int
   duration    Int?
   isFree      Boolean    @default(false)
-  publishAt   DateTime?  // drip: null = immediately available
+  publishAt   DateTime? // drip: null = immediately available
 
   courseId  String
   sectionId String?
@@ -408,8 +511,9 @@ model Lesson {
   course     Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   section    Section?         @relation(fields: [sectionId], references: [id])
   progress   LessonProgress[]
-  quiz          Quiz?
-  highlights    Highlight[]
+  quiz       Quiz?
+  highlights Highlight[]
+
   @@map("lessons")
 }
 
@@ -456,9 +560,9 @@ model Quiz {
   passMark  Int    @default(70)
   timeLimit Int?
 
-  lesson    Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  questions Question[]
-  attempts  QuizAttempt[]
+  lesson      Lesson        @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  questions   Question[]
+  attempts    QuizAttempt[]
   assignments Assignment[]
 
   @@map("quizzes")
@@ -529,48 +633,47 @@ model Wishlist {
 // ─── Payment ──────────────────────────────────────────────────────────────────
 
 model Order {
-  id                String      @id @default(cuid())
-  userId            String
-  courseId          String?
+  id                    String      @id @default(cuid())
+  userId                String
+  courseId              String?
   // Feature add-on purchase (mutually exclusive with courseId)
-  featureId         String?
-  amount            Decimal     @db.Decimal(10, 2)
-  currency          String      @default("INR")
-  status            OrderStatus @default(PENDING)
+  featureId             String?
+  amount                Decimal     @db.Decimal(10, 2)
+  currency              String      @default("INR")
+  status                OrderStatus @default(PENDING)
   // Razorpay payment fields
-  razorpayOrderId   String?     @unique
-  razorpayPaymentId String?     @unique
-  couponId          String?
-  discountAmount    Decimal?    @db.Decimal(10, 2)
+  razorpayOrderId       String?     @unique
+  razorpayPaymentId     String?     @unique
+  couponId              String?
+  discountAmount        Decimal?    @db.Decimal(10, 2)
   // Platform-wide auto-applied offer (separate from coupon code)
   platformOfferId       String?
-  platformOfferDiscount Decimal? @db.Decimal(10, 2)
+  platformOfferDiscount Decimal?    @db.Decimal(10, 2)
   // Processing fee added on top of the goods total (included in `amount`)
-  processingFee     Decimal?    @db.Decimal(10, 2)
+  processingFee         Decimal?    @db.Decimal(10, 2)
   // Revenue attribution (populated on PAID status)
-  instructorRevenue Decimal?    @db.Decimal(10, 2)
-  platformRevenue   Decimal?    @db.Decimal(10, 2)
+  instructorRevenue     Decimal?    @db.Decimal(10, 2)
+  platformRevenue       Decimal?    @db.Decimal(10, 2)
   // Dynamic revenue split tracking
-  saleSource        SaleSource  @default(ORGANIC)
-  instructorPercent Decimal?    @db.Decimal(5, 2) // actual % applied (70 | 85 | 90)
-  referralLinkId    String?
-  createdAt         DateTime    @default(now())
-  updatedAt         DateTime    @updatedAt
+  saleSource            SaleSource  @default(ORGANIC)
+  instructorPercent     Decimal?    @db.Decimal(5, 2) // actual % applied (70 | 85 | 90)
+  referralLinkId        String?
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
 
-  user               User              @relation(fields: [userId], references: [id])
-  course             Course?           @relation(fields: [courseId], references: [id])
-  coupon             Coupon?           @relation(fields: [couponId], references: [id])
-  platformOffer      PlatformOffer?    @relation(fields: [platformOfferId], references: [id], onDelete: SetNull)
-  feature            PlatformFeature?  @relation(fields: [featureId], references: [id])
+  user               User                @relation(fields: [userId], references: [id])
+  course             Course?             @relation(fields: [courseId], references: [id])
+  coupon             Coupon?             @relation(fields: [couponId], references: [id])
+  platformOffer      PlatformOffer?      @relation(fields: [platformOfferId], references: [id], onDelete: SetNull)
+  feature            PlatformFeature?    @relation(fields: [featureId], references: [id])
   featurePurchase    FeaturePurchase?
-  referralLink       ReferralLink?     @relation(fields: [referralLinkId], references: [id])
+  referralLink       ReferralLink?       @relation(fields: [referralLinkId], references: [id])
   walletTransactions WalletTransaction[]
   refundRequest      RefundRequest?
   ledgerEntries      LedgerEntry[]
 
   @@map("orders")
 }
-
 
 model Payout {
   id             String    @id @default(cuid())
@@ -598,9 +701,9 @@ model Coupon {
   uses           Int          @default(0)
   expiresAt      DateTime?
   courseId       String?
-  bookId         String?      // scope coupon to a single book (symmetric with courseId)
+  bookId         String? // scope coupon to a single book (symmetric with courseId)
   organizationId String?
-  createdById    String?      // instructor who created this coupon
+  createdById    String? // instructor who created this coupon
   createdAt      DateTime     @default(now())
 
   organization Organization? @relation(fields: [organizationId], references: [id])
@@ -659,20 +762,20 @@ model Notification {
 // ─── Blog ────────────────────────────────────────────────────────────────────
 
 model Blog {
-  id          String        @id @default(cuid())
-  title       String
-  slug        String        @unique
-  excerpt     String?       @db.Text
-  content     String        @db.Text
-  thumbnail   String?
-  status      ContentStatus @default(DRAFT)
-  tags        String?       // comma-separated tags
-  readTime    Int?          // estimated reading time in minutes
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id        String        @id @default(cuid())
+  title     String
+  slug      String        @unique
+  excerpt   String?       @db.Text
+  content   String        @db.Text
+  thumbnail String?
+  status    ContentStatus @default(DRAFT)
+  tags      String? // comma-separated tags
+  readTime  Int? // estimated reading time in minutes
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
 
   authorId String
-  author   User @relation("BlogAuthor", fields: [authorId], references: [id])
+  author   User   @relation("BlogAuthor", fields: [authorId], references: [id])
 
   @@map("blogs")
 }
@@ -794,13 +897,13 @@ model ForumReply {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  thread           ForumThread  @relation(fields: [threadId], references: [id], onDelete: Cascade)
-  author           User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  parent           ForumReply?  @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: SetNull)
-  children         ForumReply[] @relation("ReplyToReply")
+  thread           ForumThread     @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  author           User            @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  parent           ForumReply?     @relation("ReplyToReply", fields: [parentId], references: [id], onDelete: SetNull)
+  children         ForumReply[]    @relation("ReplyToReply")
   votes            ForumVote[]
   reactions        ForumReaction[]
-  acceptedInThread ForumThread? @relation("AcceptedReply")
+  acceptedInThread ForumThread?    @relation("AcceptedReply")
 
   @@index([threadId])
   @@index([authorId])
@@ -811,7 +914,7 @@ model ForumVote {
   id      String @id @default(cuid())
   userId  String
   replyId String
-  value   Int    // +1 or -1
+  value   Int // +1 or -1
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   reply ForumReply @relation(fields: [replyId], references: [id], onDelete: Cascade)
@@ -824,7 +927,7 @@ model ForumReaction {
   id        String   @id @default(cuid())
   userId    String
   replyId   String
-  emoji     String   // one of a fixed client-side set
+  emoji     String // one of a fixed client-side set
   createdAt DateTime @default(now())
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -852,18 +955,18 @@ model ForumBookmark {
 // ─── Community: Study Groups ──────────────────────────────────────────────────
 
 model StudyGroup {
-  id          String   @id @default(cuid())
-  name        String
-  description String?  @db.Text
-  courseId    String?
-  inviteCode  String   @unique
-  maxMembers  Int      @default(20)
+  id               String   @id @default(cuid())
+  name             String
+  description      String?  @db.Text
+  courseId         String?
+  inviteCode       String   @unique
+  maxMembers       Int      @default(20)
   isPublic         Boolean  @default(true)
   requiresApproval Boolean  @default(false)
   groupXp          Int      @default(0)
-  createdById String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdById      String
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   createdBy    User               @relation("GroupCreator", fields: [createdById], references: [id], onDelete: Cascade)
   members      StudyGroupMember[]
@@ -943,9 +1046,9 @@ model PeerReview {
   id           String   @id @default(cuid())
   assignmentId String
   reviewerId   String
-  rating       Int      // 1-5
+  rating       Int // 1-5
   feedback     String   @db.Text
-  rubricScores Json?    // { clarity: 4, depth: 3, ... }
+  rubricScores Json? // { clarity: 4, depth: 3, ... }
   createdAt    DateTime @default(now())
 
   assignment PeerReviewAssignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
@@ -960,10 +1063,10 @@ model PeerReview {
 model ActivityFeedEvent {
   id          String   @id @default(cuid())
   userId      String
-  type        String   // BADGE_EARNED, COURSE_COMPLETED, THREAD_CREATED, GROUP_JOINED, REVIEW_SUBMITTED
+  type        String // BADGE_EARNED, COURSE_COMPLETED, THREAD_CREATED, GROUP_JOINED, REVIEW_SUBMITTED
   title       String
   description String?  @db.Text
-  meta        Json?    // extra data (badgeName, courseName, etc.)
+  meta        Json? // extra data (badgeName, courseName, etc.)
   createdAt   DateTime @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1025,12 +1128,12 @@ model Profession {
   slug           String   @unique
   name           String
   description    String
-  icon           String   // emoji or lucide icon name
+  icon           String // emoji or lucide icon name
   color          String   @default("orange")
   courseKeywords String[] // category slugs / tag names used for recommendations
-  isDefault      Boolean  @default(true)   // predefined by platform
-  isActive       Boolean  @default(true)   // admin can hide without deleting
-  order          Int      @default(0)      // display sort order
+  isDefault      Boolean  @default(true) // predefined by platform
+  isActive       Boolean  @default(true) // admin can hide without deleting
+  order          Int      @default(0) // display sort order
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
@@ -1042,8 +1145,8 @@ model Profession {
 model UserProfession {
   id           String   @id @default(cuid())
   userId       String
-  professionId String?  // null for custom profession entries
-  customName   String?  // non-null when professionId is null (custom)
+  professionId String? // null for custom profession entries
+  customName   String? // non-null when professionId is null (custom)
   createdAt    DateTime @default(now())
 
   user       User        @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1059,8 +1162,8 @@ model ReferralLink {
   id           String   @id @default(cuid())
   instructorId String
   code         String   @unique
-  courseId     String?  // null = applies to all instructor's courses
-  label        String?  // human-readable label
+  courseId     String? // null = applies to all instructor's courses
+  label        String? // human-readable label
   totalClicks  Int      @default(0)
   conversions  Int      @default(0)
   isActive     Boolean  @default(true)
@@ -1081,7 +1184,7 @@ model InstructorWallet {
   totalWithdrawn Decimal  @default(0) @db.Decimal(12, 2)
   updatedAt      DateTime @updatedAt
 
-  user           User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user           User                @relation(fields: [userId], references: [id], onDelete: Cascade)
   transactions   WalletTransaction[]
   payoutRequests PayoutRequest[]
 
@@ -1093,9 +1196,9 @@ model WalletTransaction {
   walletId    String
   orderId     String?
   amount      Decimal  @db.Decimal(12, 2)
-  type        String   // CREDIT | DEBIT | PAYOUT_REQUEST | PAYOUT_PROCESSED
+  type        String // CREDIT | DEBIT | PAYOUT_REQUEST | PAYOUT_PROCESSED
   description String
-  meta        Json?    // { courseTitle, saleSource, instructorPercent }
+  meta        Json? // { courseTitle, saleSource, instructorPercent }
   createdAt   DateTime @default(now())
 
   wallet InstructorWallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -1107,37 +1210,37 @@ model WalletTransaction {
 // ─── Refund Requests ─────────────────────────────────────────────────────────
 
 model RefundRequest {
-  id              String       @id @default(cuid())
-  orderId         String       @unique // one refund request per order (idempotency)
-  userId          String
-  courseId        String
+  id       String @id @default(cuid())
+  orderId  String @unique // one refund request per order (idempotency)
+  userId   String
+  courseId String
 
   // Snapshot at request-creation time (immutable after creation)
-  progressPercent  Decimal     @db.Decimal(5, 2)  // 0.00–100.00
+  progressPercent  Decimal @db.Decimal(5, 2) // 0.00–100.00
   completedLessons Int
   totalLessons     Int
 
   // Financial breakdown (pre-calculated, stored immutably)
-  originalAmount  Decimal      @db.Decimal(10, 2) // order amount
-  refundPercent   Decimal      @db.Decimal(5, 2)  // 100 - progressPercent
-  refundAmount    Decimal      @db.Decimal(10, 2) // amount to refund to student
-  instructorLoss  Decimal      @db.Decimal(10, 2) // deducted from instructor wallet
-  platformLoss    Decimal      @db.Decimal(10, 2) // platform revenue loss
+  originalAmount Decimal @db.Decimal(10, 2) // order amount
+  refundPercent  Decimal @db.Decimal(5, 2) // 100 - progressPercent
+  refundAmount   Decimal @db.Decimal(10, 2) // amount to refund to student
+  instructorLoss Decimal @db.Decimal(10, 2) // deducted from instructor wallet
+  platformLoss   Decimal @db.Decimal(10, 2) // platform revenue loss
 
-  status          RefundStatus @default(PENDING)
-  reason          String?      @db.Text  // student's reason
-  adminNotes      String?      @db.Text  // admin review notes
-  adminId         String?               // who approved/rejected
+  status     RefundStatus @default(PENDING)
+  reason     String?      @db.Text // student's reason
+  adminNotes String?      @db.Text // admin review notes
+  adminId    String? // who approved/rejected
 
-  razorpayRefundId String?     @unique  // Razorpay refund ID (set on PROCESSED)
+  razorpayRefundId String? @unique // Razorpay refund ID (set on PROCESSED)
 
-  requestedAt     DateTime     @default(now())
-  reviewedAt      DateTime?    // when admin acted
-  processedAt     DateTime?    // when refund completed
+  requestedAt DateTime  @default(now())
+  reviewedAt  DateTime? // when admin acted
+  processedAt DateTime? // when refund completed
 
-  order  Order  @relation(fields: [orderId],   references: [id])
-  user   User   @relation(fields: [userId],    references: [id])
-  course Course @relation(fields: [courseId],  references: [id])
+  order  Order  @relation(fields: [orderId], references: [id])
+  user   User   @relation(fields: [userId], references: [id])
+  course Course @relation(fields: [courseId], references: [id])
   admin  User?  @relation("RefundAdmin", fields: [adminId], references: [id])
 
   ledgerEntries LedgerEntry[]
@@ -1151,20 +1254,20 @@ model RefundRequest {
 // ─── Financial Ledger ─────────────────────────────────────────────────────────
 
 model LedgerEntry {
-  id              String          @id @default(cuid())
+  id              String  @id @default(cuid())
   orderId         String?
   refundRequestId String?
-  userId          String          // the student involved
+  userId          String // the student involved
   courseId        String?
 
-  type            LedgerEntryType
-  amount          Decimal         @db.Decimal(10, 2)
-  description     String
-  meta            Json?           // extra context (progress %, splits, etc.)
+  type        LedgerEntryType
+  amount      Decimal         @db.Decimal(10, 2)
+  description String
+  meta        Json? // extra context (progress %, splits, etc.)
 
-  createdAt       DateTime        @default(now())
+  createdAt DateTime @default(now())
 
-  order         Order?         @relation(fields: [orderId],         references: [id])
+  order         Order?         @relation(fields: [orderId], references: [id])
   refundRequest RefundRequest? @relation(fields: [refundRequestId], references: [id])
 
   @@index([orderId])
@@ -1205,16 +1308,16 @@ model PayoutRequest {
   amount       Decimal      @db.Decimal(12, 2)
   currency     String       @default("INR")
   status       PayoutStatus @default(PENDING)
-  bankDetails  Json?        // { accountNumber, ifsc, bankName, accountHolder }
+  bankDetails  Json? // { accountNumber, ifsc, bankName, accountHolder }
   notes        String?      @db.Text // instructor notes
   adminNotes   String?      @db.Text // admin notes on approve/reject
   requestedAt  DateTime     @default(now())
   processedAt  DateTime?
 
   // Razorpay Route tracking
-  razorpayLinkedAccountId String?        // Route linked account (acc_xxx) — reused across requests
+  razorpayLinkedAccountId String? // Route linked account (acc_xxx) — reused across requests
   razorpayTransferId      String? @unique // Route transfer ID (trf_xxx)
-  razorpayTransferStatus  String?        // pending | on_hold | settled
+  razorpayTransferStatus  String? // pending | on_hold | settled
 
   wallet     InstructorWallet @relation(fields: [walletId], references: [id])
   instructor User             @relation(fields: [instructorId], references: [id])
@@ -1246,11 +1349,11 @@ model EmailLog {
   to           String
   subject      String
   templateId   String?
-  templateName String?        // snapshot of template name at send time
+  templateName String? // snapshot of template name at send time
   status       EmailLogStatus @default(SENT)
   resendId     String?
   error        String?        @db.Text
-  meta         Json?          // extra context (userId, courseId, etc.)
+  meta         Json? // extra context (userId, courseId, etc.)
   sentAt       DateTime       @default(now())
 
   template EmailTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
@@ -1275,7 +1378,7 @@ model UserInstructorFollow {
   instructorId String
   createdAt    DateTime @default(now())
 
-  user       User @relation("StudentFollows",      fields: [userId],       references: [id], onDelete: Cascade)
+  user       User @relation("StudentFollows", fields: [userId], references: [id], onDelete: Cascade)
   instructor User @relation("InstructorFollowers", fields: [instructorId], references: [id], onDelete: Cascade)
 
   @@unique([userId, instructorId])
@@ -1340,10 +1443,10 @@ enum ClassCertificateType {
 }
 
 enum AssignmentType {
-  TEXT        // Long-form written response
-  FILE        // File upload (PDF, doc, zip, etc.)
-  URL         // Link submission (e.g., GitHub repo, deployed site)
-  QUIZ        // Auto-graded quiz reference
+  TEXT // Long-form written response
+  FILE // File upload (PDF, doc, zip, etc.)
+  URL // Link submission (e.g., GitHub repo, deployed site)
+  QUIZ // Auto-graded quiz reference
 }
 
 enum AssignmentStatus {
@@ -1353,28 +1456,28 @@ enum AssignmentStatus {
 }
 
 enum SubmissionStatus {
-  DRAFT          // Saved but not submitted
-  SUBMITTED      // Awaiting grading
-  GRADED         // Reviewed with score/feedback
-  RETURNED       // Sent back for revision
+  DRAFT // Saved but not submitted
+  SUBMITTED // Awaiting grading
+  GRADED // Reviewed with score/feedback
+  RETURNED // Sent back for revision
 }
 
 model Class {
-  id           String          @id @default(cuid())
-  name         String
-  slug         String          @unique
-  description  String?         @db.Text
-  thumbnail    String?
-  banner       String?
-  visibility   ClassVisibility @default(PUBLIC)
-  joinMode     ClassJoinMode   @default(OPEN)
-  status       ClassStatus     @default(DRAFT)
-  inviteCode   String?         @unique
-  maxStudents  Int?
-  startDate    DateTime?
-  endDate      DateTime?
-  price        Decimal?        @db.Decimal(10, 2)
-  isPaid       Boolean         @default(false)
+  id          String          @id @default(cuid())
+  name        String
+  slug        String          @unique
+  description String?         @db.Text
+  thumbnail   String?
+  banner      String?
+  visibility  ClassVisibility @default(PUBLIC)
+  joinMode    ClassJoinMode   @default(OPEN)
+  status      ClassStatus     @default(DRAFT)
+  inviteCode  String?         @unique
+  maxStudents Int?
+  startDate   DateTime?
+  endDate     DateTime?
+  price       Decimal?        @db.Decimal(10, 2)
+  isPaid      Boolean         @default(false)
 
   // Feature flags
   enableChat        Boolean @default(true)
@@ -1411,11 +1514,11 @@ model Class {
 }
 
 model ClassCourse {
-  id         String  @id @default(cuid())
-  classId    String
-  courseId   String
-  order      Int     @default(0)
-  isRequired Boolean @default(true)
+  id              String  @id @default(cuid())
+  classId         String
+  courseId        String
+  order           Int     @default(0)
+  isRequired      Boolean @default(true)
   // Drip: number of days after enrollment when course unlocks (null = immediate)
   unlockAfterDays Int?
 
@@ -1430,21 +1533,21 @@ model ClassCourse {
 }
 
 model ClassEnrollment {
-  id            String                @id @default(cuid())
-  classId       String
-  userId        String
-  status        ClassEnrollmentStatus @default(APPROVED)
-  role          ClassMemberRole       @default(STUDENT)
-  requestedAt   DateTime              @default(now())
-  approvedAt    DateTime?
-  rejectedAt    DateTime?
-  bannedAt      DateTime?
-  completedAt   DateTime?
+  id           String                @id @default(cuid())
+  classId      String
+  userId       String
+  status       ClassEnrollmentStatus @default(APPROVED)
+  role         ClassMemberRole       @default(STUDENT)
+  requestedAt  DateTime              @default(now())
+  approvedAt   DateTime?
+  rejectedAt   DateTime?
+  bannedAt     DateTime?
+  completedAt  DateTime?
   // Cached progress metrics
-  progressPct   Int                   @default(0)
-  xpEarned      Int                   @default(0)
-  attendStreak  Int                   @default(0)
-  lastActiveAt  DateTime?
+  progressPct  Int                   @default(0)
+  xpEarned     Int                   @default(0)
+  attendStreak Int                   @default(0)
+  lastActiveAt DateTime?
 
   class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
   user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1469,22 +1572,22 @@ model ClassAssistant {
 }
 
 model LiveSession {
-  id          String            @id @default(cuid())
-  classId     String
-  hostId      String
-  title       String
-  description String?           @db.Text
-  scheduledAt DateTime
-  duration    Int               @default(60) // minutes
-  meetingUrl  String?
+  id           String            @id @default(cuid())
+  classId      String
+  hostId       String
+  title        String
+  description  String?           @db.Text
+  scheduledAt  DateTime
+  duration     Int               @default(60) // minutes
+  meetingUrl   String?
   recordingUrl String?
-  status      LiveSessionStatus @default(SCHEDULED)
-  startedAt   DateTime?
-  endedAt     DateTime?
+  status       LiveSessionStatus @default(SCHEDULED)
+  startedAt    DateTime?
+  endedAt      DateTime?
 
-  class       Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  host        User         @relation("LiveSessionHost", fields: [hostId], references: [id])
-  attendance  Attendance[]
+  class      Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
+  host       User         @relation("LiveSessionHost", fields: [hostId], references: [id])
+  attendance Attendance[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -1528,28 +1631,28 @@ model Announcement {
 }
 
 model Discussion {
-  id        String         @id @default(cuid())
-  classId   String
-  authorId  String
-  kind      DiscussionKind @default(GENERAL)
-  title     String
-  body      String         @db.Text
-  parentId  String?
-  resolved  Boolean        @default(false)
-  pinned    Boolean        @default(false)
-  tags      String[]       @default([])
+  id              String         @id @default(cuid())
+  classId         String
+  authorId        String
+  kind            DiscussionKind @default(GENERAL)
+  title           String
+  body            String         @db.Text
+  parentId        String?
+  resolved        Boolean        @default(false)
+  pinned          Boolean        @default(false)
+  tags            String[]       @default([])
   // For QUESTION threads: which reply was accepted as the answer.
-  acceptedReplyId String? @unique
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  acceptedReplyId String?        @unique
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
 
-  class    Class        @relation(fields: [classId], references: [id], onDelete: Cascade)
-  author   User         @relation("DiscussionAuthor", fields: [authorId], references: [id])
-  parent   Discussion?  @relation("DiscussionReplies", fields: [parentId], references: [id], onDelete: Cascade)
-  replies  Discussion[] @relation("DiscussionReplies")
-  acceptedReply Discussion? @relation("DiscussionAcceptedReply", fields: [acceptedReplyId], references: [id], onDelete: SetNull)
-  acceptedFor   Discussion? @relation("DiscussionAcceptedReply")
-  votes    DiscussionVote[]
+  class         Class            @relation(fields: [classId], references: [id], onDelete: Cascade)
+  author        User             @relation("DiscussionAuthor", fields: [authorId], references: [id])
+  parent        Discussion?      @relation("DiscussionReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies       Discussion[]     @relation("DiscussionReplies")
+  acceptedReply Discussion?      @relation("DiscussionAcceptedReply", fields: [acceptedReplyId], references: [id], onDelete: SetNull)
+  acceptedFor   Discussion?      @relation("DiscussionAcceptedReply")
+  votes         DiscussionVote[]
 
   @@index([classId, createdAt])
   @@index([classId, pinned, createdAt])
@@ -1600,11 +1703,11 @@ model ClassXpEvent {
 }
 
 model ClassCertificate {
-  id          String               @id @default(cuid())
-  classId     String
-  userId      String
-  type        ClassCertificateType
-  issuedAt    DateTime             @default(now())
+  id             String               @id @default(cuid())
+  classId        String
+  userId         String
+  type           ClassCertificateType
+  issuedAt       DateTime             @default(now())
   certificateUrl String?
 
   class Class @relation(fields: [classId], references: [id], onDelete: Cascade)
@@ -1620,35 +1723,35 @@ model ClassCertificate {
 // per-student; instructors grade them with score + feedback.
 
 model Assignment {
-  id          String           @id @default(cuid())
-  classId     String
-  authorId    String
-  title       String
-  description String?          @db.Text
-  instructions String?         @db.Text
-  type        AssignmentType   @default(TEXT)
-  status      AssignmentStatus @default(DRAFT)
+  id           String           @id @default(cuid())
+  classId      String
+  authorId     String
+  title        String
+  description  String?          @db.Text
+  instructions String?          @db.Text
+  type         AssignmentType   @default(TEXT)
+  status       AssignmentStatus @default(DRAFT)
 
-  maxScore    Int              @default(100)
-  passingScore Int             @default(60)
-  weight      Int              @default(1) // weighting in class grade rollup
+  maxScore     Int @default(100)
+  passingScore Int @default(60)
+  weight       Int @default(1) // weighting in class grade rollup
 
-  dueAt       DateTime?
-  publishAt   DateTime?        // null = publish immediately on status change
+  dueAt     DateTime?
+  publishAt DateTime? // null = publish immediately on status change
 
   // For TYPE = QUIZ
-  quizId      String?
+  quizId String?
 
   // Submission rules
-  allowLate   Boolean          @default(true)
-  latePenalty Int              @default(0) // % deducted per day late, 0-100
-  maxAttempts Int              @default(1) // 0 = unlimited
+  allowLate   Boolean @default(true)
+  latePenalty Int     @default(0) // % deducted per day late, 0-100
+  maxAttempts Int     @default(1) // 0 = unlimited
 
   // Attachments (instructor-provided resource files)
-  attachments String[]         @default([])
+  attachments String[] @default([])
 
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   class       Class                  @relation(fields: [classId], references: [id], onDelete: Cascade)
   author      User                   @relation("AssignmentAuthor", fields: [authorId], references: [id])
@@ -1661,30 +1764,30 @@ model Assignment {
 }
 
 model AssignmentSubmission {
-  id           String           @id @default(cuid())
+  id           String @id @default(cuid())
   assignmentId String
   studentId    String
 
-  status       SubmissionStatus @default(DRAFT)
-  attempt      Int              @default(1)
+  status  SubmissionStatus @default(DRAFT)
+  attempt Int              @default(1)
 
   // Submission content (one of these per type)
-  textBody     String?          @db.Text
-  fileUrls     String[]         @default([])
-  url          String?
+  textBody String?  @db.Text
+  fileUrls String[] @default([])
+  url      String?
 
-  submittedAt  DateTime?
+  submittedAt DateTime?
   // Grading
-  score        Int?
-  feedback     String?          @db.Text
-  graderId     String?
-  gradedAt     DateTime?
+  score       Int?
+  feedback    String?   @db.Text
+  graderId    String?
+  gradedAt    DateTime?
 
   // Convenience flag — recomputed on grade
-  isLate       Boolean          @default(false)
+  isLate Boolean @default(false)
 
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   assignment Assignment @relation(fields: [assignmentId], references: [id], onDelete: Cascade)
   student    User       @relation("AssignmentSubmitter", fields: [studentId], references: [id], onDelete: Cascade)
@@ -1752,30 +1855,30 @@ model CoursePlaylistFollow {
 // ─── Books / Documents Module ─────────────────────────────────────────────────
 
 model Book {
-  id              String         @id @default(cuid())
-  title           String
-  slug            String         @unique
-  description     String         @db.Text
-  shortDesc       String?
-  coverImage      String?
-  previewVideo    String?
-  author          String
-  pageCount       Int?
-  language        String         @default("English")
-  fileFormat      BookFileFormat
-  fileUrl         String
-  filePublicId    String
-  fileSize        Int
-  price           Decimal?       @db.Decimal(10, 2)
-  discountPrice   Decimal?       @db.Decimal(10, 2)
-  isFree          Boolean        @default(false)
-  status          ContentStatus  @default(DRAFT)
-  instructorRevenuePercent Int   @default(70)
-  categoryId      String?
-  createdById     String
-  organizationId  String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  id                       String         @id @default(cuid())
+  title                    String
+  slug                     String         @unique
+  description              String         @db.Text
+  shortDesc                String?
+  coverImage               String?
+  previewVideo             String?
+  author                   String
+  pageCount                Int?
+  language                 String         @default("English")
+  fileFormat               BookFileFormat
+  fileUrl                  String
+  filePublicId             String
+  fileSize                 Int
+  price                    Decimal?       @db.Decimal(10, 2)
+  discountPrice            Decimal?       @db.Decimal(10, 2)
+  isFree                   Boolean        @default(false)
+  status                   ContentStatus  @default(DRAFT)
+  instructorRevenuePercent Int            @default(70)
+  categoryId               String?
+  createdById              String
+  organizationId           String?
+  createdAt                DateTime       @default(now())
+  updatedAt                DateTime       @updatedAt
 
   category     Category?       @relation(fields: [categoryId], references: [id])
   createdBy    User            @relation("BookAuthor", fields: [createdById], references: [id])
@@ -1793,10 +1896,10 @@ model Book {
 }
 
 model Cart {
-  id        String     @id @default(cuid())
-  userId    String     @unique
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   user  User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items CartItem[]
@@ -1818,24 +1921,24 @@ model CartItem {
 }
 
 model BookOrder {
-  id                String      @id @default(cuid())
-  userId            String
-  amount            Decimal     @db.Decimal(10, 2)
-  subtotal          Decimal     @db.Decimal(10, 2)
-  currency          String      @default("INR")
-  status            OrderStatus @default(PENDING)
+  id                    String      @id @default(cuid())
+  userId                String
+  amount                Decimal     @db.Decimal(10, 2)
+  subtotal              Decimal     @db.Decimal(10, 2)
+  currency              String      @default("INR")
+  status                OrderStatus @default(PENDING)
   // Razorpay payment fields
-  razorpayOrderId   String?     @unique
-  razorpayPaymentId String?     @unique
-  couponId          String?
-  discountAmount  Decimal?    @db.Decimal(10, 2)
+  razorpayOrderId       String?     @unique
+  razorpayPaymentId     String?     @unique
+  couponId              String?
+  discountAmount        Decimal?    @db.Decimal(10, 2)
   // Platform-wide auto-applied offer (separate from coupon code)
   platformOfferId       String?
-  platformOfferDiscount Decimal? @db.Decimal(10, 2)
+  platformOfferDiscount Decimal?    @db.Decimal(10, 2)
   // Processing fee added on top of the goods total (included in `amount`)
-  processingFee   Decimal?    @db.Decimal(10, 2)
-  createdAt       DateTime    @default(now())
-  updatedAt       DateTime    @updatedAt
+  processingFee         Decimal?    @db.Decimal(10, 2)
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
 
   user          User            @relation(fields: [userId], references: [id])
   coupon        Coupon?         @relation(fields: [couponId], references: [id])
@@ -1933,11 +2036,11 @@ model PlatformOffer {
   priority      Int          @default(0)
 
   // Landing-page banner controls
-  bannerEnabled  Boolean @default(true)
-  bannerCtaText  String  @default("Explore Courses")
-  bannerCtaUrl   String  @default("/courses")
-  bannerBgColor  String  @default("#d97757")
-  bannerTextColor String @default("#ffffff")
+  bannerEnabled   Boolean @default(true)
+  bannerCtaText   String  @default("Explore Courses")
+  bannerCtaUrl    String  @default("/courses")
+  bannerBgColor   String  @default("#d97757")
+  bannerTextColor String  @default("#ffffff")
 
   // Last time the admin pushed an announcement email + in-app notification
   // to users about this offer. Used to disable the button once sent and to
@@ -1945,8 +2048,8 @@ model PlatformOffer {
   notifiedAt    DateTime?
   notifiedCount Int       @default(0)
 
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   orders     Order[]
   bookOrders BookOrder[]
