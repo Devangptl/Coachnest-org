@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { sendNewCourseReviewEmail } from "@/lib/email";
+import { notifyCourseInstructors } from "@/lib/notifications";
 
 export async function GET(req: NextRequest) {
   try {
@@ -67,6 +68,16 @@ export async function POST(req: NextRequest) {
           comment ?? null,
           courseId,
         ).catch(() => null);
+      }
+      if (course) {
+        notifyCourseInstructors({
+          courseId,
+          title: `New ${rating}★ review on "${course.title}"`,
+          body: `${review.user.name ?? "A student"} left a ${rating}-star review${comment ? `: "${comment.slice(0, 120)}${comment.length > 120 ? "…" : ""}"` : "."}`,
+          type: "REVIEW",
+          link: `/courses/${courseId}#reviews`,
+          excludeUserId: session.userId,
+        }).catch(() => null);
       }
     }).catch(() => null);
 

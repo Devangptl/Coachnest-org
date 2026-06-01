@@ -14,7 +14,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { createNotification } from "@/lib/notifications";
+import { notifyCourseInstructors } from "@/lib/notifications";
 import { sendCourseRejectedEmail } from "@/lib/email";
 
 export async function POST(
@@ -56,15 +56,13 @@ export async function POST(
       data: { status: "DRAFT" },
     });
 
-    // In-app notification
-    await createNotification({
-      data: {
-        userId: course.createdById,
-        title:  `Your course "${course.title}" was not approved`,
-        body:   `Reason: ${reason}. You can edit the course and resubmit for review.`,
-        type:   "SYSTEM",
-        link:   `/instructor/courses/${course.id}`,
-      },
+    // In-app notification — owner + all collaborators on the teaching team.
+    await notifyCourseInstructors({
+      courseId: course.id,
+      title:  `Your course "${course.title}" was not approved`,
+      body:   `Reason: ${reason}. You can edit the course and resubmit for review.`,
+      type:   "COURSE_UPDATE",
+      link:   `/instructor/courses/${course.id}/edit`,
     });
 
     // Email the instructor (fire-and-forget)

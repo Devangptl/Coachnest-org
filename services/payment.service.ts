@@ -12,7 +12,7 @@
  * via creditInstructorWallet() and a WalletTransaction record is created.
  */
 import { prisma } from "@/lib/prisma";
-import { createNotification } from "@/lib/notifications";
+import { createNotification, notifyCourseInstructors } from "@/lib/notifications";
 import { getRazorpay } from "@/lib/razorpay";
 import { sendPurchaseEmail } from "@/lib/email";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
@@ -434,6 +434,18 @@ export async function finalizeCoursePayment(
       link:  `/courses/${order.course!.id}`,
     },
   });
+
+  // Fan-out to the teaching team (owner + collaborators) so they see the
+  // new sale in their bell + instructor notifications page.
+  if (order.course && order.user) {
+    notifyCourseInstructors({
+      courseId: order.course.id,
+      title: `New enrollment in "${order.course.title}"`,
+      body: `${order.user.name} just enrolled (₹${Number(order.amount).toLocaleString("en-IN")}).`,
+      type: "PURCHASE",
+      link: `/instructor/students`,
+    }).catch(console.error);
+  }
 
   if (order.user && order.course) {
     sendPurchaseEmail(

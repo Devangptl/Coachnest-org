@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { createPayoutLink } from "@/lib/razorpay";
+import { createNotification } from "@/lib/notifications";
 import {
   sendPayoutApprovedEmail,
   sendPayoutRejectedEmail,
@@ -63,6 +64,15 @@ export async function PUT(
       if (instructorEmail) {
         sendPayoutApprovedEmail(instructorEmail, instructorName, amountStr).catch(() => null);
       }
+      createNotification({
+        data: {
+          userId: request.instructorId,
+          title: `Payout of ₹${amountStr} approved`,
+          body: "Your payout has been approved and will be processed shortly.",
+          type: "SYSTEM",
+          link: "/instructor/payouts",
+        },
+      }).catch(() => null);
     }
 
     // ── REJECT ────────────────────────────────────────────────────────────────
@@ -91,6 +101,17 @@ export async function PUT(
       if (instructorEmail) {
         sendPayoutRejectedEmail(instructorEmail, instructorName, amountStr, adminNotes?.trim()).catch(() => null);
       }
+      createNotification({
+        data: {
+          userId: request.instructorId,
+          title: `Payout request rejected`,
+          body: adminNotes?.trim()
+            ? `Your ₹${amountStr} payout was rejected. Note: ${adminNotes.trim()}`
+            : `Your ₹${amountStr} payout was rejected and refunded to your wallet.`,
+          type: "SYSTEM",
+          link: "/instructor/payouts",
+        },
+      }).catch(() => null);
     }
 
     // ── PROCESS — Razorpay Payout Link ───────────────────────────────────────
@@ -142,6 +163,15 @@ export async function PUT(
       if (instructorEmail) {
         sendPayoutProcessedEmail(instructorEmail, instructorName, amountStr).catch(() => null);
       }
+      createNotification({
+        data: {
+          userId: request.instructorId,
+          title: `Payout of ₹${amountStr} processed`,
+          body: `Your payout link has been sent. Funds will arrive within 1–3 business days.`,
+          type: "SYSTEM",
+          link: "/instructor/payouts",
+        },
+      }).catch(() => null);
 
       return NextResponse.json({
         message:       `Payout link sent to ${instructorEmail}.`,
