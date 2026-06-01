@@ -1479,3 +1479,62 @@ export async function sendPlatformOfferEmail(
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
+// ─── Course collaboration invite ──────────────────────────────────────────────
+
+export async function sendCollaborationInviteEmail(opts: {
+  to: string;
+  courseTitle: string;
+  inviterName: string;
+  role: string;
+  revenueShare: number;
+  message?: string;
+  token: string;
+}) {
+  const acceptLink = `${APP}/dashboard/invitations?token=${opts.token}`;
+  const roleLabel  = opts.role.replace(/_/g, " ").toLowerCase();
+  const override   = await resolveTemplate("collaboration-invite", {
+    courseTitle: opts.courseTitle,
+    inviterName: opts.inviterName,
+    role:        roleLabel,
+    revenueShare: String(opts.revenueShare),
+    link:        acceptLink,
+  });
+
+  return send({
+    from: FROM,
+    to:   resolveRecipient(opts.to),
+    subject: override?.subject ?? `${opts.inviterName} invited you to co-teach "${opts.courseTitle}" — Coachnest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Collaboration Invite", "#f97316")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        You're invited to collaborate
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        <strong style="color:#f97316;">${opts.inviterName}</strong> invited you to join
+        <strong style="color:#f97316;">${opts.courseTitle}</strong> as a
+        <strong style="color:#ffffff;">${roleLabel}</strong>.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:24px;">
+        <tbody>
+          ${infoRow("Course",        opts.courseTitle)}
+          ${infoRow("Role",          roleLabel)}
+          ${infoRow("Revenue share", `${opts.revenueShare}%`)}
+          ${infoRow("Invited by",    opts.inviterName)}
+        </tbody>
+      </table>
+
+      ${opts.message ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-left:3px solid #f97316;border-radius:0 10px 10px 0;padding:16px 20px;margin-bottom:24px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">Message</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;">${opts.message}</p>
+      </div>` : ""}
+
+      ${btn("Review Invitation", acceptLink)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        This invitation expires in 14 days. If you weren't expecting it, you can safely ignore this email.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+

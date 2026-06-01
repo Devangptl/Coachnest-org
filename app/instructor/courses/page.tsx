@@ -11,8 +11,19 @@ import DeleteInstructorCourseButton from "./DeleteInstructorCourseButton";
 
 async function getCourses(userId: string) {
   return prisma.course.findMany({
-    where:   { createdById: userId },
-    include: { _count: { select: { lessons: true, enrollments: true } } },
+    where: {
+      OR: [
+        { createdById: userId },
+        { collaborators: { some: { userId, acceptedAt: { not: null } } } },
+      ],
+    },
+    include: {
+      _count: { select: { lessons: true, enrollments: true } },
+      collaborators: {
+        where: { userId },
+        select: { role: true, acceptedAt: true },
+      },
+    },
     orderBy: { createdAt: "desc" },
   });
 }
@@ -20,6 +31,7 @@ async function getCourses(userId: string) {
 export default async function InstructorCoursesPage() {
   const session  = await getSession();
   const courses  = await getCourses(session!.userId);
+  const userId   = session!.userId;
 
   return (
     <div>
@@ -78,7 +90,14 @@ export default async function InstructorCoursesPage() {
                   )}
                   <div className="min-w-0">
                     <p className="text-sm font-medium text-foreground truncate">{course.title}</p>
-                    <p className="text-xs text-muted-foreground/60 mt-0.5">{formatDate(course.createdAt)}</p>
+                    <p className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1.5">
+                      {formatDate(course.createdAt)}
+                      {course.createdById !== userId && course.collaborators[0] && (
+                        <span className="inline-flex items-center text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                          {course.collaborators[0].role.replace(/_/g, " ")}
+                        </span>
+                      )}
+                    </p>
                   </div>
                 </div>
                 <div className="col-span-1 text-center text-sm font-medium text-foreground">{course._count.lessons}</div>
@@ -108,7 +127,9 @@ export default async function InstructorCoursesPage() {
                   <Link href={`/courses/${course.id}`} title="Preview" className="p-2 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-500/10 transition-colors">
                     <Eye className="w-4 h-4" />
                   </Link>
-                  <DeleteInstructorCourseButton courseId={course.id} />
+                  {course.createdById === userId && (
+                    <DeleteInstructorCourseButton courseId={course.id} />
+                  )}
                 </div>
               </div>
             ))}

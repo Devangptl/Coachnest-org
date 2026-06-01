@@ -7,6 +7,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import slugify from "slugify";
+import {
+  getCollaboratorPermission,
+  logCourseActivity,
+} from "@/services/collaboration.service";
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -42,7 +46,28 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
+
+    // Permission gate: ADMIN bypasses; otherwise the user must be the
+    // owner or a collaborator with edit rights on this course.
+    let perm = null as Awaited<ReturnType<typeof getCollaboratorPermission>>;
+    if (session.role !== "ADMIN") {
+      perm = await getCollaboratorPermission(id, session.userId);
+      if (!perm?.canEditContent) {
+        return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+      }
+    }
+
     const data = await req.json();
+
+    // Only the OWNER (or admin) can publish or archive the course.
+    if (data.published !== undefined || data.status !== undefined) {
+      if (session.role !== "ADMIN" && !perm?.canPublish) {
+        return NextResponse.json(
+          { error: "Only the course owner can change publish status." },
+          { status: 403 },
+        );
+      }
+    }
 
     // Build update payload — only include provided fields
     const update: Record<string, unknown> = {};
@@ -123,6 +148,10 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       );
     }
 
+    await logCourseActivity(id, session.userId, "course.updated", {
+      fields: Object.keys(update),
+    });
+
     return NextResponse.json({ course });
   } catch (error) {
     console.error("[PATCH /api/courses/:id]", error);
@@ -138,6 +167,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
+    if (session.role !== "ADMIN") {
+      const perm = await getCollaboratorPermission(id, session.userId);
+      if (!perm?.canDeleteCourse) {
+        return NextResponse.json(
+          { error: "Only the course owner can delete this course." },
+          { status: 403 },
+        );
+      }
+    }
+
     await prisma.course.delete({ where: { id } });
 
     return NextResponse.json({ message: "Course deleted." });

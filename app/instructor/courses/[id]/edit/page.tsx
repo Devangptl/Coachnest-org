@@ -10,6 +10,8 @@ import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import CourseForm from "@/components/admin/CourseForm";
 import LessonsManager from "@/app/admin/courses/[id]/edit/LessonsManager";
+import CollaboratorsManager from "./CollaboratorsManager";
+import { getCollaboratorPermission } from "@/services/collaboration.service";
 
 export const dynamic = "force-dynamic";
 
@@ -20,9 +22,14 @@ export default async function InstructorEditCoursePage({ params }: Props) {
   if (!session) redirect("/login");
 
   const { id } = await params;
+
+  // Allow access to the course owner OR any accepted collaborator.
+  const collabPermission = await getCollaboratorPermission(id, session.userId);
+  if (!collabPermission) notFound();
+
   const [course, categories, tagSuggestions] = await Promise.all([
     prisma.course.findFirst({
-      where: { id, createdById: session.userId },
+      where: { id },
       include: {
         sections: {
           orderBy: { order: "asc" },
@@ -113,6 +120,10 @@ export default async function InstructorEditCoursePage({ params }: Props) {
           sections={course.sections}
           ungroupedLessons={course.lessons}
         />
+      </div>
+
+      <div className="mt-12 pt-10 border-t border-border">
+        <CollaboratorsManager courseId={course.id} />
       </div>
     </div>
   );

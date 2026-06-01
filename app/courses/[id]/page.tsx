@@ -40,6 +40,19 @@ const getCourseById = unstable_cache(
             _count: { select: { followers: true } },
           },
         },
+        collaborators: {
+          where: { acceptedAt: { not: null }, isPublic: true },
+          include: {
+            user: {
+              select: {
+                id: true,
+                name: true,
+                avatar: true,
+                headline: true,
+              },
+            },
+          },
+        },
         category: { select: { name: true } },
         reviews: { select: { rating: true } },
         _count: { select: { enrollments: true, reviews: true } },
@@ -286,6 +299,15 @@ export default async function CourseDetailPage({ params }: Props) {
         instructorName={course.createdBy.name}
         instructorId={course.createdBy.id}
         instructorAvatar={course.createdBy.avatar}
+        coInstructors={course.collaborators
+          .filter((c) => c.role === "CO_INSTRUCTOR")
+          .map((c) => ({
+            id: c.user.id,
+            name: c.user.name,
+            avatar: c.user.avatar,
+            headline: c.user.headline,
+            role: c.role,
+          }))}
         lessonCount={allFlatLessons.length}
         totalDuration={totalDuration}
         enrollmentCount={course._count.enrollments}

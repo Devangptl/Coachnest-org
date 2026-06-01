@@ -15,7 +15,7 @@ import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare, Megaphone,
   Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
-  Mail, ScrollText, ListVideo, Database, ShieldCheck, Library,
+  Mail, ScrollText, ListVideo, Database, ShieldCheck, Library, Users2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -28,6 +28,7 @@ const adminNav = [
   { label: "Overview",      href: "/admin",                 icon: LayoutDashboard },
   { label: "Analytics",     href: "/admin/analytics",       icon: BarChart3 },
   { label: "All Courses",   href: "/admin/courses",         icon: BookOpen },
+  { label: "Collaborations", href: "/admin/collaborations", icon: Users2 },
   { label: "All Books",     href: "/admin/books",           icon: Library },
   { label: "Course Lists",  href: "/admin/playlists",       icon: ListVideo },
   { label: "Instructors",   href: "/admin/instructors",     icon: UserCog },

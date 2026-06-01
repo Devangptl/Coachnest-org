@@ -21,6 +21,7 @@ import {
   calculatePlatformDiscount,
   getActivePlatformOffer,
 } from "@/services/platform-offer.service";
+import { resolveRevenueShares } from "@/services/collaboration.service";
 
 // ─── Revenue split constants ──────────────────────────────────────────────────
 
@@ -157,34 +158,47 @@ async function creditInstructorWallet(
   });
   if (!course) return;
 
-  const wallet = await prisma.instructorWallet.upsert({
-    where:  { userId: course.createdById },
-    create: {
-      userId:         course.createdById,
-      balance:        order.instructorRevenue,
-      totalEarned:    order.instructorRevenue,
-      totalWithdrawn: 0,
-    },
-    update: {
-      balance:     { increment: order.instructorRevenue },
-      totalEarned: { increment: order.instructorRevenue },
-    },
-  });
+  // Split the instructor's revenue across the owner and any active
+  // collaborators based on their configured revenueShare percentages.
+  const splits = await resolveRevenueShares(order.courseId, order.instructorRevenue);
 
-  await prisma.walletTransaction.create({
-    data: {
-      walletId:    wallet.id,
-      orderId:     order.id,
-      amount:      order.instructorRevenue,
-      type:        "CREDIT",
-      description: `Sale: "${course.title}"`,
-      meta: {
-        courseTitle:       course.title,
-        saleSource:        order.saleSource,
-        instructorPercent: order.instructorPercent,
+  for (const split of splits) {
+    if (split.amount <= 0) continue;
+
+    const wallet = await prisma.instructorWallet.upsert({
+      where:  { userId: split.userId },
+      create: {
+        userId:         split.userId,
+        balance:        split.amount,
+        totalEarned:    split.amount,
+        totalWithdrawn: 0,
       },
-    },
-  });
+      update: {
+        balance:     { increment: split.amount },
+        totalEarned: { increment: split.amount },
+      },
+    });
+
+    const isOwner = split.userId === course.createdById;
+    await prisma.walletTransaction.create({
+      data: {
+        walletId:    wallet.id,
+        orderId:     order.id,
+        amount:      split.amount,
+        type:        "CREDIT",
+        description: isOwner
+          ? `Sale: "${course.title}"`
+          : `Collaboration earning: "${course.title}"`,
+        meta: {
+          courseTitle:       course.title,
+          saleSource:        order.saleSource,
+          instructorPercent: order.instructorPercent,
+          collaboratorShare: split.share,
+          role:              isOwner ? "OWNER" : "COLLABORATOR",
+        },
+      },
+    });
+  }
 }
 
 // ─── Create Razorpay Order for course purchase ────────────────────────────────
