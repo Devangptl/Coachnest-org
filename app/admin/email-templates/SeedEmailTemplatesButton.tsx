@@ -15,7 +15,7 @@ export default function SeedEmailTemplatesButton() {
   const handleSeed = async () => {
     if (!await confirm(
       "Existing templates will be overwritten with the default content.",
-      { title: "Seed 24 default email templates?", confirmText: "Seed Templates", variant: "info" }
+      { title: "Seed default email templates?", confirmText: "Seed Templates", variant: "info" }
     )) return;
 
     setLoading(true);
@@ -46,7 +46,7 @@ export default function SeedEmailTemplatesButton() {
     <button
       onClick={handleSeed}
       disabled={loading}
-      title="Seed all 24 default email templates (overwrites existing)"
+      title="Seed all default email templates (overwrites existing)"
       className="flex items-center gap-2 text-sm px-3 py-2 rounded-md border border-border text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
     >
       <DatabaseZap className="w-4 h-4" />
