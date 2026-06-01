@@ -261,20 +261,9 @@ export async function updatePlatformOffer(
 }
 
 export async function deletePlatformOffer(id: string): Promise<void> {
-  // Orders/BookOrders that referenced this offer keep their snapshot
-  // discount amount; the FK is set to null via SetNull is not configured
-  // here, so we disconnect manually and then delete.
-  await prisma.$transaction([
-    prisma.order.updateMany({
-      where: { platformOfferId: id },
-      data:  { platformOfferId: null },
-    }),
-    prisma.bookOrder.updateMany({
-      where: { platformOfferId: id },
-      data:  { platformOfferId: null },
-    }),
-    prisma.platformOffer.delete({ where: { id } }),
-  ]);
+  // The FK uses ON DELETE SET NULL — existing Orders/BookOrders keep their
+  // platformOfferDiscount snapshot and just drop the foreign key reference.
+  await prisma.platformOffer.delete({ where: { id } });
 }
 
 export async function getPlatformOfferById(
