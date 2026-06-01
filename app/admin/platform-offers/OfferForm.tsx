@@ -368,14 +368,39 @@ export default function OfferForm({ initial }: { initial?: OfferFormInitial }) {
             </div>
 
             <div>
-              <p className="text-muted-foreground text-xs mb-1.5">Preview:</p>
-              <div
-                className="rounded-md px-4 py-2.5 text-sm font-medium text-center"
-                style={{ backgroundColor: form.bannerBgColor, color: form.bannerTextColor }}
-              >
-                <span className="font-semibold">{form.title || "Offer title"}</span>
-                {form.description && <span className="opacity-80"> · {form.description}</span>}
-                <span className="underline ml-2">{form.bannerCtaText}</span>
+              <p className="text-muted-foreground text-xs mb-1.5">Modal preview:</p>
+              <div className="rounded-xl overflow-hidden border border-border max-w-sm">
+                <div
+                  className="px-5 py-6 text-center relative overflow-hidden"
+                  style={{ backgroundColor: form.bannerBgColor, color: form.bannerTextColor }}
+                >
+                  <span
+                    className="inline-block text-[10px] font-semibold tracking-widest uppercase mb-2 px-2 py-0.5 rounded-full"
+                    style={{
+                      backgroundColor: `${form.bannerTextColor}26`,
+                      border:          `1px solid ${form.bannerTextColor}40`,
+                    }}
+                  >
+                    Limited Offer
+                  </span>
+                  <div className="flex items-baseline justify-center gap-1.5 leading-none">
+                    <span className="text-4xl font-black tracking-tight">
+                      {form.discountType === "PERCENTAGE"
+                        ? `${form.discountValue || 0}%`
+                        : `₹${Number(form.discountValue || 0).toLocaleString("en-IN")}`}
+                    </span>
+                    <span className="text-base font-bold opacity-90">OFF</span>
+                  </div>
+                </div>
+                <div className="bg-card px-5 py-4 text-center">
+                  <p className="text-sm font-semibold text-foreground">{form.title || "Offer title"}</p>
+                  {form.description && (
+                    <p className="mt-1 text-xs text-muted-foreground line-clamp-2">{form.description}</p>
+                  )}
+                  <div className="mt-3 inline-block px-3 py-1.5 rounded-md text-xs font-bold bg-[#d97757] text-white">
+                    {form.bannerCtaText || "Explore Courses"}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
