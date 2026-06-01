@@ -71,6 +71,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
   { segment: "refunds",           allow: ["SUPER_ADMIN", "FINANCE_ADMIN"] },
   { segment: "payouts",           allow: ["SUPER_ADMIN", "FINANCE_ADMIN"] },
   { segment: "coupons",           allow: ["SUPER_ADMIN", "FINANCE_ADMIN"] },
+  { segment: "platform-offers",   allow: ["SUPER_ADMIN", "FINANCE_ADMIN"] },
 
   // Support / communications
   { segment: "messages",          allow: ["SUPER_ADMIN", "SUPPORT"] },

@@ -5,6 +5,10 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import {
+  calculatePlatformDiscount,
+  getActivePlatformOffer,
+} from "@/services/platform-offer.service";
 import CourseCheckoutClient from "./CourseCheckoutClient";
 
 interface PageProps {
@@ -47,6 +51,18 @@ export default async function CourseCheckoutPage({ params, searchParams }: PageP
     ? Number(course.discountPrice)
     : Number(course.price);
 
+  // Preview the active platform offer for this checkout. The authoritative
+  // amount is recomputed inside the payment service before the order is
+  // created — this is purely to show the user the discount up front.
+  const offerRow = await getActivePlatformOffer("COURSES");
+  const platformOffer = offerRow
+    ? {
+        id:       offerRow.id,
+        title:    offerRow.title,
+        discount: calculatePlatformDiscount(offerRow, price),
+      }
+    : null;
+
   return (
     <div className="pt-4 pb-16 max-w-5xl mx-auto">
       <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-1">Checkout</h1>
@@ -63,6 +79,7 @@ export default async function CourseCheckoutPage({ params, searchParams }: PageP
           originalPrice={Number(course.price)}
           initialCoupon={coupon}
           userEmail={session.email}
+          platformOffer={platformOffer && platformOffer.discount > 0 ? platformOffer : null}
         />
     </div>
   );

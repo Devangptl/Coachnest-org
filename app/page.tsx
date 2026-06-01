@@ -14,6 +14,7 @@ import CourseCard from "@/components/CourseCard";
 import GlassCard from "@/components/GlassCard";
 import FAQItem from "@/components/landing/FAQItem";
 import FeaturedCourseCard from "@/components/landing/FeaturedCourseCard";
+import PlatformOfferBanner from "@/components/PlatformOfferBanner";
 
 // Lazy-load heavy animation components (framer-motion) — separate JS chunks
 const HeroBackground = dynamic(() => import("@/components/landing/HeroBackground"));
@@ -302,6 +303,9 @@ export default async function HomePage() {
 
   return (
     <div className="overflow-hidden">
+      {/* Site-wide promotional banner — renders only when an admin offer is active */}
+      <PlatformOfferBanner />
+
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}

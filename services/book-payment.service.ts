@@ -17,15 +17,21 @@ import { createNotification } from "@/lib/notifications";
 import { sendBookPurchaseEmail } from "@/lib/email";
 import { clearCart } from "@/services/cart.service";
 import { calcProcessingFee } from "@/lib/fees";
+import {
+  calculatePlatformDiscount,
+  getActivePlatformOffer,
+} from "@/services/platform-offer.service";
 
 interface CreateBooksOrderResult {
-  razorpayOrderId: string;
-  dbOrderId:       string;
-  amount:          number;
-  subtotal:        number;
-  discount:        number;
-  processingFee:   number;
-  itemCount:       number;
+  razorpayOrderId:       string;
+  dbOrderId:             string;
+  amount:                number;
+  subtotal:              number;
+  discount:              number;
+  platformOfferDiscount: number;
+  platformOfferTitle:    string | null;
+  processingFee:         number;
+  itemCount:             number;
 }
 
 // ─── Create Razorpay order for the user's book cart ──────────────────────────
@@ -102,7 +108,20 @@ export async function createBooksRazorpayOrder(
     couponId = coupon.id;
   }
 
-  const goodsTotal = Math.max(0, subtotal - discountAmt);
+  const afterCoupon = Math.max(0, subtotal - discountAmt);
+
+  // Auto-apply active platform offer on top of any coupon. Server-side
+  // calc only — the client never supplies this number.
+  const offer = await getActivePlatformOffer("BOOKS");
+  let platformOfferId: string | undefined;
+  let platformOfferDiscount = 0;
+  if (offer && afterCoupon > 0) {
+    platformOfferDiscount = calculatePlatformDiscount(offer, afterCoupon);
+    if (platformOfferDiscount > 0) platformOfferId = offer.id;
+  }
+
+  const goodsTotal    = Math.max(0, afterCoupon - platformOfferDiscount);
+  const totalDiscount = discountAmt + platformOfferDiscount;
 
   // Processing fee (2%) added on top of the goods total → final payable amount
   const processingFee = calcProcessingFee(goodsTotal);
@@ -116,7 +135,7 @@ export async function createBooksRazorpayOrder(
   // Per-item allocation (proportional discount distribution)
   const allocations = lineItems.map((i) => {
     const ratio          = subtotal > 0 ? i.basePrice / subtotal : 0;
-    const itemDiscount   = parseFloat((discountAmt * ratio).toFixed(2));
+    const itemDiscount   = parseFloat((totalDiscount * ratio).toFixed(2));
     const itemFinal      = parseFloat((i.basePrice - itemDiscount).toFixed(2));
     const pct            = i.book.instructorRevenuePercent ?? 70;
     const instructorRevenue = parseFloat(((itemFinal * pct) / 100).toFixed(2));
@@ -128,12 +147,14 @@ export async function createBooksRazorpayOrder(
   const order = await prisma.bookOrder.create({
     data: {
       userId,
-      amount:         finalAmount,
+      amount:                finalAmount,
       subtotal,
-      currency:       "INR",
-      status:         "PENDING",
+      currency:              "INR",
+      status:                "PENDING",
       couponId,
-      discountAmount: discountAmt > 0 ? discountAmt : undefined,
+      discountAmount:        discountAmt > 0 ? discountAmt : undefined,
+      platformOfferId,
+      platformOfferDiscount: platformOfferDiscount > 0 ? platformOfferDiscount : undefined,
       processingFee,
       items: {
         create: allocations.map((a) => ({
@@ -173,13 +194,15 @@ export async function createBooksRazorpayOrder(
   });
 
   return {
-    razorpayOrderId: rzpOrder.id as string,
-    dbOrderId:       order.id,
-    amount:          finalAmount,
+    razorpayOrderId:       rzpOrder.id as string,
+    dbOrderId:             order.id,
+    amount:                finalAmount,
     subtotal,
-    discount:        discountAmt,
+    discount:              discountAmt,
+    platformOfferDiscount,
+    platformOfferTitle:    offer?.title ?? null,
     processingFee,
-    itemCount:       allocations.length,
+    itemCount:             allocations.length,
   };
 }
 

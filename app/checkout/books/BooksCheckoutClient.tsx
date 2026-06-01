@@ -25,14 +25,15 @@ export interface CheckoutItem {
 }
 
 interface Props {
-  items:      CheckoutItem[];
-  subtotal:   number;
-  userEmail?: string;
+  items:         CheckoutItem[];
+  subtotal:      number;
+  userEmail?:    string;
+  platformOffer?: { id: string; title: string; discount: number } | null;
 }
 
 type Phase = "summary" | "payment";
 
-export default function BooksCheckoutClient({ items, subtotal, userEmail }: Props) {
+export default function BooksCheckoutClient({ items, subtotal, userEmail, platformOffer }: Props) {
   const router = useRouter();
 
   const [phase,     setPhase]     = useState<Phase>("summary");
@@ -47,7 +48,9 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
 
   const baseTotal     = items.reduce((s, i) => s + i.price, 0);
   const itemDiscount  = baseTotal - subtotal;
-  const goodsTotal    = appliedCoupon ? Math.max(0, subtotal - appliedCoupon.discount) : subtotal;
+  const afterCoupon   = appliedCoupon ? Math.max(0, subtotal - appliedCoupon.discount) : subtotal;
+  const offerDiscount = platformOffer ? Math.min(platformOffer.discount, afterCoupon) : 0;
+  const goodsTotal    = Math.max(0, afterCoupon - offerDiscount);
   const processingFee = calcProcessingFee(goodsTotal);
   const displayPrice  = goodsTotal + processingFee;
   const totalSavings  = baseTotal - goodsTotal;
@@ -151,6 +154,9 @@ export default function BooksCheckoutClient({ items, subtotal, userEmail }: Prop
             <PriceRow label={`Items (${items.length})`} value={`₹${baseTotal.toLocaleString("en-IN")}`} />
             {itemDiscount > 0 && <PriceRow label="Item discounts" value={`−₹${itemDiscount.toLocaleString("en-IN")}`} positive />}
             {appliedCoupon && <PriceRow label={`Coupon (${appliedCoupon.code})`} value={`−₹${appliedCoupon.discount.toLocaleString("en-IN")}`} positive />}
+            {platformOffer && offerDiscount > 0 && (
+              <PriceRow label={`Offer · ${platformOffer.title}`} value={`−₹${offerDiscount.toLocaleString("en-IN")}`} positive />
+            )}
             {processingFee > 0 && <PriceRow label={PROCESSING_FEE_LABEL} value={`₹${processingFee.toLocaleString("en-IN")}`} />}
             <div className="flex justify-between border-t border-border pt-2 mt-1">
               <span className="font-semibold text-foreground">Total</span>

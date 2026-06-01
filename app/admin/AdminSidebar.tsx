@@ -13,7 +13,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
-  Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare,
+  Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare, Megaphone,
   Menu, X, Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
   Mail, ScrollText, ListVideo, Database, ShieldCheck, Library,
 } from "lucide-react";
@@ -35,6 +35,7 @@ const adminNav = [
   { label: "Students",      href: "/admin/students",        icon: Users },
   { label: "Enrollments",   href: "/admin/enrollments",     icon: GraduationCap },
   { label: "Coupons",       href: "/admin/coupons",         icon: Ticket },
+  { label: "Platform Offers", href: "/admin/platform-offers", icon: Megaphone },
   { label: "Orders",        href: "/admin/orders",          icon: ShoppingCart },
   { label: "Refunds",       href: "/admin/refunds",         icon: RotateCcw },
   { label: "Payouts",       href: "/admin/payouts",         icon: Wallet },

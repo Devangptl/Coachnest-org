@@ -60,6 +60,12 @@ enum DiscountType {
   FIXED
 }
 
+enum OfferScope {
+  ALL
+  COURSES
+  BOOKS
+}
+
 enum NotifType {
   COURSE_UPDATE
   PURCHASE
@@ -536,6 +542,9 @@ model Order {
   razorpayPaymentId String?     @unique
   couponId          String?
   discountAmount    Decimal?    @db.Decimal(10, 2)
+  // Platform-wide auto-applied offer (separate from coupon code)
+  platformOfferId       String?
+  platformOfferDiscount Decimal? @db.Decimal(10, 2)
   // Processing fee added on top of the goods total (included in `amount`)
   processingFee     Decimal?    @db.Decimal(10, 2)
   // Revenue attribution (populated on PAID status)
@@ -551,6 +560,7 @@ model Order {
   user               User              @relation(fields: [userId], references: [id])
   course             Course?           @relation(fields: [courseId], references: [id])
   coupon             Coupon?           @relation(fields: [couponId], references: [id])
+  platformOffer      PlatformOffer?    @relation(fields: [platformOfferId], references: [id])
   feature            PlatformFeature?  @relation(fields: [featureId], references: [id])
   featurePurchase    FeaturePurchase?
   referralLink       ReferralLink?     @relation(fields: [referralLinkId], references: [id])
@@ -1819,14 +1829,18 @@ model BookOrder {
   razorpayPaymentId String?     @unique
   couponId          String?
   discountAmount  Decimal?    @db.Decimal(10, 2)
+  // Platform-wide auto-applied offer (separate from coupon code)
+  platformOfferId       String?
+  platformOfferDiscount Decimal? @db.Decimal(10, 2)
   // Processing fee added on top of the goods total (included in `amount`)
   processingFee   Decimal?    @db.Decimal(10, 2)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
 
-  user   User            @relation(fields: [userId], references: [id])
-  coupon Coupon?         @relation(fields: [couponId], references: [id])
-  items  BookOrderItem[]
+  user          User            @relation(fields: [userId], references: [id])
+  coupon        Coupon?         @relation(fields: [couponId], references: [id])
+  platformOffer PlatformOffer?  @relation(fields: [platformOfferId], references: [id])
+  items         BookOrderItem[]
 
   @@index([userId, status])
   @@map("book_orders")
@@ -1894,4 +1908,43 @@ model BookWishlist {
   @@id([userId, bookId])
   @@index([bookId])
   @@map("book_wishlists")
+}
+
+// ─── Platform Offer ──────────────────────────────────────────────────────────
+// Site-wide promotional discount auto-applied at checkout, plus the
+// promotional banner shown on the landing page when the offer is active.
+// Only one offer should be ACTIVE at a time; if multiple are active, the
+// one with the highest `priority` wins (ties broken by most recent).
+model PlatformOffer {
+  id            String       @id @default(cuid())
+  title         String
+  description   String?      @db.Text
+  discountType  DiscountType @default(PERCENTAGE)
+  discountValue Decimal      @db.Decimal(10, 2)
+  // Optional cap on the discount when discountType = PERCENTAGE
+  maxDiscount   Decimal?     @db.Decimal(10, 2)
+  // Optional minimum subtotal (in INR) required to apply
+  minCartValue  Decimal?     @db.Decimal(10, 2)
+  // What the offer applies to
+  scope         OfferScope   @default(ALL)
+  startsAt      DateTime?
+  endsAt        DateTime?
+  isActive      Boolean      @default(true)
+  priority      Int          @default(0)
+
+  // Landing-page banner controls
+  bannerEnabled  Boolean @default(true)
+  bannerCtaText  String  @default("Explore Courses")
+  bannerCtaUrl   String  @default("/courses")
+  bannerBgColor  String  @default("#d97757")
+  bannerTextColor String @default("#ffffff")
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  orders     Order[]
+  bookOrders BookOrder[]
+
+  @@index([isActive, priority])
+  @@map("platform_offers")
 }
