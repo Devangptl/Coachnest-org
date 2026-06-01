@@ -806,5 +806,34 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
         `Not interested? You can manage your email preferences from your <a href="{{appUrl}}/dashboard/subscription" style="color:#d97757;text-decoration:none;">account settings</a>.`
       ),
     },
+
+    // ── 36. Course Collaboration Invite ───────────────────────────────────────
+    {
+      slug: "collaboration-invite",
+      name: "Course Collaboration Invite",
+      subject: "{{inviterName}} invited you to co-teach \"{{courseTitle}}\" — Coachnest",
+      description: "Sent to a user when an instructor invites them to collaborate on a course.",
+      variables: ["inviterName", "courseTitle", "role", "revenueShare", "message", "link"],
+      htmlBody: shell(
+        "Collaboration invite",
+        "You're invited to collaborate 🤝",
+        `${para("<strong style=\"color:#d97757;\">{{inviterName}}</strong> invited you to join <strong style=\"color:#d97757;\">{{courseTitle}}</strong> as a <strong>{{role}}</strong> on Coachnest.")}
+        ${infoTable([
+          ["Course",        "{{courseTitle}}"],
+          ["Role",          "{{role}}"],
+          ["Revenue share", "{{revenueShare}}%"],
+          ["Invited by",    "{{inviterName}}"],
+        ])}
+        ${quoteBox("Message from {{inviterName}}", "{{message}}")}
+        ${steps([
+          ["Review the invitation", "Open the invitation page to see full course details and the proposed split."],
+          ["Accept to start collaborating", "Once you accept, you'll get edit access in the instructor panel."],
+          ["Earn from sales", "Your configured revenue share is paid automatically into your wallet on every sale."],
+        ])}`,
+        "Review Invitation",
+        "{{link}}",
+        `This invitation expires in 14 days. If you weren't expecting it, you can safely ignore this email.`
+      ),
+    },
   ];
 }
