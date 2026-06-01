@@ -774,5 +774,37 @@ export function getEmailTemplateSeeds(): EmailTemplateSeed[] {
         `Want to keep learning? <a href="{{courseLink}}" style="color:#d97757;text-decoration:none;">Explore more courses</a>.`
       ),
     },
+
+    // ── 35. Platform Offer Announcement (Student) ─────────────────────────────
+    {
+      slug: "platform-offer-announcement",
+      name: "Platform Offer Announcement",
+      subject: "{{discountLabel}} on Coachnest — {{offerTitle}}",
+      description:
+        "Sent to every student when an admin launches a site-wide promotional offer from /admin/platform-offers (Notify Users button).",
+      variables: [
+        "name",
+        "offerTitle",
+        "offerDescription",
+        "discountLabel",
+        "endsLine",
+        "ctaText",
+        "ctaUrl",
+      ],
+      htmlBody: shell(
+        "Limited offer",
+        "{{discountLabel}} just for you, {{name}} ✨",
+        `${para("We just launched <strong style=\"color:#d97757;\">{{offerTitle}}</strong> — {{offerDescription}}")}
+        ${infoTable([
+          ["Discount", "{{discountLabel}}"],
+          ["Applies",  "Automatically at checkout"],
+          ["Validity", "{{endsLine}}"],
+        ])}
+        ${noticeBox("{{endsLine}} — no coupon code needed, the discount is applied for you the moment you reach checkout.")}`,
+        "{{ctaText}}",
+        "{{ctaUrl}}",
+        `Not interested? You can manage your email preferences from your <a href="{{appUrl}}/dashboard/subscription" style="color:#d97757;text-decoration:none;">account settings</a>.`
+      ),
+    },
   ];
 }

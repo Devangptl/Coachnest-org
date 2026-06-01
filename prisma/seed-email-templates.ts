@@ -1,7 +1,7 @@
 /**
  * Coachnest — Email Templates Seed
  *
- * Upserts default HTML templates for all 24 system email slugs.
+ * Upserts default HTML templates for every system email slug.
  * Template HTML is defined in lib/email-template-seeds.ts.
  *
  * Run:  npm run db:seed:emails
