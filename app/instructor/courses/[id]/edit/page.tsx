@@ -98,7 +98,7 @@ export default async function InstructorEditCoursePage({ params }: Props) {
           </div>
           <Link
             href={`/courses/${course.id}`}
-            className="mt-5 inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300"
+            className="mt-5 inline-flex items-center gap-1.5 text-sm text-primary hover:text-primary/80"
           >
             <Eye className="w-4 h-4" /> Preview public page
           </Link>

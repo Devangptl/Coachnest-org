@@ -89,7 +89,7 @@ export default async function InstructorCoursesPage() {
                     <p className="text-xs text-muted-foreground/60 mt-0.5 flex items-center gap-1.5">
                       {formatDate(course.createdAt)}
                       {course.createdById !== userId && course.collaborators[0] && (
-                        <span className="inline-flex items-center text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30">
+                        <span className="badge-amber">
                           {course.collaborators[0].role.replace(/_/g, " ")}
                         </span>
                       )}

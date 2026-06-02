@@ -158,7 +158,7 @@ export default async function InstructorDashboard() {
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium text-foreground truncate">{course.title}</p>
                       {course.createdById !== userId && course.collaborators[0] && (
-                        <span className="text-[10px] font-bold tracking-wider uppercase px-1.5 py-0.5 rounded bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 flex-shrink-0">
+                        <span className="badge-amber flex-shrink-0">
                           {course.collaborators[0].role.replace(/_/g, " ")}
                         </span>
                       )}

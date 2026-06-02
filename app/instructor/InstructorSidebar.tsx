@@ -80,7 +80,7 @@ function NavLinks({ onNavigate, userId }: { onNavigate?: () => void; userId?: st
             <Icon className={cn("w-4 h-4", isActive ? "text-amber-400" : "text-muted-foreground")} />
             <span className="flex-1">{item.label}</span>
             {isNotifications && unread > 0 && (
-              <span className="text-[10px] font-bold bg-amber-500 text-black rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
+              <span className="text-[10px] font-bold bg-primary text-primary-foreground rounded-full px-1.5 py-0.5 leading-none min-w-[18px] text-center">
                 {unread > 9 ? "9+" : unread}
               </span>
             )}

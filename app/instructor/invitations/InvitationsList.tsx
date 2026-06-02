@@ -66,7 +66,7 @@ export default function InvitationsList({
           <div
             key={i.id}
             className={`bg-card border rounded-lg p-5 flex items-start gap-4 ${
-              highlighted ? "border-orange-500/60 ring-1 ring-orange-500/30" : "border-border"
+              highlighted ? "border-primary/60 ring-1 ring-primary/30" : "border-border"
             }`}
           >
             <div className="flex-shrink-0 w-14 h-14 rounded-lg bg-secondary overflow-hidden">
@@ -83,7 +83,7 @@ export default function InvitationsList({
                 {" "}{i.revenueShare}% revenue share
               </p>
               {i.message && (
-                <p className="mt-2 text-sm text-muted-foreground border-l-2 border-orange-500/50 pl-3 italic">
+                <p className="mt-2 text-sm text-muted-foreground border-l-2 border-primary/50 pl-3 italic">
                   &ldquo;{i.message}&rdquo;
                 </p>
               )}
@@ -96,7 +96,7 @@ export default function InvitationsList({
                 type="button"
                 disabled={busy === i.id}
                 onClick={() => act(i, "accept")}
-                className="inline-flex items-center gap-1 text-sm font-semibold rounded-md px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50"
+                className="btn-primary"
               >
                 <Check className="w-4 h-4" /> Accept
               </button>
@@ -104,7 +104,7 @@ export default function InvitationsList({
                 type="button"
                 disabled={busy === i.id}
                 onClick={() => act(i, "decline")}
-                className="inline-flex items-center gap-1 text-sm rounded-md px-3 py-1.5 border border-border text-muted-foreground hover:text-foreground disabled:opacity-50"
+                className="btn-secondary"
               >
                 <X className="w-4 h-4" /> Decline
               </button>
