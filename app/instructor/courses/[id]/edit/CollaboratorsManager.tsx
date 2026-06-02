@@ -72,11 +72,11 @@ const ROLE_LABEL: Record<Role, string> = {
   VIEWER: "Viewer",
 };
 
-const ROLE_COLOR: Record<Role, string> = {
-  OWNER: "bg-orange-500/15 text-orange-300 border-orange-500/30",
-  CO_INSTRUCTOR: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-  EDITOR: "bg-sky-500/15 text-sky-300 border-sky-500/30",
-  VIEWER: "bg-zinc-500/15 text-zinc-300 border-zinc-500/30",
+const ROLE_BADGE: Record<Role, string> = {
+  OWNER: "badge-orange",
+  CO_INSTRUCTOR: "badge-amber",
+  EDITOR: "badge-purple",
+  VIEWER: "badge bg-secondary text-muted-foreground border border-border",
 };
 
 function formatAction(action: string) {
@@ -227,11 +227,7 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
           </p>
         </div>
         {canManage && (
-          <button
-            type="button"
-            onClick={() => setShowInvite(true)}
-            className="inline-flex items-center gap-1.5 text-sm font-semibold rounded-md px-3 py-2 bg-orange-500 hover:bg-orange-600 text-white transition-colors"
-          >
+          <button type="button" onClick={() => setShowInvite(true)} className="btn-primary">
             <Plus className="w-4 h-4" /> Invite Collaborator
           </button>
         )}
@@ -295,12 +291,12 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
                         ))}
                       </select>
                     ) : (
-                      <span className={`inline-flex text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border ${ROLE_COLOR[c.role]}`}>
+                      <span className={ROLE_BADGE[c.role]}>
                         {ROLE_LABEL[c.role]}
                       </span>
                     )}
                     {!c.acceptedAt && !isOwner && (
-                      <span className="ml-2 text-[10px] text-amber-400">Pending</span>
+                      <span className="badge-amber ml-2">Pending</span>
                     )}
                   </td>
                   <td className="px-5 py-3 text-right text-foreground">
@@ -337,7 +333,7 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
                         }
                       />
                     ) : c.isPublic ? (
-                      <span className="text-emerald-400 text-xs">Yes</span>
+                      <span className="text-primary text-xs font-semibold">Yes</span>
                     ) : (
                       <span className="text-muted-foreground text-xs">No</span>
                     )}
@@ -348,17 +344,13 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
                     ) : canManage ? (
                       isEditing ? (
                         <div className="inline-flex items-center gap-1.5">
-                          <button
-                            type="button"
-                            onClick={() => saveCollaborator(c)}
-                            className="inline-flex items-center gap-1 text-xs text-emerald-400 hover:text-emerald-300"
-                          >
+                          <button type="button" onClick={() => saveCollaborator(c)} className="btn-primary">
                             <Save className="w-3.5 h-3.5" /> Save
                           </button>
                           <button
                             type="button"
                             onClick={() => { setEditingId(null); setDraft(null); }}
-                            className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                            className="btn-ghost"
                           >
                             <X className="w-3.5 h-3.5" /> Cancel
                           </button>
@@ -375,15 +367,11 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
                                 isPublic: c.isPublic,
                               });
                             }}
-                            className="inline-flex items-center gap-1 text-xs text-sky-400 hover:text-sky-300"
+                            className="btn-ghost"
                           >
                             Edit
                           </button>
-                          <button
-                            type="button"
-                            onClick={() => removeCollaborator(c)}
-                            className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
-                          >
+                          <button type="button" onClick={() => removeCollaborator(c)} className="btn-danger">
                             <Trash2 className="w-3.5 h-3.5" /> Remove
                           </button>
                         </div>
@@ -413,11 +401,7 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
                   </div>
                 </div>
                 {canManage && (
-                  <button
-                    type="button"
-                    onClick={() => revokeInvite(i)}
-                    className="inline-flex items-center gap-1 text-xs text-red-400 hover:text-red-300"
-                  >
+                  <button type="button" onClick={() => revokeInvite(i)} className="btn-danger">
                     <RotateCcw className="w-3.5 h-3.5" /> Revoke
                   </button>
                 )}
@@ -482,7 +466,7 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
                       key={opt.value}
                       className={`flex items-start gap-2 p-2.5 rounded border cursor-pointer transition-colors ${
                         inviteRole === opt.value
-                          ? "border-orange-500/60 bg-orange-500/5"
+                          ? "border-primary/60 bg-primary/5"
                           : "border-border hover:bg-secondary/60"
                       }`}
                     >
@@ -530,19 +514,10 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
               </div>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setShowInvite(false)}
-                className="text-sm px-3 py-2 rounded text-muted-foreground hover:text-foreground"
-              >
+              <button type="button" onClick={() => setShowInvite(false)} className="btn-secondary">
                 Cancel
               </button>
-              <button
-                type="button"
-                disabled={submittingInvite}
-                onClick={submitInvite}
-                className="text-sm px-3 py-2 rounded bg-orange-500 hover:bg-orange-600 text-white font-semibold disabled:opacity-50"
-              >
+              <button type="button" disabled={submittingInvite} onClick={submitInvite} className="btn-primary">
                 {submittingInvite ? "Sending…" : "Send Invitation"}
               </button>
             </div>

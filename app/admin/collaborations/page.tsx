@@ -11,11 +11,11 @@ import { getSession } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-const ROLE_COLOR: Record<string, string> = {
-  OWNER:         "bg-orange-500/15 text-orange-300 border-orange-500/30",
-  CO_INSTRUCTOR: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
-  EDITOR:        "bg-sky-500/15 text-sky-300 border-sky-500/30",
-  VIEWER:        "bg-zinc-500/15 text-zinc-300 border-zinc-500/30",
+const ROLE_BADGE: Record<string, string> = {
+  OWNER:         "badge-orange",
+  CO_INSTRUCTOR: "badge-amber",
+  EDITOR:        "badge-purple",
+  VIEWER:        "badge bg-secondary text-muted-foreground border border-border",
 };
 
 function inr(n: number) {
@@ -100,7 +100,7 @@ export default async function AdminCollaborationsPage() {
                     <div className="flex items-center gap-2 mb-1">
                       <Link
                         href={`/courses/${course.id}`}
-                        className="text-foreground font-semibold truncate hover:text-orange-400 inline-flex items-center gap-1.5"
+                        className="text-foreground font-semibold truncate hover:text-primary inline-flex items-center gap-1.5"
                       >
                         {course.title}
                         <ArrowUpRight className="w-3.5 h-3.5" />
@@ -118,7 +118,7 @@ export default async function AdminCollaborationsPage() {
                   </div>
                   <Link
                     href={`/admin/courses/${course.id}/edit`}
-                    className="text-xs text-orange-400 hover:text-orange-300 whitespace-nowrap"
+                    className="text-xs text-primary hover:text-primary/80 whitespace-nowrap"
                   >
                     Manage →
                   </Link>
@@ -141,9 +141,7 @@ export default async function AdminCollaborationsPage() {
                         <div className="text-xs text-muted-foreground">{course.createdBy.email}</div>
                       </td>
                       <td className="px-5 py-3">
-                        <span className={`inline-flex text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border ${ROLE_COLOR.OWNER}`}>
-                          Owner
-                        </span>
+                        <span className={ROLE_BADGE.OWNER}>Owner</span>
                       </td>
                       <td className="px-5 py-3 text-right text-foreground">
                         {100 - course.collaborators.reduce((s, c) => s + Number(c.revenueShare), 0)}%
@@ -162,11 +160,11 @@ export default async function AdminCollaborationsPage() {
                             <div className="text-xs text-muted-foreground">{c.user.email}</div>
                           </td>
                           <td className="px-5 py-3">
-                            <span className={`inline-flex text-[10px] font-bold tracking-wider uppercase px-2 py-0.5 rounded border ${ROLE_COLOR[c.role] ?? ROLE_COLOR.VIEWER}`}>
+                            <span className={ROLE_BADGE[c.role] ?? ROLE_BADGE.VIEWER}>
                               {c.role.replace(/_/g, " ")}
                             </span>
                             {!c.acceptedAt && (
-                              <span className="ml-2 text-[10px] text-amber-400">(pending)</span>
+                              <span className="badge-amber ml-2">Pending</span>
                             )}
                           </td>
                           <td className="px-5 py-3 text-right text-foreground">
