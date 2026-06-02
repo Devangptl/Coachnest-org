@@ -17,6 +17,7 @@ import { randomBytes } from "crypto";
 import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
 import { sendCollaborationInviteEmail } from "@/lib/email";
+import { supabaseAdmin } from "@/lib/supabase";
 import type { CourseCollaboratorRole, Prisma } from "@prisma/client";
 
 const INVITE_EXPIRY_DAYS = 14;
@@ -380,7 +381,7 @@ export async function acceptInvite(token: string, userId: string) {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true },
+    select: { id: true, email: true, name: true, role: true, instructorStatus: true },
   });
   if (!user) throw new Error("User not found.");
 
@@ -412,6 +413,33 @@ export async function acceptInvite(token: string, userId: string) {
       data: { status: "ACCEPTED", acceptedAt: new Date() },
     }),
   ]);
+
+  // Promote the user so they can actually access the /instructor portal.
+  // Middleware reads `role` from Supabase Auth app_metadata, so we mirror
+  // the change both in Prisma and in Supabase. We only auto-promote when
+  // the user isn't already an APPROVED instructor or an admin.
+  const needsPromotion =
+    user.role !== "ADMIN" &&
+    !(user.role === "INSTRUCTOR" && user.instructorStatus === "APPROVED");
+
+  if (needsPromotion) {
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        role: "INSTRUCTOR",
+        instructorStatus: "APPROVED",
+        instructorReviewedAt: new Date(),
+      },
+    });
+
+    try {
+      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        app_metadata: { role: "INSTRUCTOR", instructorStatus: "APPROVED" },
+      });
+    } catch (err) {
+      console.error("[collaboration] failed to mirror role to Supabase Auth:", err);
+    }
+  }
 
   // Notify the inviter that their invite was accepted.
   await createNotification({
