@@ -7,12 +7,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import slugify from "slugify";
+import {
+  authorizeCourseEdit,
+  getCollaboratorPermission,
+} from "@/services/collaboration.service";
 
 type Params = { params: Promise<{ id: string }> };
 
-async function getOwnCourse(courseId: string, userId: string) {
-  return prisma.course.findFirst({
-    where: { id: courseId, createdById: userId },
+async function getAccessibleCourse(courseId: string) {
+  return prisma.course.findUnique({
+    where: { id: courseId },
     include: { lessons: { orderBy: { order: "asc" } } },
   });
 }
@@ -24,7 +28,11 @@ export async function GET(_req: NextRequest, { params }: Params) {
   }
 
   const { id } = await params;
-  const course = await getOwnCourse(id, session.userId);
+  if (session.role !== "ADMIN") {
+    const perm = await getCollaboratorPermission(id, session.userId);
+    if (!perm) return NextResponse.json({ error: "Course not found." }, { status: 404 });
+  }
+  const course = await getAccessibleCourse(id);
   if (!course) return NextResponse.json({ error: "Course not found." }, { status: 404 });
 
   return NextResponse.json({ course });
@@ -37,7 +45,13 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const { id } = await params;
-  const existing = await prisma.course.findFirst({ where: { id, createdById: session.userId } });
+  if (!(await authorizeCourseEdit(session, id))) {
+    return NextResponse.json(
+      { error: "You don't have permission to edit this course." },
+      { status: 403 },
+    );
+  }
+  const existing = await prisma.course.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Course not found." }, { status: 404 });
 
   const data = await req.json().catch(() => ({}));
@@ -63,7 +77,20 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     update.discountPrice =
       dp === null || dp === "" ? null : Number.isFinite(Number(dp)) ? Number(dp) : null;
   }
-  if (data.status !== undefined) update.status = data.status;
+  if (data.status !== undefined) {
+    // Only OWNER (or ADMIN) may change publish status. EDITOR can edit
+    // content but not flip DRAFT ↔ PUBLISHED / PENDING_REVIEW / ARCHIVED.
+    if (session.role !== "ADMIN") {
+      const perm = await getCollaboratorPermission(id, session.userId);
+      if (!perm?.canPublish) {
+        return NextResponse.json(
+          { error: "Only the course owner can change publish status." },
+          { status: 403 },
+        );
+      }
+    }
+    update.status = data.status;
+  }
   if (data.instructorRevenuePercent !== undefined && session.role === "ADMIN") {
     const pct = Number(data.instructorRevenuePercent);
     if (!Number.isInteger(pct) || pct < 70 || pct > 80) {
@@ -128,7 +155,17 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
   }
 
   const { id } = await params;
-  const existing = await prisma.course.findFirst({ where: { id, createdById: session.userId } });
+  // Delete = OWNER only (or ADMIN). canDeleteCourse is true only for OWNER.
+  if (session.role !== "ADMIN") {
+    const perm = await getCollaboratorPermission(id, session.userId);
+    if (!perm?.canDeleteCourse) {
+      return NextResponse.json(
+        { error: "Only the course owner can delete this course." },
+        { status: 403 },
+      );
+    }
+  }
+  const existing = await prisma.course.findUnique({ where: { id } });
   if (!existing) return NextResponse.json({ error: "Course not found." }, { status: 404 });
 
   await prisma.course.delete({ where: { id } });

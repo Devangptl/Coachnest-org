@@ -6,8 +6,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { authorizeCourseEdit } from "@/services/collaboration.service";
 
 type Params = { params: Promise<{ id: string }> };
+
+async function getSectionCourseId(id: string): Promise<string | null> {
+  const section = await prisma.section.findUnique({
+    where: { id },
+    select: { courseId: true },
+  });
+  return section?.courseId ?? null;
+}
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
@@ -17,6 +26,17 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
+    const courseId = await getSectionCourseId(id);
+    if (!courseId) {
+      return NextResponse.json({ error: "Chapter not found." }, { status: 404 });
+    }
+    if (!(await authorizeCourseEdit(session, courseId))) {
+      return NextResponse.json(
+        { error: "You don't have permission to edit this course." },
+        { status: 403 },
+      );
+    }
+
     const { title, order } = await req.json();
 
     const section = await prisma.section.update({
@@ -44,6 +64,16 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     }
 
     const { id } = await params;
+    const courseId = await getSectionCourseId(id);
+    if (!courseId) {
+      return NextResponse.json({ error: "Chapter not found." }, { status: 404 });
+    }
+    if (!(await authorizeCourseEdit(session, courseId))) {
+      return NextResponse.json(
+        { error: "You don't have permission to edit this course." },
+        { status: 403 },
+      );
+    }
 
     // Unassign lessons — they become ungrouped (not deleted)
     await prisma.lesson.updateMany({

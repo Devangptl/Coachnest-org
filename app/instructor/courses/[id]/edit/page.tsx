@@ -5,7 +5,7 @@
  */
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Eye, Lock } from "lucide-react";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import CourseForm from "@/components/admin/CourseForm";
@@ -57,6 +57,55 @@ export default async function InstructorEditCoursePage({ params }: Props) {
 
   const tagNames = course.tags.map((ct) => ct.tag.name);
   const isAdmin = session.role === "ADMIN";
+  const canEdit = collabPermission.canEditContent;
+
+  // VIEWER collaborators only see a read-only summary — no editor form,
+  // no lessons manager, no collaborator management. They still get a link
+  // to the public course page so they can preview as students see it.
+  if (!canEdit) {
+    return (
+      <div>
+        <Link
+          href="/instructor/courses"
+          className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm mb-6 transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4" /> Back to My Courses
+        </Link>
+
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold text-foreground truncate">{course.title}</h1>
+          <p className="text-muted-foreground text-sm mt-1 flex items-center gap-1.5">
+            <Lock className="w-3.5 h-3.5" /> Read-only access ({collabPermission.role.replace(/_/g, " ").toLowerCase()})
+          </p>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-6 mb-6">
+          <p className="text-sm text-muted-foreground">
+            You have <strong className="text-foreground">{collabPermission.role.replace(/_/g, " ")}</strong> access
+            on this course. You can review its content but can&apos;t make changes. Ask the course owner if you
+            need a higher role.
+          </p>
+        </div>
+
+        <div className="bg-card border border-border rounded-lg p-6">
+          <h2 className="text-lg font-semibold text-foreground mb-3">{course.title}</h2>
+          <p className="text-sm text-muted-foreground mb-4 whitespace-pre-wrap">{course.description}</p>
+          <div className="text-xs text-muted-foreground space-y-1">
+            <p>Status: <span className="text-foreground">{course.status}</span></p>
+            <p>Level: <span className="text-foreground">{course.level}</span></p>
+            <p>Language: <span className="text-foreground">{course.language}</span></p>
+            <p>Lessons: <span className="text-foreground">{course.sections.reduce((s, sec) => s + sec.lessons.length, 0) + course.lessons.length}</span></p>
+          </div>
+          <Link
+            href={`/courses/${course.id}`}
+            className="mt-5 inline-flex items-center gap-1.5 text-sm text-amber-400 hover:text-amber-300"
+          >
+            <Eye className="w-4 h-4" /> Preview public page
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div>
