@@ -11,7 +11,7 @@ import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Heart, Award, ShoppingCart, Bell, HelpCircle,
   UserCircle, Trophy, Menu, X, Users2, Package, CreditCard, BarChart2, GraduationCap,
-  ListVideo, Bookmark, Library, Mail,
+  ListVideo, Bookmark, Library,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,7 +31,6 @@ const navItems = [
   { label: "Billing",       href: "/dashboard/billing",            icon: CreditCard },
   { label: "Order History", href: "/dashboard/orders",             icon: ShoppingCart },
   { label: "Notifications", href: "/dashboard/notifications",      icon: Bell },
-  { label: "Invitations",   href: "/dashboard/invitations",        icon: Mail },
   { label: "Community",     href: "/community",                    icon: Users2 },
   { label: "Profile",       href: "/dashboard/profile",            icon: UserCircle },
 ];

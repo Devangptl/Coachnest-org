@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
-  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo, Library, Bell,
+  PlusCircle, Menu, X, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo, Library, Bell, Mail,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
@@ -23,6 +23,7 @@ const navItems = [
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },
   { label: "Refunds",       href: "/instructor/refunds",      icon: TrendingDown },
   { label: "Payouts",       href: "/instructor/payouts",      icon: Wallet },
+  { label: "Invitations",   href: "/instructor/invitations",  icon: Mail },
   { label: "Notifications", href: "/instructor/notifications", icon: Bell },
   { label: "My Profile",    href: "/instructor/profile",      icon: UserCircle },
 ];

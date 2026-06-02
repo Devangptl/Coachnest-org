@@ -45,6 +45,10 @@ export async function middleware(req: NextRequest) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
+  // Expose the current pathname to Server Components / Layouts via a
+  // request header — used by /instructor/layout.tsx to allow STUDENT users
+  // through to /instructor/invitations specifically.
+  req.headers.set("x-pathname", pathname);
   let res = NextResponse.next({ request: req });
 
   const supabase = createServerClient(
@@ -97,16 +101,25 @@ export async function middleware(req: NextRequest) {
       }
     }
 
-    // /instructor — INSTRUCTOR and ADMIN only
-    if (underPath(pathname, "/instructor") && role === "STUDENT") {
+    // /instructor — INSTRUCTOR and ADMIN only. Exception: any authenticated
+    // user (including STUDENT) must be able to land on /instructor/invitations
+    // so they can accept a collaboration invite — acceptance auto-promotes
+    // them to INSTRUCTOR (see services/collaboration.service.ts acceptInvite).
+    if (
+      underPath(pathname, "/instructor") &&
+      role === "STUDENT" &&
+      !underPath(pathname, "/instructor/invitations")
+    ) {
       return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
-    // /instructor — pending/rejected instructors can only access /instructor/pending
+    // /instructor — pending/rejected instructors can only access
+    // /instructor/pending or /instructor/invitations (same reason as above).
     if (
       underPath(pathname, "/instructor") &&
       isInstructorPending &&
-      !underPath(pathname, "/instructor/pending")
+      !underPath(pathname, "/instructor/pending") &&
+      !underPath(pathname, "/instructor/invitations")
     ) {
       return NextResponse.redirect(new URL("/instructor/pending", req.url));
     }

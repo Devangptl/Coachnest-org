@@ -310,7 +310,7 @@ export async function inviteCollaborator(opts: {
         title: `You've been invited to collaborate on "${course.title}"`,
         body: `${inviter?.name ?? "An instructor"} invited you as ${opts.role.replace(/_/g, " ").toLowerCase()}.`,
         type: "SYSTEM",
-        link: `/dashboard/invitations?token=${token}`,
+        link: `/instructor/invitations?token=${token}`,
       },
     }).catch(console.error);
   }
