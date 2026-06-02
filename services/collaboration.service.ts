@@ -109,6 +109,24 @@ export async function canManageCollaborators(courseId: string, userId: string): 
   return Boolean(perm?.canManageCollaborators);
 }
 
+/**
+ * Authorization gate shared by the lesson/section/quiz/reorder routes —
+ * returns the resolved permission when the user can edit the course,
+ * or null when they can't. Admins bypass. Use in API handlers:
+ *
+ *   const ok = await authorizeCourseEdit(session, courseId);
+ *   if (!ok) return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+ */
+export async function authorizeCourseEdit(
+  session: { role: string; userId: string } | null,
+  courseId: string,
+): Promise<boolean> {
+  if (!session) return false;
+  if (session.role === "ADMIN") return true;
+  if (session.role !== "INSTRUCTOR") return false;
+  return canEditCourseContent(courseId, session.userId);
+}
+
 // ─── Listing ──────────────────────────────────────────────────────────────────
 
 export async function getCourseCollaborators(courseId: string) {

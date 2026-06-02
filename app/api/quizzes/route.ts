@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { authorizeCourseEdit } from "@/services/collaboration.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,6 +51,21 @@ export async function POST(req: NextRequest) {
     const { lessonId, title, passMark, timeLimit, questions } = await req.json();
     if (!lessonId || !title || !questions?.length) {
       return NextResponse.json({ error: "lessonId, title, and questions are required" }, { status: 400 });
+    }
+
+    // Check edit permission on the parent course.
+    const lesson = await prisma.lesson.findUnique({
+      where: { id: lessonId },
+      select: { courseId: true },
+    });
+    if (!lesson) {
+      return NextResponse.json({ error: "Lesson not found." }, { status: 404 });
+    }
+    if (!(await authorizeCourseEdit(session, lesson.courseId))) {
+      return NextResponse.json(
+        { error: "You don't have permission to edit this course." },
+        { status: 403 },
+      );
     }
 
     const quiz = await prisma.quiz.create({

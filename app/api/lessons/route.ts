@@ -7,6 +7,7 @@ import { revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { sendCourseUpdateEmail } from "@/lib/email";
+import { authorizeCourseEdit } from "@/services/collaboration.service";
 
 export async function GET(req: NextRequest) {
   try {
@@ -64,6 +65,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(
         { error: "courseId and title are required." },
         { status: 400 }
+      );
+    }
+
+    if (!(await authorizeCourseEdit(session, courseId))) {
+      return NextResponse.json(
+        { error: "You don't have permission to edit this course." },
+        { status: 403 },
       );
     }
 
