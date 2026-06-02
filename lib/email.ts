@@ -1490,7 +1490,7 @@ export async function sendCollaborationInviteEmail(opts: {
   message?: string;
   token: string;
 }) {
-  const acceptLink = `${APP}/dashboard/invitations?token=${opts.token}`;
+  const acceptLink = `${APP}/instructor/invitations?token=${opts.token}`;
   const roleLabel  = opts.role.replace(/_/g, " ").toLowerCase();
   const override   = await resolveTemplate("collaboration-invite", {
     courseTitle:  opts.courseTitle,
