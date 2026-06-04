@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import GlassCard from "@/components/GlassCard";
 import DeleteCourseButton from "./DeleteCourseButton";
-import SeedNextjsCourseButton from "./SeedNextjsCourseButton";
+import SeedCybersecurityCourseButton from "./SeedCybersecurityCourseButton";
 import { PlusCircle, BookOpen, Edit2, Eye } from "lucide-react";
 import { formatDate } from "@/lib/utils";
 
@@ -30,7 +30,7 @@ export default async function AdminCoursesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <SeedNextjsCourseButton />
+          <SeedCybersecurityCourseButton />
           <Link
             href="/admin/courses/new"
             className="btn-primary flex items-center gap-2 text-sm"
