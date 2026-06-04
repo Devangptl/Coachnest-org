@@ -43,15 +43,22 @@ export default function OfferTable({ offers }: { offers: AdminPlatformOffer[] })
       toast.error("Enable the offer before notifying users.");
       return;
     }
+    const isRenotify = !!offer.notifiedAt;
     const ok = await confirm(
-      `Send a promotional email + in-app notification to every student about "${offer.title}"? Users already notified for this offer will be skipped.`,
-      { title: "Notify Users", confirmText: "Send" },
+      isRenotify
+        ? `Re-send the promotional email + in-app notification to ALL students about "${offer.title}"? This will notify everyone again, including those previously notified.`
+        : `Send a promotional email + in-app notification to every student about "${offer.title}"? Users already notified for this offer will be skipped.`,
+      { title: isRenotify ? "Re-notify All Users" : "Notify Users", confirmText: "Send" },
     );
     if (!ok) return;
 
     setBusyId(offer.id);
     try {
-      const res = await fetch(`/api/admin/platform-offers/${offer.id}/notify`, { method: "POST" });
+      const res = await fetch(`/api/admin/platform-offers/${offer.id}/notify`, {
+        method:  "POST",
+        headers: { "Content-Type": "application/json" },
+        body:    JSON.stringify({ force: isRenotify }),
+      });
       const data = await res.json();
       if (!res.ok) {
         toast.error(data.error ?? "Notify failed");

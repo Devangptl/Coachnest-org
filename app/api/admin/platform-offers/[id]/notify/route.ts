@@ -7,7 +7,8 @@
  * offer (matched on link + type) are skipped, so the button is safe to
  * click multiple times.
  *
- * Body: none.
+ * Body: { force?: boolean }  — pass `force: true` to re-send to all students
+ *   regardless of prior notifications (used by the "Re-notify" button).
  * Response: { recipients, emailsSent, alreadyNotified }
  */
 import { NextRequest, NextResponse } from "next/server";
@@ -31,8 +32,10 @@ export async function POST(_req: NextRequest, ctx: Params) {
   }
 
   const { id } = await ctx.params;
+  const body = await _req.json().catch(() => ({}));
+  const force = body?.force === true;
   try {
-    const result = await notifyUsersOfOffer(id);
+    const result = await notifyUsersOfOffer(id, force);
     return NextResponse.json({ data: result });
   } catch (err) {
     const message = err instanceof Error ? err.message : "Notify failed";

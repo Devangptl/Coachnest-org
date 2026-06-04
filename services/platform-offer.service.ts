@@ -346,7 +346,10 @@ export async function getPlatformOfferStats() {
  */
 const NOTIFY_BATCH_SIZE = 25;
 
-export async function notifyUsersOfOffer(offerId: string): Promise<{
+export async function notifyUsersOfOffer(
+  offerId: string,
+  force = false,
+): Promise<{
   recipients: number;
   emailsSent: number;
   alreadyNotified: number;
@@ -359,22 +362,23 @@ export async function notifyUsersOfOffer(offerId: string): Promise<{
   const notifTitle = offer.title;
   const notifBody  = offer.description ?? buildDefaultBody(offer);
 
-  // Fetch every student with a valid email. We exclude users who already
-  // received an in-app notification linked to this offer so the admin can
-  // safely re-click "Notify Users" without spamming.
+  // Fetch every student with a valid email. When `force` is true (re-notify)
+  // we skip deduplication so all students receive the notification again.
   const students = await prisma.user.findMany({
     where: { role: "STUDENT", email: { not: "" } },
     select: { id: true, email: true, name: true },
   });
 
-  const alreadyNotifiedIds = new Set(
-    (
-      await prisma.notification.findMany({
-        where: { type: "OFFER", link: notifLink, userId: { in: students.map((s) => s.id) } },
-        select: { userId: true },
-      })
-    ).map((n) => n.userId),
-  );
+  const alreadyNotifiedIds = force
+    ? new Set<string>()
+    : new Set(
+        (
+          await prisma.notification.findMany({
+            where: { type: "OFFER", link: notifLink, userId: { in: students.map((s) => s.id) } },
+            select: { userId: true },
+          })
+        ).map((n) => n.userId),
+      );
 
   const recipients = students.filter((s) => !alreadyNotifiedIds.has(s.id));
   let emailsSent = 0;
