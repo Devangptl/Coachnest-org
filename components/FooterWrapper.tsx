@@ -15,6 +15,7 @@ const HIDE_PREFIXES = [
   "/forgot-password",
   "/reset-password",
   "/onboarding",
+  "/confirm-email",
   "/admin",
   "/dashboard",
   "/instructor",
