@@ -76,6 +76,24 @@ interface TableSection {
 }
 type Section = TextSection | TableSection;
 
+// ─── HTML normalisation ───────────────────────────────────────────────────────
+// Lesson content may be stored as Quill-produced HTML. Convert it to plain
+// text so that tags like <h1>, <p>, <strong> never reach the TTS engine.
+
+function htmlToPlain(input: string): string {
+  if (!input.trimStart().startsWith("<")) return input;
+  try {
+    const doc = new DOMParser().parseFromString(input, "text/html");
+    // Give block-level elements a newline so paragraphs stay separated.
+    doc.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, br, tr, div").forEach((el) => {
+      el.insertAdjacentText("afterend", "\n");
+    });
+    return (doc.body.textContent ?? "").replace(/\n{3,}/g, "\n\n").trim();
+  } catch {
+    return input.replace(/<[^>]+>/g, " ").replace(/\s{2,}/g, " ").trim();
+  }
+}
+
 // Plain-text helpers ──────────────────────────────────────────────────────────
 
 function stripInline(s: string): string {
@@ -254,7 +272,7 @@ function Waveform({ playing, loading }: { playing: boolean; loading: boolean }) 
 // ─── Main component ───────────────────────────────────────────────────────────
 
 export default function LessonAudioPlayer({ text, lessonTitle, onClose, onPlayingChange }: Props) {
-  const sections = useRef<Section[]>(parseSections(text));
+  const sections = useRef<Section[]>(parseSections(htmlToPlain(text)));
   const total = sections.current.length;
   const useSegmented = total <= 20;
 
