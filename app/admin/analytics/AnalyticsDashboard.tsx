@@ -147,14 +147,14 @@ export default function AnalyticsDashboard({
   }));
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-4 md:space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Analytics</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">Platform-wide insights</p>
       </div>
 
       {/* Primary stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {statCards.map(({ label, value, icon: Icon, color, sub }, i) => (
           <motion.div
             key={label}
@@ -164,33 +164,33 @@ export default function AnalyticsDashboard({
             className="stat-card"
           >
             <div className={`stat-icon ${color}`}>
-              <Icon className="w-5 h-5" />
+              <Icon className="w-4 h-4 md:w-5 md:h-5" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{value}</p>
-              <p className="text-muted-foreground/70 text-xs">{label}</p>
-              {sub && <p className="text-muted-foreground/50 text-[11px] mt-0.5">{sub}</p>}
+            <div className="min-w-0">
+              <p className="text-base md:text-2xl font-bold text-foreground leading-tight truncate">{value}</p>
+              <p className="text-muted-foreground/70 text-[10px] md:text-xs leading-snug">{label}</p>
+              {sub && <p className="text-muted-foreground/50 text-[10px] mt-0.5 leading-tight hidden sm:block">{sub}</p>}
             </div>
           </motion.div>
         ))}
       </div>
 
       {/* Engagement cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
         {engagementCards.map(({ label, value, icon: Icon, color }, i) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 + i * 0.06 }}
-            className="glass p-4 flex items-center gap-4"
+            className="glass p-3 md:p-4 flex flex-col items-center text-center gap-1.5 sm:flex-row sm:text-left sm:gap-3 md:gap-4"
           >
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
-              <Icon className="w-5 h-5" />
+            <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
+              <Icon className="w-4 h-4 md:w-5 md:h-5" />
             </div>
-            <div>
-              <p className="text-xl font-bold text-foreground">{value}</p>
-              <p className="text-muted-foreground/70 text-xs">{label}</p>
+            <div className="min-w-0">
+              <p className="text-lg md:text-xl font-bold text-foreground">{value}</p>
+              <p className="text-muted-foreground/70 text-[10px] sm:text-[11px] md:text-xs leading-tight">{label}</p>
             </div>
           </motion.div>
         ))}
@@ -209,10 +209,10 @@ export default function AnalyticsDashboard({
 
         {/* Revenue trend */}
         <TabsContent value="revenue">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">Monthly Revenue</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
-            <ResponsiveContainer width="100%" height={280}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">Monthly Revenue</h3>
+            <p className="text-muted-foreground/60 text-xs mb-3 md:mb-4">Last 6 months</p>
+            <ResponsiveContainer width="100%" height={220} minHeight={180}>
               <AreaChart data={revenue}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
@@ -241,10 +241,10 @@ export default function AnalyticsDashboard({
 
         {/* Enrollments trend */}
         <TabsContent value="enrollments">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">Monthly Enrollments vs Revenue</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
-            <ResponsiveContainer width="100%" height={280}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">Monthly Enrollments vs Revenue</h3>
+            <p className="text-muted-foreground/60 text-xs mb-3 md:mb-4">Last 6 months</p>
+            <ResponsiveContainer width="100%" height={220} minHeight={180}>
               <LineChart data={combinedTrend}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
                 <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -298,10 +298,10 @@ export default function AnalyticsDashboard({
 
         {/* User growth */}
         <TabsContent value="users">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">New User Signups</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
-            <ResponsiveContainer width="100%" height={280}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">New User Signups</h3>
+            <p className="text-muted-foreground/60 text-xs mb-3 md:mb-4">Last 6 months</p>
+            <ResponsiveContainer width="100%" height={220} minHeight={180}>
               <BarChart data={userGrowth}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
                 <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
@@ -319,16 +319,17 @@ export default function AnalyticsDashboard({
 
         {/* Course completion rates */}
         <TabsContent value="completion">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">Course Completion Rates</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Top courses by enrollment</p>
-            <ResponsiveContainer width="100%" height={Math.max(300, courseCompletionStats.length * 46)}>
-              <BarChart data={courseCompletionStats} layout="vertical" margin={{ left: 12, right: 24 }}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">Course Completion Rates</h3>
+            <p className="text-muted-foreground/60 text-xs mb-3 md:mb-4">Top courses by enrollment</p>
+            <div className="overflow-x-auto">
+            <ResponsiveContainer width="100%" height={Math.max(260, courseCompletionStats.length * 40)}>
+              <BarChart data={courseCompletionStats} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" horizontal={false} />
                 <XAxis
                   type="number"
                   domain={[0, 100]}
-                  tick={{ fill: tickColor, fontSize: 12 }}
+                  tick={{ fill: tickColor, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
                   tickFormatter={(v) => `${v}%`}
@@ -336,10 +337,10 @@ export default function AnalyticsDashboard({
                 <YAxis
                   type="category"
                   dataKey="title"
-                  tick={{ fill: tickColor, fontSize: 11 }}
+                  tick={{ fill: tickColor, fontSize: 10 }}
                   axisLine={false}
                   tickLine={false}
-                  width={110}
+                  width={90}
                 />
                 <Tooltip
                   {...tooltipStyle}
@@ -358,30 +359,31 @@ export default function AnalyticsDashboard({
                 </Bar>
               </BarChart>
             </ResponsiveContainer>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid md:grid-cols-2 gap-3 md:gap-4">
         {/* Top Courses */}
-        <div className="glass p-4">
-          <h3 className="text-foreground font-semibold mb-3">Top Courses</h3>
-          <div className="space-y-4">
+        <div className="glass p-3 md:p-4">
+          <h3 className="text-foreground font-semibold mb-3 text-sm md:text-base">Top Courses</h3>
+          <div className="space-y-3 md:space-y-4">
             {topCourses.map((c, i) => (
-              <div key={c.id} className="flex items-center gap-3">
+              <div key={c.id} className="flex items-center gap-2 md:gap-3">
                 <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground text-sm font-medium truncate">{c.title}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-muted-foreground/60 text-xs">{c.enrollments} students</span>
-                    <span className="text-emerald-400 text-xs font-medium">
+                  <p className="text-foreground text-xs md:text-sm font-medium truncate">{c.title}</p>
+                  <div className="flex items-center gap-2 md:gap-3 mt-0.5">
+                    <span className="text-muted-foreground/60 text-[11px] md:text-xs">{c.enrollments} students</span>
+                    <span className="text-emerald-400 text-[11px] md:text-xs font-medium">
                       ₹{c.revenue.toLocaleString("en-IN")}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-amber-400 text-xs flex-shrink-0">
+                <div className="flex items-center gap-0.5 text-amber-400 text-xs flex-shrink-0">
                   <Star className="w-3 h-3 fill-current" />
                   {c.avgRating || "—"}
                 </div>
@@ -391,27 +393,27 @@ export default function AnalyticsDashboard({
         </div>
 
         {/* Recent Orders */}
-        <div className="glass p-4">
-          <h3 className="text-foreground font-semibold mb-3">Recent Orders</h3>
-          <div className="space-y-3">
+        <div className="glass p-3 md:p-4">
+          <h3 className="text-foreground font-semibold mb-3 text-sm md:text-base">Recent Orders</h3>
+          <div className="space-y-2 md:space-y-3">
             {recentOrders.map((o) => (
-              <div key={o.id} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-xs font-semibold text-muted-foreground">
+              <div key={o.id} className="flex items-center gap-2 md:gap-3">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-xs font-semibold text-muted-foreground">
                   {o.user?.name?.charAt(0)?.toUpperCase() ?? "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground text-sm font-medium truncate">
+                  <p className="text-foreground text-xs md:text-sm font-medium truncate">
                     {o.user?.name ?? "—"}
                   </p>
-                  <p className="text-muted-foreground/70 text-xs truncate">
+                  <p className="text-muted-foreground/70 text-[10px] md:text-xs truncate">
                     {o.course?.title ?? "Subscription"}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-emerald-400 text-sm font-semibold">
+                  <p className="text-emerald-400 text-xs md:text-sm font-semibold">
                     ₹{Number(o.amount).toLocaleString("en-IN")}
                   </p>
-                  <p className="text-muted-foreground/50 text-xs">
+                  <p className="text-muted-foreground/50 text-[10px] md:text-xs">
                     {format(new Date(o.createdAt), "d MMM")}
                   </p>
                 </div>

@@ -119,8 +119,8 @@ export default function AdminSidebar({ subRole }: { subRole: AdminSubRole }) {
 
   return (
     <>
-      {/* ── Desktop sidebar (unchanged) ─────────────────────────────── */}
-      <aside className="hidden lg:block w-56 flex-shrink-0 self-start sticky top-16 mt-3">
+      {/* ── Desktop sidebar ─────────────────────────────────────────── */}
+      <aside className="hidden md:block md:w-48 lg:w-56 flex-shrink-0 self-start sticky top-16">
         <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-1">
             Admin Panel
@@ -135,7 +135,7 @@ export default function AdminSidebar({ subRole }: { subRole: AdminSubRole }) {
       {/* ── Mobile: floating toggle button ──────────────────────────── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 btn-primary p-0 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-6 left-4 z-40 w-12 h-12 btn-primary p-0 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open admin menu"
       >
         <Menu className="w-5 h-5" />
@@ -143,7 +143,7 @@ export default function AdminSidebar({ subRole }: { subRole: AdminSubRole }) {
 
       {/* ── Mobile: slide-out drawer + backdrop ─────────────────────── */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
+        <div className="md:hidden fixed inset-0 z-50">
           {/* Backdrop */}
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"

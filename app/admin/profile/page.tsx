@@ -39,7 +39,7 @@ export default async function AdminProfilePage() {
   return (
     <div>
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-foreground">Profile & Settings</h1>
+        <h1 className="text-xl sm:text-3xl font-bold text-foreground">Profile & Settings</h1>
         <p className="text-muted-foreground/70 text-sm mt-1">
           Manage your admin account details and preferences
         </p>

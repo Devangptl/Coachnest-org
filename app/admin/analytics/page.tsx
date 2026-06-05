@@ -17,18 +17,23 @@ import {
 
 const AnalyticsDashboard = dynamic(() => import("./AnalyticsDashboard"), {
   loading: () => (
-    <div className="space-y-6 animate-pulse">
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4 animate-pulse">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className="h-28 rounded-lg bg-secondary" />
+          <div key={i} className="h-20 md:h-24 rounded-lg bg-secondary" />
         ))}
       </div>
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
         {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-20 rounded-lg bg-secondary" />
+          <div key={i} className="h-16 md:h-20 rounded-lg bg-secondary" />
         ))}
       </div>
-      <div className="h-80 rounded-lg bg-secondary" />
+      <div className="h-12 w-64 rounded-lg bg-secondary" />
+      <div className="h-64 md:h-72 rounded-lg bg-secondary" />
+      <div className="grid md:grid-cols-2 gap-3">
+        <div className="h-52 rounded-lg bg-secondary" />
+        <div className="h-52 rounded-lg bg-secondary" />
+      </div>
     </div>
   ),
 });

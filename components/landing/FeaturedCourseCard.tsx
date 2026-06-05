@@ -44,7 +44,7 @@ export default function FeaturedCourseCard({
       className="group flex items-center gap-3 p-3 rounded-xl bg-card border border-border hover:border-[#ea580c]/35 hover:bg-card/80 transition-all duration-200"
     >
       {/* Thumbnail */}
-      <div className="relative w-[72px] h-[54px] sm:w-[80px] sm:h-[60px] flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
+      <div className="relative w-[72px] h-[54px] sm:w-[80px] sm:h-[60px] md:w-[96px] md:h-[72px] flex-shrink-0 rounded-lg overflow-hidden bg-secondary">
         {thumbnail ? (
           <Image
             src={thumbnail}
@@ -61,7 +61,7 @@ export default function FeaturedCourseCard({
 
       {/* Content */}
       <div className="flex-1 min-w-0 flex flex-col gap-1">
-        <h3 className="text-[13px] sm:text-sm font-medium text-foreground leading-snug line-clamp-1 group-hover:text-[#ea580c] transition-colors duration-150">
+        <h3 className="text-[13px] sm:text-sm md:text-base font-medium text-foreground leading-snug line-clamp-1 group-hover:text-[#ea580c] transition-colors duration-150">
           {title}
         </h3>
 

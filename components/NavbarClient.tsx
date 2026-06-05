@@ -170,7 +170,7 @@ export default function NavbarClient({ session }: Props) {
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 lg:px-7 py-1.5">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 md:px-6 lg:px-7 py-1.5">
       <div
         className={cn(
           "mx-auto flex items-center justify-between rounded-lg px-3 sm:px-5 py-1.5 transition-all duration-300 border",
@@ -190,7 +190,7 @@ export default function NavbarClient({ session }: Props) {
           <button
             onClick={() => setSearchOpen(true)}
             className={cn(
-              "hidden lg:flex items-center gap-2 rounded-lg transition-all duration-200 px-2.5 py-1.5",
+              "hidden md:flex items-center gap-2 rounded-lg transition-all duration-200 px-2.5 py-1.5",
               "bg-secondary/20  border border-border text-muted-foreground hover:text-foreground"
             )}
             aria-label="Search"
@@ -204,14 +204,14 @@ export default function NavbarClient({ session }: Props) {
 
           {/* Theme toggle — desktop, only when NOT logged in */}
           {!session && (
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <ThemeToggle />
             </div>
           )}
 
           {session ? (
             <>
-              <div className="hidden lg:block">
+              <div className="hidden md:block">
                 <NotificationBell userId={session.userId} role={session.role} />
               </div>
 
@@ -397,7 +397,7 @@ export default function NavbarClient({ session }: Props) {
               </div>
             </>
           ) : (
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/login"
                 className="text-muted-foreground hover:text-foreground text-sm px-3.5 py-2 rounded-lg hover:bg-secondary transition-all"
@@ -416,7 +416,7 @@ export default function NavbarClient({ session }: Props) {
           {/* Mobile search icon */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -426,7 +426,7 @@ export default function NavbarClient({ session }: Props) {
           {!session && (
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
               aria-label="Toggle menu"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -443,7 +443,7 @@ export default function NavbarClient({ session }: Props) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="lg:hidden mx-auto mt-2 overflow-hidden"
+            className="md:hidden mx-auto mt-2 overflow-hidden"
           >
             <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/50 p-4 space-y-1">
               {session && (

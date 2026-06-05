@@ -15,7 +15,7 @@ export default function AdminPayoutsPage() {
           <Wallet className="w-5 h-5 text-[#d97757]" />
         </div>
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Payout Requests</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Payout Requests</h1>
           <p className="text-muted-foreground/70 text-sm mt-0.5">
             Review and process instructor payout requests.
           </p>

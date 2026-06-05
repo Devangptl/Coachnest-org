@@ -104,7 +104,7 @@ export default function InstructorSidebar({ userId }: { userId?: string }) {
   return (
     <>
       {/* Desktop */}
-      <aside className="hidden lg:block w-56 flex-shrink-0 self-start sticky top-16 pt-6">
+      <aside className="hidden md:block md:w-48 lg:w-56 flex-shrink-0 self-start sticky top-16">
         <div className="bg-card border border-border rounded-lg p-3 shadow-glass max-h-[calc(100vh-6rem)] overflow-y-auto">
           <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-2 mb-2">
             Instructor Panel
@@ -116,7 +116,7 @@ export default function InstructorSidebar({ userId }: { userId?: string }) {
       {/* Mobile FAB */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-md bg-gradient-to-br from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="md:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-md bg-gradient-to-br from-amber-600 to-amber-500 text-white shadow-lg shadow-amber-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open instructor menu"
       >
         <Menu className="w-5 h-5" />
@@ -124,7 +124,7 @@ export default function InstructorSidebar({ userId }: { userId?: string }) {
 
       {/* Mobile drawer */}
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
+        <div className="md:hidden fixed inset-0 z-50">
           <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setMobileOpen(false)} />
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-card border-r border-border shadow-2xl shadow-black/60 p-5 overflow-y-auto animate-slide-in">
             <div className="flex items-center justify-between mb-5">

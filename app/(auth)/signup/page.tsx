@@ -104,7 +104,7 @@ export default function SignupPage() {
       {/* ══════════════════════════════════════════════════════════════════
           LEFT — brand panel (no background — inherits app bg)
       ══════════════════════════════════════════════════════════════════ */}
-      <aside className="hidden lg:flex lg:w-[30%] xl:w-[33%] flex-col overflow-hidden">
+      <aside className="hidden md:flex md:w-[28%] lg:w-[30%] xl:w-[33%] flex-col overflow-hidden">
 
         <div className="flex flex-col items-center justify-center h-full px-10 py-9">
           {/* Logo */}
@@ -116,12 +116,12 @@ export default function SignupPage() {
           RIGHT — form panel
       ══════════════════════════════════════════════════════════════════ */}
       <main className="flex-1 flex flex-col items-center justify-center
-                       px-6 sm:px-10 py-10 bg-background overflow-y-auto">
-        <div className="lg:hidden mb-8">
+                       px-6 sm:px-8 md:px-10 py-10 bg-background overflow-y-auto">
+        <div className="md:hidden mb-8">
           <Link href="/"><img src="/logo.png" alt="Coachnest" className="h-6 w-auto object-contain mx-auto" /></Link>
         </div>
 
-        <div className="w-full max-w-[420px] animate-fade-in">
+        <div className="w-full max-w-[380px] sm:max-w-[420px] md:max-w-[460px] animate-fade-in">
           <div className="mb-7">
             <h1 className="text-2xl font-bold text-foreground mb-1.5 tracking-tight">
               Create your account

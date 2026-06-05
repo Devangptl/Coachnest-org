@@ -133,7 +133,7 @@ export default function InstructorEarningsPage() {
       </div>
 
       {/* ── Wallet cards ──────────────────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 md:gap-4">
         {[
           { label: "Available Balance", value: wallet.balance,        icon: Wallet,        color: "text-[#d97757]",  bg: "bg-orange-500/10"  },
           { label: "Total Earned",      value: wallet.totalEarned,    icon: TrendingUp,    color: "text-emerald-400", bg: "bg-emerald-500/10" },
@@ -141,15 +141,15 @@ export default function InstructorEarningsPage() {
           { label: "Total Sales",       value: summary.totalOrders,   icon: ShoppingBag,   color: "text-violet-400",  bg: "bg-violet-500/10", isCount: true },
           { label: `Refund Loss (${refundCount})`, value: totalRefundLoss, icon: TrendingDown, color: "text-red-400", bg: "bg-red-500/10" },
         ].map(({ label, value, icon: Icon, color, bg, isCount }) => (
-          <GlassCard key={label} className="flex items-center gap-3">
-            <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0", bg)}>
-              <Icon className={cn("w-5 h-5", color)} />
+          <GlassCard key={label} className="flex items-center gap-3 py-3 md:py-4">
+            <div className={cn("w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0", bg)}>
+              <Icon className={cn("w-4 h-4 md:w-5 md:h-5", color)} />
             </div>
             <div className="min-w-0">
-              <div className="text-xl font-bold text-foreground">
+              <div className="text-base md:text-xl font-bold text-foreground leading-tight">
                 {isCount ? value : `₹${Number(value).toLocaleString()}`}
               </div>
-              <div className="text-xs text-muted-foreground truncate">{label}</div>
+              <div className="text-[10px] md:text-xs text-muted-foreground truncate leading-snug">{label}</div>
             </div>
           </GlassCard>
         ))}
@@ -173,7 +173,7 @@ export default function InstructorEarningsPage() {
       </GlassCard>
 
       {/* ── Monthly chart + Source breakdown ──────────────────────────────── */}
-      <div className="grid lg:grid-cols-2 gap-6">
+      <div className="grid md:grid-cols-2 gap-6">
         <GlassCard>
           <h2 className="text-base font-semibold text-foreground mb-4">Monthly Earnings</h2>
           <MonthlyChart data={monthly} />
@@ -213,7 +213,7 @@ export default function InstructorEarningsPage() {
 
       {/* ── Refund Impact ─────────────────────────────────────────────────── */}
       {refundImpact && refundImpact.summary.count > 0 && (
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {/* Per-course refund breakdown */}
           <GlassCard>
             <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">

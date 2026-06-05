@@ -87,9 +87,9 @@ export default async function AdminQuizzesPage({
 
   return (
     <div>
-      <div className="mb-8 flex items-center justify-between">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Quizzes & Assessments</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Quizzes & Assessments</h1>
           <p className="text-muted-foreground mt-1">
             Manage quizzes and track student performance across courses.
           </p>
@@ -100,7 +100,7 @@ export default async function AdminQuizzesPage({
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 mb-10">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4 mb-10">
         {[
           { label: "Total Quizzes", value: totalQuizzes, icon: HelpCircle, color: "text-blue-400" },
           { label: "Total Attempts", value: totalAttempts, icon: Users, color: "text-[#d97757]" },
@@ -108,13 +108,13 @@ export default async function AdminQuizzesPage({
         ].map((stat) => {
           const Icon = stat.icon;
           return (
-            <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-                <Icon className={`w-6 h-6 ${stat.color}`} />
+            <GlassCard key={stat.label} className="flex flex-col items-center text-center gap-2 sm:flex-row sm:text-left sm:gap-3 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
+                <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
               </div>
-              <div>
-                <div className="text-3xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-muted-foreground text-sm">{stat.label}</div>
+              <div className="min-w-0">
+                <div className="text-xl md:text-3xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-muted-foreground text-[10px] sm:text-xs md:text-sm leading-tight">{stat.label}</div>
               </div>
             </GlassCard>
           );

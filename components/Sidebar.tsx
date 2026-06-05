@@ -24,8 +24,8 @@ export default function Sidebar({ items, title }: SidebarProps) {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 flex-shrink-0">
-      <div className="sticky top-24 bg-card border border-border rounded-lg p-4 shadow-xl">
+    <aside className="w-56 md:w-64 flex-shrink-0">
+      <div className="sticky top-20 md:top-24 bg-card border border-border rounded-lg p-4 shadow-xl">
         {title && (
           <p className="text-muted-foreground/70 text-xs font-semibold uppercase tracking-widest px-3 mb-3">
             {title}

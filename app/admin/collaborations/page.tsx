@@ -70,9 +70,9 @@ export default async function AdminCollaborationsPage() {
 
   return (
     <div className="space-y-6">
-      <header className="flex items-center justify-between">
+      <header className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Course Collaborations</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Course Collaborations</h1>
           <p className="text-muted-foreground text-sm mt-1">
             Courses with more than one instructor — owners, revenue splits, and payouts.
           </p>
@@ -124,7 +124,8 @@ export default async function AdminCollaborationsPage() {
                   </Link>
                 </div>
 
-                <table className="w-full text-sm">
+                <div className="overflow-x-auto">
+                <table className="w-full text-sm min-w-[560px]">
                   <thead>
                     <tr className="text-[11px] uppercase tracking-wider text-muted-foreground bg-secondary/40">
                       <th className="text-left font-medium px-5 py-2">Collaborator</th>
@@ -181,6 +182,7 @@ export default async function AdminCollaborationsPage() {
                     })}
                   </tbody>
                 </table>
+                </div>
               </div>
             );
           })}

@@ -23,10 +23,10 @@ export default async function InstructorLayout({ children }: { children: React.R
   const showSidebar = session.role !== "STUDENT";
 
   return (
-    <div className="pb-4">
-      <div className="flex flex-col lg:flex-row lg:gap-4 lg:min-h-[calc(100vh-4rem)]">
+    <div className="py-4">
+      <div className="flex flex-col md:flex-row md:gap-4 md:min-h-[calc(100vh-4rem)]">
         {showSidebar && <InstructorSidebar userId={session.userId} />}
-        <div className="flex-1 min-w-0 animate-fade-in pt-3">{children}</div>
+        <div className="flex-1 min-w-0 animate-fade-in pt-3 md:pt-0">{children}</div>
       </div>
     </div>
   );

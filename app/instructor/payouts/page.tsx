@@ -173,15 +173,22 @@ export default function PayoutsPage() {
       </div>
 
       {/* Wallet summary */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
         {[
-          { label: "Available Balance",  value: wallet?.balance        ?? 0, color: "text-[#d97757]"  },
-          { label: "Total Earned",       value: wallet?.totalEarned    ?? 0, color: "text-emerald-400" },
-          { label: "Total Withdrawn",    value: wallet?.totalWithdrawn ?? 0, color: "text-blue-400"    },
-        ].map(({ label, value, color }) => (
-          <GlassCard key={label} className="text-center py-4">
-            <div className={cn("text-2xl font-bold", color)}>₹{value.toLocaleString()}</div>
-            <div className="text-xs text-muted-foreground mt-1">{label}</div>
+          { label: "Available Balance",  value: wallet?.balance        ?? 0, color: "text-[#d97757]",   bg: "bg-orange-500/10",   icon: Wallet          },
+          { label: "Total Earned",       value: wallet?.totalEarned    ?? 0, color: "text-emerald-400", bg: "bg-emerald-500/10",   icon: ArrowDownToLine },
+          { label: "Total Withdrawn",    value: wallet?.totalWithdrawn ?? 0, color: "text-blue-400",    bg: "bg-blue-500/10",      icon: ArrowDownToLine },
+        ].map(({ label, value, color, bg, icon: Icon }) => (
+          <GlassCard key={label} className="flex sm:flex-col items-center sm:items-center gap-4 sm:gap-2 py-4 sm:py-6 px-4 sm:px-4 sm:text-center">
+            <div className={cn("w-10 h-10 sm:w-12 sm:h-12 rounded-xl flex items-center justify-center flex-shrink-0", bg)}>
+              <Icon className={cn("w-5 h-5 sm:w-6 sm:h-6", color)} />
+            </div>
+            <div className="min-w-0 sm:mt-1">
+              <div className={cn("text-2xl sm:text-xl md:text-2xl lg:text-3xl font-bold leading-tight", color)}>
+                ₹{value.toLocaleString()}
+              </div>
+              <div className="text-xs sm:text-[11px] text-muted-foreground mt-0.5 leading-snug">{label}</div>
+            </div>
           </GlassCard>
         ))}
       </div>
@@ -201,7 +208,7 @@ export default function PayoutsPage() {
 
       {/* ── PAYOUT TAB ───────────────────────────────────────────────────── */}
       {tab === "payouts" && (
-        <div className="grid lg:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-6">
           {/* Request form */}
           <GlassCard>
             <h2 className="text-base font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -335,7 +342,7 @@ export default function PayoutsPage() {
             )}
             {links.map((l) => (
               <GlassCard key={l.id} className={cn(!l.isActive && "opacity-50")}>
-                <div className="flex items-start justify-between gap-4 flex-wrap">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-4">
                   <div className="min-w-0">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
                       <span className="text-sm font-semibold text-foreground">{l.label ?? l.code}</span>
@@ -359,18 +366,18 @@ export default function PayoutsPage() {
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-6 flex-shrink-0 text-center">
+                  <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 text-center mt-2 sm:mt-0">
                     <div>
-                      <div className="text-base font-bold text-foreground">{l.totalClicks}</div>
-                      <div className="text-xs text-muted-foreground">Clicks</div>
+                      <div className="text-sm sm:text-base font-bold text-foreground">{l.totalClicks}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">Clicks</div>
                     </div>
                     <div>
-                      <div className="text-base font-bold text-emerald-400">{l.conversions}</div>
-                      <div className="text-xs text-muted-foreground">Sales</div>
+                      <div className="text-sm sm:text-base font-bold text-emerald-400">{l.conversions}</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">Sales</div>
                     </div>
                     <div>
-                      <div className="text-base font-bold text-[#d97757]">{l.conversionRate}%</div>
-                      <div className="text-xs text-muted-foreground">CVR</div>
+                      <div className="text-sm sm:text-base font-bold text-[#d97757]">{l.conversionRate}%</div>
+                      <div className="text-[10px] sm:text-xs text-muted-foreground">CVR</div>
                     </div>
                     {l.isActive && (
                       <button onClick={() => handleDeleteLink(l.id)}

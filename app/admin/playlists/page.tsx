@@ -33,8 +33,8 @@ export default async function AdminPlaylistsPage() {
           <p className="text-muted-foreground">No course lists yet.</p>
         </div>
       ) : (
-        <div className="glass rounded-xl overflow-hidden">
-          <table className="w-full text-sm">
+        <div className="glass rounded-xl overflow-x-auto">
+          <table className="w-full text-sm min-w-[560px]">
             <thead className="bg-secondary/50 text-left text-xs uppercase text-muted-foreground">
               <tr>
                 <th className="px-4 py-3 font-semibold">Title</th>

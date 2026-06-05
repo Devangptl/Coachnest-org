@@ -74,7 +74,7 @@ export default function LoginPage() {
       {/* ══════════════════════════════════════════════════════════════════
           LEFT — brand panel (no background — inherits app bg)
       ══════════════════════════════════════════════════════════════════ */}
-      <aside className="hidden lg:flex lg:w-[30%] xl:w-[33%] flex-col overflow-hidden">
+      <aside className="hidden md:flex md:w-[28%] lg:w-[30%] xl:w-[33%] flex-col overflow-hidden">
 
         <div className="flex flex-col items-center justify-center h-full px-10 py-9">
 
@@ -86,12 +86,12 @@ export default function LoginPage() {
       {/* ══════════════════════════════════════════════════════════════════
           RIGHT — form panel
       ══════════════════════════════════════════════════════════════════ */}
-      <main className="flex-1 flex flex-col items-center justify-center px-6 sm:px-10 py-12 bg-background">
-        <div className="lg:hidden mb-8">
+      <main className="flex-1 flex flex-col items-center justify-center px-6 sm:px-8 md:px-10 py-12 bg-background">
+        <div className="md:hidden mb-8">
           <Link href="/"><img src="/logo.png" alt="Coachnest" className="h-6 w-auto object-contain mx-auto" /></Link>
         </div>
 
-        <div className="w-full max-w-[400px] animate-fade-in">
+        <div className="w-full max-w-[360px] sm:max-w-[400px] md:max-w-[440px] animate-fade-in">
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-foreground mb-1.5 tracking-tight">Welcome back</h1>
             <p className="text-muted-foreground text-sm">Sign in to continue your learning journey</p>

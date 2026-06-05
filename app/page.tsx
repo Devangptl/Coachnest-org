@@ -328,7 +328,7 @@ export default async function HomePage() {
         {/* <div aria-hidden="true" className="pointer-events-none absolute top-28 left-6 w-12 h-12 border-l border-t border-orange-500/30" />
         <div aria-hidden="true" className="pointer-events-none absolute top-28 right-6 w-12 h-12 border-r border-t border-orange-500/30" /> */}
 
-        <div className="mx-auto w-full relative z-10 px-4 sm:px-6 lg:px-8 pt-10 sm:pt-14 lg:pt-20 pb-12 lg:pb-20">
+        <div className="mx-auto w-full relative z-10 px-4 sm:px-6 md:px-7 lg:px-8 pt-10 sm:pt-12 md:pt-16 lg:pt-20 pb-12 lg:pb-20">
           <div className="text-center">
 
             {/* ── LEFT COLUMN — Copy + CTA ──────────────────────────── */}
@@ -351,7 +351,7 @@ export default async function HomePage() {
 
               {/* Headline */}
               <FadeInSection delay={0.06}>
-                <h1 className="text-[32px] sm:text-[48px] lg:text-[58px] font-hero leading-[1.1] mb-6">
+                <h1 className="text-[28px] sm:text-[40px] md:text-[48px] lg:text-[58px] font-hero leading-[1.1] mb-6">
                   <span className="text-foreground">Learn from the best.</span>
                   <br />
                   <span className="text-foreground">Build an extraordinary </span>
@@ -379,7 +379,7 @@ export default async function HomePage() {
 
               {/* Sub-headline */}
               <FadeInSection delay={0.12}>
-                <p className="text-muted-foreground text-base sm:text-lg max-w-xl lg:max-w-4xl mx-auto mb-9 leading-relaxed">
+                <p className="text-muted-foreground text-base sm:text-lg max-w-lg md:max-w-2xl lg:max-w-4xl mx-auto mb-9 leading-relaxed">
                   Expert-crafted courses, interactive quizzes, progress tracking and
                   verified certificates — everything you need to level up, in one
                   beautifully simple platform.
@@ -514,7 +514,7 @@ export default async function HomePage() {
             </div>
           </FadeInSection>
 
-          <StaggerChildren className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" staggerDelay={0.08}>
+          <StaggerChildren className="grid sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6" staggerDelay={0.08}>
             {[
               {
                 icon: BookOpen,
@@ -599,7 +599,7 @@ export default async function HomePage() {
             </div>
           </FadeInSection>
 
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5 md:gap-6">
             {[
               {
                 step: "01",
@@ -702,7 +702,7 @@ export default async function HomePage() {
             </FadeInSection>
 
             {/* Course Grid */}
-            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3" staggerDelay={0.05}>
+            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4" staggerDelay={0.05}>
               {courses.map((course) => {
                 const avg = course.reviews.length
                   ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
@@ -747,7 +747,7 @@ export default async function HomePage() {
       <section className="py-24  relative">
         <div className="mx-auto">
           <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
               {[
                 { end: Math.max(stats.courseCount, 20), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-[#d97757]" },
                 { end: Math.max(stats.studentCount, 99), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
@@ -775,7 +775,7 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════════════════════════════════════
           LEARNING EXPERIENCE — Split section
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24 px-4 sm:px-6 lg:px-8">
+      <section className="py-24 px-4 sm:px-6 md:px-7 lg:px-8">
         <div className="mx-auto">
           <FadeInSection>
             <div className="text-center mb-16">
@@ -792,7 +792,7 @@ export default async function HomePage() {
               </p>
             </div>
           </FadeInSection>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6 md:gap-8">
             {[
               { title: "Video Lessons", text: "HD video lessons with code-along exercises to master practical skills.", icon: Play, color: "text-[#d97757]", bg: "bg-orange-500/10" },
               { title: "Syntax Highlighting", text: "Rich text lessons with syntax-highlighted code for better readability.", icon: Code, color: "text-blue-400", bg: "bg-blue-500/10" },
@@ -911,7 +911,7 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
       <section className="py-24 ">
         <div className="mx-auto">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
             <FadeInSection direction="right">
               <div className="bg-secondary/50 border border-border rounded-md p-10 relative overflow-hidden">
                 <div className="relative grid grid-cols-2 gap-6">
@@ -1056,7 +1056,7 @@ export default async function HomePage() {
               {/* Top accent bar */}
               <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-primary to-transparent" />
 
-              <div className="px-4 py-14 sm:px-10 sm:py-20 text-center">
+              <div className="px-4 py-12 sm:px-8 sm:py-16 md:px-12 md:py-20 text-center">
                 {/* Badge */}
                 <div className="inline-flex items-center gap-2 bg-primary/10 border border-primary/20 rounded-full px-4 py-1.5 text-sm text-primary font-medium mb-8">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -1064,7 +1064,7 @@ export default async function HomePage() {
                 </div>
 
                 {/* Heading */}
-                <h2 className="text-4xl sm:text-5xl font-bold text-foreground mb-5 leading-tight tracking-tight">
+                <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold text-foreground mb-5 leading-tight tracking-tight">
                   Ready to transform
                   <br className="hidden sm:block" />
                   <span className="text-primary"> your career?</span>

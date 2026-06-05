@@ -68,7 +68,7 @@ export default function AboutPage() {
           </div>
 
           {/* Stats */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-20">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-20">
             {STATS.map((stat) => (
               <div key={stat.label} className="rounded-md border border-white/8 bg-white/[.02] p-6 text-center">
                 <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
@@ -109,7 +109,7 @@ export default function AboutPage() {
           {/* Team */}
           <div className="mb-20">
             <h2 className="text-2xl font-bold text-white mb-8 text-center">The Team</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
               {TEAM.map((member) => (
                 <div key={member.name} className="rounded-md border border-white/8 bg-white/[.02] p-5 text-center">
                   <div className="w-14 h-14 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[#d97757]/70 font-bold text-base mx-auto mb-3">
