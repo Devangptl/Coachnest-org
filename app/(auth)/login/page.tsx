@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   Eye, EyeOff, Loader2, Mail, Lock,
   Star, Users, BookOpen, TrendingUp,
-  ArrowRight, AlertCircle, Award,
+  ArrowRight, AlertCircle, Award, MailCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -34,15 +34,17 @@ const LESSONS: Array<true | "active" | false> = [
 export default function LoginPage() {
   const router = useRouter();
 
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [error,    setError]    = useState("");
-  const [loading,  setLoading]  = useState(false);
+  const [email,            setEmail]            = useState("");
+  const [password,         setPassword]         = useState("");
+  const [showPass,         setShowPass]         = useState(false);
+  const [error,            setError]            = useState("");
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState("");
+  const [loading,          setLoading]          = useState(false);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     setError("");
+    setUnconfirmedEmail("");
     setLoading(true);
     try {
       const res  = await fetch("/api/auth/login", {
@@ -51,7 +53,14 @@ export default function LoginPage() {
         body:    JSON.stringify({ email, password }),
       });
       const data = await res.json();
-      if (!res.ok) { setError(data.error ?? "Login failed."); return; }
+      if (!res.ok) {
+        if (data.error === "email_not_confirmed") {
+          setUnconfirmedEmail(data.email ?? email);
+        } else {
+          setError(data.error ?? "Login failed.");
+        }
+        return;
+      }
       const isPendingInstructor =
         data.role === "INSTRUCTOR" &&
         (data.instructorStatus === "PENDING" || data.instructorStatus === "REJECTED");
@@ -103,6 +112,25 @@ export default function LoginPage() {
                               rounded-lg px-4 py-3 animate-fade-in">
                 <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0 mt-0.5" />
                 <p className="text-red-400 text-sm">{error}</p>
+              </div>
+            )}
+
+            {unconfirmedEmail && (
+              <div className="flex items-start gap-2.5 bg-amber-500/10 border border-amber-500/25
+                              rounded-lg px-4 py-3.5 animate-fade-in">
+                <MailCheck className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-amber-400 text-sm font-medium">Email not confirmed</p>
+                  <p className="text-amber-400/70 text-xs mt-0.5 leading-relaxed">
+                    Please confirm your email before signing in.{" "}
+                    <Link
+                      href={`/confirm-email?email=${encodeURIComponent(unconfirmedEmail)}`}
+                      className="text-amber-400 underline underline-offset-2 hover:text-amber-300 transition-colors"
+                    >
+                      Resend confirmation email
+                    </Link>
+                  </p>
+                </div>
               </div>
             )}
 
