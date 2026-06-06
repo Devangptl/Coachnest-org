@@ -61,9 +61,9 @@ function ConfirmEmailContent() {
         <div className="rounded-md border border-border bg-card p-8 text-center">
 
           {/* Icon */}
-          <div className="w-14 h-14 rounded-full bg-orange-500/10 border border-orange-500/20
+          <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20
                           flex items-center justify-center mx-auto mb-5">
-            <Mail className="w-7 h-7 text-orange-400" />
+            <Mail className="w-7 h-7 text-primary" />
           </div>
 
           <h1 className="text-xl font-bold text-foreground mb-2 tracking-tight">
@@ -95,20 +95,20 @@ function ConfirmEmailContent() {
           <div className="flex items-center mb-6">
             {/* Step 1 — done */}
             <div className="flex flex-col items-center gap-1.5 shrink-0">
-              <div className="w-7 h-7 rounded-full bg-orange-500 border border-orange-600
+              <div className="w-7 h-7 rounded-full bg-primary border border-primary/80
                               flex items-center justify-center">
-                <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />
+                <Check className="w-3.5 h-3.5 text-primary-foreground" strokeWidth={3} />
               </div>
-              <span className="text-[10px] font-medium text-orange-400 whitespace-nowrap">Signed up</span>
+              <span className="text-[10px] font-medium text-primary whitespace-nowrap">Signed up</span>
             </div>
 
-            <div className="flex-1 h-px bg-orange-500/40 mx-2 mb-4" />
+            <div className="flex-1 h-px bg-primary/40 mx-2 mb-4" />
 
             {/* Step 2 — current */}
             <div className="flex flex-col items-center gap-1.5 shrink-0">
-              <div className="w-7 h-7 rounded-full border-2 border-orange-500 bg-orange-500/10
+              <div className="w-7 h-7 rounded-full border-2 border-primary bg-primary/10
                               flex items-center justify-center">
-                <span className="text-[11px] font-bold text-orange-400">2</span>
+                <span className="text-[11px] font-bold text-primary">2</span>
               </div>
               <span className="text-[10px] font-medium text-foreground whitespace-nowrap">Confirm email</span>
             </div>
@@ -175,7 +175,7 @@ function ConfirmEmailContent() {
           Wrong email address?{" "}
           <Link
             href="/signup"
-            className="text-orange-500 hover:text-[#d97757] font-medium transition-colors"
+            className="text-primary hover:text-primary/80 font-medium transition-colors"
           >
             Sign up again
           </Link>
@@ -190,7 +190,7 @@ export default function ConfirmEmailPage() {
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       }
     >
