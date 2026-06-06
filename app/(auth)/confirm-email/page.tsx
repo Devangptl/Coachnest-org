@@ -58,7 +58,7 @@ function ConfirmEmailContent() {
           </Link>
         </div>
 
-        <div className="rounded-md border border-border bg-card p-8 text-center">
+        <div className="p-2 text-center">
 
           {/* Icon */}
           <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20
