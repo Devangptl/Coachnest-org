@@ -1597,8 +1597,16 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   flex-shrink: 0;
 }
 
-/* Toast notification progress bar */
+/* Toast notification animations */
 @keyframes toast-progress {
   from { transform: scaleX(1); }
   to   { transform: scaleX(0); }
+}
+@keyframes toast-enter {
+  0%   { transform: translateY(28px) scale(0.96); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes toast-exit {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  100% { transform: translateY(28px) scale(0.96); opacity: 0; }
 }

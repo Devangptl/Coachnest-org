@@ -2,7 +2,6 @@
 
 import {
   Toaster,
-  ToastBar,
   toast,
   resolveValue,
   type Toast,
@@ -73,6 +72,11 @@ function ToastCard({ t }: { t: Toast }) {
         "dark:bg-[#1c1c1c]/85 dark:border-white/10 dark:text-[#f0f0f0] dark:shadow-2xl dark:backdrop-blur-xl"
       )}
       role={variant === "error" ? "alert" : "status"}
+      style={{
+        animation: t.visible
+          ? "toast-enter 0.35s cubic-bezier(0.21, 1.02, 0.73, 1) both"
+          : "toast-exit 0.3s cubic-bezier(0.06, 0.71, 0.55, 1) forwards",
+      }}
     >
       <span
         className={cn(
@@ -145,14 +149,7 @@ export function ToasterProvider() {
         },
       }}
     >
-      {(t) => (
-        <ToastBar
-          toast={t}
-          style={{ background: "transparent", boxShadow: "none", padding: 0 }}
-        >
-          {() => <ToastCard t={t} />}
-        </ToastBar>
-      )}
+      {(t) => <ToastCard t={t} />}
     </Toaster>
   );
 }
