@@ -9,9 +9,11 @@ const BOTTOM_NAV_PREFIXES = ["/dashboard", "/instructor", "/community"];
 export default function MainWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuth = AUTH_ROUTES.some((r) => pathname.startsWith(r));
+  const isFullScreen = pathname.startsWith("/whiteboards");
   const hasBottomNav = BOTTOM_NAV_PREFIXES.some((p) => pathname.startsWith(p));
 
-  if (isAuth) {
+  // Auth + whiteboard routes render edge-to-edge with no navbar offset/padding.
+  if (isAuth || isFullScreen) {
     return <main className="min-h-screen">{children}</main>;
   }
 

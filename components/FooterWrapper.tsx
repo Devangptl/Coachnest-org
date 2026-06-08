@@ -19,6 +19,7 @@ const HIDE_PREFIXES = [
   "/admin",
   "/dashboard",
   "/instructor",
+  "/whiteboards",
 ];
 
 export default function FooterWrapper({ children }: { children: React.ReactNode }) {
