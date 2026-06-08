@@ -12,10 +12,11 @@
 import "server-only";
 import { prisma } from "@/lib/prisma";
 import type { SessionPayload } from "@/lib/auth";
-import type { WhiteboardRole } from "@/types/whiteboard";
+import type { WhiteboardRole, WhiteboardScope } from "@/types/whiteboard";
 
 export interface WhiteboardAccessContext {
   ownerId: string;
+  scope: WhiteboardScope;
   defaultRole: WhiteboardRole;
   classId: string | null;
   courseId: string | null;
@@ -53,6 +54,10 @@ export async function resolveWhiteboardRole(
 
   const explicit = wb.collaborators.find((c) => c.userId === session.userId);
   let role: WhiteboardRole | null = explicit?.role ?? null;
+
+  // Personal note boards are private: access only via ownership / explicit
+  // collaborators, never inherited from the surrounding course/class.
+  if (wb.scope === "STUDENT_NOTE") return role;
 
   const contextRole = await resolveContextRole(session.userId, wb);
   role = stronger(role, contextRole);

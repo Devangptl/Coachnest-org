@@ -21,6 +21,7 @@ export default async function WhiteboardPage({
 
   const role = await resolveWhiteboardRole(session, {
     ownerId: board.ownerId,
+    scope: board.scope,
     defaultRole: board.defaultRole,
     classId: board.classId,
     courseId: board.courseId,

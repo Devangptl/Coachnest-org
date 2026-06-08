@@ -35,6 +35,7 @@ const SCOPE_TITLES: Record<WhiteboardScope, string> = {
 
 const accessSelect = {
   ownerId: true,
+  scope: true,
   defaultRole: true,
   classId: true,
   courseId: true,
@@ -114,8 +115,12 @@ export async function getOrCreateContextWhiteboard(opts: {
   studyGroupId?: string | null;
   defaultRole?: WhiteboardRole;
   title?: string;
+  // For per-user boards (e.g. personal lesson notes), scope the lookup to the
+  // owner so each user gets their own board on the same context.
+  matchOwner?: boolean;
 }) {
   const where: Prisma.WhiteboardWhereInput = { scope: opts.scope };
+  if (opts.matchOwner) where.ownerId = opts.ownerId;
   if (opts.classId) where.classId = opts.classId;
   if (opts.courseId) where.courseId = opts.courseId;
   if (opts.lessonId) where.lessonId = opts.lessonId;

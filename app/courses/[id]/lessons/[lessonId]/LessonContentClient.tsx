@@ -12,6 +12,7 @@ import {
 import { cn } from "@/lib/utils";
 import { gujaratiFontClass } from "@/lib/gujarati-font";
 import QuizPlayer from "@/components/QuizPlayer";
+import LessonWhiteboard from "@/components/whiteboard/LessonWhiteboard";
 import TextHighlighter from "@/components/TextHighlighter";
 import LessonAudioPlayer from "@/components/LessonAudioPlayer";
 import MarkdownRenderer from "@/components/MarkdownRenderer";
@@ -423,6 +424,9 @@ export default function LessonContentClient({ courseId, lesson, lessonIndex, tot
           </div>
         )}
       </div>
+
+      {/* ── Lesson whiteboard (enrolled learners) ────────────────────────── */}
+      {isEnrolled && <LessonWhiteboard lessonId={lesson.id} />}
 
       {/* ── Prev / Next navigation ────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5 sm:gap-3 mt-5 sm:mt-8 pt-4 sm:pt-6 border-t border-border">
