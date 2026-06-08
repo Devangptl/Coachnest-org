@@ -42,7 +42,7 @@ export default function PrivacyPolicyPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Privacy Policy</h1>
-                <p className="text-white/30 text-sm mt-0.5">Last updated: April 19, 2026</p>
+                <p className="text-white/30 text-sm mt-0.5">Last updated: June 8, 2026</p>
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
@@ -84,6 +84,8 @@ export default function PrivacyPolicyPage() {
                 <SubHeading>Learning Activity</SubHeading>
                 <p>We record course enrollments, lesson completion, quiz scores, certificates earned, and time spent on the platform to power your learning dashboard and personalised recommendations.</p>
                 <p>We also track gamification activity — XP (experience points) earned from lessons and quizzes, badges awarded, daily and weekly learning streaks, and your position on the platform leaderboard. Community engagement is recorded as well, including forum posts, upvotes given and received, study group participation, shared notes, and peer review submissions and scores. This information powers your progress display, computes rankings, and surfaces relevant content.</p>
+                <SubHeading>Real-Time Activity</SubHeading>
+                <p>Features such as the live activity feed and community notifications use Supabase Realtime channels. Your display name and activity events (e.g., course completion, forum post) may be broadcast to other connected users in real time as part of the platform&apos;s social features.</p>
                 <SubHeading>Usage Data</SubHeading>
                 <p>We automatically collect log data including IP address, browser type, pages visited, and referring URLs. This data is aggregated and used for analytics and platform improvement.</p>
               </Section>
@@ -106,7 +108,7 @@ export default function PrivacyPolicyPage() {
               <Section id="sharing" title="3. Sharing Your Information">
                 <p>We share data only in the following circumstances:</p>
                 <ul>
-                  <li><strong className="text-white/70">Service Providers</strong> — trusted vendors who process data on our behalf (e.g., Razorpay for payments, Resend for email delivery, Vercel for hosting, Cloudinary for media and image storage). These parties are contractually bound to protect your data.</li>
+                  <li><strong className="text-white/70">Service Providers</strong> — trusted vendors who process data on our behalf (e.g., Razorpay for payments, Resend for email delivery, Supabase for authentication and real-time data, Vercel for hosting, Cloudinary for media and image storage). These parties are contractually bound to protect your data.</li>
                   <li><strong className="text-white/70">Instructors</strong> — if you enrol in a course, the instructor can see your display name and aggregate progress to support your learning journey.</li>
                   <li><strong className="text-white/70">Legal Requirements</strong> — if we believe disclosure is required by law, subpoena, or legal process.</li>
                   <li><strong className="text-white/70">Business Transfers</strong> — in the event of a merger, acquisition, or sale of assets, your data may be transferred. We will notify you before such a transfer occurs.</li>

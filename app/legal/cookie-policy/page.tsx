@@ -25,8 +25,8 @@ const COOKIE_TYPES = [
     color: "emerald",
     description: "Essential for the Platform to function correctly. Cannot be disabled.",
     examples: [
-      { name: "session_token", purpose: "Keeps you logged in securely.", duration: "Session" },
-      { name: "csrf_token", purpose: "Prevents cross-site request forgery attacks.", duration: "Session" },
+      { name: "sb-access-token", purpose: "Supabase auth access token — keeps you securely signed in.", duration: "1 hour" },
+      { name: "sb-refresh-token", purpose: "Supabase auth refresh token — renews your session automatically.", duration: "60 days" },
       { name: "__rzp", purpose: "Fraud detection for payment processing (Razorpay).", duration: "Session" },
     ],
   },
@@ -73,7 +73,7 @@ export default function CookiePolicyPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Cookie Policy</h1>
-                <p className="text-white/30 text-sm mt-0.5">Last updated: April 19, 2026</p>
+                <p className="text-white/30 text-sm mt-0.5">Last updated: June 8, 2026</p>
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
@@ -173,9 +173,10 @@ export default function CookiePolicyPage() {
               <Section id="third-party" title="4. Third-Party Cookies">
                 <p>Some cookies on Coachnest are set by trusted third-party services that we use to operate the Platform:</p>
                 <ul>
+                  <li><strong className="text-white/70">Supabase</strong> — authentication and real-time services. Supabase sets secure HTTP-only cookies to manage your login session and enable real-time features such as the activity feed and notifications.</li>
                   <li><strong className="text-white/70">Razorpay</strong> — payment processing. Razorpay may set cookies to detect fraud and ensure secure transactions. <Link href="https://razorpay.com/privacy/" target="_blank" rel="noopener noreferrer" className="text-[#d97757]/80 hover:text-[#d97757] transition-colors">Razorpay Privacy Policy ↗</Link></li>
                   <li><strong className="text-white/70">Google Analytics</strong> — anonymous usage analytics to help us understand how people use Coachnest. Data is aggregated and not linked to identifiable individuals.</li>
-                  <li><strong className="text-white/70">Cloudinary / Unsplash</strong> — image delivery CDNs that may set performance-related cookies.</li>
+                  <li><strong className="text-white/70">Cloudinary</strong> — image and video delivery CDN that may set performance-related cookies for media optimisation.</li>
                 </ul>
                 <p>We do not use third-party advertising networks or retargeting cookies.</p>
               </Section>

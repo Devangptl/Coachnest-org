@@ -46,7 +46,7 @@ export default function TermsOfServicePage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Terms of Service</h1>
-                <p className="text-white/30 text-sm mt-0.5">Last updated: April 19, 2026</p>
+                <p className="text-white/30 text-sm mt-0.5">Last updated: June 8, 2026</p>
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
@@ -117,7 +117,7 @@ export default function TermsOfServicePage() {
               </Section>
 
               <Section id="payments" title="5. Payments & Billing">
-                <p>All prices are displayed in USD unless otherwise stated. Payments are processed securely by Razorpay. By providing payment information you authorise us to charge the applicable fees.</p>
+                <p>Prices are displayed in Indian Rupees (INR) unless otherwise stated. Payments are processed securely by Razorpay. By providing payment information you authorise us to charge the applicable fees. For international users, your bank may apply currency conversion charges — Coachnest is not responsible for such charges.</p>
                 <SubHeading>Refunds</SubHeading>
                 <p>Please review our <Link href="/legal/refund-policy" className="legal-link">Refund Policy</Link> for full details on eligibility and the refund process. We offer a 30-day money-back guarantee on most courses.</p>
                 <SubHeading>Subscriptions</SubHeading>
@@ -132,7 +132,7 @@ export default function TermsOfServicePage() {
                   <li>You retain ownership of your course content but grant Coachnest a licence to host, market, and distribute it on the Platform.</li>
                   <li>You are responsible for the accuracy and quality of your course content.</li>
                   <li>You must ensure your content does not infringe third-party intellectual property rights.</li>
-                  <li>Revenue sharing terms are outlined in the separate Instructor Agreement provided at onboarding.</li>
+                  <li>Revenue sharing: instructors receive 90% of the sale price for organically acquired students and 70% when a sale is facilitated through Coachnest-issued coupons, referral programmes, or paid promotional campaigns. Full details are in the Instructor Agreement provided at onboarding.</li>
                   <li>Coachnest reserves the right to remove any course that violates these Terms or our content standards.</li>
                 </ul>
               </Section>
