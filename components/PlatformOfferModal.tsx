@@ -164,8 +164,8 @@ export default function PlatformOfferModal({ offer }: { offer: PublicPlatformOff
             <Link
               href={offer.bannerCtaUrl || "/courses"}
               onClick={dismiss}
-              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 active:opacity-80 shadow-sm"
-              style={{ backgroundColor: offer.bannerBgColor }}
+              className="flex-1 inline-flex items-center justify-center gap-1.5 rounded-lg px-4 py-2.5 text-sm font-semibold transition-opacity hover:opacity-90 active:opacity-80 shadow-sm"
+              style={{ backgroundColor: offer.bannerBgColor, color: offer.bannerTextColor }}
             >
               {offer.bannerCtaText || "Explore Courses"}
               <ArrowRight className="w-3.5 h-3.5" />
