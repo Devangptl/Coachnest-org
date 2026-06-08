@@ -1,7 +1,6 @@
 "use client";
 
-import { useState } from "react";
-import { PanelLeft, PanelRight } from "lucide-react";
+import { useEffect, useState } from "react";
 import { WhiteboardProvider } from "@/components/whiteboard/WhiteboardProvider";
 import WhiteboardTopbar from "@/components/whiteboard/WhiteboardTopbar";
 import WhiteboardCanvas from "@/components/whiteboard/WhiteboardCanvas";
@@ -20,47 +19,58 @@ export default function WhiteboardClient({
   role: WhiteboardRole;
   currentUser: { userId: string; name: string; avatar: string | null };
 }) {
-  const [leftOpen, setLeftOpen] = useState(true);
-  const [rightOpen, setRightOpen] = useState(true);
+  // Panels are inline columns on desktop and slide-in overlays on mobile.
+  // Default closed; open both on desktop after mount (avoids hydration mismatch).
+  const [leftOpen, setLeftOpen] = useState(false);
+  const [rightOpen, setRightOpen] = useState(false);
+
+  useEffect(() => {
+    if (window.matchMedia("(min-width: 768px)").matches) {
+      setLeftOpen(true);
+      setRightOpen(true);
+    }
+  }, []);
+
+  const closeOverlays = () => {
+    setLeftOpen(false);
+    setRightOpen(false);
+  };
 
   return (
     <WhiteboardProvider board={board} role={role} currentUser={currentUser}>
       <div className="fixed inset-0 flex flex-col bg-background">
-        <WhiteboardTopbar />
+        <WhiteboardTopbar
+          onToggleLeft={() => setLeftOpen((v) => !v)}
+          onToggleRight={() => setRightOpen((v) => !v)}
+        />
 
-        <div className="flex-1 flex min-h-0">
+        <div className="flex-1 flex min-h-0 relative">
+          {/* Left: pages */}
           <aside
             className={cn(
-              "border-r border-border bg-card transition-all duration-200 overflow-hidden",
-              leftOpen ? "w-52" : "w-0",
+              "bg-card border-r border-border flex flex-col min-h-0 overflow-hidden",
+              "absolute inset-y-0 left-0 z-30 w-60 max-w-[78%] shadow-xl transition-transform duration-200",
+              leftOpen ? "translate-x-0" : "-translate-x-full",
+              "md:static md:z-auto md:shadow-none md:translate-x-0 md:transition-[width]",
+              leftOpen ? "md:w-52" : "md:w-0",
             )}
           >
             <PagePanel />
           </aside>
 
+          {/* Center: canvas */}
           <div className="flex-1 min-w-0 relative">
             <WhiteboardCanvas />
-
-            <button
-              onClick={() => setLeftOpen((v) => !v)}
-              title="Toggle pages"
-              className="absolute top-2 left-2 z-10 p-1.5 rounded-lg bg-card/80 border border-border text-muted-foreground hover:text-foreground"
-            >
-              <PanelLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setRightOpen((v) => !v)}
-              title="Toggle people & layers"
-              className="absolute top-2 right-2 z-10 p-1.5 rounded-lg bg-card/80 border border-border text-muted-foreground hover:text-foreground"
-            >
-              <PanelRight className="w-4 h-4" />
-            </button>
           </div>
 
+          {/* Right: people + layers */}
           <aside
             className={cn(
-              "border-l border-border bg-card transition-all duration-200 overflow-hidden flex flex-col",
-              rightOpen ? "w-56" : "w-0",
+              "bg-card border-l border-border flex flex-col min-h-0 overflow-hidden",
+              "absolute inset-y-0 right-0 z-30 w-64 max-w-[82%] shadow-xl transition-transform duration-200",
+              rightOpen ? "translate-x-0" : "translate-x-full",
+              "md:static md:z-auto md:shadow-none md:translate-x-0 md:transition-[width]",
+              rightOpen ? "md:w-56" : "md:w-0",
             )}
           >
             <div className="flex-1 min-h-0">
@@ -70,6 +80,14 @@ export default function WhiteboardClient({
               <LayerPanel />
             </div>
           </aside>
+
+          {/* Mobile backdrop — tap to dismiss either drawer */}
+          {(leftOpen || rightOpen) && (
+            <div
+              className="md:hidden absolute inset-0 z-20 bg-black/40"
+              onClick={closeOverlays}
+            />
+          )}
         </div>
       </div>
     </WhiteboardProvider>

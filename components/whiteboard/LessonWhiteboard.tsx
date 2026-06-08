@@ -50,7 +50,7 @@ export default function LessonWhiteboard({ lessonId }: { lessonId: string }) {
           <WhiteboardLauncher
             key={mode}
             resolveUrl={`/api/lessons/${lessonId}/whiteboard?mode=${mode}`}
-            height="65vh"
+            heightClass="h-[55vh] sm:h-[65vh] min-h-[380px]"
           />
         </div>
       )}

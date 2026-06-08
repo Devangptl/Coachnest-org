@@ -14,10 +14,10 @@ import { Button } from "@/components/ui/Button";
  */
 export default function WhiteboardLauncher({
   resolveUrl,
-  height = "70vh",
+  heightClass = "h-[60vh] sm:h-[70vh] min-h-[400px]",
 }: {
   resolveUrl: string;
-  height?: string;
+  heightClass?: string;
 }) {
   const [boardId, setBoardId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,8 +65,7 @@ export default function WhiteboardLauncher({
       <iframe
         src={`/whiteboards/${boardId}`}
         title="Whiteboard"
-        className="w-full rounded-lg border border-border bg-card"
-        style={{ height }}
+        className={`w-full rounded-lg border border-border bg-card ${heightClass}`}
       />
     </div>
   );
