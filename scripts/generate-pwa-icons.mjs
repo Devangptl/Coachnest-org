@@ -10,50 +10,59 @@ const OUT = join(__dirname, "../public/icons");
 
 mkdirSync(OUT, { recursive: true });
 
-const DARK_BG = { r: 26, g: 26, b: 26, alpha: 1 };
+const DARK_BG  = { r: 26,  g: 26,  b: 26,  alpha: 1 };
 const WHITE_BG = { r: 255, g: 255, b: 255, alpha: 1 };
 
-const REGULAR_SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
-const MASKABLE_SIZES = [192, 512];
+// Composite the logo (with padding) onto a solid background.
+// padFraction = fraction of canvas size used as padding on each side.
+// e.g. padFraction 0.15 → logo fills the inner 70% of the canvas.
+async function makeIcon(size, bg, filename, padFraction = 0.15) {
+  const logoSize = Math.round(size * (1 - padFraction * 2));
 
-async function makeIcon(size, bg, filename, safePadFraction = 0) {
-  if (safePadFraction > 0) {
-    // Maskable icons: shrink to safe zone then extend with bg padding
-    const iconSize = Math.round(size * (1 - safePadFraction * 2));
-    await sharp(SRC)
-      .resize(iconSize, iconSize, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } })
-      .extend({
-        top: Math.round((size - iconSize) / 2),
-        bottom: size - iconSize - Math.round((size - iconSize) / 2),
-        left: Math.round((size - iconSize) / 2),
-        right: size - iconSize - Math.round((size - iconSize) / 2),
-        background: bg,
-      })
-      .flatten({ background: bg })
-      .png()
-      .toFile(join(OUT, filename));
-  } else {
-    // Regular icons: cover-fill the square so no letterbox bars appear
-    await sharp(SRC)
-      .resize(size, size, { fit: "cover", position: "centre" })
-      .flatten({ background: bg })
-      .png()
-      .toFile(join(OUT, filename));
-  }
+  // 1. Resize logo to fit within logoSize × logoSize (no cropping, no bars)
+  const logoBuf = await sharp(SRC)
+    .resize(logoSize, logoSize, {
+      fit: "contain",
+      background: { r: 0, g: 0, b: 0, alpha: 0 },
+    })
+    .png()
+    .toBuffer();
+
+  // 2. Get actual rendered size after contain-resize
+  const meta = await sharp(logoBuf).metadata();
+  const offsetX = Math.round((size - meta.width)  / 2);
+  const offsetY = Math.round((size - meta.height) / 2);
+
+  // 3. Composite logo centered on a solid background canvas
+  await sharp({
+    create: {
+      width: size,
+      height: size,
+      channels: 4,
+      background: bg,
+    },
+  })
+    .composite([{ input: logoBuf, left: offsetX, top: offsetY }])
+    .flatten({ background: bg })
+    .png()
+    .toFile(join(OUT, filename));
+
   console.log(`✓ ${filename}`);
 }
 
-// Regular icons (dark background)
+// Regular icons — 15% padding on each side (logo fills 70% of canvas)
+const REGULAR_SIZES = [72, 96, 128, 144, 152, 192, 384, 512];
 for (const size of REGULAR_SIZES) {
-  await makeIcon(size, DARK_BG, `icon-${size}x${size}.png`);
+  await makeIcon(size, DARK_BG, `icon-${size}x${size}.png`, 0.15);
 }
 
-// Maskable icons (20% safe zone padding, dark background)
+// Maskable icons — 20% safe zone (Android adaptive icon safe area)
+const MASKABLE_SIZES = [192, 512];
 for (const size of MASKABLE_SIZES) {
-  await makeIcon(size, DARK_BG, `icon-maskable-${size}x${size}.png`, 0.2);
+  await makeIcon(size, DARK_BG, `icon-maskable-${size}x${size}.png`, 0.20);
 }
 
-// Apple touch icon (180×180, white background for iOS light mode)
-await makeIcon(180, WHITE_BG, "apple-touch-icon.png");
+// Apple touch icon — white background for iOS
+await makeIcon(180, WHITE_BG, "apple-touch-icon.png", 0.15);
 
 console.log("\nAll PWA icons generated in public/icons/");
