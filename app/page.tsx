@@ -4,6 +4,7 @@
  * Server Component: fetches data; delegates animations to client components.
  */
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
@@ -191,24 +192,11 @@ const CATEGORY_ICON_COLOR: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  const [courses, categories, stats, rawReviews] = await Promise.all([
-    getFeaturedCourses(),
-    getCategories(),
-    getStats(),
-    getLandingReviews(),
-  ]);
-
-  const landingReviews = rawReviews
-    .filter((r) => r.comment && r.comment.trim().length > 15)
-    .map((r) => ({
-      id:     r.id,
-      name:   r.user.name,
-      role:   r.course.title,
-      avatar: r.user.avatar ?? null,
-      seed:   r.user.id,
-      rating: r.rating,
-      text:   r.comment!,
-    }));
+  // Start DB queries immediately — do NOT await here.
+  // The page shell renders instantly; each dynamic section streams in as its query resolves.
+  const coursesPromise = getFeaturedCourses();
+  const statsPromise   = getStats();
+  const reviewsPromise = getLandingReviews();
 
   const websiteJsonLd = {
     "@context": "https://schema.org",
@@ -673,104 +661,18 @@ export default async function HomePage() {
 
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          FEATURED COURSES — Premium Compact
+          FEATURED COURSES — streams in after page shell
       ═══════════════════════════════════════════════════════════════════════════ */}
-      {courses.length > 0 && (
-        <section className="py-20 relative">
-          <div className="mx-auto relative">
-            {/* Section Header */}
-            <FadeInSection>
-              <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-5">
-                <div>
-                  <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-500/5 border border-orange-500/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-[#d97757] mb-4 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
-                    <Sparkles className="w-3.5 h-3.5 text-[#d97757] animate-pulse" /> Trending Now
-                  </div>
-                  <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
-                    Featured <span className="text-[#ea580c]">Courses</span>
-                  </h2>
-                  <p className="text-muted-foreground mt-3 text-[15px] sm:text-lg max-w-xl">
-                    Hand-picked by our instructors — start with the best and accelerate your career today.
-                  </p>
-                </div>
-                <Link
-                  href="/courses"
-                  className="group inline-flex items-center gap-2 border border-border text-muted-foreground hover:text-foreground hover:border-[#ea580c]/40 text-sm font-medium px-5 py-2.5 rounded-lg transition-all shrink-0"
-                >
-                  View all courses <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </Link>
-              </div>
-            </FadeInSection>
-
-            {/* Course Grid */}
-            <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4" staggerDelay={0.05}>
-              {courses.map((course) => {
-                const avg = course.reviews.length
-                  ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
-                  : 0;
-
-                return (
-                  <StaggerItem key={course.id}>
-                    <FeaturedCourseCard
-                      id={course.id}
-                      title={course.title}
-                      thumbnail={course.thumbnail}
-                      instructorName={course.createdBy.name}
-                      isFree={course.isFree}
-                      level={course.level}
-                      price={course.price ? Number(course.price) : null}
-                      discountPrice={course.discountPrice ? Number(course.discountPrice) : null}
-                      enrollmentCount={course._count.enrollments}
-                      avgRating={avg}
-                    />
-                  </StaggerItem>
-                );
-              })}
-            </StaggerChildren>
-
-            {/* CTA */}
-            {courses.length >= 6 && (
-              <FadeInSection>
-                <div className="text-center mt-10">
-                  <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-[#d97757]/25 text-orange-300 hover:text-white hover:border-[#d97757]/25 hover:from-orange-600/25 hover:to-orange-500/15 font-medium text-sm px-7 py-2.5 rounded-md transition-all hover:-translate-y-0.5">
-                    Browse All Courses <ArrowRight className="w-4 h-4" />
-                  </Link>
-                </div>
-              </FadeInSection>
-            )}
-          </div>
-        </section>
-      )}
+      <Suspense fallback={<FeaturedCoursesSkeleton />}>
+        <FeaturedCoursesSection promise={coursesPromise} />
+      </Suspense>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          BIG STATS SECTION
+          BIG STATS SECTION — streams in after page shell
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-24  relative">
-        <div className="mx-auto">
-          <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
-              {[
-                { end: Math.max(stats.courseCount, 20), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-[#d97757]" },
-                { end: Math.max(stats.studentCount, 99), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
-                { end: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Total Enrollments", icon: TrendingUp, color: "text-emerald-400" },
-                { end: Math.max(stats.reviewCount, 399), suffix: "+", label: "5-Star Reviews", icon: Star, color: "text-yellow-400" },
-              ].map((stat, idx) => {
-                const Icon = stat.icon;
-                return (
-                  <FadeInSection key={stat.label} delay={idx * 0.1}>
-                    <div className="text-center">
-                      <Icon className={`w-8 h-8 ${stat.color} mx-auto mb-3`} />
-                      <div className="text-4xl sm:text-5xl font-bold text-white mb-2">
-                        <AnimatedCounter end={stat.end} suffix={stat.suffix} />
-                      </div>
-                      <p className="text-muted-foreground/70 text-sm">{stat.label}</p>
-                    </div>
-                  </FadeInSection>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </section>
+      <Suspense fallback={<StatsSkeleton />}>
+        <StatsSection promise={statsPromise} />
+      </Suspense>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           LEARNING EXPERIENCE — Split section
@@ -970,9 +872,11 @@ export default async function HomePage() {
       <CompareSection />
 
       {/* ═══════════════════════════════════════════════════════════════════════════
-          REVIEWS MARQUEE
+          REVIEWS MARQUEE — streams in after page shell
       ═══════════════════════════════════════════════════════════════════════════ */}
-      <ReviewsMarquee reviews={landingReviews} />
+      <Suspense fallback={<ReviewsSkeleton />}>
+        <ReviewsSection promise={reviewsPromise} />
+      </Suspense>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           FAQ
@@ -1111,5 +1015,183 @@ export default async function HomePage() {
       ═══════════════════════════════════════════════════════════════════════════ */}
 
     </div>
+  );
+}
+
+// ─── Async server components (stream in after page shell) ────────────────────
+
+async function FeaturedCoursesSection({
+  promise,
+}: {
+  promise: ReturnType<typeof getFeaturedCourses>;
+}) {
+  const courses = await promise;
+  if (courses.length === 0) return null;
+
+  return (
+    <section className="py-20 relative">
+      <div className="mx-auto relative">
+        <FadeInSection>
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between mb-12 gap-5">
+            <div>
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-500/20 to-orange-500/5 border border-orange-500/20 rounded-full px-3.5 py-1 text-xs font-semibold uppercase tracking-widest text-[#d97757] mb-4 shadow-[0_0_15px_rgba(249,115,22,0.1)]">
+                <Sparkles className="w-3.5 h-3.5 text-[#d97757] animate-pulse" /> Trending Now
+              </div>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground tracking-tight">
+                Featured <span className="text-[#ea580c]">Courses</span>
+              </h2>
+              <p className="text-muted-foreground mt-3 text-[15px] sm:text-lg max-w-xl">
+                Hand-picked by our instructors — start with the best and accelerate your career today.
+              </p>
+            </div>
+            <Link
+              href="/courses"
+              className="group inline-flex items-center gap-2 border border-border text-muted-foreground hover:text-foreground hover:border-[#ea580c]/40 text-sm font-medium px-5 py-2.5 rounded-lg transition-all shrink-0"
+            >
+              View all courses <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+            </Link>
+          </div>
+        </FadeInSection>
+
+        <StaggerChildren className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4" staggerDelay={0.05}>
+          {courses.map((course) => {
+            const avg = course.reviews.length
+              ? Number((course.reviews.reduce((s, r) => s + r.rating, 0) / course.reviews.length).toFixed(1))
+              : 0;
+            return (
+              <StaggerItem key={course.id}>
+                <FeaturedCourseCard
+                  id={course.id}
+                  title={course.title}
+                  thumbnail={course.thumbnail}
+                  instructorName={course.createdBy.name}
+                  isFree={course.isFree}
+                  level={course.level}
+                  price={course.price ? Number(course.price) : null}
+                  discountPrice={course.discountPrice ? Number(course.discountPrice) : null}
+                  enrollmentCount={course._count.enrollments}
+                  avgRating={avg}
+                />
+              </StaggerItem>
+            );
+          })}
+        </StaggerChildren>
+
+        {courses.length >= 6 && (
+          <FadeInSection>
+            <div className="text-center mt-10">
+              <Link href="/courses" className="inline-flex items-center gap-2 bg-gradient-to-r from-orange-600/15 to-orange-500/15 border border-[#d97757]/25 text-orange-300 hover:text-white hover:border-[#d97757]/25 hover:from-orange-600/25 hover:to-orange-500/15 font-medium text-sm px-7 py-2.5 rounded-md transition-all hover:-translate-y-0.5">
+                Browse All Courses <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+          </FadeInSection>
+        )}
+      </div>
+    </section>
+  );
+}
+
+async function StatsSection({
+  promise,
+}: {
+  promise: ReturnType<typeof getStats>;
+}) {
+  const stats = await promise;
+
+  return (
+    <section className="py-24 relative">
+      <div className="mx-auto">
+        <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
+            {[
+              { end: Math.max(stats.courseCount, 20), suffix: "+", label: "Expert Courses", icon: BookOpen, color: "text-[#d97757]" },
+              { end: Math.max(stats.studentCount, 99), suffix: "+", label: "Active Students", icon: Users, color: "text-blue-400" },
+              { end: Math.max(stats.enrollmentCount, 299), suffix: "+", label: "Total Enrollments", icon: TrendingUp, color: "text-emerald-400" },
+              { end: Math.max(stats.reviewCount, 399), suffix: "+", label: "5-Star Reviews", icon: Star, color: "text-yellow-400" },
+            ].map((stat, idx) => {
+              const Icon = stat.icon;
+              return (
+                <FadeInSection key={stat.label} delay={idx * 0.1}>
+                  <div className="text-center">
+                    <Icon className={`w-8 h-8 ${stat.color} mx-auto mb-3`} />
+                    <div className="text-4xl sm:text-5xl font-bold text-white mb-2">
+                      <AnimatedCounter end={stat.end} suffix={stat.suffix} />
+                    </div>
+                    <p className="text-muted-foreground/70 text-sm">{stat.label}</p>
+                  </div>
+                </FadeInSection>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+async function ReviewsSection({
+  promise,
+}: {
+  promise: ReturnType<typeof getLandingReviews>;
+}) {
+  const rawReviews = await promise;
+  const reviews = rawReviews
+    .filter((r) => r.comment && r.comment.trim().length > 15)
+    .map((r) => ({
+      id:     r.id,
+      name:   r.user.name,
+      role:   r.course.title,
+      avatar: r.user.avatar ?? null,
+      seed:   r.user.id,
+      rating: r.rating,
+      text:   r.comment!,
+    }));
+  return <ReviewsMarquee reviews={reviews} />;
+}
+
+// ─── Skeleton fallbacks ───────────────────────────────────────────────────────
+
+function FeaturedCoursesSkeleton() {
+  return (
+    <section className="py-20">
+      <div className="mx-auto">
+        <div className="h-7 w-48 rounded bg-white/[.04] animate-pulse mb-4" />
+        <div className="h-10 w-72 rounded bg-white/[.04] animate-pulse mb-12" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="h-36 rounded-md bg-white/[.03] animate-pulse border border-white/5" />
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function StatsSkeleton() {
+  return (
+    <section className="py-24">
+      <div className="mx-auto">
+        <div className="bg-secondary/30 border border-border rounded-md p-10 sm:p-16">
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-8 md:gap-10">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="flex flex-col items-center gap-3">
+                <div className="w-8 h-8 rounded bg-white/[.05] animate-pulse" />
+                <div className="h-12 w-28 rounded bg-white/[.05] animate-pulse" />
+                <div className="h-4 w-24 rounded bg-white/[.04] animate-pulse" />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ReviewsSkeleton() {
+  return (
+    <section className="py-16 overflow-hidden space-y-3">
+      <div className="h-28 w-full bg-white/[.02] animate-pulse rounded" />
+      <div className="h-28 w-full bg-white/[.02] animate-pulse rounded" />
+    </section>
   );
 }
