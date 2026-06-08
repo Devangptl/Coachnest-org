@@ -4,11 +4,22 @@ import { usePathname } from "next/navigation";
 
 const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password"];
 
+const BOTTOM_NAV_PREFIXES = ["/dashboard", "/instructor", "/community"];
+
 export default function MainWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isAuth   = AUTH_ROUTES.some((r) => pathname.startsWith(r));
+  const isAuth = AUTH_ROUTES.some((r) => pathname.startsWith(r));
+  const hasBottomNav = BOTTOM_NAV_PREFIXES.some((p) => pathname.startsWith(p));
+
+  if (isAuth) {
+    return <main className="min-h-screen">{children}</main>;
+  }
+
   return (
-    <main className={isAuth ? "min-h-screen" : "pt-14 min-h-screen px-3 sm:px-5 lg:px-7 mx-auto"}>
+    <main
+      className="pt-14 min-h-screen px-3 sm:px-5 lg:px-7 mx-auto"
+      style={hasBottomNav ? { paddingBottom: "calc(4rem + env(safe-area-inset-bottom))" } : undefined}
+    >
       {children}
     </main>
   );

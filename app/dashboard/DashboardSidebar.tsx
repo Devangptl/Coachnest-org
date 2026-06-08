@@ -107,7 +107,7 @@ export default function DashboardSidebar() {
       {/* ── Mobile: floating toggle button ──────────────────────────── */}
       <button
         onClick={() => setMobileOpen(true)}
-        className="md:hidden fixed bottom-6 left-4 z-40 w-12 h-12 btn-primary p-0 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="hidden fixed bottom-6 left-4 z-40 w-12 h-12 btn-primary p-0 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open dashboard menu"
       >
         <Menu className="w-5 h-5" />

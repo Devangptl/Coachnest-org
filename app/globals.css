@@ -1610,3 +1610,11 @@ html.light .ql-snow .ql-tooltip        { background: hsl(var(--card)); }
   0%   { transform: translateY(0) scale(1); opacity: 1; }
   100% { transform: translateY(28px) scale(0.96); opacity: 0; }
 }
+
+/* When running as an installed PWA (standalone mode), compensate for the
+   iOS status bar that sits above the app viewport */
+@media (display-mode: standalone) {
+  .navbar-standalone-pad {
+    padding-top: env(safe-area-inset-top);
+  }
+}

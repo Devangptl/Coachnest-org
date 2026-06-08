@@ -1,4 +1,52 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  fallbacks: { document: "/offline" },
+  workboxOptions: {
+    skipWaiting: true,
+    navigateFallbackDenylist: [/^\/api\//, /^\/checkout/, /^\/admin/],
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/(?:res\.cloudinary\.com|images\.unsplash\.com)\/.*/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "remote-images",
+          expiration: { maxEntries: 60, maxAgeSeconds: 604800 },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+      {
+        urlPattern: /^\/api\/courses(\?.*)?$/,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "api-courses",
+          expiration: { maxEntries: 5, maxAgeSeconds: 300 },
+          cacheableResponse: { statuses: [200] },
+        },
+      },
+      // All other API routes (auth, payments, admin, enrollments) — never cache
+      {
+        urlPattern: /^\/api\/.*/,
+        handler: "NetworkOnly",
+      },
+      // Pages — network first with 10s fallback to cache
+      {
+        urlPattern: /^\/(?!api\/|_next\/)/,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "pages",
+          networkTimeoutSeconds: 10,
+          expiration: { maxEntries: 50, maxAgeSeconds: 86400 },
+          cacheableResponse: { statuses: [200] },
+        },
+      },
+    ],
+  },
+});
 
 const nextConfig: NextConfig = {
   // ─── Image optimization ────────────────────────────────────────────
@@ -62,4 +110,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

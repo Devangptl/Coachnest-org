@@ -110,7 +110,7 @@ export default function CommunitySidebar() {
 
       <button
         onClick={() => setMobileOpen(true)}
-        className="lg:hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
+        className="hidden fixed bottom-6 left-4 z-40 w-12 h-12 rounded-md bg-gradient-to-br from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-600/30 flex items-center justify-center hover:scale-105 active:scale-95 transition-transform"
         aria-label="Open community menu"
       >
         <Menu className="w-5 h-5" />
