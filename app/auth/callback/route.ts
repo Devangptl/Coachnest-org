@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 
 /**
  * GET /auth/callback
- * Supabase redirects here after the user clicks the email confirmation link.
- * Exchanges the one-time code for a session then sends the user to their portal.
+ * Handles two cases:
+ *  1. Email confirmation link — exchanges code for session, then routes by role.
+ *  2. Google OAuth callback — same flow but also provisions new users into Prisma.
  */
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
@@ -25,33 +28,74 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  const role = (data.user.app_metadata?.role ?? "STUDENT") as string;
+  const user = data.user;
 
-  // Students go to onboarding first unless they've already completed it.
-  if (role === "STUDENT") {
-    if (next) {
-      return NextResponse.redirect(new URL(next, req.url));
-    }
-    const profile = await prisma.user.findUnique({
-      where: { id: data.user.id },
-      select: { hasCompletedOnboarding: true },
+  // ── Provision new OAuth users (Google) ──────────────────────────────────────
+  const existingProfile = await prisma.user.findUnique({
+    where:  { id: user.id },
+    select: {
+      id: true,
+      hasCompletedOnboarding: true,
+      hasCompletedInstructorOnboarding: true,
+      instructorStatus: true,
+    },
+  });
+
+  if (!existingProfile) {
+    // New user arriving via Google OAuth — determine role from callback query param.
+    const rawRole = (searchParams.get("role") ?? "STUDENT").toUpperCase();
+    const role    = rawRole === "INSTRUCTOR" ? "INSTRUCTOR" : "STUDENT";
+
+    // Set role (and instructor status) in Supabase app_metadata.
+    await supabaseAdmin.auth.admin.updateUserById(user.id, {
+      app_metadata: {
+        role,
+        ...(role === "INSTRUCTOR" ? { instructorStatus: "PENDING" } : {}),
+      },
     });
-    const destination = profile?.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
+
+    const name   = (user.user_metadata?.full_name ?? user.user_metadata?.name ?? user.email!.split("@")[0]) as string;
+    const avatar = (user.user_metadata?.avatar_url ?? null) as string | null;
+
+    await prisma.user.upsert({
+      where:  { id: user.id },
+      create: {
+        id:     user.id,
+        email:  user.email!,
+        name,
+        avatar,
+        role:   role as "STUDENT" | "INSTRUCTOR",
+        ...(role === "INSTRUCTOR" ? {
+          instructorStatus:    "PENDING",
+          instructorAppliedAt: new Date(),
+        } : {}),
+      },
+      update: {},
+    });
+
+    sendWelcomeEmail(user.email!, name).catch(console.error);
+
+    if (role === "INSTRUCTOR") {
+      return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
+    }
+    return NextResponse.redirect(new URL("/onboarding", req.url));
+  }
+
+  // ── Returning user — route by role ──────────────────────────────────────────
+  const role = (user.app_metadata?.role ?? "STUDENT") as string;
+
+  if (role === "STUDENT") {
+    if (next) return NextResponse.redirect(new URL(next, req.url));
+    const destination = existingProfile.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
     return NextResponse.redirect(new URL(destination, req.url));
   }
 
   if (role === "INSTRUCTOR") {
-    if (next) {
-      return NextResponse.redirect(new URL(next, req.url));
-    }
-    const profile = await prisma.user.findUnique({
-      where:  { id: data.user.id },
-      select: { hasCompletedInstructorOnboarding: true, instructorStatus: true },
-    });
-    if (!profile?.hasCompletedInstructorOnboarding) {
+    if (next) return NextResponse.redirect(new URL(next, req.url));
+    if (!existingProfile.hasCompletedInstructorOnboarding) {
       return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
     }
-    const destination = profile.instructorStatus === "APPROVED" ? "/instructor" : "/instructor/pending";
+    const destination = existingProfile.instructorStatus === "APPROVED" ? "/instructor" : "/instructor/pending";
     return NextResponse.redirect(new URL(destination, req.url));
   }
 
