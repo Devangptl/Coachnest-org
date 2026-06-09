@@ -161,6 +161,10 @@ const ADMIN_MORE: Section[] = [
 
 const SHOW_PREFIXES = ["/dashboard", "/instructor", "/admin", "/community"];
 
+function matchesPrefix(pathname: string, prefix: string) {
+  return pathname === prefix || pathname.startsWith(prefix + "/");
+}
+
 const THEME_OPTIONS: { value: Theme; icon: React.ElementType; label: string }[] = [
   { value: "system", icon: Monitor, label: "System" },
   { value: "light", icon: Sun, label: "Light" },
@@ -192,7 +196,7 @@ export default function BottomNav({ session }: Props) {
   }, [moreOpen]);
 
   if (!session) return null;
-  if (!SHOW_PREFIXES.some((p) => pathname.startsWith(p))) return null;
+  if (!SHOW_PREFIXES.some((p) => matchesPrefix(pathname, p))) return null;
 
   const { tabs, more } =
     session.role === "ADMIN"

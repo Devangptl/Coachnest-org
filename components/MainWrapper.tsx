@@ -10,7 +10,9 @@ export default function MainWrapper({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const isAuth = AUTH_ROUTES.some((r) => pathname.startsWith(r));
   const isFullScreen = pathname.startsWith("/whiteboards");
-  const hasBottomNav = BOTTOM_NAV_PREFIXES.some((p) => pathname.startsWith(p));
+  const hasBottomNav = BOTTOM_NAV_PREFIXES.some(
+    (p) => pathname === p || pathname.startsWith(p + "/")
+  );
 
   // Auth + whiteboard routes render edge-to-edge with no navbar offset/padding.
   if (isAuth || isFullScreen) {
