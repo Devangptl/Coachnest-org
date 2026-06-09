@@ -23,7 +23,7 @@ const AnalyticsDashboard = dynamic(() => import("./AnalyticsDashboard"), {
           <div key={i} className="h-20 md:h-24 rounded-lg bg-secondary" />
         ))}
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 md:gap-3">
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
         {Array.from({ length: 3 }).map((_, i) => (
           <div key={i} className="h-16 md:h-20 rounded-lg bg-secondary" />
         ))}
