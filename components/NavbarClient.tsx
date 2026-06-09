@@ -14,10 +14,6 @@ import {
   Shield,
   ChevronDown,
   BarChart3,
-  Users,
-  PlusCircle,
-  Heart,
-  Award,
   GraduationCap,
   Map,
   BookOpen,
@@ -26,11 +22,6 @@ import {
   Monitor,
   ShoppingCart,
   Library,
-  ShoppingBag,
-  Wallet,
-  TrendingUp,
-  UserCog,
-  Bell,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
@@ -81,80 +72,25 @@ function NavAvatar({
 }
 
 type DropdownLink = { href: string; label: string; icon: React.ElementType };
-type DropdownSection = { title: string; items: DropdownLink[] };
 
-// Role-based dropdown — grouped into sections for readability.
-const DROPDOWN_SECTIONS: Record<"STUDENT" | "INSTRUCTOR" | "ADMIN", DropdownSection[]> = {
+// Role-based dropdown — kept minimal: just the role home, one key link,
+// and profile. Secondary destinations live in BottomNav's More sheet
+// (mobile) or each role's sidebar (desktop).
+const DROPDOWN_LINKS: Record<"STUDENT" | "INSTRUCTOR" | "ADMIN", DropdownLink[]> = {
   STUDENT: [
-    {
-      title: "Learning",
-      items: [
-        { href: "/dashboard",              label: "Dashboard",    icon: LayoutDashboard },
-        { href: "/dashboard/library",      label: "My Library",   icon: Library },
-        { href: "/dashboard/progress",     label: "Progress",     icon: BarChart3 },
-        { href: "/dashboard/certificates", label: "Certificates", icon: Award },
-      ],
-    },
-    {
-      title: "Account",
-      items: [
-        { href: "/dashboard/wishlist",      label: "Wishlist",      icon: Heart },
-        { href: "/dashboard/orders",        label: "Orders",        icon: ShoppingBag },
-        { href: "/dashboard/notifications", label: "Notifications", icon: Bell },
-        { href: "/dashboard/profile",       label: "My Profile",    icon: User },
-      ],
-    },
+    { href: "/dashboard",         label: "Dashboard",  icon: LayoutDashboard },
+    { href: "/dashboard/library", label: "My Library", icon: Library },
+    { href: "/dashboard/profile", label: "My Profile", icon: User },
   ],
   INSTRUCTOR: [
-    {
-      title: "Teaching",
-      items: [
-        { href: "/instructor",              label: "Overview",      icon: LayoutDashboard },
-        { href: "/instructor/courses",      label: "My Courses",    icon: BookOpen },
-        { href: "/instructor/courses/new",  label: "Create Course", icon: PlusCircle },
-        { href: "/instructor/students",     label: "My Students",   icon: Users },
-      ],
-    },
-    {
-      title: "Insights",
-      items: [
-        { href: "/instructor/analytics", label: "Analytics", icon: BarChart3 },
-        { href: "/instructor/earnings",  label: "Earnings",  icon: TrendingUp },
-        { href: "/instructor/payouts",   label: "Payouts",   icon: Wallet },
-      ],
-    },
-    {
-      title: "Account",
-      items: [
-        { href: "/instructor/notifications", label: "Notifications", icon: Bell },
-        { href: "/instructor/profile",       label: "My Profile",    icon: User },
-      ],
-    },
+    { href: "/instructor",         label: "Overview",   icon: LayoutDashboard },
+    { href: "/instructor/courses", label: "My Courses", icon: BookOpen },
+    { href: "/instructor/profile", label: "My Profile", icon: User },
   ],
   ADMIN: [
-    {
-      title: "Overview",
-      items: [
-        { href: "/admin",           label: "Dashboard", icon: Shield },
-        { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-      ],
-    },
-    {
-      title: "Manage",
-      items: [
-        { href: "/admin/courses",     label: "Courses",     icon: BookOpen },
-        { href: "/admin/instructors", label: "Instructors", icon: GraduationCap },
-        { href: "/admin/students",    label: "Students",    icon: Users },
-        { href: "/admin/orders",      label: "Orders",      icon: ShoppingBag },
-      ],
-    },
-    {
-      title: "Account",
-      items: [
-        { href: "/admin/admins",  label: "Admin Roles", icon: UserCog },
-        { href: "/admin/profile", label: "My Profile",  icon: User },
-      ],
-    },
+    { href: "/admin",           label: "Dashboard", icon: Shield },
+    { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
+    { href: "/admin/profile",   label: "My Profile", icon: User },
   ],
 };
 
@@ -225,7 +161,7 @@ export default function NavbarClient({ session }: Props) {
     router.refresh();
   }
 
-  const dropdownSections = session ? DROPDOWN_SECTIONS[session.role] : [];
+  const dropdownLinks = session ? DROPDOWN_LINKS[session.role] : [];
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
 
   return (
@@ -341,69 +277,56 @@ export default function NavbarClient({ session }: Props) {
                         )}
                       </div>
 
-                      {/* Sectioned links */}
-                      <div className="py-1 max-h-[60vh] overflow-y-auto">
-                        {dropdownSections.map((section, idx) => (
-                          <div
-                            key={section.title}
-                            className={cn(idx > 0 && "border-t border-border mt-1 pt-1")}
-                          >
-                            <p className="px-3 pt-1.5 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-                              {section.title}
-                            </p>
-                            {section.items.map((link) => {
-                              const Icon = link.icon;
-                              const isActive =
-                                pathname === link.href ||
-                                pathname.startsWith(link.href + "/");
-                              return (
-                                <Link
-                                  key={link.href}
-                                  href={link.href}
-                                  className={cn(
-                                    "flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
-                                    isActive
-                                      ? "text-[#d97757] bg-orange-500/10"
-                                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-                                  )}
-                                >
-                                  <Icon
-                                    className={cn(
-                                      "w-4 h-4",
-                                      isActive ? "text-[#d97757]" : "text-muted-foreground"
-                                    )}
-                                  />
-                                  <span className="truncate">{link.label}</span>
-                                </Link>
-                              );
-                            })}
-                          </div>
-                        ))}
-
-                        {/* Cart — separated from sections */}
-                        {session.role === "STUDENT" && (
-                          <div className="border-t border-border mt-1 pt-1">
-                            <button
-                              onClick={() => {
-                                setUserMenuOpen(false);
-                                openCartDrawer();
-                              }}
-                              className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                            >
-                              <div className="relative">
-                                <ShoppingCart className="w-4 h-4" />
-                                {cartCount > 0 && (
-                                  <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-orange-500 px-0.5 text-[9px] font-bold leading-none text-white">
-                                    {cartCount > 99 ? "99+" : cartCount}
-                                  </span>
-                                )}
-                              </div>
-                              My Cart
-                              {cartCount > 0 && (
-                                <span className="ml-auto text-xs text-orange-400 font-medium">{cartCount}</span>
+                      {/* Links — minimal: role home, one key link, profile */}
+                      <div className="py-1">
+                        {dropdownLinks.map((link) => {
+                          const Icon = link.icon;
+                          const isActive =
+                            pathname === link.href ||
+                            pathname.startsWith(link.href + "/");
+                          return (
+                            <Link
+                              key={link.href}
+                              href={link.href}
+                              className={cn(
+                                "flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                                isActive
+                                  ? "text-[#d97757] bg-orange-500/10"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                               )}
-                            </button>
-                          </div>
+                            >
+                              <Icon
+                                className={cn(
+                                  "w-4 h-4",
+                                  isActive ? "text-[#d97757]" : "text-muted-foreground"
+                                )}
+                              />
+                              <span className="truncate">{link.label}</span>
+                            </Link>
+                          );
+                        })}
+
+                        {session.role === "STUDENT" && (
+                          <button
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              openCartDrawer();
+                            }}
+                            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                          >
+                            <div className="relative">
+                              <ShoppingCart className="w-4 h-4" />
+                              {cartCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-orange-500 px-0.5 text-[9px] font-bold leading-none text-white">
+                                  {cartCount > 99 ? "99+" : cartCount}
+                                </span>
+                              )}
+                            </div>
+                            My Cart
+                            {cartCount > 0 && (
+                              <span className="ml-auto text-xs text-orange-400 font-medium">{cartCount}</span>
+                            )}
+                          </button>
                         )}
                       </div>
 
@@ -546,27 +469,20 @@ export default function NavbarClient({ session }: Props) {
                       </span>
                     )}
                   </div>
-                  {dropdownSections.map((section) => (
-                    <div key={section.title}>
-                      <div className="border-t border-border my-2" />
-                      <p className="px-4 pb-1 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/60">
-                        {section.title}
-                      </p>
-                      {section.items.map((link) => {
-                        const Icon = link.icon;
-                        return (
-                          <Link
-                            key={link.href}
-                            href={link.href}
-                            className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
-                          >
-                            <Icon className="w-4 h-4" />
-                            {link.label}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ))}
+                  <div className="border-t border-border my-2" />
+                  {dropdownLinks.map((link) => {
+                    const Icon = link.icon;
+                    return (
+                      <Link
+                        key={link.href}
+                        href={link.href}
+                        className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                      >
+                        <Icon className="w-4 h-4" />
+                        {link.label}
+                      </Link>
+                    );
+                  })}
                   <div className="border-t border-border my-2" />
                   {/* Theme switcher — mobile */}
                   <div className="px-4 py-2 flex items-center justify-between gap-2">
