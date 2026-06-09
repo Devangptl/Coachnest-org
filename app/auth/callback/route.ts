@@ -28,9 +28,20 @@ export async function GET(req: NextRequest) {
 
   const user = data.user;
 
-  // ── Provision new OAuth users (Google) ──────────────────────────────────────
+  // Determine role from query param (set by signup page Google button)
+  const rawRole = (searchParams.get("role") ?? "STUDENT").toUpperCase();
+  const role    = rawRole === "INSTRUCTOR" ? "INSTRUCTOR" : "STUDENT";
+
+  // ── Check if this user already exists in the database ────────────────────────
+  let existingProfile: {
+    id: string;
+    hasCompletedOnboarding: boolean;
+    hasCompletedInstructorOnboarding: boolean;
+    instructorStatus: string | null;
+  } | null = null;
+
   try {
-    const existingProfile = await prisma.user.findUnique({
+    existingProfile = await prisma.user.findUnique({
       where:  { id: user.id },
       select: {
         id: true,
@@ -39,25 +50,29 @@ export async function GET(req: NextRequest) {
         instructorStatus: true,
       },
     });
+  } catch (err) {
+    console.error("[auth/callback] profile lookup failed:", err);
+    // Cannot determine user state — send to onboarding as safe default
+    const dest = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
+    return NextResponse.redirect(new URL(dest, req.url));
+  }
 
-    if (!existingProfile) {
-      // New Google OAuth user — read role from callback query param
-      const rawRole = (searchParams.get("role") ?? "STUDENT").toUpperCase();
-      const role    = rawRole === "INSTRUCTOR" ? "INSTRUCTOR" : "STUDENT";
+  // ── New user — provision and send to onboarding ───────────────────────────────
+  if (!existingProfile) {
+    // Set role in Supabase app_metadata (non-critical — user is already logged in)
+    try {
+      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        app_metadata: {
+          role,
+          ...(role === "INSTRUCTOR" ? { instructorStatus: "PENDING" } : {}),
+        },
+      });
+    } catch (adminErr) {
+      console.error("[auth/callback] app_metadata update failed:", adminErr);
+    }
 
-      // Set role in Supabase app_metadata (non-critical — user is already logged in)
-      try {
-        await supabaseAdmin.auth.admin.updateUserById(user.id, {
-          app_metadata: {
-            role,
-            ...(role === "INSTRUCTOR" ? { instructorStatus: "PENDING" } : {}),
-          },
-        });
-      } catch (adminErr) {
-        console.error("[auth/callback] app_metadata update failed:", adminErr);
-        // Continue — user is logged in, role can be fixed later
-      }
-
+    // Create profile in database
+    try {
       const name   = (
         user.user_metadata?.full_name ??
         user.user_metadata?.name ??
@@ -82,40 +97,38 @@ export async function GET(req: NextRequest) {
       });
 
       sendWelcomeEmail(user.email!, name).catch(console.error);
-
-      const destination = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
-      return NextResponse.redirect(new URL(destination, req.url));
+    } catch (provisionErr) {
+      console.error("[auth/callback] user provisioning failed:", provisionErr);
     }
 
-    // ── Returning user — route by role ────────────────────────────────────────
-    const role = (user.app_metadata?.role ?? "STUDENT") as string;
-
-    if (role === "STUDENT") {
-      if (next) return NextResponse.redirect(new URL(next, req.url));
-      const destination = existingProfile.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
-      return NextResponse.redirect(new URL(destination, req.url));
-    }
-
-    if (role === "INSTRUCTOR") {
-      if (next) return NextResponse.redirect(new URL(next, req.url));
-      if (!existingProfile.hasCompletedInstructorOnboarding) {
-        return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
-      }
-      const destination = existingProfile.instructorStatus === "APPROVED"
-        ? "/instructor"
-        : "/instructor/pending";
-      return NextResponse.redirect(new URL(destination, req.url));
-    }
-
-    if (role === "ADMIN") {
-      return NextResponse.redirect(new URL(next ?? "/admin", req.url));
-    }
-
-    return NextResponse.redirect(new URL(next ?? "/dashboard", req.url));
-
-  } catch (err) {
-    console.error("[auth/callback] provisioning error:", err);
-    // Session is set — send user to dashboard even if provisioning failed
-    return NextResponse.redirect(new URL("/dashboard", req.url));
+    // Always redirect new users to onboarding
+    const destination = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
+    return NextResponse.redirect(new URL(destination, req.url));
   }
+
+  // ── Returning user — route by their existing role ─────────────────────────────
+  const existingRole = (user.app_metadata?.role ?? "STUDENT") as string;
+
+  if (existingRole === "STUDENT") {
+    if (next) return NextResponse.redirect(new URL(next, req.url));
+    const destination = existingProfile.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
+    return NextResponse.redirect(new URL(destination, req.url));
+  }
+
+  if (existingRole === "INSTRUCTOR") {
+    if (next) return NextResponse.redirect(new URL(next, req.url));
+    if (!existingProfile.hasCompletedInstructorOnboarding) {
+      return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
+    }
+    const destination = existingProfile.instructorStatus === "APPROVED"
+      ? "/instructor"
+      : "/instructor/pending";
+    return NextResponse.redirect(new URL(destination, req.url));
+  }
+
+  if (existingRole === "ADMIN") {
+    return NextResponse.redirect(new URL(next ?? "/admin", req.url));
+  }
+
+  return NextResponse.redirect(new URL(next ?? "/dashboard", req.url));
 }
