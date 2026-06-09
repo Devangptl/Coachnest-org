@@ -217,52 +217,56 @@ export default function BottomNav({ session }: Props) {
 
   return (
     <>
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-card/95 backdrop-blur-md border-t border-border flex items-stretch"
-        style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
-        aria-label="Primary"
+      <div
+        className="md:hidden fixed bottom-0 left-0 right-0 z-30 px-3 pt-1 pb-1.5"
+        style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.375rem)" }}
       >
-        {tabs.map((tab) => {
-          const isActive = isItemActive(tab);
-          const Icon = tab.icon;
-          return (
-            <Link
-              key={tab.href}
-              href={tab.href}
-              className={cn(
-                "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors min-w-0",
-                isActive
-                  ? "text-[#d97757]"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-            >
-              <Icon className={cn("w-5 h-5 shrink-0", isActive && "text-[#d97757]")} />
-              <span className="truncate">{tab.label}</span>
-            </Link>
-          );
-        })}
-
-        <button
-          type="button"
-          onClick={() => setMoreOpen(true)}
-          aria-label="Open more menu"
-          aria-expanded={moreOpen}
-          className={cn(
-            "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors min-w-0",
-            anyMoreActive || moreOpen
-              ? "text-[#d97757]"
-              : "text-muted-foreground hover:text-foreground"
-          )}
+        <nav
+          className="mx-auto flex items-stretch rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-glass overflow-hidden"
+          aria-label="Primary"
         >
-          <MoreHorizontal
+          {tabs.map((tab) => {
+            const isActive = isItemActive(tab);
+            const Icon = tab.icon;
+            return (
+              <Link
+                key={tab.href}
+                href={tab.href}
+                className={cn(
+                  "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors min-w-0",
+                  isActive
+                    ? "text-[#d97757] bg-orange-500/10"
+                    : "text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className={cn("w-5 h-5 shrink-0", isActive && "text-[#d97757]")} />
+                <span className="truncate">{tab.label}</span>
+              </Link>
+            );
+          })}
+
+          <button
+            type="button"
+            onClick={() => setMoreOpen(true)}
+            aria-label="Open more menu"
+            aria-expanded={moreOpen}
             className={cn(
-              "w-5 h-5 shrink-0",
-              (anyMoreActive || moreOpen) && "text-[#d97757]"
+              "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors min-w-0",
+              anyMoreActive || moreOpen
+                ? "text-[#d97757] bg-orange-500/10"
+                : "text-muted-foreground hover:text-foreground"
             )}
-          />
-          <span className="truncate">More</span>
-        </button>
-      </nav>
+          >
+            <MoreHorizontal
+              className={cn(
+                "w-5 h-5 shrink-0",
+                (anyMoreActive || moreOpen) && "text-[#d97757]"
+              )}
+            />
+            <span className="truncate">More</span>
+          </button>
+        </nav>
+      </div>
 
       <AnimatePresence>
         {moreOpen && (

@@ -20,7 +20,7 @@ export default function MainWrapper({ children }: { children: React.ReactNode })
   return (
     <main
       className="pt-14 min-h-screen px-3 sm:px-5 lg:px-7 mx-auto"
-      style={hasBottomNav ? { paddingBottom: "calc(4rem + env(safe-area-inset-bottom))" } : undefined}
+      style={hasBottomNav ? { paddingBottom: "calc(4.5rem + env(safe-area-inset-bottom))" } : undefined}
     >
       {children}
     </main>
