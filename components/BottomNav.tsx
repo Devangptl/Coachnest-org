@@ -226,7 +226,7 @@ export default function BottomNav({ session }: Props) {
         style={{ paddingBottom: "calc(env(safe-area-inset-bottom) + 0.375rem)" }}
       >
         <nav
-          className="mx-auto flex items-stretch rounded-2xl border border-border bg-card/95 backdrop-blur-md shadow-glass overflow-hidden"
+          className="mx-auto flex items-stretch rounded-full border border-border bg-card/95 backdrop-blur-md shadow-glass overflow-hidden"
           aria-label="Primary"
         >
           {tabs.map((tab) => {
@@ -239,7 +239,7 @@ export default function BottomNav({ session }: Props) {
                 className={cn(
                   "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors min-w-0",
                   isActive
-                    ? "text-[#d97757] bg-orange-500/10"
+                    ? "text-[#d97757]"
                     : "text-muted-foreground hover:text-foreground"
                 )}
               >
@@ -257,7 +257,7 @@ export default function BottomNav({ session }: Props) {
             className={cn(
               "flex-1 flex flex-col items-center justify-center gap-0.5 py-2 text-[10px] font-medium transition-colors min-w-0",
               anyMoreActive || moreOpen
-                ? "text-[#d97757] bg-orange-500/10"
+                ? "text-[#d97757]"
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
