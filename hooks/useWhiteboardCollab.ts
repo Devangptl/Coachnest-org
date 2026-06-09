@@ -81,10 +81,10 @@ export function useWhiteboardCollab({
     ch.on("presence", { event: "sync" }, syncPresence)
       .on("presence", { event: "join" }, syncPresence)
       .on("presence", { event: "leave" }, syncPresence)
-      .on("broadcast", { event: events.whiteboardPointerUpdate }, (msg) =>
+      .on("broadcast", { event: events.whiteboardPointerUpdate }, (msg: { payload: unknown }) =>
         handlers.current.onPointer(msg.payload as PointerPayload),
       )
-      .on("broadcast", { event: events.whiteboardSceneUpdate }, (msg) =>
+      .on("broadcast", { event: events.whiteboardSceneUpdate }, (msg: { payload: unknown }) =>
         handlers.current.onScene(msg.payload as ScenePayload),
       )
       .subscribe((status: string) => {
