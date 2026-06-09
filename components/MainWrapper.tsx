@@ -4,7 +4,7 @@ import { usePathname } from "next/navigation";
 
 const AUTH_ROUTES = ["/login", "/signup", "/forgot-password", "/reset-password"];
 
-const BOTTOM_NAV_PREFIXES = ["/dashboard", "/instructor", "/community"];
+const BOTTOM_NAV_PREFIXES = ["/dashboard", "/instructor", "/admin", "/community"];
 
 export default function MainWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

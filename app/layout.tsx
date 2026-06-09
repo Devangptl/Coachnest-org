@@ -44,7 +44,7 @@ import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UIDialogProvider } from "@/components/ui/UIDialogProvider";
-import BottomNav from "@/components/BottomNav";
+import BottomNavWrapper from "@/components/BottomNavWrapper";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
@@ -168,7 +168,7 @@ export default function RootLayout({
 
             {/* Global toast notifications */}
             <ToasterProvider />
-            <BottomNav />
+            <BottomNavWrapper />
             <PWAInstallPrompt />
           </UIDialogProvider>
         </ThemeProvider>
