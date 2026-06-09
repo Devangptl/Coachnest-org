@@ -27,8 +27,8 @@ const QUICK_LINKS = [
     title: "Discussion Forums",
     desc: "Ask questions, get answers, share knowledge.",
     href: "/community/forums",
-    color: "text-blue-400",
-    bg: "bg-blue-500/10 border-blue-500/20",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
     proWrite: true,
   },
   {
@@ -36,8 +36,8 @@ const QUICK_LINKS = [
     title: "Study Groups",
     desc: "Form groups, track progress together, earn group XP.",
     href: "/community/groups",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10 border-emerald-500/20",
+    color: "text-green-400",
+    bg: "bg-green-500/10 border-green-500/20",
     proWrite: true,
   },
   {
@@ -45,8 +45,8 @@ const QUICK_LINKS = [
     title: "Peer Review",
     desc: "Submit work, give & receive structured feedback.",
     href: "/community/peer-review",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10 border-purple-500/20",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
     proWrite: true,
   },
   {
@@ -171,7 +171,7 @@ export async function PopularThreadsSection() {
     <section id="tour-community-threads">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-          <TrendingUp className="w-4 h-4 text-blue-400" />
+          <TrendingUp className="w-4 h-4 text-emerald-400" />
           Popular Discussions
         </h2>
         <Link href="/community/forums" className="text-xs text-muted-foreground hover:text-foreground transition-colors">

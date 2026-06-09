@@ -34,6 +34,10 @@ import {
   Monitor,
   LogOut,
   GraduationCap,
+  Compass,
+  MessageSquare,
+  ClipboardCheck,
+  Activity,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionPayload } from "@/lib/auth";
@@ -159,6 +163,36 @@ const ADMIN_MORE: Section[] = [
   },
 ];
 
+const COMMUNITY_TABS: Item[] = [
+  { href: "/community",             label: "Hub",     icon: Compass,        exact: true },
+  { href: "/community/forums",      label: "Forums",  icon: MessageSquare               },
+  { href: "/community/groups",      label: "Groups",  icon: Users                       },
+  { href: "/community/peer-review", label: "Review",  icon: ClipboardCheck              },
+];
+
+function buildCommunityMore(role: string): Section[] {
+  const backItems: Item[] =
+    role === "ADMIN"
+      ? [{ href: "/admin",       label: "Admin Dashboard",    icon: Shield,         exact: true }]
+      : role === "INSTRUCTOR"
+      ? [{ href: "/instructor",  label: "Instructor Portal",  icon: GraduationCap,  exact: true }]
+      : [
+          { href: "/dashboard",  label: "Dashboard",          icon: LayoutDashboard, exact: true },
+          { href: "/courses",    label: "Browse Courses",      icon: BookOpen                     },
+        ];
+
+  const baseMores =
+    role === "ADMIN" ? ADMIN_MORE
+    : role === "INSTRUCTOR" ? INSTRUCTOR_MORE
+    : STUDENT_MORE;
+
+  return [
+    { title: "Community", items: [{ href: "/community/feed", label: "Activity Feed", icon: Activity }] },
+    { title: "Navigate",  items: backItems },
+    ...baseMores,
+  ];
+}
+
 const SHOW_PREFIXES = ["/dashboard", "/instructor", "/admin", "/community"];
 
 function matchesPrefix(pathname: string, prefix: string) {
@@ -198,8 +232,11 @@ export default function BottomNav({ session }: Props) {
   if (!session) return null;
   if (!SHOW_PREFIXES.some((p) => matchesPrefix(pathname, p))) return null;
 
-  const { tabs, more } =
-    session.role === "ADMIN"
+  const isCommunity = matchesPrefix(pathname, "/community");
+
+  const { tabs, more } = isCommunity
+    ? { tabs: COMMUNITY_TABS, more: buildCommunityMore(session.role) }
+    : session.role === "ADMIN"
       ? { tabs: ADMIN_TABS, more: ADMIN_MORE }
       : session.role === "INSTRUCTOR"
         ? { tabs: INSTRUCTOR_TABS, more: INSTRUCTOR_MORE }

@@ -116,7 +116,7 @@ export default function ProfessionPicker({
 
       {/* Profession grid */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-hidden">
           {filtered.map((p) => (
             <ProfessionCard
               key={p.id}

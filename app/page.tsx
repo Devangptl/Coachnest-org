@@ -322,21 +322,6 @@ export default async function HomePage() {
             {/* ── LEFT COLUMN — Copy + CTA ──────────────────────────── */}
             <div className="">
 
-              {/* Announcement pill */}
-              <FadeInSection delay={0}>
-                <Link
-                  href="/courses"
-                  className="group inline-flex items-center gap-2.5 bg-orange-500/[0.08] hover:bg-orange-500/[0.14] border border-orange-500/25 hover:border-orange-500/40 text-[#d97757] text-[13px] font-medium rounded-full pl-1.5 pr-4 py-1 mb-7 transition-all duration-300 backdrop-blur-sm"
-                >
-                  <span className="hero-badge-pulse flex items-center gap-1.5 bg-gradient-to-r from-orange-500 to-[#d97757] text-white text-[10px] font-bold uppercase tracking-wider rounded-full px-2 py-0.5">
-                    <Sparkles className="w-3 h-3" />
-                    v2.0
-                  </span>
-                  <span>Spring drop — 40+ new lessons live</span>
-                  <ArrowRight className="w-3.5 h-3.5 text-[#d97757]/70 group-hover:text-[#d97757] group-hover:translate-x-0.5 transition-all" />
-                </Link>
-              </FadeInSection>
-
               {/* Headline */}
               <FadeInSection delay={0.06}>
                 <h1 className="text-[28px] sm:text-[40px] md:text-[48px] lg:text-[58px] font-hero leading-[1.1] mb-6">
