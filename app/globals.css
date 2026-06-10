@@ -70,6 +70,9 @@
   html {
     scroll-behavior: smooth;
     scrollbar-gutter: stable; /* prevent layout shift when scrollbar appears/disappears */
+    overflow-x: hidden;       /* prevent horizontal overflow triggering desktop zoom */
+    -webkit-text-size-adjust: 100%; /* prevent iOS text size adjustment after orientation change */
+    text-size-adjust: 100%;
   }
 
   body {
@@ -78,6 +81,8 @@
     min-height: 100vh;
     font-family: var(--font-poppins, system-ui, sans-serif);
     -webkit-font-smoothing: antialiased;
+    overflow-x: hidden; /* prevent any overflowing element from widening the page */
+    max-width: 100vw;
   }
 
   /* Claude Code-style heading typography — tight tracking, strong weight */

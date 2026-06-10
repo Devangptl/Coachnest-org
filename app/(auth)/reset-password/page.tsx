@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, FormEvent } from "react";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import Link from "next/link";
 import { Lock, Eye, EyeOff, ArrowRight, Loader2, CheckCircle2, AlertCircle, ShieldAlert } from "lucide-react";
 import { supabaseClient as supabase } from "@/lib/supabase/client";
@@ -68,15 +69,15 @@ function ResetPasswordForm() {
     };
 
     // Subscribe first so we don't miss the event
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent) => {
       if (event === "PASSWORD_RECOVERY") settle(true);
       // implicit flow signs the user in directly
       if (event === "SIGNED_IN" && tokenType === "recovery") settle(true);
     });
 
     // Fallback: exchange may have completed before we subscribed
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) settle(true);
+    supabase.auth.getSession().then(({ data }: { data: { session: Session | null } }) => {
+      if (data.session) settle(true);
     });
 
     const timer = setTimeout(() => settle(false), 8000);
