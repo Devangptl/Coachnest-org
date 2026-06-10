@@ -25,7 +25,16 @@ export default async function InstructorLayout({ children }: { children: React.R
   return (
     <div className="py-4">
       <div className="flex flex-col md:flex-row md:gap-4 md:min-h-[calc(100vh-4rem)]">
-        {showSidebar && <InstructorSidebar userId={session.userId} />}
+        {showSidebar && (
+          <InstructorSidebar
+            user={{
+              userId: session.userId,
+              name: session.name,
+              email: session.email,
+              avatar: session.avatar,
+            }}
+          />
+        )}
         <div className="flex-1 min-w-0 animate-fade-in pt-3 md:pt-0">{children}</div>
       </div>
     </div>
