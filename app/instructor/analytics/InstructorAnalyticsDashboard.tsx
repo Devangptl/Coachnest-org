@@ -43,6 +43,8 @@ interface Props {
   monthlyEnrollments: { month: string; enrollments: number }[];
   courseProgressStats: ProgressStat[];
   quizStats: QuizStat[];
+  /** True when a dateFrom/dateTo filter is active — totals become range counts. */
+  ranged?: boolean;
 }
 
 export default function InstructorAnalyticsDashboard({
@@ -54,6 +56,7 @@ export default function InstructorAnalyticsDashboard({
   monthlyEnrollments,
   courseProgressStats,
   quizStats,
+  ranged = false,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
@@ -91,18 +94,18 @@ export default function InstructorAnalyticsDashboard({
       sub: `${courses.filter((c) => c.enrollments > 0).length} with students`,
     },
     {
-      label: "Total Students",
+      label: ranged ? "Enrollments" : "Total Students",
       value: totalStudents.toLocaleString(),
       icon: Users,
       color: "bg-violet-500/15 text-violet-400",
-      sub: "All-time enrollments",
+      sub: ranged ? "Enrolled in range" : "All-time enrollments",
     },
     {
-      label: "Total Revenue",
+      label: ranged ? "Revenue" : "Total Revenue",
       value: `₹${totalRevenue.toLocaleString("en-IN")}`,
       icon: DollarSign,
       color: "bg-emerald-500/15 text-emerald-400",
-      sub: "From paid orders",
+      sub: ranged ? "Paid orders in range" : "From paid orders",
     },
     {
       label: "Avg Rating",

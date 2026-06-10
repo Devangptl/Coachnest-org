@@ -49,6 +49,8 @@ interface Props {
     user: { name: string; email: string } | null;
     course: { title: string } | null;
   }[];
+  /** True when a dateFrom/dateTo filter is active — totals become range counts. */
+  ranged?: boolean;
 }
 
 export default function AnalyticsDashboard({
@@ -60,6 +62,7 @@ export default function AnalyticsDashboard({
   monthlyEnrollments,
   courseCompletionStats,
   recentOrders,
+  ranged = false,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
@@ -88,32 +91,32 @@ export default function AnalyticsDashboard({
 
   const statCards = [
     {
-      label: "Total Users",
+      label: ranged ? "New Users" : "Total Users",
       value: stats.totalUsers.toLocaleString(),
       icon: Users,
       color: "bg-blue-500/20 text-blue-400",
-      sub: `${engagement.activeStudents} active this month`,
+      sub: ranged ? "Joined in range" : `${engagement.activeStudents} active this month`,
     },
     {
-      label: "Published Courses",
+      label: ranged ? "New Courses" : "Published Courses",
       value: stats.totalCourses.toLocaleString(),
       icon: BookOpen,
       color: "bg-orange-500/15 text-[#d97757]",
-      sub: `${engagement.avgCompletionRate}% avg completion`,
+      sub: ranged ? "Published, created in range" : `${engagement.avgCompletionRate}% avg completion`,
     },
     {
-      label: "Total Enrollments",
+      label: ranged ? "Enrollments" : "Total Enrollments",
       value: stats.totalEnrollments.toLocaleString(),
       icon: TrendingUp,
       color: "bg-emerald-500/20 text-emerald-400",
-      sub: `${engagement.totalLessonsCompleted.toLocaleString()} lessons done`,
+      sub: ranged ? "Enrolled in range" : `${engagement.totalLessonsCompleted.toLocaleString()} lessons done`,
     },
     {
-      label: "Total Revenue",
+      label: ranged ? "Revenue" : "Total Revenue",
       value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`,
       icon: DollarSign,
       color: "bg-amber-500/20 text-amber-400",
-      sub: "All-time paid orders",
+      sub: ranged ? "Paid orders in range" : "All-time paid orders",
     },
   ];
 

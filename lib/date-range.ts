@@ -44,6 +44,18 @@ export function matchPreset(range: DateRange, now: Date = new Date()): PresetKey
   return "custom";
 }
 
+/** Prisma-ready { gte, lte } bounds for a yyyy-MM-dd range; undefined when empty. */
+export function toDateBounds(
+  dateFrom?: string,
+  dateTo?: string
+): { gte?: Date; lte?: Date } | undefined {
+  if (!dateFrom && !dateTo) return undefined;
+  return {
+    ...(dateFrom && { gte: startOfDay(parseISO(dateFrom)) }),
+    ...(dateTo && { lte: endOfDay(parseISO(dateTo)) }),
+  };
+}
+
 /** True when `date` falls inside the (inclusive, whole-day) range. */
 export function isWithinRange(date: Date | string, range: DateRange): boolean {
   if (!range.from && !range.to) return true;

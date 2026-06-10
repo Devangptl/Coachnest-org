@@ -11,6 +11,9 @@ import {
   getInstructorQuizStats,
 } from "@/services/analytics.service";
 import { instructorScopedCourseWhere } from "@/services/collaboration.service";
+import { toDateBounds } from "@/lib/date-range";
+import GlassCard from "@/components/GlassCard";
+import { UrlDateRangeFilter } from "@/components/ui/DateRangeFilter";
 
 const InstructorAnalyticsDashboard = dynamic(
   () => import("./InstructorAnalyticsDashboard"),
@@ -29,19 +32,30 @@ const InstructorAnalyticsDashboard = dynamic(
   }
 );
 
-async function getAnalytics(userId: string) {
+async function getAnalytics(userId: string, filters?: { dateFrom?: string; dateTo?: string }) {
   const courseScope = instructorScopedCourseWhere(userId);
+  const bounds = toDateBounds(filters?.dateFrom, filters?.dateTo);
   const [courses, totalStudents, reviews] = await Promise.all([
     prisma.course.findMany({
       where: courseScope,
       include: {
-        _count: { select: { enrollments: true, reviews: true } },
+        _count: {
+          select: {
+            enrollments: bounds ? { where: { enrolledAt: bounds } } : true,
+            reviews: true,
+          },
+        },
         reviews: { select: { rating: true } },
-        orders: { where: { status: "PAID" }, select: { amount: true } },
+        orders: {
+          where: { status: "PAID", ...(bounds && { createdAt: bounds }) },
+          select: { amount: true },
+        },
       },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.enrollment.count({ where: { course: courseScope } }),
+    prisma.enrollment.count({
+      where: { course: courseScope, ...(bounds && { enrolledAt: bounds }) },
+    }),
     prisma.review.findMany({
       where: { course: courseScope },
       select: { rating: true },
@@ -74,28 +88,45 @@ async function getAnalytics(userId: string) {
   };
 }
 
-export default async function InstructorAnalyticsPage() {
+export default async function InstructorAnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string }>;
+}) {
   const session = await getSession();
   if (!session) redirect("/login");
 
+  const { dateFrom, dateTo } = await searchParams;
+  const ranged = Boolean(dateFrom || dateTo);
+
   const [analytics, monthlyEnrollments, courseProgressStats, quizStats] =
     await Promise.all([
-      getAnalytics(session.userId),
+      getAnalytics(session.userId, { dateFrom, dateTo }),
       getInstructorMonthlyEnrollments(session.userId, 6),
       getInstructorCourseProgressStats(session.userId),
       getInstructorQuizStats(session.userId),
     ]);
 
   return (
-    <InstructorAnalyticsDashboard
-      totalCourses={analytics.totalCourses}
-      totalStudents={analytics.totalStudents}
-      totalRevenue={analytics.totalRevenue}
-      avgRating={analytics.avgRating}
-      courses={analytics.courses}
-      monthlyEnrollments={monthlyEnrollments}
-      courseProgressStats={courseProgressStats}
-      quizStats={quizStats}
-    />
+    <div className="space-y-6">
+      <GlassCard padding="md">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          Date range — applies to enrollments, revenue &amp; per-course numbers
+        </p>
+        <UrlDateRangeFilter />
+      </GlassCard>
+
+      <InstructorAnalyticsDashboard
+        ranged={ranged}
+        totalCourses={analytics.totalCourses}
+        totalStudents={analytics.totalStudents}
+        totalRevenue={analytics.totalRevenue}
+        avgRating={analytics.avgRating}
+        courses={analytics.courses}
+        monthlyEnrollments={monthlyEnrollments}
+        courseProgressStats={courseProgressStats}
+        quizStats={quizStats}
+      />
+    </div>
   );
 }

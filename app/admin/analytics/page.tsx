@@ -4,6 +4,8 @@
 import dynamic from "next/dynamic";
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
+import GlassCard from "@/components/GlassCard";
+import { UrlDateRangeFilter } from "@/components/ui/DateRangeFilter";
 import {
   getAdminStats,
   getEngagementMetrics,
@@ -38,9 +40,17 @@ const AnalyticsDashboard = dynamic(() => import("./AnalyticsDashboard"), {
   ),
 });
 
-export default async function AnalyticsPage() {
+export default async function AnalyticsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string }>;
+}) {
   const session = await getSession();
   if (!session || session.role !== "ADMIN") redirect("/dashboard");
+
+  const { dateFrom, dateTo } = await searchParams;
+  const filters = { dateFrom, dateTo };
+  const ranged = Boolean(dateFrom || dateTo);
 
   const [
     stats,
@@ -52,30 +62,40 @@ export default async function AnalyticsPage() {
     courseCompletionStats,
     monthlyEnrollments,
   ] = await Promise.all([
-    getAdminStats(),
+    getAdminStats(filters),
     getEngagementMetrics(),
     getMonthlyRevenue(6),
-    getTopCourses(5),
+    getTopCourses(5, filters),
     getUserGrowth(6),
-    getRecentOrders(8),
-    getCourseCompletionStats(8),
+    getRecentOrders(8, filters),
+    getCourseCompletionStats(8, filters),
     getMonthlyEnrollments(6),
   ]);
 
   return (
-    <AnalyticsDashboard
-      stats={stats}
-      engagement={engagement}
-      revenue={revenue}
-      topCourses={topCourses}
-      userGrowth={userGrowth}
-      monthlyEnrollments={monthlyEnrollments}
-      courseCompletionStats={courseCompletionStats}
-      recentOrders={recentOrders.map((o) => ({
-        ...o,
-        amount: o.amount.toString(),
-        createdAt: o.createdAt.toISOString(),
-      }))}
-    />
+    <div className="space-y-6">
+      <GlassCard padding="md">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+          Date range — applies to totals, top courses, completions &amp; recent orders
+        </p>
+        <UrlDateRangeFilter />
+      </GlassCard>
+
+      <AnalyticsDashboard
+        ranged={ranged}
+        stats={stats}
+        engagement={engagement}
+        revenue={revenue}
+        topCourses={topCourses}
+        userGrowth={userGrowth}
+        monthlyEnrollments={monthlyEnrollments}
+        courseCompletionStats={courseCompletionStats}
+        recentOrders={recentOrders.map((o) => ({
+          ...o,
+          amount: o.amount.toString(),
+          createdAt: o.createdAt.toISOString(),
+        }))}
+      />
+    </div>
   );
 }
