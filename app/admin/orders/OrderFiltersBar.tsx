@@ -42,7 +42,7 @@ export default function OrderFiltersBar() {
               onKeyDown={(e) => e.key === "Enter" && handleFilter()}
             />
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Select
               value={status}
               onValueChange={setStatus}
