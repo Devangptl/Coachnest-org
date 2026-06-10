@@ -39,6 +39,7 @@ import {
   ClipboardCheck,
   Activity,
   PencilRuler,
+  Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionPayload } from "@/lib/auth";
@@ -152,6 +153,7 @@ const ADMIN_MORE: Section[] = [
       { href: "/admin/refunds", label: "Refunds", icon: RotateCcw },
       { href: "/admin/payouts", label: "Payouts", icon: Wallet },
       { href: "/admin/platform-offers", label: "Platform Offers", icon: Tag },
+      { href: "/admin/add-ons", label: "Add-ons", icon: Package },
     ],
   },
   {

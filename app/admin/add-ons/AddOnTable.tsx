@@ -188,7 +188,7 @@ export default function AddOnTable({ features }: { features: AdminAddOn[] }) {
               className="input-glass w-full h-20"
             />
           </div>
-          <Button size="sm" loading={busyId === "new"} onClick={handleCreate}>
+          <Button size="sm" className="w-full sm:w-auto" loading={busyId === "new"} onClick={handleCreate}>
             Create Add-on
           </Button>
         </div>
@@ -236,11 +236,11 @@ export default function AddOnTable({ features }: { features: AdminAddOn[] }) {
                         className="input-glass w-full h-20"
                       />
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="sm" loading={busyId === f.id} onClick={() => saveEdit(f)}>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <Button size="sm" className="w-full sm:w-auto" loading={busyId === f.id} onClick={() => saveEdit(f)}>
                         Save Changes
                       </Button>
-                      <Button size="sm" variant="ghost" onClick={() => setEditingId(null)}>
+                      <Button size="sm" variant="ghost" className="w-full sm:w-auto" onClick={() => setEditingId(null)}>
                         Cancel
                       </Button>
                     </div>
@@ -248,14 +248,14 @@ export default function AddOnTable({ features }: { features: AdminAddOn[] }) {
                 ) : (
                   <>
                     <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <div className="flex items-center gap-2 mb-0.5">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2 mb-0.5 min-w-0">
                           <Package className="w-3.5 h-3.5 text-primary flex-shrink-0" />
                           <h3 className="font-semibold text-foreground text-sm truncate">{f.name}</h3>
-                          <span className="text-xs text-muted-foreground/60 flex-shrink-0">/{f.slug}</span>
+                          <span className="hidden sm:inline text-xs text-muted-foreground/60 flex-shrink-0">/{f.slug}</span>
                         </div>
                         {f.description && (
-                          <p className="text-xs text-muted-foreground line-clamp-1">{f.description}</p>
+                          <p className="text-xs text-muted-foreground line-clamp-2 sm:line-clamp-1">{f.description}</p>
                         )}
                       </div>
                       <span className="text-base font-bold text-foreground flex-shrink-0">
@@ -271,9 +271,10 @@ export default function AddOnTable({ features }: { features: AdminAddOn[] }) {
                         <Users className="w-3 h-3" />
                         {f.purchases.toLocaleString()} purchase{f.purchases === 1 ? "" : "s"}
                       </span>
+                      <span className="sm:hidden text-xs text-muted-foreground/60">/{f.slug}</span>
                     </div>
 
-                    <div className="mt-2 flex items-center gap-1">
+                    <div className="mt-2 flex flex-wrap items-center gap-1">
                       <Button
                         size="sm"
                         variant="ghost"
