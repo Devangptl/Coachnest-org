@@ -38,6 +38,7 @@ import {
   MessageSquare,
   ClipboardCheck,
   Activity,
+  PencilRuler,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionPayload } from "@/lib/auth";
@@ -71,6 +72,7 @@ const STUDENT_MORE: Section[] = [
       { href: "/dashboard/achievements", label: "Achievements", icon: Award },
       { href: "/dashboard/quizzes", label: "Quizzes", icon: ListChecks },
       { href: "/dashboard/classes", label: "Classes", icon: Users },
+      { href: "/whiteboards", label: "Whiteboards", icon: PencilRuler },
     ],
   },
   {
@@ -101,6 +103,7 @@ const INSTRUCTOR_MORE: Section[] = [
       { href: "/instructor/classes", label: "Classes", icon: Users },
       { href: "/instructor/playlists", label: "Playlists", icon: Library },
       { href: "/instructor/books", label: "Books", icon: BookOpen },
+      { href: "/whiteboards", label: "Whiteboards", icon: PencilRuler },
     ],
   },
   {

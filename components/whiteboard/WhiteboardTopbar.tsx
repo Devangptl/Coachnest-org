@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import toast from "react-hot-toast";
 import {
+  ArrowLeft,
   Download,
   Image as ImageIcon,
   Link2,
@@ -28,9 +30,33 @@ export default function WhiteboardTopbar({
   onToggleLeft: () => void;
   onToggleRight: () => void;
 }) {
-  const { title, role, apiRef } = useWhiteboard();
+  const { boardId, title, setTitle, role, canManage, apiRef } = useWhiteboard();
   const [busy, setBusy] = useState(false);
+  const [editingTitle, setEditingTitle] = useState(false);
+  // Embedded boards (lesson/class iframes) shouldn't navigate the iframe to the hub.
+  const [embedded, setEmbedded] = useState(true);
   const badge = ROLE_BADGE[role];
+
+  useEffect(() => {
+    setEmbedded(window.self !== window.top);
+  }, []);
+
+  async function saveTitle(next: string) {
+    setEditingTitle(false);
+    const trimmed = next.trim();
+    if (!trimmed || trimmed === title) return;
+    const prev = title;
+    setTitle(trimmed);
+    const res = await fetch(`/api/whiteboards/${boardId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title: trimmed }),
+    }).catch(() => null);
+    if (!res?.ok) {
+      setTitle(prev);
+      toast.error("Rename failed");
+    }
+  }
 
   async function exportImage(kind: "png" | "svg") {
     const api = apiRef.current;
@@ -69,12 +95,43 @@ export default function WhiteboardTopbar({
 
   return (
     <div className="flex items-center gap-1.5 sm:gap-3 px-2 sm:px-4 py-2 border-b border-border bg-card">
+      {!embedded && (
+        <Link
+          href="/whiteboards"
+          title="All whiteboards"
+          aria-label="Back to all whiteboards"
+          className="shrink-0 p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
+      )}
       <IconToggle onClick={onToggleLeft} title="Toggle pages">
         <PanelLeft className="w-4 h-4" />
       </IconToggle>
 
       <PencilLine className="w-4 h-4 text-[#d4703f] shrink-0 hidden sm:block" />
-      <span className="font-semibold text-sm truncate max-w-[32vw] sm:max-w-[36vw]">{title}</span>
+      {editingTitle ? (
+        <input
+          autoFocus
+          defaultValue={title}
+          onBlur={(e) => saveTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+            if (e.key === "Escape") setEditingTitle(false);
+          }}
+          className="input-glass h-7 text-sm font-semibold w-[32vw] sm:w-[36vw] max-w-xs"
+        />
+      ) : (
+        <span
+          className={`font-semibold text-sm truncate max-w-[32vw] sm:max-w-[36vw] ${
+            canManage ? "cursor-text hover:underline decoration-dotted underline-offset-4" : ""
+          }`}
+          title={canManage ? "Click to rename" : undefined}
+          onClick={() => canManage && setEditingTitle(true)}
+        >
+          {title}
+        </span>
+      )}
       <span
         className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border ${badge.cls} flex items-center gap-1`}
       >

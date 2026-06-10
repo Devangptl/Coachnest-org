@@ -27,6 +27,7 @@ export interface OnlineUser {
 interface WhiteboardContextValue {
   boardId: string;
   title: string;
+  setTitle: (title: string) => void;
   role: WhiteboardRole;
   canEdit: boolean;
   canManage: boolean;
@@ -59,6 +60,7 @@ export function WhiteboardProvider({
   currentUser: { userId: string; name: string; avatar: string | null };
   children: React.ReactNode;
 }) {
+  const [title, setTitle] = useState(board.title);
   const [pages, setPages] = useState<WhiteboardPageDTO[]>(board.pages);
   const [activePageId, setActivePageId] = useState<string>(
     board.pages[0]?.id ?? "",
@@ -76,7 +78,8 @@ export function WhiteboardProvider({
   const value = useMemo<WhiteboardContextValue>(
     () => ({
       boardId: board.id,
-      title: board.title,
+      title,
+      setTitle,
       role,
       canEdit: role === "EDITOR" || role === "OWNER",
       canManage: role === "OWNER",
@@ -92,7 +95,7 @@ export function WhiteboardProvider({
       apiRef,
       setApi,
     }),
-    [board.id, board.title, role, currentUser, pages, activePageId, collaborators, onlineUsers, setApi],
+    [board.id, title, role, currentUser, pages, activePageId, collaborators, onlineUsers, setApi],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

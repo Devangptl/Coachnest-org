@@ -9,7 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
-  PlusCircle, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo, Library, Bell, Mail,
+  PlusCircle, TrendingUp, Wallet, TrendingDown, UserCircle, ListVideo, Library, Bell, Mail, PencilRuler,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRealtimeChannel } from "@/hooks/useRealtimeChannel";
@@ -22,6 +22,7 @@ const navItems = [
   { label: "My Books",      href: "/instructor/books",        icon: Library },
   { label: "My Classes",    href: "/instructor/classes",      icon: GraduationCap },
   { label: "Course Lists",  href: "/instructor/playlists",    icon: ListVideo },
+  { label: "Whiteboards",   href: "/whiteboards",             icon: PencilRuler },
   { label: "My Students",   href: "/instructor/students",     icon: Users },
   { label: "Analytics",     href: "/instructor/analytics",    icon: BarChart3 },
   { label: "Earnings",      href: "/instructor/earnings",     icon: TrendingUp },

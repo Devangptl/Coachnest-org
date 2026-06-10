@@ -75,6 +75,18 @@ export interface WhiteboardDTO {
   collaborators: WhiteboardCollaboratorDTO[];
 }
 
+/** Card shown on the /whiteboards hub. */
+export interface WhiteboardListItemDTO {
+  id: string;
+  title: string;
+  scope: WhiteboardScope;
+  updatedAt: string;
+  ownerId: string;
+  ownerName: string;
+  pageCount: number;
+  collaboratorCount: number;
+}
+
 /** Realtime cursor/presence payload. */
 export interface PointerPayload {
   userId: string;

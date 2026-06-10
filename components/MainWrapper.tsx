@@ -9,7 +9,7 @@ const BOTTOM_NAV_PREFIXES = ["/dashboard", "/instructor", "/admin", "/community"
 export default function MainWrapper({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAuth = AUTH_ROUTES.some((r) => pathname.startsWith(r));
-  const isFullScreen = pathname.startsWith("/whiteboards");
+  const isFullScreen = /^\/whiteboards\/.+/.test(pathname);
   const hasBottomNav = BOTTOM_NAV_PREFIXES.some(
     (p) => pathname === p || pathname.startsWith(p + "/")
   );

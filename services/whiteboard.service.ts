@@ -89,7 +89,15 @@ export function listWhiteboardsForUser(userId: string) {
       OR: [{ ownerId: userId }, { collaborators: { some: { userId } } }],
     },
     orderBy: { updatedAt: "desc" },
-    select: { id: true, title: true, scope: true, updatedAt: true, ownerId: true },
+    select: {
+      id: true,
+      title: true,
+      scope: true,
+      updatedAt: true,
+      ownerId: true,
+      owner: { select: { name: true } },
+      _count: { select: { pages: true, collaborators: true } },
+    },
   });
 }
 
