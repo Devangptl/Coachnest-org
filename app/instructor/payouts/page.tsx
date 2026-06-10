@@ -366,7 +366,7 @@ export default function PayoutsPage() {
                       </a>
                     </div>
                   </div>
-                  <div className="flex items-center gap-4 sm:gap-6 flex-shrink-0 text-center mt-2 sm:mt-0">
+                  <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0 text-center mt-2 sm:mt-0">
                     <div>
                       <div className="text-sm sm:text-base font-bold text-foreground">{l.totalClicks}</div>
                       <div className="text-[10px] sm:text-xs text-muted-foreground">Clicks</div>

@@ -241,7 +241,8 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
           </p>
           <ShieldCheck className="w-4 h-4 text-muted-foreground" />
         </div>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full text-sm min-w-[560px]">
           <thead className="text-[11px] uppercase tracking-wider text-muted-foreground">
             <tr>
               <th className="text-left font-medium px-5 py-2">User</th>
@@ -383,6 +384,7 @@ export default function CollaboratorsManager({ courseId }: { courseId: string })
             })}
           </tbody>
         </table>
+        </div>
       </div>
 
       {pendingInvites.length > 0 && (
