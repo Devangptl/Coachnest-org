@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { emit } from "@/lib/realtime/emit";
 import { channels, events } from "@/lib/realtime/channels";
 import { reconcileElements } from "@/lib/whiteboard/reconcile";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import type {
   CreateWhiteboardInput,
   SyncElementsInput,

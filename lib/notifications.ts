@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { emit } from "@/lib/realtime/emit";
 import { channels, events } from "@/lib/realtime/channels";
-import type { Prisma, NotifType } from "@prisma/client";
+import type { Prisma, NotifType } from "@/lib/generated/prisma/client";
 
 /**
  * Create a notification and broadcast a realtime event on the recipient's

@@ -3,7 +3,7 @@
  * DELETE /api/whiteboards/[id]/pages/[pageId] — delete a page (editors+).
  */
 import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "@/lib/generated/prisma/client";
 import { canEdit } from "@/lib/whiteboard/permissions";
 import { getBoardRole, pageBelongsToBoard } from "@/lib/whiteboard/guard";
 import { updatePageSchema } from "@/lib/validation/whiteboard";

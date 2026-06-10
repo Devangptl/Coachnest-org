@@ -56,3 +56,6 @@ coverage/
 /public/workbox-*.js
 /public/workbox-*.js.map
 /public/fallback-*.js
+
+# Prisma generated client (regenerated via `prisma generate`)
+/lib/generated/

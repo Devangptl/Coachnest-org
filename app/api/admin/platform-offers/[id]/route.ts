@@ -5,7 +5,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { DiscountType, OfferScope } from "@prisma/client";
+import { DiscountType, OfferScope } from "@/lib/generated/prisma/client";
 import { getSession } from "@/lib/auth";
 import { canAccessAdminPath } from "@/lib/admin-permissions";
 import {

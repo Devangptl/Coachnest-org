@@ -9,7 +9,7 @@ import { TableSkeleton } from "@/components/ui/Skeleton";
 import Pagination from "@/components/ui/Pagination";
 import { getOrdersList, getRevenueStats } from "@/services/order.service";
 import { ShoppingCart, TrendingUp, AlertCircle, DollarSign } from "lucide-react";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/lib/generated/prisma/client";
 import OrderTable from "./OrderTable";
 import OrderFiltersBar from "./OrderFiltersBar";
 

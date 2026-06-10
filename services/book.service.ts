@@ -7,7 +7,7 @@
  *   - List: public (PUBLISHED only) unless an ADMIN/owner is requesting.
  */
 import { prisma } from "@/lib/prisma";
-import type { BookFileFormat, ContentStatus, Prisma } from "@prisma/client";
+import type { BookFileFormat, ContentStatus, Prisma } from "@/lib/generated/prisma/client";
 
 export interface BookListOpts {
   q?:           string;

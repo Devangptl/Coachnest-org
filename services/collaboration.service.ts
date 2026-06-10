@@ -18,7 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { createNotification } from "@/lib/notifications";
 import { sendCollaborationInviteEmail } from "@/lib/email";
 import { supabaseAdmin } from "@/lib/supabase";
-import type { CourseCollaboratorRole, Prisma } from "@prisma/client";
+import type { CourseCollaboratorRole, Prisma } from "@/lib/generated/prisma/client";
 
 const INVITE_EXPIRY_DAYS = 14;
 

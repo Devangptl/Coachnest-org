@@ -69,8 +69,8 @@ const nextConfig: NextConfig = {
   // ─── Bundle Prisma schema + migration files into the admin migration
   //     API routes so they're readable at runtime in serverless builds ──
   outputFileTracingIncludes: {
-    "/api/admin/migrations": ["./prisma/schema.prisma", "./prisma/migrations/**/*"],
-    "/api/admin/migrations/deploy": ["./prisma/schema.prisma", "./prisma/migrations/**/*"],
+    "/api/admin/migrations": ["./prisma/schema.prisma", "./prisma/migrations/**/*", "./prisma.config.ts"],
+    "/api/admin/migrations/deploy": ["./prisma/schema.prisma", "./prisma/migrations/**/*", "./prisma.config.ts"],
   },
 
   // ─── Tree-shake heavy barrel-export packages ──────────────────────

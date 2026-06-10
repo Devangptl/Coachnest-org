@@ -6,13 +6,15 @@
  * Run:  npm run db:seed:nextjs
  */
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import {
   getNextjsCourseSeed,
   buildOptions,
 } from "../lib/nextjs-course-seed";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 const INSTRUCTOR_ID =
   process.env.NEXTJS_SEED_INSTRUCTOR_ID ??

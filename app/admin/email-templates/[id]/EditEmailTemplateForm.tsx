@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/Checkbox";
 import { ArrowLeft, Eye, EyeOff, PlusCircle, X, Send } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import type { EmailTemplate } from "@prisma/client";
+import type { EmailTemplate } from "@/lib/generated/prisma/client";
 
 const VARIABLE_PRESETS = ["name", "email", "courseTitle", "subject", "link", "message", "date", "logo", "appUrl"];
 

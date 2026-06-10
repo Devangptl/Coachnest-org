@@ -3,7 +3,7 @@
  * All methods return plain serializable objects (safe to pass to Client Components).
  */
 import { prisma } from "@/lib/prisma";
-import { DiscountType } from "@prisma/client";
+import { DiscountType } from "@/lib/generated/prisma/client";
 import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
 
 // ─── Coupon List with Usage Stats ─────────────────────────────────────────

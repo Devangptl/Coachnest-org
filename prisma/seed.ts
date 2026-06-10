@@ -13,10 +13,12 @@
  */
 
 import "dotenv/config";
-import { PrismaClient, Role, ContentStatus } from "@prisma/client";
+import { PrismaClient, Role, ContentStatus } from "../lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import { createClient } from "@supabase/supabase-js";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,

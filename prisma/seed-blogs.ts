@@ -1,7 +1,10 @@
-import { PrismaClient, ContentStatus, Role } from "@prisma/client";
+import "dotenv/config";
+import { PrismaClient, ContentStatus, Role } from "../lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import slugify from "slugify";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 // ── Pool for Random Generation ───────────────────────────────────────────────
 
