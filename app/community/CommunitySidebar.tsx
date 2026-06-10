@@ -9,7 +9,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  MessageSquare, Users, ClipboardCheck, Activity, Menu, X, Compass, Lock, ShoppingCart,
+  MessageSquare, Users, ClipboardCheck, Activity, Menu, X, Compass, Lock,
+  ShoppingCart, Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
@@ -26,55 +27,73 @@ function NavLinks({ onNavigate, hasAccess }: { onNavigate?: () => void; hasAcces
   const pathname = usePathname();
 
   return (
-    <nav className="flex flex-col gap-1">
-      {navItems.map((item) => {
-        const isActive =
-          item.href === "/community"
-            ? pathname === "/community"
-            : pathname.startsWith(item.href);
-        const Icon = item.icon;
-        const locked = item.requiresAccess && !hasAccess;
+    <nav className="flex flex-col">
+      <p className="px-3 mb-1.5 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+        Spaces
+      </p>
+      <div className="flex flex-col gap-0.5">
+        {navItems.map((item) => {
+          const isActive =
+            item.href === "/community"
+              ? pathname === "/community"
+              : pathname.startsWith(item.href);
+          const Icon = item.icon;
+          const locked = item.requiresAccess && !hasAccess;
 
-        return (
-          <Link
-            key={item.href}
-            href={item.href}
-            onClick={onNavigate}
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all",
-              isActive
-                ? "bg-emerald-500/10 text-foreground border border-emerald-400/20"
-                : "text-muted-foreground hover:text-foreground hover:bg-secondary"
-            )}
-          >
-            <Icon
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
               className={cn(
-                "w-4 h-4 flex-shrink-0",
-                isActive ? "text-emerald-400" : locked ? "text-muted-foreground/50" : "text-muted-foreground"
+                "group relative flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                isActive
+                  ? "bg-emerald-500/10 text-foreground"
+                  : "text-muted-foreground hover:text-foreground hover:bg-secondary"
               )}
-            />
-            <span className="flex-1">{item.label}</span>
+            >
+              {isActive && (
+                <span className="absolute left-0 top-1/2 -translate-y-1/2 h-[18px] w-[3px] rounded-full bg-emerald-400" />
+              )}
+              <Icon
+                className={cn(
+                  "w-4 h-4 flex-shrink-0",
+                  isActive
+                    ? "text-emerald-400"
+                    : locked
+                      ? "text-muted-foreground/50"
+                      : "text-muted-foreground group-hover:text-foreground"
+                )}
+              />
+              <span className="flex-1 truncate">{item.label}</span>
 
-            {locked && (
-              <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary/70 border border-primary/20 flex-shrink-0">
-                <Lock className="w-2.5 h-2.5" />
-                Add-on
-              </span>
-            )}
-          </Link>
-        );
-      })}
+              {locked && (
+                <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary/70 border border-primary/20 flex-shrink-0">
+                  <Lock className="w-2.5 h-2.5" />
+                  Add-on
+                </span>
+              )}
+            </Link>
+          );
+        })}
+      </div>
 
       {/* Buy Community Access nudge for users without access */}
       {!hasAccess && (
-        <div className="mt-4 pt-4 border-t border-border">
+        <div className="mt-4 rounded-lg border border-primary/20 bg-primary/5 p-3">
+          <div className="flex items-center gap-1.5 mb-1">
+            <Sparkles className="w-3.5 h-3.5 text-primary flex-shrink-0" />
+            <p className="text-xs font-semibold text-foreground">Unlock Community</p>
+          </div>
+          <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">
+            Join forums, study groups and peer reviews with other learners.
+          </p>
           <Link
             href="/features/community"
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium bg-primary/10 border border-primary/20 text-primary hover:bg-primary/15 transition-all"
+            onClick={onNavigate}
+            className="flex items-center justify-center gap-1.5 w-full px-3 py-2 rounded-lg text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/90 transition-colors"
           >
-            <span className="w-5 h-5 rounded bg-primary/15 flex items-center justify-center flex-shrink-0">
-              <ShoppingCart className="w-3 h-3" />
-            </span>
+            <ShoppingCart className="w-3.5 h-3.5" />
             Buy Community Access
           </Link>
         </div>
@@ -100,11 +119,19 @@ export default function CommunitySidebar() {
   return (
     <>
       <aside id="tour-community-sidebar" className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20">
-        <div className="bg-card border border-border rounded-lg p-4 shadow-glass">
-          <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest px-3 mb-3">
-            Community
-          </p>
-          <NavLinks hasAccess={hasAccess} />
+        <div className="bg-card border border-border rounded-xl shadow-glass overflow-hidden">
+          <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border">
+            <span className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 text-emerald-400" />
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-foreground">Community</p>
+              <p className="text-[11px] text-muted-foreground truncate">Learn together</p>
+            </div>
+          </div>
+          <div className="px-2.5 py-3">
+            <NavLinks hasAccess={hasAccess} />
+          </div>
         </div>
       </aside>
 
@@ -122,11 +149,14 @@ export default function CommunitySidebar() {
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
           />
-          <div className="absolute left-0 top-0 bottom-0 w-[85vw] max-w-xs bg-card border-r border-border shadow-2xl shadow-black/60 p-5 overflow-y-auto overscroll-contain animate-slide-in">
-            <div className="flex items-center justify-between mb-5">
-              <p className="text-muted-foreground text-xs font-semibold uppercase tracking-widest">
-                Community
-              </p>
+          <div className="absolute left-0 top-0 bottom-0 w-[85vw] max-w-xs bg-card border-r border-border shadow-2xl shadow-black/60 flex flex-col animate-slide-in">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-border">
+              <div className="flex items-center gap-3 min-w-0">
+                <span className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
+                  <Users className="w-4 h-4 text-emerald-400" />
+                </span>
+                <p className="text-sm font-semibold text-foreground">Community</p>
+              </div>
               <button
                 onClick={() => setMobileOpen(false)}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
@@ -135,7 +165,9 @@ export default function CommunitySidebar() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <NavLinks onNavigate={() => setMobileOpen(false)} hasAccess={hasAccess} />
+            <div className="flex-1 overflow-y-auto overscroll-contain px-2.5 py-3">
+              <NavLinks onNavigate={() => setMobileOpen(false)} hasAccess={hasAccess} />
+            </div>
           </div>
         </div>
       )}
