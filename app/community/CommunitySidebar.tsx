@@ -118,7 +118,7 @@ export default function CommunitySidebar() {
 
   return (
     <>
-      <aside id="tour-community-sidebar" className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-20">
+      <aside id="tour-community-sidebar" className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-[4.5rem]">
         <div className="bg-card border border-border rounded-xl shadow-glass overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3.5 border-b border-border">
             <span className="w-9 h-9 rounded-lg bg-emerald-500/10 border border-emerald-400/20 flex items-center justify-center flex-shrink-0">
