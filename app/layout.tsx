@@ -52,6 +52,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
+  minimumScale: 1,
   maximumScale: 5,
   userScalable: true,
   themeColor: [
