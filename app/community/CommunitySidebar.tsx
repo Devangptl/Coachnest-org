@@ -118,7 +118,7 @@ export default function CommunitySidebar() {
 
   return (
     <>
-      <aside className="hidden lg:block w-64 flex-shrink-0 self-start sticky top-[4.5rem]">
+      <aside className="hidden md:block md:w-56 lg:w-64 flex-shrink-0 self-start sticky top-[4.5rem]">
         <div
           id="tour-community-sidebar"
           className="max-h-[calc(100vh-5.5rem)] flex flex-col bg-card border border-border rounded-xl shadow-glass overflow-hidden"
@@ -147,7 +147,7 @@ export default function CommunitySidebar() {
       </button>
 
       {mobileOpen && (
-        <div className="lg:hidden fixed inset-0 z-50">
+        <div className="md:hidden fixed inset-0 z-50">
           <div
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             onClick={() => setMobileOpen(false)}
