@@ -8,6 +8,7 @@
 import Link from "next/link";
 import { Lock, ShoppingCart, MessageSquare, Users, Star } from "lucide-react";
 import { usePurchasedFeatures } from "@/hooks/usePurchasedFeatures";
+import { useFeatureInfo } from "@/hooks/useFeatureCatalog";
 
 const PERKS = [
   { icon: MessageSquare, text: "Start & reply to discussions" },
@@ -30,6 +31,7 @@ const ACTION_COPY: Record<NonNullable<Props["action"]>, string> = {
 
 export default function CommunityAccessNotice({ action }: Props) {
   const { hasCommunityAccess, isLoading } = usePurchasedFeatures();
+  const community = useFeatureInfo("community");
 
   if (isLoading || hasCommunityAccess) return null;
 
@@ -68,7 +70,7 @@ export default function CommunityAccessNotice({ action }: Props) {
               className="btn-primary !px-4 !py-2 !text-xs !font-semibold !rounded-lg"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
-              Buy Access — ₹499
+              Buy Access{community ? ` — ₹${community.price.toLocaleString("en-IN")}` : ""}
             </Link>
             <Link
               href="/features"

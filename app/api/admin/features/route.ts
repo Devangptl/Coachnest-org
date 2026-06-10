@@ -10,12 +10,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { canAccessAdminPath } from "@/lib/admin-permissions";
 import slugify from "slugify";
+
+function unauthorized(session: Awaited<ReturnType<typeof getSession>>) {
+  if (!session || session.role !== "ADMIN") return true;
+  return !canAccessAdminPath(session.adminSubRole, "/admin/add-ons");
+}
 
 export async function GET() {
   try {
     const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+    if (unauthorized(session)) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
@@ -34,7 +40,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || session.role !== "ADMIN") {
+    if (unauthorized(session)) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 

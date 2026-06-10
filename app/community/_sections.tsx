@@ -64,9 +64,15 @@ const QUICK_LINKS = [
 
 export async function CommunityHeader() {
   const session = await getSession();
-  const hasCommunityAccess = session
-    ? await hasFeatureAccess(session.userId, session.role, "community")
-    : false;
+  const [hasCommunityAccess, communityFeature] = await Promise.all([
+    session
+      ? hasFeatureAccess(session.userId, session.role, "community")
+      : Promise.resolve(false),
+    prisma.platformFeature.findUnique({
+      where:  { slug: "community" },
+      select: { price: true },
+    }),
+  ]);
   const showLocks = !hasCommunityAccess;
 
   return (
@@ -147,7 +153,8 @@ export async function CommunityHeader() {
             href="/features/community"
             className="btn-primary !px-5 !py-2.5 !text-xs !font-semibold !rounded-md flex-shrink-0 w-full sm:w-auto"
           >
-            <ShoppingCart className="w-3.5 h-3.5" /> Buy Access — ₹499
+            <ShoppingCart className="w-3.5 h-3.5" /> Buy Access
+            {communityFeature && ` — ₹${Number(communityFeature.price).toLocaleString("en-IN")}`}
           </Link>
         </div>
       )}

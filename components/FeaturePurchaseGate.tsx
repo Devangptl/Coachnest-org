@@ -16,6 +16,7 @@
 
 import Link from "next/link";
 import { Lock, ShoppingCart, CheckCircle2, ArrowRight } from "lucide-react";
+import { useFeatureInfo } from "@/hooks/useFeatureCatalog";
 
 interface FeatureConfig {
   slug:        string;
@@ -25,12 +26,13 @@ interface FeatureConfig {
   includes:    string[];
 }
 
-const FEATURE_CONFIG: Record<string, FeatureConfig> = {
+// Static fallback copy; name, description and price are overridden with
+// live values from the add-on catalog (admins manage them in /admin/add-ons).
+const FEATURE_CONFIG: Record<string, Omit<FeatureConfig, "price">> = {
   community: {
     slug:        "community",
     name:        "Community Access",
     description: "Join the full community experience — post in forums, create study groups, give and receive peer reviews.",
-    price:       "₹499 one-time",
     includes: [
       "Post & reply in discussion forums",
       "Create and join study groups",
@@ -62,6 +64,8 @@ export default function FeaturePurchaseGate({
   variant   = "default",
   children,
 }: Props) {
+  const live = useFeatureInfo(feature);
+
   if (isLoading) {
     return <div className="animate-pulse rounded-md bg-secondary/40 min-h-[80px]" />;
   }
@@ -69,12 +73,17 @@ export default function FeaturePurchaseGate({
   if (hasAccess) return <>{children}</>;
   if (silent)    return null;
 
-  const config = FEATURE_CONFIG[feature] ?? {
+  const fallback = FEATURE_CONFIG[feature] ?? {
     slug:        feature,
     name:        feature,
     description: "Purchase this feature to get access.",
-    price:       "One-time purchase",
     includes:    [],
+  };
+  const config: FeatureConfig = {
+    ...fallback,
+    name:        live?.name ?? fallback.name,
+    description: live?.description ?? fallback.description,
+    price:       live ? `₹${live.price.toLocaleString("en-IN")} one-time` : "One-time purchase",
   };
 
   if (variant === "banner") return <BannerGate config={config} />;

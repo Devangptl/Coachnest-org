@@ -16,7 +16,7 @@ import {
   LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare, Megaphone,
   Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
-  Mail, ScrollText, ListVideo, Database, ShieldCheck, Library, Users2,
+  Mail, ScrollText, ListVideo, Database, ShieldCheck, Library, Users2, Package,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -38,6 +38,7 @@ const adminNav = [
   { label: "Enrollments",   href: "/admin/enrollments",     icon: GraduationCap },
   { label: "Coupons",       href: "/admin/coupons",         icon: Ticket },
   { label: "Platform Offers", href: "/admin/platform-offers", icon: Megaphone },
+  { label: "Add-ons",       href: "/admin/add-ons",         icon: Package },
   { label: "Orders",        href: "/admin/orders",          icon: ShoppingCart },
   { label: "Refunds",       href: "/admin/refunds",         icon: RotateCcw },
   { label: "Payouts",       href: "/admin/payouts",         icon: Wallet },

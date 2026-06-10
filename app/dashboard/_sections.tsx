@@ -203,11 +203,15 @@ export async function EnrollmentSection({ userId }: { userId: string }) {
 // ── Access panel: course count + community add-on ────────────────────────────
 
 export async function AccessPanel({ userId }: { userId: string }) {
-  const [enrollmentCount, featurePurchases] = await Promise.all([
+  const [enrollmentCount, featurePurchases, communityFeature] = await Promise.all([
     prisma.enrollment.count({ where: { userId } }),
     prisma.featurePurchase.findMany({
       where: { userId },
       include: { feature: { select: { slug: true } } },
+    }),
+    prisma.platformFeature.findUnique({
+      where:  { slug: "community" },
+      select: { price: true },
     }),
   ]);
   const hasCommunityAccess = featurePurchases.some(
@@ -261,7 +265,10 @@ export async function AccessPanel({ userId }: { userId: string }) {
             </div>
             <div>
               <p className="text-foreground font-semibold text-sm">Community Access</p>
-              <p className="text-muted-foreground text-xs">One-time add-on · ₹499</p>
+              <p className="text-muted-foreground text-xs">
+                One-time add-on
+                {communityFeature && ` · ₹${Number(communityFeature.price).toLocaleString("en-IN")}`}
+              </p>
             </div>
           </div>
           <Link href="/features/community" className="btn-primary text-xs py-2 px-3 flex-shrink-0 whitespace-nowrap">
