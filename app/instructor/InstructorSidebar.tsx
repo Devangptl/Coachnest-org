@@ -93,8 +93,8 @@ export default function InstructorSidebar({ user }: { user: SidebarUser }) {
   const unread = useUnreadCount(user.userId);
 
   return (
-    <aside className="hidden md:block md:w-56 lg:w-64 flex-shrink-0 self-start sticky top-[4.5rem]">
-      <div className="flex flex-col h-[calc(100vh-5.5rem)] bg-card border border-border rounded-xl shadow-glass overflow-hidden">
+    <aside className="hidden md:block md:w-56 lg:w-64 flex-shrink-0">
+      <div className="fixed top-[4.5rem] bottom-4 md:w-56 lg:w-64 flex flex-col bg-card border border-border rounded-xl shadow-glass overflow-hidden">
         <Link
           href="/instructor/profile"
           className="flex items-center gap-3 px-4 py-3.5 border-b border-border hover:bg-secondary/60 transition-colors"

@@ -164,11 +164,11 @@ export default function DashboardSidebar({ user }: { user: SidebarUser }) {
   return (
     <>
       {/* ── Desktop sidebar ─────────────────────────────────────────── */}
-      <aside
-        id="tour-sidebar"
-        className="hidden md:block md:w-56 lg:w-64 flex-shrink-0 self-start sticky top-[4.5rem]"
-      >
-        <div className="flex flex-col h-[calc(100vh-5.5rem)] bg-card border border-border rounded-xl shadow-glass overflow-hidden">
+      <aside className="hidden md:block md:w-56 lg:w-64 flex-shrink-0">
+        <div
+          id="tour-sidebar"
+          className="fixed top-[4.5rem] bottom-4 md:w-56 lg:w-64 flex flex-col bg-card border border-border rounded-xl shadow-glass overflow-hidden"
+        >
           <ProfileHeader user={user} />
           <div className="flex-1 overflow-y-auto px-2.5 py-3">
             <NavLinks />
