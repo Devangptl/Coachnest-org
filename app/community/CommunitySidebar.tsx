@@ -56,7 +56,7 @@ function NavLinks({ onNavigate, hasAccess }: { onNavigate?: () => void; hasAcces
             <span className="flex-1">{item.label}</span>
 
             {locked && (
-              <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-[#d97757]/70 border border-orange-500/20 flex-shrink-0">
+              <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary/70 border border-primary/20 flex-shrink-0">
                 <Lock className="w-2.5 h-2.5" />
                 Add-on
               </span>
@@ -70,9 +70,9 @@ function NavLinks({ onNavigate, hasAccess }: { onNavigate?: () => void; hasAcces
         <div className="mt-4 pt-4 border-t border-border">
           <Link
             href="/features/community"
-            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium bg-orange-500/8 border border-orange-500/20 text-[#d97757] hover:bg-orange-500/15 transition-all"
+            className="flex items-center gap-2 px-3 py-2.5 rounded-lg text-xs font-medium bg-primary/10 border border-primary/20 text-primary hover:bg-primary/15 transition-all"
           >
-            <span className="w-5 h-5 rounded bg-orange-500/15 flex items-center justify-center flex-shrink-0">
+            <span className="w-5 h-5 rounded bg-primary/15 flex items-center justify-center flex-shrink-0">
               <ShoppingCart className="w-3 h-3" />
             </span>
             Buy Community Access

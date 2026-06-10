@@ -34,15 +34,15 @@ export default function CommunityAccessNotice({ action }: Props) {
   if (isLoading || hasCommunityAccess) return null;
 
   return (
-    <div className="rounded-md border border-orange-500/20 bg-gradient-to-br from-orange-500/8 to-amber-600/5 p-5">
+    <div className="rounded-md border border-primary/20 bg-gradient-to-br from-primary/10 to-primary/5 p-5">
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
-          <Lock style={{ width: "18px", height: "18px" }} className="text-[#d97757]" />
+        <div className="w-10 h-10 rounded-md bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
+          <Lock style={{ width: "18px", height: "18px" }} className="text-primary" />
         </div>
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-orange-500/10 text-[#d97757] border border-orange-500/20">
+            <span className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
               Add-on Required
             </span>
           </div>
@@ -56,7 +56,7 @@ export default function CommunityAccessNotice({ action }: Props) {
           <div className="flex flex-wrap gap-x-5 gap-y-1 mb-4">
             {PERKS.map(({ icon: Icon, text }) => (
               <div key={text} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Icon className="w-3 h-3 text-[#d97757] flex-shrink-0" />
+                <Icon className="w-3 h-3 text-primary flex-shrink-0" />
                 {text}
               </div>
             ))}
@@ -65,7 +65,7 @@ export default function CommunityAccessNotice({ action }: Props) {
           <div className="flex items-center gap-3">
             <Link
               href="/features/community"
-              className="inline-flex items-center gap-1.5 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors"
+              className="btn-primary !px-4 !py-2 !text-xs !font-semibold !rounded-lg"
             >
               <ShoppingCart className="w-3.5 h-3.5" />
               Buy Access — ₹499

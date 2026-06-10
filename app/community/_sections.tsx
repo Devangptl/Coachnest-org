@@ -36,8 +36,8 @@ const QUICK_LINKS = [
     title: "Study Groups",
     desc: "Form groups, track progress together, earn group XP.",
     href: "/community/groups",
-    color: "text-green-400",
-    bg: "bg-green-500/10 border-green-500/20",
+    color: "text-emerald-400",
+    bg: "bg-emerald-500/10 border-emerald-500/20",
     proWrite: true,
   },
   {
@@ -54,8 +54,8 @@ const QUICK_LINKS = [
     title: "Activity Feed",
     desc: "See badges earned, milestones, and community wins.",
     href: "/community/feed",
-    color: "text-[#d97757]",
-    bg: "bg-orange-500/10 border-orange-500/20",
+    color: "text-primary",
+    bg: "bg-primary/10 border-primary/20",
     proWrite: false,
   },
 ];
@@ -109,7 +109,7 @@ export async function CommunityHeader() {
                   <p className={`font-semibold text-sm mb-1 flex flex-wrap items-center gap-1.5 sm:gap-2 transition-colors ${isLocked ? "text-muted-foreground" : "text-foreground"}`}>
                     <span className="truncate">{item.title}</span>
                     {isLocked ? (
-                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-orange-500/10 text-orange-500/70 border border-orange-500/20 flex-shrink-0">
+                      <span className="flex items-center gap-0.5 text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-primary/10 text-primary/70 border border-primary/20 flex-shrink-0">
                         <Lock className="w-2.5 h-2.5" /> Add-on Required
                       </span>
                     ) : (
@@ -118,7 +118,7 @@ export async function CommunityHeader() {
                   </p>
                   <p className="text-muted-foreground text-xs leading-relaxed">{item.desc}</p>
                   {isLocked && (
-                    <p className="text-orange-500/60 text-[11px] mt-1.5 flex items-center gap-1">
+                    <p className="text-primary/60 text-[11px] mt-1.5 flex items-center gap-1">
                       <Lock className="w-3 h-3" /> Requires Community Access
                     </p>
                   )}
@@ -131,10 +131,10 @@ export async function CommunityHeader() {
 
       {/* Buy CTA */}
       {showLocks && (
-        <div className="rounded-md border border-orange-500/20 bg-gradient-to-r from-orange-500/8 to-amber-600/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+        <div className="rounded-md border border-primary/20 bg-gradient-to-r from-primary/10 to-primary/5 p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
           <div className="flex items-start gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-md bg-orange-500/15 border border-orange-500/25 flex items-center justify-center flex-shrink-0">
-              <Users className="w-4 h-4 text-[#d97757]" />
+            <div className="w-9 h-9 rounded-md bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
+              <Users className="w-4 h-4 text-primary" />
             </div>
             <div className="min-w-0">
               <p className="text-foreground font-semibold text-sm">Unlock the full community experience</p>
@@ -145,7 +145,7 @@ export async function CommunityHeader() {
           </div>
           <Link
             href="/features/community"
-            className="flex items-center justify-center gap-2 bg-orange-500 hover:bg-[#d97757] text-white text-xs font-semibold px-5 py-2.5 rounded-md transition-colors flex-shrink-0 w-full sm:w-auto"
+            className="btn-primary !px-5 !py-2.5 !text-xs !font-semibold !rounded-md flex-shrink-0 w-full sm:w-auto"
           >
             <ShoppingCart className="w-3.5 h-3.5" /> Buy Access — ₹499
           </Link>
@@ -283,7 +283,7 @@ export async function RecentActivitySection() {
     <section>
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
-          <Flame className="w-4 h-4 text-[#d97757]" />
+          <Flame className="w-4 h-4 text-primary" />
           Recent Activity
         </h2>
         <Link href="/community/feed" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
