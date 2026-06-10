@@ -3,7 +3,7 @@
  * All methods return plain serialisable objects (safe to pass to Client Components).
  */
 import { prisma } from "@/lib/prisma";
-import { startOfMonth, startOfWeek, subMonths, subWeeks, format } from "date-fns";
+import { startOfMonth, startOfWeek, subMonths, subWeeks, format, startOfDay, endOfDay, parseISO } from "date-fns";
 import { instructorScopedCourseWhere } from "@/services/collaboration.service";
 
 // ─── Admin-wide analytics ─────────────────────────────────────────────────────
@@ -312,9 +312,23 @@ export async function getInstructorQuizStats(instructorId: string) {
 /**
  * Students enrolled in the instructor's courses with per-course progress.
  */
-export async function getInstructorStudentsWithProgress(instructorId: string) {
+export async function getInstructorStudentsWithProgress(
+  instructorId: string,
+  filters?: { dateFrom?: string; dateTo?: string }
+) {
+  const enrolledAt =
+    filters?.dateFrom || filters?.dateTo
+      ? {
+          ...(filters.dateFrom && { gte: startOfDay(parseISO(filters.dateFrom)) }),
+          ...(filters.dateTo && { lte: endOfDay(parseISO(filters.dateTo)) }),
+        }
+      : undefined;
+
   const enrollments = await prisma.enrollment.findMany({
-    where: { course: instructorScopedCourseWhere(instructorId) },
+    where: {
+      course: instructorScopedCourseWhere(instructorId),
+      ...(enrolledAt && { enrolledAt }),
+    },
     include: {
       user: { select: { id: true, name: true, email: true, avatar: true } },
       course: {

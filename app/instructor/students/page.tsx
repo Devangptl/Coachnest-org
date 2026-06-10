@@ -9,12 +9,19 @@ import GlassCard from "@/components/GlassCard";
 import Avatar from "@/components/Avatar";
 import { Users, CheckCircle, Clock, BookOpen } from "lucide-react";
 import { formatDate } from "@/lib/utils";
+import { UrlDateRangeFilter } from "@/components/ui/DateRangeFilter";
 
-export default async function InstructorStudentsPage() {
+export default async function InstructorStudentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ dateFrom?: string; dateTo?: string }>;
+}) {
   const session = await getSession();
   if (!session) redirect("/login");
 
-  const students = await getInstructorStudentsWithProgress(session.userId);
+  const { dateFrom, dateTo } = await searchParams;
+  const hasDateFilter = Boolean(dateFrom || dateTo);
+  const students = await getInstructorStudentsWithProgress(session.userId, { dateFrom, dateTo });
 
   // Group by course for the summary row
   const courseMap: Record<string, { title: string; count: number; completed: number }> = {};
@@ -41,10 +48,21 @@ export default async function InstructorStudentsPage() {
         </p>
       </div>
 
+      <GlassCard padding="md">
+        <p className="text-muted-foreground text-xs font-semibold uppercase tracking-wider mb-2">
+          Enrolled between
+        </p>
+        <UrlDateRangeFilter />
+      </GlassCard>
+
       {students.length === 0 ? (
         <GlassCard className="text-center py-16">
           <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-muted-foreground">No students enrolled yet. Publish your courses to attract learners!</p>
+          <p className="text-muted-foreground">
+            {hasDateFilter
+              ? "No enrollments in this date range."
+              : "No students enrolled yet. Publish your courses to attract learners!"}
+          </p>
         </GlassCard>
       ) : (
         <>

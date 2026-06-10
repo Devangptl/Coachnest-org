@@ -1,11 +1,18 @@
 import { getSession } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { startOfDay, endOfDay, parseISO } from "date-fns";
 import { prisma } from "@/lib/prisma";
 import GlassCard from "@/components/GlassCard";
 import { Mail, CheckCircle, XCircle, Clock } from "lucide-react";
 import EmailLogsTable from "./EmailLogsTable";
 
-async function getLogsData(page: number, status?: string, search?: string) {
+async function getLogsData(
+  page: number,
+  status?: string,
+  search?: string,
+  dateFrom?: string,
+  dateTo?: string
+) {
   const limit = 50;
   const where = {
     ...(status && { status: status as "SENT" | "FAILED" | "PENDING" }),
@@ -14,6 +21,12 @@ async function getLogsData(page: number, status?: string, search?: string) {
         { to: { contains: search, mode: "insensitive" as const } },
         { subject: { contains: search, mode: "insensitive" as const } },
       ],
+    }),
+    ...((dateFrom || dateTo) && {
+      sentAt: {
+        ...(dateFrom && { gte: startOfDay(parseISO(dateFrom)) }),
+        ...(dateTo && { lte: endOfDay(parseISO(dateTo)) }),
+      },
     }),
   };
 
@@ -38,7 +51,10 @@ async function getLogsData(page: number, status?: string, search?: string) {
 }
 
 type Props = {
-  searchParams: Promise<{ page?: string; status?: string; search?: string }>;
+  searchParams: Promise<{
+    page?: string; status?: string; search?: string;
+    dateFrom?: string; dateTo?: string;
+  }>;
 };
 
 export default async function EmailLogsPage({ searchParams }: Props) {
@@ -47,7 +63,9 @@ export default async function EmailLogsPage({ searchParams }: Props) {
 
   const sp = await searchParams;
   const page = Math.max(1, parseInt(sp.page ?? "1"));
-  const { logs, total, pages, statsMap } = await getLogsData(page, sp.status, sp.search);
+  const { logs, total, pages, statsMap } = await getLogsData(
+    page, sp.status, sp.search, sp.dateFrom, sp.dateTo
+  );
 
   const statCards = [
     { label: "Total Sent", value: total, icon: Mail, color: "text-blue-400" },
@@ -91,6 +109,8 @@ export default async function EmailLogsPage({ searchParams }: Props) {
           pages={pages}
           currentStatus={sp.status}
           currentSearch={sp.search}
+          currentDateFrom={sp.dateFrom}
+          currentDateTo={sp.dateTo}
         />
       </GlassCard>
     </div>

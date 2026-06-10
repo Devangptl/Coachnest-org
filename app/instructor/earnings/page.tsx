@@ -5,12 +5,15 @@
  * Shows wallet summary, revenue by source, by course, monthly chart, recent orders.
  */
 import { useEffect, useState } from "react";
+import { format } from "date-fns";
 import {
   Wallet, TrendingUp, ArrowDownToLine, DollarSign,
   Loader2, Globe, Link2, Tag, BarChart3, ShoppingBag,
   RefreshCw, Clock, CheckCircle2, AlertCircle, TrendingDown,
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
+import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import { presetToRange, type DateRange } from "@/lib/date-range";
 import { cn } from "@/lib/utils";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -76,6 +79,11 @@ export default function InstructorEarningsPage() {
   const [loading,      setLoading]      = useState(true);
   const [error,        setError]        = useState("");
 
+  // Recent Sales date filter — defaults to the API's last-30-days window
+  const [salesRange,   setSalesRange]   = useState<DateRange>(() => presetToRange("last30"));
+  const [recentSales,  setRecentSales]  = useState<EarningsData["recentOrders"]>([]);
+  const [salesLoading, setSalesLoading] = useState(false);
+
   async function load() {
     setLoading(true);
     setError("");
@@ -85,7 +93,9 @@ export default function InstructorEarningsPage() {
         fetch("/api/instructor/refunds"),
       ]);
       if (!earningsRes.ok) throw new Error("Failed to load earnings.");
-      setData(await earningsRes.json());
+      const earnings: EarningsData = await earningsRes.json();
+      setData(earnings);
+      setRecentSales(earnings.recentOrders);
       if (refundRes.ok) setRefundImpact(await refundRes.json());
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Error");
@@ -95,6 +105,22 @@ export default function InstructorEarningsPage() {
   }
 
   useEffect(() => { load(); }, []);
+
+  async function handleSalesRangeChange(range: DateRange) {
+    setSalesRange(range);
+    setSalesLoading(true);
+    try {
+      const from = range.from ?? "1970-01-01";
+      const to   = range.to ?? format(new Date(), "yyyy-MM-dd");
+      const res  = await fetch(`/api/instructor/earnings?from=${from}&to=${to}`);
+      if (res.ok) {
+        const d: EarningsData = await res.json();
+        setRecentSales(d.recentOrders);
+      }
+    } finally {
+      setSalesLoading(false);
+    }
+  }
 
   if (loading) {
     return (
@@ -297,11 +323,20 @@ export default function InstructorEarningsPage() {
       )}
 
       {/* ── Recent orders ─────────────────────────────────────────────────── */}
-      {recentOrders.length > 0 && (
+      {(recentOrders.length > 0 || perCourse.length > 0) && (
         <GlassCard>
-          <h2 className="text-base font-semibold text-foreground mb-4">Recent Sales</h2>
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h2 className="text-base font-semibold text-foreground">Recent Sales</h2>
+            {salesLoading && <Loader2 className="w-4 h-4 animate-spin text-muted-foreground" />}
+          </div>
+          <DateRangeFilter compact value={salesRange} onChange={handleSalesRangeChange} className="mb-4" />
+          {recentSales.length === 0 ? (
+            <p className="text-muted-foreground text-sm text-center py-6">
+              No sales in this date range.
+            </p>
+          ) : (
           <div className="space-y-2">
-            {recentOrders.map((o) => {
+            {recentSales.map((o) => {
               const meta = SOURCE_META[o.saleSource] ?? SOURCE_META["ORGANIC"];
               const Icon = meta.icon;
               return (
@@ -326,6 +361,7 @@ export default function InstructorEarningsPage() {
               );
             })}
           </div>
+          )}
         </GlassCard>
       )}
 

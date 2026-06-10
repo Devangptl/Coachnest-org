@@ -1,22 +1,34 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import type { DateRange } from "@/lib/date-range";
 import { Search, X } from "lucide-react";
 
 export default function EnrollmentFiltersBar() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [expanded, setExpanded] = useState(false);
+  const searchParams = useSearchParams();
+
+  const initialRange: DateRange = {
+    from: searchParams.get("dateFrom") ?? undefined,
+    to:   searchParams.get("dateTo")   ?? undefined,
+  };
+
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [status, setStatus] = useState(searchParams.get("status") ?? "all");
+  const [range, setRange] = useState<DateRange>(initialRange);
+  const [expanded, setExpanded] = useState(Boolean(initialRange.from || initialRange.to));
 
   const handleFilter = () => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (status !== "all") params.set("status", status);
+    if (range.from) params.set("dateFrom", range.from);
+    if (range.to)   params.set("dateTo", range.to);
 
     const queryString = params.toString();
     router.push(queryString ? `/admin/enrollments?${queryString}` : "/admin/enrollments");
@@ -25,6 +37,7 @@ export default function EnrollmentFiltersBar() {
   const handleClear = () => {
     setSearch("");
     setStatus("all");
+    setRange({});
     router.push("/admin/enrollments");
   };
 
@@ -47,7 +60,7 @@ export default function EnrollmentFiltersBar() {
             <Button variant="primary" size="sm" onClick={handleFilter}>
               Filter
             </Button>
-            {(search || status !== "all") && (
+            {(search || status !== "all" || range.from || range.to) && (
               <Button variant="ghost" size="sm" onClick={handleClear}>
                 <X className="w-4 h-4" />
               </Button>
@@ -70,12 +83,16 @@ export default function EnrollmentFiltersBar() {
                 ]}
               />
             </div>
+            <div>
+              <label className="label">Enrolled between</label>
+              <DateRangeFilter value={range} onChange={setRange} />
+            </div>
           </div>
         )}
 
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-[#d97757] text-sm hover:text-orange-300 transition-colors"
+          className="text-primary text-sm hover:text-primary/80 transition-colors"
         >
           {expanded ? "Hide filters" : "More filters"}
         </button>

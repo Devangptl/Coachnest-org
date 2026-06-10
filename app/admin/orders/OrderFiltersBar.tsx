@@ -1,22 +1,31 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import GlassCard from "@/components/GlassCard";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/Select";
+import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import type { DateRange } from "@/lib/date-range";
 import { Search, X } from "lucide-react";
 
 export default function OrderFiltersBar() {
   const router = useRouter();
-  const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("all");
-  const [expanded, setExpanded] = useState(false);
+  const searchParams = useSearchParams();
+
+  const [search, setSearch] = useState(searchParams.get("search") ?? "");
+  const [status, setStatus] = useState(searchParams.get("status") ?? "all");
+  const [range, setRange] = useState<DateRange>({
+    from: searchParams.get("dateFrom") ?? undefined,
+    to:   searchParams.get("dateTo")   ?? undefined,
+  });
 
   const handleFilter = () => {
     const params = new URLSearchParams();
     if (search) params.set("search", search);
     if (status !== "all") params.set("status", status);
+    if (range.from) params.set("dateFrom", range.from);
+    if (range.to)   params.set("dateTo", range.to);
     const qs = params.toString();
     router.push(qs ? `/admin/orders?${qs}` : "/admin/orders");
   };
@@ -24,6 +33,7 @@ export default function OrderFiltersBar() {
   const handleClear = () => {
     setSearch("");
     setStatus("all");
+    setRange({});
     router.push("/admin/orders");
   };
 
@@ -58,13 +68,15 @@ export default function OrderFiltersBar() {
             <Button variant="primary" size="sm" onClick={handleFilter}>
               Filter
             </Button>
-            {(search || status !== "all") && (
+            {(search || status !== "all" || range.from || range.to) && (
               <Button variant="ghost" size="sm" onClick={handleClear}>
                 <X className="w-4 h-4" />
               </Button>
             )}
           </div>
         </div>
+
+        <DateRangeFilter value={range} onChange={setRange} />
       </div>
     </GlassCard>
   );
