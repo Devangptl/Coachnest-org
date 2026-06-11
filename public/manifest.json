@@ -5,7 +5,7 @@
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "display_override": ["browser", "standalone"],
+  "display_override": ["standalone", "browser"],
   "orientation": "portrait-primary",
   "prefer_related_applications": false,
   "theme_color": "#1a1a1a",

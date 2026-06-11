@@ -8,6 +8,7 @@ const withPWA = withPWAInit({
   fallbacks: { document: "/offline" },
   workboxOptions: {
     skipWaiting: true,
+    clientsClaim: true,
     navigateFallbackDenylist: [/^\/api\//, /^\/checkout/, /^\/admin/],
     runtimeCaching: [
       {

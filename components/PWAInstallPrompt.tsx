@@ -14,6 +14,17 @@ interface BeforeInstallPromptEvent extends Event {
   readonly userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
 }
 
+// Capture the event at module scope so it's never missed due to React mount timing.
+// The browser fires `beforeinstallprompt` very early; registering here runs as soon
+// as this chunk is parsed, before any component mounts.
+let _deferredPrompt: BeforeInstallPromptEvent | null = null;
+if (typeof window !== "undefined") {
+  window.addEventListener("beforeinstallprompt", (e: Event) => {
+    e.preventDefault();
+    _deferredPrompt = e as BeforeInstallPromptEvent;
+  });
+}
+
 export default function PWAInstallPrompt() {
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
   const [show, setShow] = useState(false);
@@ -35,25 +46,32 @@ export default function PWAInstallPrompt() {
     const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as { MSStream?: unknown }).MSStream;
     setIsIOS(ios);
 
+    // Pick up any event that fired before this component mounted
+    if (_deferredPrompt) {
+      setInstallEvent(_deferredPrompt);
+    }
+
     const handleBeforeInstall = (e: Event) => {
       e.preventDefault();
+      _deferredPrompt = e as BeforeInstallPromptEvent;
       setInstallEvent(e as BeforeInstallPromptEvent);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstall);
 
-    // Show after delay — only if we have an install event (Android) or are on iOS
-    const timer = setTimeout(() => {
-      if (ios) setShow(true);
-    }, SHOW_DELAY_MS);
+    // iOS: show the manual instructions after the delay
+    let iosTimer: ReturnType<typeof setTimeout> | undefined;
+    if (ios) {
+      iosTimer = setTimeout(() => setShow(true), SHOW_DELAY_MS);
+    }
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstall);
-      clearTimeout(timer);
+      if (iosTimer !== undefined) clearTimeout(iosTimer);
     };
   }, []);
 
-  // Show Android prompt as soon as the event fires (after delay)
+  // Show Android prompt after delay once we have the install event
   useEffect(() => {
     if (!installEvent) return;
     const timer = setTimeout(() => setShow(true), SHOW_DELAY_MS);
@@ -69,7 +87,11 @@ export default function PWAInstallPrompt() {
     if (!installEvent) return;
     await installEvent.prompt();
     const { outcome } = await installEvent.userChoice;
-    if (outcome === "accepted") setShow(false);
+    if (outcome === "accepted") {
+      _deferredPrompt = null;
+      setInstallEvent(null);
+      setShow(false);
+    }
   };
 
   if (!show) return null;
