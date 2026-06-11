@@ -157,6 +157,13 @@ export default function RootLayout({
             __html: `(function(){var t=localStorage.getItem('cn-theme')||'system';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.classList.add(r);})();`,
           }}
         />
+        {/* Reset viewport to device-width in case the browser inherited a desktop
+            viewport scale from the Google OAuth redirect chain on mobile. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var m=document.querySelector('meta[name="viewport"]');if(m)m.content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5';})();`,
+          }}
+        />
       </head>
       <body className="antialiased">
         <ThemeProvider>

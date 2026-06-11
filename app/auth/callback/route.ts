@@ -9,6 +9,29 @@ import { sendWelcomeEmail } from "@/lib/email";
  * Handles email confirmation links and Google OAuth callbacks.
  * Always redirects — never throws — so the session cookie is always committed.
  */
+
+/**
+ * Returns an HTML page that immediately redirects via JavaScript.
+ * This breaks the Google OAuth redirect chain so mobile browsers (Chrome Android
+ * in particular) re-evaluate the viewport meta tag before landing on the app,
+ * preventing the "desktop site" layout from being shown on mobile.
+ */
+function mobileRedirect(path: string): NextResponse {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
+  <script>window.location.replace(${JSON.stringify(path)});</script>
+</head>
+<body></body>
+</html>`;
+  return new NextResponse(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const code = searchParams.get("code");
@@ -54,7 +77,7 @@ export async function GET(req: NextRequest) {
     console.error("[auth/callback] profile lookup failed:", err);
     // Cannot determine user state — send to onboarding as safe default
     const dest = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
-    return NextResponse.redirect(new URL(dest, req.url));
+    return mobileRedirect(dest);
   }
 
   // ── New user — provision and send to onboarding ───────────────────────────────
@@ -103,32 +126,32 @@ export async function GET(req: NextRequest) {
 
     // Always redirect new users to onboarding
     const destination = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
-    return NextResponse.redirect(new URL(destination, req.url));
+    return mobileRedirect(destination);
   }
 
   // ── Returning user — route by their existing role ─────────────────────────────
   const existingRole = (user.app_metadata?.role ?? "STUDENT") as string;
 
   if (existingRole === "STUDENT") {
-    if (next) return NextResponse.redirect(new URL(next, req.url));
+    if (next) return mobileRedirect(next);
     const destination = existingProfile.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
-    return NextResponse.redirect(new URL(destination, req.url));
+    return mobileRedirect(destination);
   }
 
   if (existingRole === "INSTRUCTOR") {
-    if (next) return NextResponse.redirect(new URL(next, req.url));
+    if (next) return mobileRedirect(next);
     if (!existingProfile.hasCompletedInstructorOnboarding) {
-      return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
+      return mobileRedirect("/onboarding/instructor");
     }
     const destination = existingProfile.instructorStatus === "APPROVED"
       ? "/instructor"
       : "/instructor/pending";
-    return NextResponse.redirect(new URL(destination, req.url));
+    return mobileRedirect(destination);
   }
 
   if (existingRole === "ADMIN") {
-    return NextResponse.redirect(new URL(next ?? "/admin", req.url));
+    return mobileRedirect(next ?? "/admin");
   }
 
-  return NextResponse.redirect(new URL(next ?? "/dashboard", req.url));
+  return mobileRedirect(next ?? "/dashboard");
 }
