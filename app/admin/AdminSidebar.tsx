@@ -17,7 +17,7 @@ import {
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare, Megaphone,
   Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
   Mail, ScrollText, ListVideo, Database, ShieldCheck, Library, Users2, Package,
-  MonitorPlay,
+  MonitorPlay, Building2, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Avatar from "@/components/Avatar";
@@ -62,6 +62,14 @@ const adminNavSections = [
       { label: "Students",    href: "/admin/students",              icon: Users },
       { label: "Enrollments", href: "/admin/enrollments",           icon: GraduationCap },
       { label: "Professions", href: "/admin/professions",           icon: Briefcase },
+    ],
+  },
+  {
+    title: "Organizations",
+    items: [
+      { label: "Organizations", href: "/admin/organizations",         icon: Building2 },
+      { label: "Org Revenue",   href: "/admin/organizations/revenue", icon: BarChart3 },
+      { label: "Plans",         href: "/admin/organizations/plans",   icon: Layers },
     ],
   },
   {
