@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
+import { canViewOrgCourse } from "@/lib/org-auth";
 import CourseHero from "./CourseHero";
 import CourseContent from "./CourseContent";
 import CourseEnrollBar from "./CourseEnrollBar";
@@ -168,6 +169,9 @@ export default async function CourseDetailPage({ params }: Props) {
   if (!courseData) notFound();
 
   const { course, avgRating } = courseData;
+
+  // Org courses are visible only to that org's members (platform ADMIN passes).
+  if (!(await canViewOrgCourse(course.organizationId))) notFound();
 
   // User-specific data (parallel fetch, uncached)
   const session = await getSession();

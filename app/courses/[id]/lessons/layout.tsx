@@ -5,6 +5,7 @@
 import { notFound } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { canViewOrgCourse } from "@/lib/org-auth";
 import { LessonProvider } from "./LessonProvider";
 import LessonSidebar from "./LessonSidebar";
 
@@ -16,6 +17,7 @@ const getCourseWithLessons = unstable_cache(
         id: true,
         title: true,
         status: true,
+        organizationId: true,
         sections: {
           orderBy: { order: "asc" },
           select: {
@@ -51,6 +53,9 @@ export default async function LessonLayout({
 
   const course = await getCourseWithLessons(courseId);
   if (!course || course.status === "ARCHIVED") notFound();
+
+  // Org courses are visible only to that org's members (platform ADMIN passes).
+  if (!(await canViewOrgCourse(course.organizationId))) notFound();
 
   return (
     <LessonProvider courseId={courseId}>

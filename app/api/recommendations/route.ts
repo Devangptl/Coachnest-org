@@ -53,6 +53,7 @@ export async function GET(req: NextRequest) {
     const courses = await prisma.course.findMany({
       where: {
         status: "PUBLISHED",
+        organizationId: null,
         id:     { notIn: enrolledIds },
       },
       include: {

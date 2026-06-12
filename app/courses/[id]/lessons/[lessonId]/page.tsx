@@ -6,6 +6,7 @@
 import { notFound } from "next/navigation";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { canViewOrgCourse } from "@/lib/org-auth";
 import LessonContentClient from "./LessonContentClient";
 
 type Props = { params: Promise<{ id: string; lessonId: string }> };
@@ -19,6 +20,7 @@ const getCourseWithLessons = unstable_cache(
       select: {
         id: true,
         status: true,
+        organizationId: true,
         sections: {
           orderBy: { order: "asc" },
           select: { id: true, order: true },
@@ -49,7 +51,8 @@ const getCourseWithLessons = unstable_cache(
 export async function generateStaticParams() {
   try {
     const courses = await prisma.course.findMany({
-      where: { status: { not: "ARCHIVED" } },
+      // Org-course lessons render dynamically (membership check needs cookies)
+      where: { status: { not: "ARCHIVED" }, organizationId: null },
       select: { id: true, lessons: { select: { id: true } } },
     });
     return courses.flatMap((c) => c.lessons.map((l) => ({ id: c.id, lessonId: l.id })));
@@ -67,6 +70,9 @@ export default async function LessonPage({ params }: Props) {
 
   const course = await getCourseWithLessons(courseId);
   if (!course || course.status === "ARCHIVED") notFound();
+
+  // Org courses are visible only to that org's members (platform ADMIN passes).
+  if (!(await canViewOrgCourse(course.organizationId))) notFound();
 
   const lessonIndex = course.lessons.findIndex((l) => l.id === lessonId);
   if (lessonIndex === -1) notFound();

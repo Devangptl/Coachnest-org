@@ -10,7 +10,7 @@ import slugify from "slugify";
 export async function GET() {
   try {
     const courses = await prisma.course.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", organizationId: null },
       include: {
         createdBy: { select: { name: true } },
         category:  { select: { name: true, slug: true } },

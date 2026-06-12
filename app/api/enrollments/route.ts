@@ -94,6 +94,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Course not found." }, { status: 404 });
     }
 
+    // Org courses are free only to that org's members — enrollment for them
+    // goes through /api/org/[slug]/enroll. Hide their existence from outsiders.
+    if (course.organizationId) {
+      const membership = await prisma.organizationMember.findUnique({
+        where: {
+          userId_organizationId: {
+            userId: session.userId,
+            organizationId: course.organizationId,
+          },
+        },
+        select: { userId: true },
+      });
+      if (!membership) {
+        return NextResponse.json({ error: "Course not found." }, { status: 404 });
+      }
+    }
+
     // Paid courses require a completed purchase before enrollment is allowed
     const isPaid = !course.isFree && course.price && Number(course.price) > 0;
     if (isPaid) {

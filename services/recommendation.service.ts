@@ -21,7 +21,7 @@ export async function getRecommendations(
   if (enrolledIds.length === 0) {
     // Cold start: return top courses by enrollment
     const popular = await prisma.course.findMany({
-      where: { status: "PUBLISHED", id: { notIn: enrolledIds } },
+      where: { status: "PUBLISHED", organizationId: null, id: { notIn: enrolledIds } },
       orderBy: { enrollments: { _count: "desc" } },
       take: limit,
       select: { id: true },
@@ -51,7 +51,7 @@ export async function getRecommendations(
   // 4. Filter: only PUBLISHED courses
   const courseIds  = peerCourses.map((pc) => pc.courseId);
   const published = await prisma.course.findMany({
-    where:  { id: { in: courseIds }, status: "PUBLISHED" },
+    where:  { id: { in: courseIds }, status: "PUBLISHED", organizationId: null },
     select: { id: true },
   });
 
@@ -70,7 +70,7 @@ export async function getTrendingCourses(limit = 6) {
   });
   const ids = trending.map((t) => t.courseId);
   return prisma.course.findMany({
-    where: { id: { in: ids }, status: "PUBLISHED" },
+    where: { id: { in: ids }, status: "PUBLISHED", organizationId: null },
     include: {
       createdBy: { select: { name: true } },
       _count: { select: { enrollments: true, reviews: true } },

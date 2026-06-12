@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 async function getCourses() {
   return prisma.course.findMany({
-    where: { status: "PUBLISHED" },
+    where: { status: "PUBLISHED", organizationId: null },
     include: {
       createdBy: { select: { id: true, name: true, avatar: true } },
       category: { select: { name: true, slug: true } },

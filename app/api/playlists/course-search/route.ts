@@ -50,6 +50,7 @@ export async function GET(req: NextRequest) {
 
   const where: Prisma.CourseWhereInput = {
     status: "PUBLISHED",
+    organizationId: null,
     ...(restrictToOwner ? { createdById: ownerId } : {}),
     ...(excludeIds.length ? { id: { notIn: excludeIds } } : {}),
     ...(level ? { level } : {}),

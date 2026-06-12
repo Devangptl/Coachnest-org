@@ -21,7 +21,7 @@ const STATIC_ROUTES: MetadataRoute.Sitemap = [
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [courses, blogs] = await Promise.allSettled([
     prisma.course.findMany({
-      where:  { status: "PUBLISHED" },
+      where:  { status: "PUBLISHED", organizationId: null },
       select: { id: true, updatedAt: true },
     }),
     prisma.blog.findMany({

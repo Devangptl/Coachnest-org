@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
     // Build where clause
     const where: Prisma.CourseWhereInput = {
       status: "PUBLISHED",
+      organizationId: null,
       ...(q && { OR: [
         { title:       { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },

@@ -221,9 +221,13 @@ export async function createCourseRazorpayOrder(
       id: true, title: true, price: true,
       discountPrice: true, isFree: true,
       instructorRevenuePercent: true, createdById: true,
+      organizationId: true,
     },
   });
   if (!course)        throw new Error("Course not found");
+  if (course.organizationId) {
+    throw new Error("Organization courses cannot be purchased — access is provided by the organization");
+  }
   if (course.isFree)  throw new Error("Course is free, no payment required");
   if (!course.price)  throw new Error("Course has no price set");
 

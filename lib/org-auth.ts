@@ -125,6 +125,26 @@ export function orgAuthErrorResponse(err: unknown): NextResponse | null {
   return null;
 }
 
+/**
+ * Content-access check for org courses on the shared course/lesson pages.
+ * Returns true for platform courses (organizationId null). For org courses
+ * the viewer must be an org member or a platform ADMIN.
+ *
+ * Only call the session lookup for org courses — platform course pages stay
+ * statically renderable (no cookies() touch).
+ */
+export async function canViewOrgCourse(organizationId: string | null): Promise<boolean> {
+  if (!organizationId) return true;
+  const session = await getSession();
+  if (!session) return false;
+  if (session.role === "ADMIN") return true;
+  const membership = await prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId: session.userId, organizationId } },
+    select: { userId: true },
+  });
+  return !!membership;
+}
+
 /** Portal home for a given org role — shared by middleware-style redirects. */
 export function orgHomePath(slug: string, role: OrgRole): string {
   switch (role) {

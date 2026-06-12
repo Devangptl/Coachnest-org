@@ -82,7 +82,7 @@ export const metadata: Metadata = {
 const getFeaturedCourses = unstable_cache(
   () =>
     prisma.course.findMany({
-      where: { status: "PUBLISHED" },
+      where: { status: "PUBLISHED", organizationId: null },
       take: 6,
       include: {
         createdBy: { select: { name: true } },
@@ -109,7 +109,7 @@ const getCategories = unstable_cache(
 const getStats = unstable_cache(
   async () => {
     const [courseCount, studentCount, enrollmentCount, reviewCount] = await Promise.all([
-      prisma.course.count({ where: { status: "PUBLISHED" } }),
+      prisma.course.count({ where: { status: "PUBLISHED", organizationId: null } }),
       prisma.user.count({ where: { role: "STUDENT" } }),
       prisma.enrollment.count(),
       prisma.review.count(),
