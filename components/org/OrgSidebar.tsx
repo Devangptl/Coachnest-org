@@ -87,9 +87,56 @@ export default function OrgSidebar({ portal, org, user, roleLabel }: Props) {
   const pathname = usePathname();
   const sections = navFor(portal, org.slug);
   const home = `/org/${org.slug}/${portal}`;
+  const allItems = sections.flatMap((s) => s.items);
 
   return (
-    <aside className="hidden md:block md:w-56 lg:w-64 flex-shrink-0">
+    <>
+      {/* Mobile — sticky horizontal nav (the global BottomNav doesn't cover /org/*) */}
+      <div className="md:hidden sticky top-[4.25rem] z-30 -mx-1 px-1">
+        <div className="bg-card border border-border rounded-xl shadow-glass px-3 py-2.5">
+          <div className="flex items-center gap-2.5 mb-2">
+            {org.logo ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={org.logo} alt={org.name} className="w-7 h-7 rounded-lg object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded-lg bg-orange-500/15 text-orange-500 flex items-center justify-center font-bold text-[11px] flex-shrink-0">
+                {org.name.slice(0, 2).toUpperCase()}
+              </div>
+            )}
+            <p className="text-sm font-semibold text-foreground truncate">{org.name}</p>
+            <p className="ml-auto text-[10px] text-[#d97757] font-medium uppercase tracking-wider whitespace-nowrap">
+              {roleLabel}
+            </p>
+          </div>
+          <nav className="flex gap-1.5 overflow-x-auto scrollbar-hide -mb-0.5 pb-0.5">
+            {allItems.map((item) => {
+              const isActive =
+                item.href === home
+                  ? pathname === home
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={cn(
+                    "flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors flex-shrink-0",
+                    isActive
+                      ? "bg-orange-500/10 text-[#d97757]"
+                      : "text-muted-foreground hover:text-foreground bg-secondary/60",
+                  )}
+                >
+                  <Icon className="w-3.5 h-3.5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+          </nav>
+        </div>
+      </div>
+
+      {/* Desktop — full sidebar */}
+      <aside className="hidden md:block md:w-56 lg:w-64 flex-shrink-0">
       <div className="fixed top-[4.5rem] bottom-4 md:w-56 lg:w-64 flex flex-col bg-card border border-border rounded-xl shadow-glass overflow-hidden">
         <Link
           href={home}
@@ -165,5 +212,6 @@ export default function OrgSidebar({ portal, org, user, roleLabel }: Props) {
         </div>
       </div>
     </aside>
+    </>
   );
 }
