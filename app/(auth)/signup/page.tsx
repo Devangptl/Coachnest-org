@@ -291,6 +291,12 @@ export default function SignupPage() {
               Sign in
             </Link>
           </p>
+          <p className="text-center text-xs text-muted-foreground mt-3">
+            Setting up training for your company?{" "}
+            <Link href="/org/register" className="text-orange-500 hover:text-[#d97757] font-medium transition-colors">
+              Register an organization
+            </Link>
+          </p>
         </div>
       </main>
     </div>

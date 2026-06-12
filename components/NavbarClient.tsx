@@ -22,8 +22,10 @@ import {
   Monitor,
   ShoppingCart,
   Library,
+  Building2,
+  Plus,
 } from "lucide-react";
-import type { SessionPayload } from "@/lib/auth";
+import type { SessionPayload, OrgRoleClaim } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
 import SearchModal from "./SearchModal";
 import CartDrawer, { useCartOpenListener, openCartDrawer } from "./CartDrawer";
@@ -92,6 +94,13 @@ const DROPDOWN_LINKS: Record<"STUDENT" | "INSTRUCTOR" | "ADMIN", DropdownLink[]>
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
     { href: "/admin/profile",   label: "My Profile", icon: User },
   ],
+};
+
+/** Portal home segment for each org role claim (slug → role in session.orgs). */
+const ORG_PORTAL: Record<OrgRoleClaim, string> = {
+  ORG_ADMIN: "admin",
+  ORG_INSTRUCTOR: "instructor",
+  ORG_STUDENT: "student",
 };
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
@@ -330,6 +339,33 @@ export default function NavbarClient({ session }: Props) {
                         )}
                       </div>
 
+                      {/* Organizations — the user's workspaces + create */}
+                      <div className="border-t border-border py-1">
+                        <p className="px-3 pt-1.5 pb-0.5 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
+                          Organizations
+                        </p>
+                        {Object.entries(session.orgs ?? {}).map(([slug, orgRole]) => (
+                          <Link
+                            key={slug}
+                            href={`/org/${slug}/${ORG_PORTAL[orgRole] ?? "student"}`}
+                            className="flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                          >
+                            <Building2 className="w-4 h-4" />
+                            <span className="truncate">{slug}</span>
+                            <span className="ml-auto text-[10px] text-muted-foreground/60 uppercase">
+                              {ORG_PORTAL[orgRole] ?? "member"}
+                            </span>
+                          </Link>
+                        ))}
+                        <Link
+                          href="/org/register"
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm text-orange-500 hover:text-[#d97757] hover:bg-orange-500/10 transition-colors"
+                        >
+                          <Plus className="w-4 h-4" />
+                          Create Organization
+                        </Link>
+                      </div>
+
                       {/* Theme switcher */}
                       <div className="border-t border-border px-3 py-2 flex items-center justify-between gap-2">
                         <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/50">
@@ -401,6 +437,13 @@ export default function NavbarClient({ session }: Props) {
             </>
           ) : (
             <div className="hidden md:flex items-center gap-2">
+              <Link
+                href="/org/register"
+                className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground text-sm px-3.5 py-2 rounded-lg hover:bg-secondary transition-all"
+              >
+                <Building2 className="w-4 h-4" />
+                For Organizations
+              </Link>
               <Link
                 href="/login"
                 className="text-muted-foreground hover:text-foreground text-sm px-3.5 py-2 rounded-lg hover:bg-secondary transition-all"
@@ -483,6 +526,23 @@ export default function NavbarClient({ session }: Props) {
                       </Link>
                     );
                   })}
+                  {Object.entries(session.orgs ?? {}).map(([slug, orgRole]) => (
+                    <Link
+                      key={slug}
+                      href={`/org/${slug}/${ORG_PORTAL[orgRole] ?? "student"}`}
+                      className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                    >
+                      <Building2 className="w-4 h-4" />
+                      <span className="truncate">{slug}</span>
+                    </Link>
+                  ))}
+                  <Link
+                    href="/org/register"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-orange-500 hover:text-[#d97757] hover:bg-orange-500/10 transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Create Organization
+                  </Link>
                   <div className="border-t border-border my-2" />
                   {/* Theme switcher — mobile */}
                   <div className="px-4 py-2 flex items-center justify-between gap-2">
@@ -546,6 +606,13 @@ export default function NavbarClient({ session }: Props) {
 
               {!session && (
                 <>
+                  <Link
+                    href="/org/register"
+                    className="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+                  >
+                    <Building2 className="w-4 h-4" />
+                    For Organizations
+                  </Link>
                   <div className="border-t border-border my-2" />
                   <div className="px-2 py-1">
                     <ThemeToggle />

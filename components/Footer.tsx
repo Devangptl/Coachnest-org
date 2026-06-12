@@ -10,6 +10,7 @@ const PLATFORM_LINKS = [
   { label: "Search",            href: "/search"   },
   { label: "Blog",              href: "/blog"     },
   { label: "Become Instructor", href: "/signup"   },
+  { label: "For Organizations", href: "/org/register" },
 ];
 
 const RESOURCES_LINKS = [
