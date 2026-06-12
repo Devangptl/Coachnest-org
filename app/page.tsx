@@ -390,45 +390,11 @@ export default async function HomePage() {
               </div>
             </FadeInSection>
 
-            {/* Trust row — avatars + rating + reassurance */}
+            {/* Reassurance */}
             <FadeInSection delay={0.24}>
-              <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-4">
-                <div className="flex items-center gap-3">
-                  <div className="flex -space-x-2.5">
-                    {[
-                      "from-[#d97757] to-amber-500",
-                      "from-pink-400 to-rose-500",
-                      "from-blue-400 to-cyan-500",
-                      "from-emerald-400 to-teal-500",
-                      "from-violet-400 to-fuchsia-500",
-                    ].map((g, i) => (
-                      <div
-                        key={i}
-                        className={`w-8 h-8 rounded-full bg-gradient-to-br ${g} ring-2 ring-background flex items-center justify-center text-white text-[10px] font-bold`}
-                      >
-                        {String.fromCharCode(65 + i)}
-                      </div>
-                    ))}
-                  </div>
-                  <div className="text-left">
-                    <div className="flex items-center gap-1 text-amber-400">
-                      {[0, 1, 2, 3, 4].map((i) => (
-                        <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                      ))}
-                      <span className="ml-1 text-foreground text-xs font-semibold">4.9</span>
-                    </div>
-                    <p className="text-muted-foreground text-[11px]">
-                      Loved by 2,400+ learners
-                    </p>
-                  </div>
-                </div>
-
-                <div className="hidden sm:block w-px h-9 bg-border" />
-
-                <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                  <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-                  No credit card required
-                </div>
+              <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+                No credit card required
               </div>
             </FadeInSection>
           </div>
@@ -436,29 +402,6 @@ export default async function HomePage() {
           {/* Product preview — app window with floating accent cards */}
           <FadeInSection delay={0.3} className="mt-14 sm:mt-16">
             <HeroPreview />
-          </FadeInSection>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════════════════════════════════════
-          TRUSTED BY / SOCIAL PROOF BAR
-      ═══════════════════════════════════════════════════════════════════════════ */}
-      <section className="py-10 border-y border-border/50 bg-secondary/10">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <FadeInSection>
-            <p className="text-center text-muted-foreground/60 text-[11px] font-medium uppercase tracking-[0.25em] mb-6">
-              Trusted by learners working at
-            </p>
-            <div className="flex flex-wrap justify-center items-center gap-x-10 sm:gap-x-14 gap-y-4">
-              {["Google", "Microsoft", "Amazon", "Meta", "Flipkart", "Razorpay"].map((company) => (
-                <span
-                  key={company}
-                  className="text-muted-foreground/40 font-bold text-lg sm:text-xl tracking-wide hover:text-muted-foreground transition-colors"
-                >
-                  {company}
-                </span>
-              ))}
-            </div>
           </FadeInSection>
         </div>
       </section>
