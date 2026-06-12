@@ -177,6 +177,7 @@ Next.js Edge Middleware  ← session refresh + route protection
 | Domain | Models |
 |---|---|
 | Users | User, Organization, OrganizationMember, InstructorWallet |
+| Org Billing | SubscriptionPlan, OrganizationSubscription, OrganizationTransaction |
 | Content | Course, Section, Lesson, Category, Tag, Blog, Playlist, Book |
 | Learning | Enrollment, LessonProgress, Quiz, Question, QuizAttempt, Certificate |
 | Payments | Order, Coupon, CouponUse, PayoutRequest, RefundRequest, WalletTransaction |
@@ -184,7 +185,7 @@ Next.js Edge Middleware  ← session refresh + route protection
 | Gamification | UserGameProfile, UserBadge, XpEvent |
 | Engagement | Review, Wishlist, Notification |
 
-**Key enums**: `Role` (STUDENT, INSTRUCTOR, ADMIN), `AdminSubRole` (SUPER_ADMIN, CONTENT_ADMIN, USER_ADMIN, FINANCE_ADMIN, SUPPORT), `LessonType` (VIDEO, TEXT, QUIZ), `ContentStatus` (DRAFT, PUBLISHED, ARCHIVED, PENDING_REVIEW), `OrderStatus` (PENDING, PAID, FAILED, REFUNDED).
+**Key enums**: `Role` (STUDENT, INSTRUCTOR, ADMIN), `AdminSubRole` (SUPER_ADMIN, CONTENT_ADMIN, USER_ADMIN, FINANCE_ADMIN, SUPPORT), `OrgRole` (ORG_ADMIN, ORG_INSTRUCTOR, ORG_STUDENT), `OrgStatus` (PENDING, ACTIVE, SUSPENDED, EXPIRED), `LessonType` (VIDEO, TEXT, QUIZ), `ContentStatus` (DRAFT, PUBLISHED, ARCHIVED, PENDING_REVIEW), `OrderStatus` (PENDING, PAID, FAILED, REFUNDED).
 
 ---
 
@@ -194,6 +195,15 @@ Next.js Edge Middleware  ← session refresh + route protection
 - **INSTRUCTOR**: Can create/manage courses, view `/instructor` analytics. ADMIN can also visit instructor routes.
 - **ADMIN**: Full access to `/admin`. Sub-roles scoped to specific admin sections (see `lib/admin-permissions.ts`).
 - Middleware enforces redirects: STUDENT → `/dashboard`, INSTRUCTOR → `/instructor`, unauthorized → `/login`.
+
+### Multi-Tenant Organizations
+
+- Orgs register at `/org/register` (details → plan → admin account → Razorpay), then live at `/org/[slug]/{login,admin,instructor,student}`.
+- **Org roles** (`OrganizationMember.role`, independent of platform `Role`): ORG_ADMIN, ORG_INSTRUCTOR, ORG_STUDENT. A user can belong to multiple orgs.
+- **Auth**: memberships are mirrored to Supabase `app_metadata.orgs` (`{slug: role}`) by `lib/org-metadata.ts#syncOrgMetadata` for Edge-middleware routing (navigation hints only). Authoritative checks are DB-backed: `lib/org-auth.ts#requireOrgRole(slug, roles, {allowExpired?})` — used by every `/api/org/[slug]/**` route and org layout. Never trust client-supplied org ids; always use `ctx.org.id`.
+- **Isolation**: org courses (`Course.organizationId`) are hidden from all public catalog/search/recommendation/sitemap queries (`organizationId: null` filters), cannot be purchased, and the course/lesson pages 404 for non-members. Child records (enrollments, certificates, quizzes) scope through `{ course: { organizationId } }`.
+- **Billing**: DB-driven `SubscriptionPlan`s (admin CRUD at `/admin/organizations/plans`); `OrganizationSubscription` + `OrganizationTransaction` (Razorpay orders with `notes.type = "ORG_SUBSCRIPTION"`, finalized idempotently by `services/org-subscription.service.ts` from verify-payment or the webhook). Renewals, prorated upgrades, deferred downgrades, admin full/partial refunds. Expiry sweep: `POST /api/cron/org-subscriptions` (CRON_SECRET) + read-time endDate check in `requireOrgRole`.
+- Org students enroll free in org courses (subscription covers access) — no Order rows.
 
 ---
 
