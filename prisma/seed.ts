@@ -67,6 +67,9 @@ async function clearAll() {
   await prisma.course.deleteMany();
   await prisma.category.deleteMany();
 
+  await prisma.organizationTransaction.deleteMany();
+  await prisma.organizationSubscription.deleteMany();
+  await prisma.subscriptionPlan.deleteMany();
   await prisma.organizationMember.deleteMany();
   await prisma.organization.deleteMany();
   await prisma.blog.deleteMany();
@@ -137,6 +140,52 @@ async function main() {
 
   await clearAll();
   console.log();
+
+  // ── 0. Organization subscription plans ────────────────────────────────────
+
+  console.log("Creating subscription plans…");
+
+  await prisma.subscriptionPlan.createMany({
+    data: [
+      {
+        name: "Basic",
+        slug: "basic",
+        description: "For small teams getting started with online training.",
+        priceMonthly: 2999,
+        priceYearly: 29990,
+        maxStudents: 50,
+        maxInstructors: 3,
+        maxCourses: 10,
+        features: ["Up to 50 students", "3 instructors", "10 courses", "Email support"],
+        sortOrder: 1,
+      },
+      {
+        name: "Pro",
+        slug: "pro",
+        description: "For growing organizations that need more capacity and reporting.",
+        priceMonthly: 7999,
+        priceYearly: 79990,
+        maxStudents: 500,
+        maxInstructors: 15,
+        maxCourses: 100,
+        features: ["Up to 500 students", "15 instructors", "100 courses", "Reports & analytics", "Priority support"],
+        sortOrder: 2,
+      },
+      {
+        name: "Enterprise",
+        slug: "enterprise",
+        description: "Unlimited capacity for large organizations.",
+        priceMonthly: 24999,
+        priceYearly: 249990,
+        maxStudents: null,
+        maxInstructors: null,
+        maxCourses: null,
+        features: ["Unlimited students", "Unlimited instructors", "Unlimited courses", "Dedicated support"],
+        sortOrder: 3,
+      },
+    ],
+  });
+  console.log("  ✓ 3 subscription plans");
 
   // ── 1. Users ──────────────────────────────────────────────────────────────
 

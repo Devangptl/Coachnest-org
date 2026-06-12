@@ -32,6 +32,59 @@ enum PlanType {
   ENTERPRISE
 }
 
+// ─── Organization (multi-tenant) enums ────────────────────────────────────────
+
+// Role inside an organization workspace. Independent of the platform Role —
+// a user can hold a platform role and org roles in several orgs at once.
+enum OrgRole {
+  ORG_ADMIN
+  ORG_INSTRUCTOR
+  ORG_STUDENT
+}
+
+enum OrgStatus {
+  PENDING // registered, first payment not completed yet
+  ACTIVE
+  SUSPENDED // platform-admin action
+  EXPIRED // subscription lapsed
+}
+
+enum BillingCycle {
+  MONTHLY
+  YEARLY
+}
+
+enum OrgSubscriptionStatus {
+  PENDING // created, awaiting first payment
+  ACTIVE
+  EXPIRED
+  CANCELLED // cancelled/refunded by platform admin
+}
+
+enum OrgTransactionType {
+  SUBSCRIPTION
+  RENEWAL
+  UPGRADE
+  DOWNGRADE
+  REFUND
+}
+
+enum OrgTransactionStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+}
+
+// Refund state machine on the original transaction (mirrors RefundStatus,
+// minus PENDING/REJECTED — org refunds are admin-initiated, no request queue).
+enum OrgRefundStatus {
+  PROCESSING
+  PROCESSED
+  FAILED
+}
+
 enum OrderStatus {
   PENDING
   PAID
@@ -159,33 +212,125 @@ model Organization {
   id          String    @id @default(cuid())
   name        String
   slug        String    @unique
+  email       String?
+  phone       String?
   logo        String?
   website     String?
-  plan        PlanType  @default(FREE)
+  plan        PlanType  @default(FREE) // legacy — current plan derives from the active subscription
+  status      OrgStatus @default(PENDING)
   trialEndsAt DateTime?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
-  members OrganizationMember[]
-  courses Course[]
-  books   Book[]
-  coupons Coupon[]
-  payouts Payout[]
+  members       OrganizationMember[]
+  courses       Course[]
+  books         Book[]
+  coupons       Coupon[]
+  payouts       Payout[]
+  subscriptions OrganizationSubscription[]
+  transactions  OrganizationTransaction[]
 
+  @@index([status])
   @@map("organizations")
 }
 
 model OrganizationMember {
   userId         String
   organizationId String
-  role           Role     @default(STUDENT)
+  role           OrgRole  @default(ORG_STUDENT)
   joinedAt       DateTime @default(now())
 
   user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
 
   @@id([userId, organizationId])
+  @@index([organizationId, role])
   @@map("organization_members")
+}
+
+// ─── Organization subscriptions & billing ─────────────────────────────────────
+
+model SubscriptionPlan {
+  id             String   @id @default(cuid())
+  name           String
+  slug           String   @unique
+  description    String?  @db.Text
+  priceMonthly   Decimal  @db.Decimal(10, 2)
+  priceYearly    Decimal  @db.Decimal(10, 2)
+  currency       String   @default("INR")
+  maxStudents    Int? // null = unlimited
+  maxInstructors Int?
+  maxCourses     Int?
+  features       Json? // marketing bullets for the pricing card
+  isActive       Boolean  @default(true) // soft-archive; never delete (FK from subscriptions)
+  sortOrder      Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  subscriptions OrganizationSubscription[]
+
+  @@map("subscription_plans")
+}
+
+model OrganizationSubscription {
+  id             String                @id @default(cuid())
+  organizationId String
+  planId         String
+  billingCycle   BillingCycle
+  amount         Decimal               @db.Decimal(10, 2) // price locked at purchase time
+  currency       String                @default("INR")
+  status         OrgSubscriptionStatus @default(PENDING)
+  startDate      DateTime?
+  endDate        DateTime?
+  cancelledAt    DateTime?
+
+  // Scheduled downgrade — applied when the renewal payment is finalized.
+  pendingPlanId       String?
+  pendingBillingCycle BillingCycle?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  plan         SubscriptionPlan          @relation(fields: [planId], references: [id])
+  transactions OrganizationTransaction[]
+
+  @@index([organizationId, status])
+  @@index([status, endDate]) // expiry sweep
+  @@map("organization_subscriptions")
+}
+
+model OrganizationTransaction {
+  id                String               @id @default(cuid())
+  organizationId    String
+  subscriptionId    String?
+  type              OrgTransactionType
+  status            OrgTransactionStatus @default(PENDING)
+  amount            Decimal              @db.Decimal(10, 2)
+  currency          String               @default("INR")
+  razorpayOrderId   String?              @unique
+  razorpayPaymentId String?
+  razorpayRefundId  String?              @unique
+
+  // Refund tracking lives on the ORIGINAL transaction; a separate REFUND-type
+  // row is also written on success as the negative-flow ledger entry.
+  refundAmount Decimal?         @db.Decimal(10, 2)
+  refundReason String?          @db.Text
+  refundStatus OrgRefundStatus?
+  refundedAt   DateTime?
+  refundedById String? // platform admin userId (no FK to keep User untouched)
+
+  paidByUserId String? // who completed the payment
+  notes        Json? // plan snapshot { planName, billingCycle, periodStart, periodEnd }
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  organization Organization              @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  subscription OrganizationSubscription? @relation(fields: [subscriptionId], references: [id])
+
+  @@index([organizationId, createdAt])
+  @@index([status, type])
+  @@map("organization_transactions")
 }
 
 // ─── User ─────────────────────────────────────────────────────────────────────
@@ -399,6 +544,7 @@ model Course {
   collabInvites  CourseCollaborationInvite[]
   activityLogs   CourseActivityLog[]
 
+  @@index([organizationId, status])
   @@map("courses")
 }
 
