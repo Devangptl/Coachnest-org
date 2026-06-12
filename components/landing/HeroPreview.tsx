@@ -392,7 +392,7 @@ export default function HeroPreview() {
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true, margin: "-60px" }}
         transition={{ duration: 0.7, ease: "easeOut" }}
-        className="relative rounded-xl border border-border bg-card shadow-2xl shadow-black/20 overflow-hidden"
+        className="relative rounded-xl border border-border bg-card overflow-hidden"
       >
         {/* Browser chrome */}
         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-border bg-secondary/40">

@@ -398,11 +398,6 @@ export default async function HomePage() {
               </div>
             </FadeInSection>
           </div>
-
-          {/* Product preview — app window with floating accent cards */}
-          <FadeInSection delay={0.3} className="mt-14 sm:mt-16">
-            <HeroPreview />
-          </FadeInSection>
         </div>
       </section>
 
@@ -410,6 +405,31 @@ export default async function HomePage() {
           WHY COACHNEST — bento feature grid
       ═══════════════════════════════════════════════════════════════════════════ */}
       <FeatureBento />
+
+      {/* ═══════════════════════════════════════════════════════════════════════════
+          PRODUCT PREVIEW — interactive dashboard demo
+      ═══════════════════════════════════════════════════════════════════════════ */}
+      <section className="py-20 px-4 sm:px-6 md:px-7 lg:px-8 overflow-hidden">
+        <div className="mx-auto max-w-6xl">
+          <FadeInSection>
+            <div className="text-center mb-12">
+              <span className="inline-flex items-center gap-2 bg-orange-500/[0.07] border border-orange-500/20 text-[#d97757] text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">
+                Product Preview
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4 tracking-tight">
+                Take a peek <span className="text-[#d97757]">inside</span>
+              </h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto text-base sm:text-lg">
+                Click through the sidebar to explore your dashboard, courses, quizzes,
+                certificates, and community — exactly as you&apos;ll see them.
+              </p>
+            </div>
+          </FadeInSection>
+          <FadeInSection delay={0.1}>
+            <HeroPreview />
+          </FadeInSection>
+        </div>
+      </section>
 
       {/* ═══════════════════════════════════════════════════════════════════════════
           HOW IT WORKS — 4-step process
