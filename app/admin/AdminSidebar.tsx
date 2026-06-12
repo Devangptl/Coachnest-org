@@ -17,6 +17,7 @@ import {
   Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare, Megaphone,
   Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
   Mail, ScrollText, ListVideo, Database, ShieldCheck, Library, Users2, Package,
+  MonitorPlay,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Avatar from "@/components/Avatar";
@@ -78,6 +79,7 @@ const adminNavSections = [
     title: "Communication",
     items: [
       { label: "Messages",        href: "/admin/messages",        icon: MessageSquare },
+      { label: "Demo Requests",   href: "/admin/demo-requests",   icon: MonitorPlay },
       { label: "Email Templates", href: "/admin/email-templates", icon: Mail },
       { label: "Email Logs",      href: "/admin/email-logs",      icon: ScrollText },
     ],

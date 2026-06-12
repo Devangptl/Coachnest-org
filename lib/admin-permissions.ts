@@ -77,6 +77,7 @@ export const ADMIN_SECTIONS: AdminSection[] = [
 
   // Support / communications
   { segment: "messages",          allow: ["SUPER_ADMIN", "SUPPORT"] },
+  { segment: "demo-requests",     allow: ["SUPER_ADMIN", "SUPPORT"] },
   { segment: "email-templates",   allow: ["SUPER_ADMIN", "SUPPORT"] },
   { segment: "email-logs",        allow: ["SUPER_ADMIN", "SUPPORT"] },
 

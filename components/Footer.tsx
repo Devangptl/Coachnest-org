@@ -20,7 +20,8 @@ const RESOURCES_LINKS = [
 ];
 
 const COMPANY_LINKS = [
-  { label: "About Us",         href: "/about"   },
+  { label: "About Us",         href: "/about"        },
+  { label: "Request a Demo",   href: "/request-demo" },
   // { label: "Careers",          href: "/careers" },
   // { label: "Press & Media",    href: "/press"   },
   { label: "Partners",         href: "/contact" },

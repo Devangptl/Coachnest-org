@@ -40,6 +40,7 @@ import {
   Activity,
   PencilRuler,
   Package,
+  MonitorPlay,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionPayload } from "@/lib/auth";
@@ -162,6 +163,7 @@ const ADMIN_MORE: Section[] = [
       { href: "/admin/email-templates", label: "Email Templates", icon: Mail },
       { href: "/admin/email-logs", label: "Email Logs", icon: Mail },
       { href: "/admin/messages", label: "Messages", icon: Bell },
+      { href: "/admin/demo-requests", label: "Demo Requests", icon: MonitorPlay },
       { href: "/admin/profile", label: "Profile", icon: UserCircle },
       { href: "/admin/migrations", label: "Migrations", icon: Settings },
     ],
