@@ -13,6 +13,8 @@ import type { AdminSubRole } from "./admin-permissions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+export type OrgRoleClaim = "ORG_ADMIN" | "ORG_INSTRUCTOR" | "ORG_STUDENT";
+
 export interface SessionPayload {
   userId: string;
   email: string;
@@ -22,6 +24,10 @@ export interface SessionPayload {
   adminSubRole: AdminSubRole | null;
   name: string;
   avatar?: string | null;
+  // Org memberships keyed by org slug, mirrored from app_metadata.orgs.
+  // Navigation hint only — may lag the DB until the next token refresh;
+  // authoritative checks live in lib/org-auth.ts (requireOrgRole).
+  orgs: Record<string, OrgRoleClaim>;
 }
 
 // ─── Session retrieval ────────────────────────────────────────────────────────
@@ -50,5 +56,6 @@ export const getSession = cache(async (): Promise<SessionPayload | null> => {
     adminSubRole: role === "ADMIN" ? rawSub ?? "SUPER_ADMIN" : null,
     name: user.user_metadata?.name ?? user.email!.split("@")[0],
     avatar: user.user_metadata?.avatar ?? null,
+    orgs: (user.app_metadata?.orgs ?? {}) as Record<string, OrgRoleClaim>,
   };
 });

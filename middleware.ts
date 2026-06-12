@@ -13,6 +13,8 @@
  *  5. Guard /instructor for INSTRUCTOR only (ADMIN can visit too).
  *  6. Redirect INSTRUCTOR away from /dashboard → /instructor.
  *  7. Redirect STUDENT away from /admin and /instructor → /dashboard.
+ *  8. Guard /org/[slug]/* portals by org-membership claims (app_metadata.orgs);
+ *     authoritative checks happen in org layouts + lib/org-auth.ts.
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
@@ -76,6 +78,60 @@ export async function middleware(req: NextRequest) {
   const isInstructorPending =
     role === "INSTRUCTOR" &&
     (instructorStatus === "PENDING" || instructorStatus === "REJECTED");
+
+  // ── 0b. Organization workspaces — /org/[slug]/* ────────────────────────────
+  // Claims-only checks (Edge has no DB access): org memberships are mirrored
+  // into app_metadata.orgs as { slug: role } by lib/org-metadata.ts. These
+  // redirects are navigation hints; org layouts + lib/org-auth.ts do the
+  // authoritative DB-backed checks.
+  if (pathname === "/org" || pathname === "/org/") {
+    return NextResponse.redirect(new URL("/org/register", req.url));
+  }
+  if (underPath(pathname, "/org") && !underPath(pathname, "/org/register")) {
+    const [, , slug, portal] = pathname.split("/"); // /org/{slug}/{portal}
+    const orgs    = (user?.app_metadata?.orgs ?? {}) as Record<string, string>;
+    const orgRole = slug ? orgs[slug] : undefined;
+    const isSuperAdmin =
+      !!user && role === "ADMIN" && (adminSubRole ?? "SUPER_ADMIN") === "SUPER_ADMIN";
+    const orgHome =
+      orgRole === "ORG_ADMIN" || isSuperAdmin ? `/org/${slug}/admin` :
+      orgRole === "ORG_INSTRUCTOR"            ? `/org/${slug}/instructor` :
+      `/org/${slug}/student`;
+
+    if (portal === "login") {
+      // Members landing on org login go straight to their portal.
+      if (user && (orgRole || isSuperAdmin)) {
+        return NextResponse.redirect(new URL(orgHome, req.url));
+      }
+      return res;
+    }
+
+    if (!user) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = `/org/${slug}/login`;
+      loginUrl.searchParams.set("from", pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+    if (!orgRole && !isSuperAdmin) {
+      const loginUrl = req.nextUrl.clone();
+      loginUrl.pathname = `/org/${slug}/login`;
+      loginUrl.searchParams.set("error", "not_member");
+      return NextResponse.redirect(loginUrl);
+    }
+
+    if (!portal) return NextResponse.redirect(new URL(orgHome, req.url));
+    if (portal === "admin" && !(orgRole === "ORG_ADMIN" || isSuperAdmin)) {
+      return NextResponse.redirect(new URL(orgHome, req.url));
+    }
+    if (
+      portal === "instructor" &&
+      !(orgRole === "ORG_ADMIN" || orgRole === "ORG_INSTRUCTOR" || isSuperAdmin)
+    ) {
+      return NextResponse.redirect(new URL(orgHome, req.url));
+    }
+    // student portal + expired page: any member
+    return res;
+  }
 
   // ── 1. Protect dashboard + admin + instructor ─────────────────────────────
   if (PROTECTED.some((p) => underPath(pathname, p))) {
