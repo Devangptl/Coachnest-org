@@ -44,7 +44,7 @@ function DashboardPanel() {
             You&apos;re 2 lessons away from your weekly goal.
           </p>
         </div>
-        <div className="hidden sm:flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1">
+        <div className="hidden sm:flex items-center gap-1.5 bg-orange-500/10 border border-orange-500/20 rounded-full px-3 py-1 flex-shrink-0 whitespace-nowrap">
           <Flame className="w-3.5 h-3.5 text-[#d97757]" />
           <span className="text-[11px] font-bold text-[#d97757]">12-day streak</span>
         </div>
@@ -135,7 +135,7 @@ function CoursesPanel() {
           <p className="text-foreground font-semibold text-sm sm:text-base">My Courses</p>
           <p className="text-muted-foreground text-[11px] sm:text-xs mt-0.5">4 enrolled · 1 completed</p>
         </div>
-        <span className="text-[10px] text-[#d97757] font-semibold bg-orange-500/10 border border-orange-500/20 rounded-full px-2.5 py-1">
+        <span className="text-[10px] text-[#d97757] font-semibold bg-orange-500/10 border border-orange-500/20 rounded-full px-2.5 py-1 whitespace-nowrap flex-shrink-0">
           Browse more
         </span>
       </div>
@@ -219,11 +219,11 @@ function QuizzesPanel() {
           ))}
         </div>
       </div>
-      <div className="flex items-center justify-between rounded-lg border border-orange-500/20 bg-orange-500/[0.06] px-3 py-2">
-        <span className="text-[11px] text-foreground font-semibold flex items-center gap-1.5">
-          <Zap className="w-3.5 h-3.5 text-amber-500" /> Correct! +10 XP
+      <div className="flex items-center justify-between gap-2 rounded-lg border border-orange-500/20 bg-orange-500/[0.06] px-3 py-2">
+        <span className="text-[11px] text-foreground font-semibold flex items-center gap-1.5 whitespace-nowrap">
+          <Zap className="w-3.5 h-3.5 text-amber-500 flex-shrink-0" /> Correct! +10 XP
         </span>
-        <span className="text-[10px] text-muted-foreground">Streak bonus active</span>
+        <span className="text-[10px] text-muted-foreground text-right">Streak bonus active</span>
       </div>
     </div>
   );
@@ -276,7 +276,7 @@ function CommunityPanel() {
           <p className="text-foreground font-semibold text-sm sm:text-base">Community</p>
           <p className="text-muted-foreground text-[11px] sm:text-xs mt-0.5">Forums · study groups · peer review</p>
         </div>
-        <span className="text-[10px] text-[#d97757] font-semibold bg-orange-500/10 border border-orange-500/20 rounded-full px-2.5 py-1">
+        <span className="text-[10px] text-[#d97757] font-semibold bg-orange-500/10 border border-orange-500/20 rounded-full px-2.5 py-1 whitespace-nowrap flex-shrink-0">
           New thread
         </span>
       </div>
@@ -503,7 +503,7 @@ export default function HeroPreview() {
 
       {/* ── Floating accent cards ──────────────────────────────────── */}
       <motion.div
-        className="hero-showcase-card absolute -right-6 lg:-right-12 top-12 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-2.5 pointer-events-none"
+        className="hero-showcase-card absolute right-3 xl:-right-12 top-12 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-2.5 pointer-events-none"
         initial={{ opacity: 0, x: 24 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
@@ -525,7 +525,7 @@ export default function HeroPreview() {
       </motion.div>
 
       <motion.div
-        className="hero-showcase-card absolute -left-6 lg:-left-12 bottom-16 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-2.5 pointer-events-none"
+        className="hero-showcase-card absolute left-3 xl:-left-12 bottom-16 z-20 hidden md:flex items-center gap-2.5 px-3.5 py-2.5 pointer-events-none"
         initial={{ opacity: 0, x: -24 }}
         whileInView={{ opacity: 1, x: 0 }}
         viewport={{ once: true }}
