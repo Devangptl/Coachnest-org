@@ -331,13 +331,11 @@ export default async function HomePage() {
 
             {/* Headline */}
             <FadeInSection delay={0.06}>
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold tracking-tight text-foreground leading-[1.12] mb-6 max-w-4xl mx-auto">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[56px] font-bold tracking-tight text-foreground leading-[1.15] mb-6 max-w-3xl mx-auto">
                 Learn from the best.
                 <br />
                 Build an extraordinary{" "}
-                <span className="bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
-                  career.
-                </span>
+                <span className="text-[#d97757]">career.</span>
               </h1>
             </FadeInSection>
 
