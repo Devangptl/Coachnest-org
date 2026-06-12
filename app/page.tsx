@@ -331,28 +331,12 @@ export default async function HomePage() {
 
             {/* Headline */}
             <FadeInSection delay={0.06}>
-              <h1 className="text-[32px] sm:text-[44px] md:text-[52px] lg:text-[60px] font-hero leading-[1.08] mb-6 max-w-4xl mx-auto">
-                <span className="text-foreground">Learn from the best.</span>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[64px] font-bold tracking-tight text-foreground leading-[1.12] mb-6 max-w-4xl mx-auto">
+                Learn from the best.
                 <br />
-                <span className="text-foreground">Build an extraordinary </span>
-                <span className="relative inline-block">
-                  <span className="font-handwritten text-[1.15em] bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
-                    career.
-                  </span>
-                  <svg
-                    aria-hidden="true"
-                    viewBox="0 0 200 12"
-                    className="absolute left-0 -bottom-1 w-full h-2.5 text-[#ea580c]/70"
-                    preserveAspectRatio="none"
-                  >
-                    <path
-                      d="M2 8 Q 50 2 100 6 T 198 5"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      fill="none"
-                      strokeLinecap="round"
-                    />
-                  </svg>
+                Build an extraordinary{" "}
+                <span className="bg-gradient-to-r from-[#c2410c] via-[#ea580c] to-[#fb923c] bg-clip-text text-transparent">
+                  career.
                 </span>
               </h1>
             </FadeInSection>
