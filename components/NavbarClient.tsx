@@ -14,12 +14,6 @@ import {
   Shield,
   ChevronDown,
   BarChart3,
-  Users,
-  PlusCircle,
-  Heart,
-  Award,
-  Settings,
-  FileText,
   GraduationCap,
   Map,
   BookOpen,
@@ -27,6 +21,7 @@ import {
   Moon,
   Monitor,
   ShoppingCart,
+  Library,
 } from "lucide-react";
 import type { SessionPayload } from "@/lib/auth";
 import NotificationBell from "./NotificationBell";
@@ -76,26 +71,26 @@ function NavAvatar({
   );
 }
 
-// Role-based dropdown menu items
-const DROPDOWN_LINKS = {
+type DropdownLink = { href: string; label: string; icon: React.ElementType };
+
+// Role-based dropdown — kept minimal: just the role home, one key link,
+// and profile. Secondary destinations live in BottomNav's More sheet
+// (mobile) or each role's sidebar (desktop).
+const DROPDOWN_LINKS: Record<"STUDENT" | "INSTRUCTOR" | "ADMIN", DropdownLink[]> = {
   STUDENT: [
-    { href: "/dashboard", label: "My Dashboard", icon: LayoutDashboard },
-    { href: "/dashboard/wishlist", label: "Wishlist", icon: Heart },
-    { href: "/dashboard/certificates", label: "Certificates", icon: Award },
+    { href: "/dashboard",         label: "Dashboard",  icon: LayoutDashboard },
+    { href: "/dashboard/library", label: "My Library", icon: Library },
+    { href: "/dashboard/profile", label: "My Profile", icon: User },
   ],
   INSTRUCTOR: [
-    { href: "/instructor",              label: "My Portal",      icon: LayoutDashboard },
-    { href: "/instructor/courses",      label: "My Courses",     icon: BookOpen },
-    { href: "/instructor/courses/new",  label: "Create Course",  icon: PlusCircle },
-    { href: "/instructor/students",     label: "My Students",    icon: Users },
-    { href: "/instructor/analytics",    label: "Analytics",      icon: BarChart3 },
+    { href: "/instructor",         label: "Overview",   icon: LayoutDashboard },
+    { href: "/instructor/courses", label: "My Courses", icon: BookOpen },
+    { href: "/instructor/profile", label: "My Profile", icon: User },
   ],
   ADMIN: [
-    { href: "/admin", label: "Admin Dashboard", icon: Shield },
-    { href: "/admin/courses", label: "Manage Courses", icon: Settings },
-    { href: "/admin/students", label: "Manage Students", icon: Users },
+    { href: "/admin",           label: "Dashboard", icon: Shield },
     { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
-    { href: "/admin/courses/new", label: "Create Course", icon: PlusCircle },
+    { href: "/admin/profile",   label: "My Profile", icon: User },
   ],
 };
 
@@ -170,7 +165,7 @@ export default function NavbarClient({ session }: Props) {
   const roleMeta = session ? ROLE_LABELS[session.role] : null;
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 lg:px-7 py-1.5">
+    <nav className="fixed top-0 left-0 right-0 z-50 px-3 sm:px-5 md:px-6 lg:px-7 py-1.5">
       <div
         className={cn(
           "mx-auto flex items-center justify-between rounded-lg px-3 sm:px-5 py-1.5 transition-all duration-300 border",
@@ -190,7 +185,7 @@ export default function NavbarClient({ session }: Props) {
           <button
             onClick={() => setSearchOpen(true)}
             className={cn(
-              "hidden lg:flex items-center gap-2 rounded-lg transition-all duration-200 px-2.5 py-1.5",
+              "hidden md:flex items-center gap-2 rounded-lg transition-all duration-200 px-2.5 py-1.5",
               "bg-secondary/20  border border-border text-muted-foreground hover:text-foreground"
             )}
             aria-label="Search"
@@ -204,14 +199,14 @@ export default function NavbarClient({ session }: Props) {
 
           {/* Theme toggle — desktop, only when NOT logged in */}
           {!session && (
-            <div className="hidden lg:block">
+            <div className="hidden md:block">
               <ThemeToggle />
             </div>
           )}
 
           {session ? (
             <>
-              <div className="hidden lg:block">
+              <div className="hidden md:block">
                 <NotificationBell userId={session.userId} role={session.role} />
               </div>
 
@@ -282,11 +277,13 @@ export default function NavbarClient({ session }: Props) {
                         )}
                       </div>
 
-                      {/* Links */}
-                      <div className="py-1.5">
+                      {/* Links — minimal: role home, one key link, profile */}
+                      <div className="py-1">
                         {dropdownLinks.map((link) => {
                           const Icon = link.icon;
-                          const isActive = pathname === link.href;
+                          const isActive =
+                            pathname === link.href ||
+                            pathname.startsWith(link.href + "/");
                           return (
                             <Link
                               key={link.href}
@@ -298,33 +295,39 @@ export default function NavbarClient({ session }: Props) {
                                   : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                               )}
                             >
-                              <Icon className="w-4 h-4" />
-                              {link.label}
+                              <Icon
+                                className={cn(
+                                  "w-4 h-4",
+                                  isActive ? "text-[#d97757]" : "text-muted-foreground"
+                                )}
+                              />
+                              <span className="truncate">{link.label}</span>
                             </Link>
                           );
                         })}
 
-                        {/* Cart */}
-                        <button
-                          onClick={() => {
-                            setUserMenuOpen(false);
-                            openCartDrawer();
-                          }}
-                          className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
-                        >
-                          <div className="relative">
-                            <ShoppingCart className="w-4 h-4" />
+                        {session.role === "STUDENT" && (
+                          <button
+                            onClick={() => {
+                              setUserMenuOpen(false);
+                              openCartDrawer();
+                            }}
+                            className="flex items-center gap-2.5 w-full px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
+                          >
+                            <div className="relative">
+                              <ShoppingCart className="w-4 h-4" />
+                              {cartCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-orange-500 px-0.5 text-[9px] font-bold leading-none text-white">
+                                  {cartCount > 99 ? "99+" : cartCount}
+                                </span>
+                              )}
+                            </div>
+                            My Cart
                             {cartCount > 0 && (
-                              <span className="absolute -top-1.5 -right-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-orange-500 px-0.5 text-[9px] font-bold leading-none text-white">
-                                {cartCount > 99 ? "99+" : cartCount}
-                              </span>
+                              <span className="ml-auto text-xs text-orange-400 font-medium">{cartCount}</span>
                             )}
-                          </div>
-                          My Cart
-                          {cartCount > 0 && (
-                            <span className="ml-auto text-xs text-orange-400 font-medium">{cartCount}</span>
-                          )}
-                        </button>
+                          </button>
+                        )}
                       </div>
 
                       {/* Theme switcher */}
@@ -397,7 +400,7 @@ export default function NavbarClient({ session }: Props) {
               </div>
             </>
           ) : (
-            <div className="hidden lg:flex items-center gap-2">
+            <div className="hidden md:flex items-center gap-2">
               <Link
                 href="/login"
                 className="text-muted-foreground hover:text-foreground text-sm px-3.5 py-2 rounded-lg hover:bg-secondary transition-all"
@@ -416,7 +419,7 @@ export default function NavbarClient({ session }: Props) {
           {/* Mobile search icon */}
           <button
             onClick={() => setSearchOpen(true)}
-            className="lg:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
+            className="md:hidden flex items-center justify-center w-9 h-9 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all"
             aria-label="Search"
           >
             <Search className="w-4 h-4" />
@@ -426,7 +429,7 @@ export default function NavbarClient({ session }: Props) {
           {!session && (
             <button
               onClick={() => setMobileOpen((o) => !o)}
-              className="lg:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
+              className="md:hidden p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary transition-all ml-1"
               aria-label="Toggle menu"
             >
               {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -443,7 +446,7 @@ export default function NavbarClient({ session }: Props) {
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
-            className="lg:hidden mx-auto mt-2 overflow-hidden"
+            className="md:hidden mx-auto mt-2 overflow-hidden"
           >
             <div className="bg-card border border-border rounded-lg shadow-2xl shadow-black/50 p-4 space-y-1">
               {session && (

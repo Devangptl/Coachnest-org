@@ -153,7 +153,7 @@ export default function PeerReviewClient({
               <div className="flex items-start justify-between gap-3 sm:gap-4">
                 <div className="min-w-0 flex-1">
                   <p className="text-foreground font-semibold text-sm transition-colors flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                    <FileText className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     <span className="truncate">{a.title}</span>
                   </p>
                   <p className="text-muted-foreground text-xs mt-1 line-clamp-2">{a.content}</p>

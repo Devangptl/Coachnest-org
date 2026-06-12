@@ -149,7 +149,7 @@ export default async function QuizHistoryPage() {
           {quizHistory.map((quiz) => (
             <GlassCard key={quiz.quizId} className="space-y-4">
               {/* Quiz header */}
-              <div className="flex items-start gap-4">
+              <div className="flex flex-wrap items-start gap-4">
                 {quiz.courseThumbnail ? (
                   <img
                     src={quiz.courseThumbnail}
@@ -169,7 +169,7 @@ export default async function QuizHistoryPage() {
                     <span className="text-muted-foreground/50 text-xs">Pass: {quiz.passMark}%</span>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto sm:flex-shrink-0">
                   {/* Best score badge */}
                   <div className="text-right">
                     <p className={`text-lg font-bold ${quiz.hasPassed ? "text-emerald-400" : "text-red-400"}`}>
@@ -213,7 +213,7 @@ export default async function QuizHistoryPage() {
                           style={{ width: `${attempt.score}%` }}
                         />
                       </div>
-                      <div className="flex items-center gap-1 text-muted-foreground/50 text-xs flex-shrink-0">
+                      <div className="hidden sm:flex items-center gap-1 text-muted-foreground/50 text-xs flex-shrink-0">
                         <Clock className="w-3 h-3" />
                         {formatDuration(attempt.timeTaken)}
                       </div>

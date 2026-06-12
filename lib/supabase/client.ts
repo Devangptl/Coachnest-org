@@ -1,20 +1,18 @@
 /**
  * Browser-safe Supabase client — anon key only.
- * Import this in Client Components instead of lib/supabase.ts,
- * which also creates the service-role admin client (server-only).
- *
- * Client is created lazily on first property access to prevent
- * "supabaseUrl is required" errors during Next.js static prerendering.
+ * Uses createBrowserClient from @supabase/ssr so that the PKCE code
+ * verifier is stored in cookies (not localStorage), allowing the
+ * server-side SSR client to read it during the OAuth callback.
  */
-import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 
-type SupabaseClient = ReturnType<typeof createClient>;
+type SupabaseClient = ReturnType<typeof createBrowserClient>;
 
 let _client: SupabaseClient | null = null;
 
 function getInstance(): SupabaseClient {
   if (!_client) {
-    _client = createClient(
+    _client = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );

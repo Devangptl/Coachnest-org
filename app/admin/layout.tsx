@@ -25,10 +25,18 @@ export default async function AdminLayout({
   const subRole = session.adminSubRole ?? "SUPER_ADMIN";
 
   return (
-    <div className="pb-4">
-      <div className="flex flex-col lg:flex-row lg:gap-4 lg:min-h-[calc(100vh-4rem)]">
-        <AdminSidebar subRole={subRole} />
-        <div className="flex-1 min-w-0 animate-fade-in mt-3">{children}</div>
+    <div className="py-4">
+      <div className="flex flex-col md:flex-row md:gap-4 md:min-h-[calc(100vh-4rem)]">
+        <AdminSidebar
+          subRole={subRole}
+          user={{
+            userId: session.userId,
+            name: session.name,
+            email: session.email,
+            avatar: session.avatar,
+          }}
+        />
+        <div className="flex-1 min-w-0 animate-fade-in mt-3 md:mt-0">{children}</div>
       </div>
     </div>
   );

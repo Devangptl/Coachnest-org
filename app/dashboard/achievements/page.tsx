@@ -158,7 +158,7 @@ export default async function AchievementsPage() {
               <div
                 key={entry.userId}
                 className={cn(
-                  "flex items-center gap-4 px-4 py-3 rounded-md border transition-colors",
+                  "flex items-center gap-2 sm:gap-4 px-3 sm:px-4 py-3 rounded-md border transition-colors",
                   entry.isCurrentUser
                     ? "bg-orange-500/8 border-orange-500/20"
                     : "bg-secondary/30 border-border"

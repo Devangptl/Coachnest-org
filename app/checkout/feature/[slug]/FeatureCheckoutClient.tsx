@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   Lock, ArrowLeft, Loader2, ShieldCheck,
-  CheckCircle2, ChevronRight, Package, Users,
+  CheckCircle2, ChevronRight,
 } from "lucide-react";
 import Link from "next/link";
 import RazorpayCustomForm, {
@@ -12,6 +12,7 @@ import RazorpayCustomForm, {
 } from "@/components/checkout/RazorpayCustomForm";
 import type { RazorpaySuccessResponse } from "@/types/razorpay";
 import { calcProcessingFee, PROCESSING_FEE_LABEL } from "@/lib/fees";
+import { getFeatureMeta } from "@/lib/feature-meta";
 import { cn } from "@/lib/utils";
 
 interface Props {
@@ -23,10 +24,6 @@ interface Props {
   includes:    string[];
   userEmail?:  string;
 }
-
-const FEATURE_ICON: Record<string, React.ElementType> = {
-  community: Users,
-};
 
 type Phase = "summary" | "payment";
 
@@ -40,7 +37,7 @@ export default function FeatureCheckoutClient({
   const [proceeding, setProceeding] = useState(false);
   const [error,      setError]      = useState<string | null>(null);
 
-  const FeatureIcon   = FEATURE_ICON[featureSlug] ?? Package;
+  const FeatureIcon   = getFeatureMeta(featureSlug).icon;
   const processingFee = calcProcessingFee(price);
   const payable       = price + processingFee;
 

@@ -1539,3 +1539,170 @@ export async function sendCollaborationInviteEmail(opts: {
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
+// ─── Demo request: confirmation to requester ──────────────────────────────────
+
+export async function sendDemoRequestConfirmationEmail(opts: {
+  to: string;
+  name: string;
+  organization: string;
+  preferredDate?: string | null;
+  preferredTimeSlot?: string | null;
+}) {
+  const override = await resolveTemplate("demo-request-confirmation", {
+    name: opts.name,
+    organization: opts.organization,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(opts.to),
+    subject: override?.subject ?? "Your demo request is in — Coachnest",
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Demo Request Received")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Thanks, ${opts.name}!
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        We've received your request for a personalized Coachnest demo for
+        <strong style="color:#e5e5e5;">${opts.organization}</strong>.
+        Our team will reach out within <strong style="color:#e5e5e5;">1 business day</strong>
+        to confirm a time that works for you.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:24px;">
+        <tbody>
+          ${opts.preferredDate ? infoRow("Preferred date", opts.preferredDate) : ""}
+          ${opts.preferredTimeSlot ? infoRow("Preferred time", opts.preferredTimeSlot) : ""}
+          ${infoRow("Demo length", "30–45 minutes")}
+          ${infoRow("Format", "Live video call with a product specialist")}
+        </tbody>
+      </table>
+
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#6b6b6b;font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 8px;">What happens next</p>
+        <p style="color:#a3a3a3;font-size:13px;line-height:1.6;margin:0;">
+          A specialist will email you a calendar invite with a meeting link.
+          Need to change anything? Just reply to that email or reach us at
+          <a href="mailto:support@coachnest.com" style="color:#f97316;">support@coachnest.com</a>.
+        </p>
+      </div>
+
+      ${btn("Explore Coachnest", APP)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── Demo request: notification to admin ──────────────────────────────────────
+
+export async function sendDemoRequestNotificationToAdmin(opts: {
+  name: string;
+  email: string;
+  phone?: string | null;
+  organization: string;
+  jobTitle?: string | null;
+  teamSize?: string | null;
+  interests: string[];
+  preferredDate?: string | null;
+  preferredTimeSlot?: string | null;
+  timezone?: string | null;
+  message?: string | null;
+}) {
+  const adminEmail = process.env.ADMIN_EMAIL ?? process.env.DEV_EMAIL_OVERRIDE ?? "admin@coachnest.dev";
+  const override = await resolveTemplate("demo-request-admin-notification", {
+    name: opts.name,
+    email: opts.email,
+    organization: opts.organization,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(adminEmail),
+    subject: override?.subject ?? `[Coachnest] New demo request from ${opts.organization}`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("New Demo Request", "#6b7280")}</p>
+      <h1 style="color:#ffffff;font-size:24px;font-weight:800;margin:12px 0 20px;letter-spacing:-0.5px;">
+        ${opts.name} wants a demo
+      </h1>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:20px;">
+        <tbody>
+          ${infoRow("Name",         opts.name)}
+          ${infoRow("Email",        `<a href="mailto:${opts.email}" style="color:#f97316;">${opts.email}</a>`)}
+          ${opts.phone ? infoRow("Phone", opts.phone) : ""}
+          ${infoRow("Organization", opts.organization)}
+          ${opts.jobTitle ? infoRow("Role", opts.jobTitle) : ""}
+          ${opts.teamSize ? infoRow("Team size", opts.teamSize) : ""}
+          ${opts.interests.length ? infoRow("Interested in", opts.interests.join(", ")) : ""}
+          ${opts.preferredDate ? infoRow("Preferred date", opts.preferredDate) : ""}
+          ${opts.preferredTimeSlot ? infoRow("Preferred time", opts.preferredTimeSlot) : ""}
+          ${opts.timezone ? infoRow("Timezone", opts.timezone) : ""}
+        </tbody>
+      </table>
+
+      ${opts.message ? `
+      <div style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;padding:16px 20px;margin-bottom:28px;">
+        <p style="color:#6b6b6b;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin:0 0 10px;">Message</p>
+        <p style="color:#d4d4d4;font-size:14px;line-height:1.7;margin:0;white-space:pre-wrap;">${opts.message}</p>
+      </div>` : ""}
+
+      ${btn("Manage in Admin Panel", `${APP}/admin/demo-requests`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+// ─── Demo request: scheduled confirmation ─────────────────────────────────────
+
+export async function sendDemoScheduledEmail(opts: {
+  to: string;
+  name: string;
+  organization: string;
+  scheduledAt: Date;
+  timezone?: string | null;
+  meetingLink?: string | null;
+}) {
+  const tz = opts.timezone || "Asia/Kolkata";
+  let when: string;
+  try {
+    when = opts.scheduledAt.toLocaleString("en-US", {
+      timeZone: tz,
+      weekday: "long", year: "numeric", month: "long", day: "numeric",
+      hour: "numeric", minute: "2-digit",
+    }) + ` (${tz})`;
+  } catch {
+    when = opts.scheduledAt.toUTCString();
+  }
+
+  const override = await resolveTemplate("demo-scheduled", {
+    name: opts.name,
+    organization: opts.organization,
+    when,
+    meetingLink: opts.meetingLink ?? "",
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(opts.to),
+    subject: override?.subject ?? "Your Coachnest demo is scheduled 🗓️",
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Demo Scheduled", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        See you soon, ${opts.name}!
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Your personalized Coachnest demo for
+        <strong style="color:#e5e5e5;">${opts.organization}</strong> is confirmed.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:24px;">
+        <tbody>
+          ${infoRow("When", when)}
+          ${infoRow("Duration", "30–45 minutes")}
+          ${opts.meetingLink ? infoRow("Where", `<a href="${opts.meetingLink}" style="color:#f97316;">Join the video call</a>`) : ""}
+        </tbody>
+      </table>
+
+      ${opts.meetingLink ? btn("Join Demo Call", opts.meetingLink) : ""}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        Need to reschedule? Reply to this email and we'll find a new time.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+

@@ -68,7 +68,7 @@ export default async function WishlistPage() {
               className="flex gap-4 p-4 bg-card border border-border rounded-lg hover:border-orange-500/30 hover:shadow-md hover:shadow-orange-500/5 transition-all group"
             >
               {/* Thumbnail */}
-              <Link href={`/courses/${c.id}`} className="relative flex-shrink-0 w-36 h-24 rounded-md overflow-hidden bg-secondary">
+              <Link href={`/courses/${c.id}`} className="relative flex-shrink-0 w-24 h-16 sm:w-36 sm:h-24 rounded-md overflow-hidden bg-secondary">
                 {c.thumbnail ? (
                   <Image
                     src={c.thumbnail}

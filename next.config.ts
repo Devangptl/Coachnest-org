@@ -1,4 +1,53 @@
 import type { NextConfig } from "next";
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: process.env.NODE_ENV === "development",
+  register: true,
+  fallbacks: { document: "/offline" },
+  workboxOptions: {
+    skipWaiting: true,
+    clientsClaim: true,
+    navigateFallbackDenylist: [/^\/api\//, /^\/checkout/, /^\/admin/],
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/(?:res\.cloudinary\.com|images\.unsplash\.com)\/.*/i,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "remote-images",
+          expiration: { maxEntries: 60, maxAgeSeconds: 604800 },
+          cacheableResponse: { statuses: [0, 200] },
+        },
+      },
+      {
+        urlPattern: /^\/api\/courses(\?.*)?$/,
+        handler: "StaleWhileRevalidate",
+        options: {
+          cacheName: "api-courses",
+          expiration: { maxEntries: 5, maxAgeSeconds: 300 },
+          cacheableResponse: { statuses: [200] },
+        },
+      },
+      // All other API routes (auth, payments, admin, enrollments) — never cache
+      {
+        urlPattern: /^\/api\/.*/,
+        handler: "NetworkOnly",
+      },
+      // Pages — network first with 10s fallback to cache
+      {
+        urlPattern: /^\/(?!api\/|_next\/)/,
+        handler: "NetworkFirst",
+        options: {
+          cacheName: "pages",
+          networkTimeoutSeconds: 10,
+          expiration: { maxEntries: 50, maxAgeSeconds: 86400 },
+          cacheableResponse: { statuses: [200] },
+        },
+      },
+    ],
+  },
+});
 
 const nextConfig: NextConfig = {
   // ─── Image optimization ────────────────────────────────────────────
@@ -21,8 +70,8 @@ const nextConfig: NextConfig = {
   // ─── Bundle Prisma schema + migration files into the admin migration
   //     API routes so they're readable at runtime in serverless builds ──
   outputFileTracingIncludes: {
-    "/api/admin/migrations": ["./prisma/schema.prisma", "./prisma/migrations/**/*"],
-    "/api/admin/migrations/deploy": ["./prisma/schema.prisma", "./prisma/migrations/**/*"],
+    "/api/admin/migrations": ["./prisma/schema.prisma", "./prisma/migrations/**/*", "./prisma.config.ts"],
+    "/api/admin/migrations/deploy": ["./prisma/schema.prisma", "./prisma/migrations/**/*", "./prisma.config.ts"],
   },
 
   // ─── Tree-shake heavy barrel-export packages ──────────────────────
@@ -62,4 +111,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

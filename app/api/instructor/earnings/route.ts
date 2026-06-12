@@ -13,8 +13,20 @@
  *   courseId? — filter by specific course
  */
 import { NextRequest, NextResponse } from "next/server";
+import { startOfDay, endOfDay, parseISO } from "date-fns";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+const DAY_ONLY = /^\d{4}-\d{2}-\d{2}$/;
+
+function parseBound(value: string | null, edge: "start" | "end"): Date | null {
+  if (!value) return null;
+  // Plain dates are whole-day bounds in local time; full ISO strings pass through.
+  if (DAY_ONLY.test(value)) {
+    return edge === "start" ? startOfDay(parseISO(value)) : endOfDay(parseISO(value));
+  }
+  return new Date(value);
+}
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,8 +36,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { searchParams } = req.nextUrl;
-    const to       = searchParams.get("to")   ? new Date(searchParams.get("to")!)   : new Date();
-    const from     = searchParams.get("from") ? new Date(searchParams.get("from")!) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const to   = parseBound(searchParams.get("to"), "end")     ?? new Date();
+    const from = parseBound(searchParams.get("from"), "start") ?? new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const courseId = searchParams.get("courseId") || undefined;
 
     // All courses owned by this instructor

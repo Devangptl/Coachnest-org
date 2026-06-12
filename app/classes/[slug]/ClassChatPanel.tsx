@@ -44,7 +44,7 @@ export default function ClassChatPanel({
   useEffect(() => {
     const sb = supabaseClient;
     const ch = sb.channel(channels.classChat(classId));
-    ch.on("broadcast", { event: events.classChatMessage }, ({ payload }) => {
+    ch.on("broadcast", { event: events.classChatMessage }, ({ payload }: { payload: unknown }) => {
       setItems((prev) =>
         prev.some((m) => m.id === (payload as ChatMsg).id)
           ? prev

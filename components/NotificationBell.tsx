@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
-  Bell, X, CheckCheck,
+  Bell, X, CheckCheck, Mail,
   BookOpen, ShoppingCart, Star, Clock, Tag, Settings,
   MessageSquare, Users, ClipboardCheck, Zap,
 } from "lucide-react";
@@ -91,12 +91,16 @@ export default function NotificationBell({
     setUnread(0);
   }
 
-  async function markOneRead(id: string) {
-    await fetch(`/api/notifications/${id}`, { method: "PATCH" });
+  async function setReadState(id: string, read: boolean) {
+    await fetch(`/api/notifications/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ read }),
+    });
     setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read: true } : n))
+      prev.map((n) => (n.id === id ? { ...n, read } : n))
     );
-    setUnread((c) => Math.max(0, c - 1));
+    setUnread((c) => (read ? Math.max(0, c - 1) : c + 1));
   }
 
   return (
@@ -180,7 +184,7 @@ export default function NotificationBell({
                       <a
                         href={n.link ?? "#"}
                         onClick={() => {
-                          if (!n.read) markOneRead(n.id);
+                          if (!n.read) setReadState(n.id, true);
                           setOpen(false);
                         }}
                         className="flex-1 min-w-0"
@@ -195,16 +199,19 @@ export default function NotificationBell({
                         </p>
                       </a>
 
-                      {/* Mark read button */}
-                      {!n.read && (
-                        <button
-                          onClick={() => markOneRead(n.id)}
-                          className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all flex-shrink-0 mt-0.5"
-                          title="Mark as read"
-                        >
+                      {/* Toggle read / unread */}
+                      <button
+                        onClick={() => setReadState(n.id, !n.read)}
+                        className="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-muted-foreground hover:text-primary hover:bg-primary/10 transition-all flex-shrink-0 mt-0.5"
+                        title={n.read ? "Mark as unread" : "Mark as read"}
+                        aria-label={n.read ? "Mark as unread" : "Mark as read"}
+                      >
+                        {n.read ? (
+                          <Mail className="w-3.5 h-3.5" />
+                        ) : (
                           <CheckCheck className="w-3.5 h-3.5" />
-                        </button>
-                      )}
+                        )}
+                      </button>
                     </div>
                   );
                 })

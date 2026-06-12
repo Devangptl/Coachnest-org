@@ -70,9 +70,9 @@ export default function AttendanceTab({ classId }: { classId: string }) {
 
       <div className="space-y-2">
         {students.map((s) => (
-          <div key={s.id} className="glass p-3 rounded-lg flex items-center gap-3">
-            <div className="flex-1 text-sm">{s.user.name}</div>
-            <div className="flex gap-1">
+          <div key={s.id} className="glass p-3 rounded-lg flex flex-wrap items-center gap-3">
+            <div className="flex-1 min-w-[120px] text-sm">{s.user.name}</div>
+            <div className="flex flex-wrap gap-1">
               {(["PRESENT", "ABSENT", "LATE", "EXCUSED"] as const).map((st) => (
                 <button
                   key={st}

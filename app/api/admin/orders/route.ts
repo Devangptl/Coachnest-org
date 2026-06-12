@@ -4,7 +4,7 @@
 import { getSession } from "@/lib/auth";
 import { getOrdersList } from "@/services/order.service";
 import { NextResponse } from "next/server";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/lib/generated/prisma/client";
 
 export async function GET(req: Request) {
   try {

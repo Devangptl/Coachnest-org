@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { CheckCircle, XCircle, Clock, ChevronLeft, ChevronRight, Search, Trash2 } from "lucide-react";
+import { UrlDateRangeFilter } from "@/components/ui/DateRangeFilter";
 import { useConfirm } from "@/components/ui/UIDialogProvider";
 import toast from "react-hot-toast";
 
@@ -25,6 +26,8 @@ type Props = {
   pages: number;
   currentStatus?: string;
   currentSearch?: string;
+  currentDateFrom?: string;
+  currentDateTo?: string;
 };
 
 const STATUS_ICONS = {
@@ -39,7 +42,9 @@ const STATUS_CLASSES = {
   PENDING: "bg-yellow-500/10 text-yellow-400 border-yellow-500/20",
 };
 
-export default function EmailLogsTable({ logs, total, page, pages, currentStatus, currentSearch }: Props) {
+export default function EmailLogsTable({
+  logs, total, page, pages, currentStatus, currentSearch, currentDateFrom, currentDateTo,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const [, startTransition] = useTransition();
@@ -49,7 +54,14 @@ export default function EmailLogsTable({ logs, total, page, pages, currentStatus
 
   const pushParams = (params: Record<string, string | undefined>) => {
     const sp = new URLSearchParams();
-    const merged = { page: "1", status: currentStatus, search: currentSearch, ...params };
+    const merged = {
+      page: "1",
+      status: currentStatus,
+      search: currentSearch,
+      dateFrom: currentDateFrom,
+      dateTo: currentDateTo,
+      ...params,
+    };
     Object.entries(merged).forEach(([k, v]) => { if (v) sp.set(k, v); });
     startTransition(() => router.push(`${pathname}?${sp.toString()}`));
   };
@@ -84,7 +96,8 @@ export default function EmailLogsTable({ logs, total, page, pages, currentStatus
   return (
     <>
       {/* Filters */}
-      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 border-b border-border">
+      <div className="px-4 py-3 border-b border-border space-y-3">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-1">
           {filterBtns.map((btn) => (
             <button
@@ -112,6 +125,8 @@ export default function EmailLogsTable({ logs, total, page, pages, currentStatus
             />
           </div>
         </form>
+      </div>
+      <UrlDateRangeFilter compact />
       </div>
 
       {/* Table header */}

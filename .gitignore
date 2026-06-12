@@ -49,3 +49,13 @@ prisma/*.db-journal
 coverage/
 
 .vercel
+
+# PWA generated service worker files
+/public/sw.js
+/public/sw.js.map
+/public/workbox-*.js
+/public/workbox-*.js.map
+/public/fallback-*.js
+
+# Prisma generated client (regenerated via `prisma generate`)
+/lib/generated/

@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import Avatar from "@/components/Avatar";
+import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import { isWithinRange, type DateRange } from "@/lib/date-range";
 import { cn } from "@/lib/utils";
 import toast from "react-hot-toast";
 
@@ -417,6 +419,7 @@ export default function RefundsAdminClient() {
   const [error,    setError]    = useState("");
   const [filter,   setFilter]   = useState<FilterStatus>("ALL");
   const [search,   setSearch]   = useState("");
+  const [range,    setRange]    = useState<DateRange>({});
   const [modal,    setModal]    = useState<{ req: RefundRequest; action: "APPROVE" | "REJECT" | "RETRY" } | null>(null);
 
   const load = useCallback(async (status?: string) => {
@@ -446,6 +449,7 @@ export default function RefundsAdminClient() {
   const totalAll       = stats.reduce((s, v) => s + v.total, 0);
 
   const visible = requests.filter((r) => {
+    if (!isWithinRange(r.requestedAt, range)) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -538,6 +542,8 @@ export default function RefundsAdminClient() {
         </div>
       </div>
 
+      <DateRangeFilter compact value={range} onChange={setRange} />
+
       {/* Card list */}
       {loading ? (
         <div className="flex justify-center py-16">
@@ -546,7 +552,11 @@ export default function RefundsAdminClient() {
       ) : visible.length === 0 ? (
         <GlassCard className="text-center py-16">
           <RotateCcw className="w-10 h-10 text-muted-foreground/25 mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">No refund requests found.</p>
+          <p className="text-muted-foreground text-sm">
+            {search || range.from || range.to
+              ? "No refund requests match your filters."
+              : "No refund requests found."}
+          </p>
         </GlassCard>
       ) : (
         <div className="space-y-3">

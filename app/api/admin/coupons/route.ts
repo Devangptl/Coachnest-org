@@ -5,7 +5,7 @@
 import { getSession } from "@/lib/auth";
 import { getCouponsList, createCoupon, generateCouponCode } from "@/services/coupon.service";
 import { NextResponse } from "next/server";
-import { DiscountType } from "@prisma/client";
+import { DiscountType } from "@/lib/generated/prisma/client";
 
 export async function GET(req: Request) {
   try {

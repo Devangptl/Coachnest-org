@@ -56,12 +56,12 @@ export default function PasswordForm() {
 
   return (
     <GlassCard>
-      <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+      <h2 className="text-base sm:text-lg font-semibold text-foreground mb-4 sm:mb-5 flex items-center gap-2">
         <Lock className="w-4 h-4 text-[#d97757]" /> Change Password
       </h2>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Current Password */}
+        {/* Current Password — full width */}
         <div>
           <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
             Current Password
@@ -72,7 +72,7 @@ export default function PasswordForm() {
               required
               value={currentPassword}
               onChange={(e) => { setCurrentPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
+              className="w-full bg-secondary border border-border rounded-md px-3 sm:px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
               placeholder="Enter current password"
             />
             <button
@@ -85,46 +85,46 @@ export default function PasswordForm() {
           </div>
         </div>
 
-        {/* New Password */}
-        <div>
-          <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
-            New Password
-          </label>
-          <div className="relative">
+        {/* New + Confirm — side by side on sm+ */}
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
+              New Password
+            </label>
+            <div className="relative">
+              <input
+                type={showNew ? "text" : "password"}
+                required
+                value={newPassword}
+                onChange={(e) => { setNewPassword(e.target.value); setMessage(null); }}
+                className="w-full bg-secondary border border-border rounded-md px-3 sm:px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
+                placeholder="At least 6 characters"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNew(!showNew)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
+              >
+                {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+              </button>
+            </div>
+          </div>
+
+          <div>
+            <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
+              Confirm New Password
+            </label>
             <input
-              type={showNew ? "text" : "password"}
+              type="password"
               required
-              value={newPassword}
-              onChange={(e) => { setNewPassword(e.target.value); setMessage(null); }}
-              className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 pr-10 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
-              placeholder="At least 6 characters"
+              value={confirmPassword}
+              onChange={(e) => { setConfirmPassword(e.target.value); setMessage(null); }}
+              className="w-full bg-secondary border border-border rounded-md px-3 sm:px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
+              placeholder="Re-enter new password"
             />
-            <button
-              type="button"
-              onClick={() => setShowNew(!showNew)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground transition-colors"
-            >
-              {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
           </div>
         </div>
 
-        {/* Confirm New Password */}
-        <div>
-          <label className="text-muted-foreground text-sm font-medium mb-1.5 block">
-            Confirm New Password
-          </label>
-          <input
-            type="password"
-            required
-            value={confirmPassword}
-            onChange={(e) => { setConfirmPassword(e.target.value); setMessage(null); }}
-            className="w-full bg-secondary border border-border rounded-md px-4 py-2.5 text-foreground text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:border-[#d97757]/25 focus:bg-secondary transition-all"
-            placeholder="Re-enter new password"
-          />
-        </div>
-
-        {/* Message */}
         {message && (
           <div
             className={`text-sm px-4 py-2.5 rounded-md border ${
@@ -137,7 +137,7 @@ export default function PasswordForm() {
           </div>
         )}
 
-        <Button type="submit" loading={loading}>
+        <Button type="submit" loading={loading} className="w-full sm:w-auto">
           Update Password
         </Button>
       </form>

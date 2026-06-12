@@ -108,8 +108,8 @@ export default function ProfessionForm() {
   return (
     <GlassCard>
       <div className="flex items-center gap-2.5 mb-5">
-        <Sparkles className="w-4.5 h-4.5 text-[#d97757]" />
-        <h2 className="text-lg font-semibold text-foreground">My Professions</h2>
+        <Sparkles className="w-4 h-4 text-[#d97757]" />
+        <h2 className="text-base sm:text-lg font-semibold text-foreground">My Professions</h2>
       </div>
       <p className="text-sm text-muted-foreground mb-5">
         Your selections help us recommend courses that match your goals and career.
@@ -140,11 +140,11 @@ export default function ProfessionForm() {
             </div>
           )}
 
-          <div className="mt-6 flex items-center justify-between">
+          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
             <p className="text-xs text-muted-foreground">
               {selectedIds.length + customNames.length} profession{selectedIds.length + customNames.length !== 1 ? "s" : ""} selected
             </p>
-            <Button onClick={handleSave} loading={saving}>
+            <Button onClick={handleSave} loading={saving} className="w-full sm:w-auto">
               Save Professions
             </Button>
           </div>

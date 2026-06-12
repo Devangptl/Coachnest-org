@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   Sparkles, ArrowRight, ArrowLeft, Loader2, SkipForward,
@@ -41,10 +42,9 @@ export default function OnboardingClient({
   const [saving,                setSaving]                = useState(false);
   const [error,                 setError]                 = useState("");
 
-  const currentIdx     = STEPS.indexOf(step);
+  const currentIdx       = STEPS.indexOf(step);
   const totalProfessions = selectedIds.length + customNames.length;
 
-  // ── Auto-redirect from done step ──────────────────────────────────────────
   useEffect(() => {
     if (step !== "done") return;
     const t = setTimeout(() => {
@@ -54,7 +54,6 @@ export default function OnboardingClient({
     return () => clearTimeout(t);
   }, [step, router]);
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
   function handleToggleProfession(id: string) {
     setSelectedIds((prev) =>
       prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
@@ -75,7 +74,6 @@ export default function OnboardingClient({
     );
   }
 
-  // ── Save ──────────────────────────────────────────────────────────────────
   async function handleSave(opts: { skipAll?: boolean } = {}) {
     setSaving(true);
     setError("");
@@ -105,12 +103,19 @@ export default function OnboardingClient({
     }
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div className="min-h-screen bg-background flex items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-background flex flex-col items-center px-4 py-10">
+
+      {/* Logo */}
+      <div className="mb-10 self-center">
+        <Link href="/">
+          <img src="/logo.png" alt="Coachnest" className="h-7 w-auto object-contain" />
+        </Link>
+      </div>
+
       <div className="w-full max-w-2xl">
 
-        {/* ── Step indicator (hidden on done step) ── */}
+        {/* Step indicator */}
         {step !== "done" && (
           <div className="flex items-center gap-0 mb-10">
             {STEPS.filter((s) => s !== "done").map((s, i, arr) => {
@@ -122,8 +127,8 @@ export default function OnboardingClient({
                   <div className="flex flex-col items-center gap-1.5">
                     <div className={`flex items-center justify-center w-8 h-8 rounded-full border-2
                         transition-all duration-300 ${
-                        done   ? "bg-orange-500 border-orange-500 text-white" :
-                        active ? "bg-orange-500/10 border-orange-500 text-orange-400" :
+                        done   ? "bg-primary border-primary text-primary-foreground" :
+                        active ? "bg-primary/10 border-primary text-primary" :
                                  "bg-transparent border-border text-muted-foreground/30"
                       }`}
                     >
@@ -140,7 +145,7 @@ export default function OnboardingClient({
                   {i < arr.length - 1 && (
                     <div className="flex-1 h-px mx-3 mb-5 rounded-full overflow-hidden bg-border">
                       <div
-                        className="h-full bg-orange-500 transition-all duration-500"
+                        className="h-full bg-primary transition-all duration-500"
                         style={{ width: done ? "100%" : "0%" }}
                       />
                     </div>
@@ -151,38 +156,34 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════
-            STEP 1 — Welcome
-        ════════════════════════════════════════════════════ */}
+        {/* ── STEP 1: Welcome ── */}
         {step === "welcome" && (
           <div className="text-center animate-fade-in space-y-7">
-            <div className="inline-flex w-16 h-16 rounded-xl bg-orange-500/10 border border-orange-500/20
+            <div className="inline-flex w-16 h-16 rounded-xl bg-primary/10 border border-primary/20
                             items-center justify-center">
-              <Sparkles className="w-8 h-8 text-[#d97757]" />
+              <Sparkles className="w-8 h-8 text-primary" />
             </div>
 
             <div>
               <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
                 Welcome, {userName}!
               </h1>
-              <p className="text-muted-foreground text-lg max-w-md mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-base max-w-md mx-auto leading-relaxed">
                 Let&apos;s personalise your learning experience in just two quick steps.
               </p>
             </div>
 
-            {/* Feature preview tiles */}
             <div className="grid grid-cols-3 gap-3 max-w-md mx-auto text-left">
               {[
-                { icon: Briefcase,     label: "Pick your profession",          bg: "bg-orange-500/10",  color: "text-[#d97757]" },
-                { icon: GraduationCap, label: "Follow top instructors",        bg: "bg-purple-500/10",  color: "text-purple-400" },
-                { icon: TrendingUp,    label: "Get tailored course picks",     bg: "bg-emerald-500/10", color: "text-emerald-400" },
-              ].map(({ icon: Icon, label, bg, color }) => (
+                { icon: Briefcase,     label: "Pick your profession",      color: "text-primary",        bg: "bg-primary/10 border-primary/20"      },
+                { icon: GraduationCap, label: "Follow top instructors",    color: "text-purple-400",     bg: "bg-purple-500/10 border-purple-500/20" },
+                { icon: TrendingUp,    label: "Get tailored course picks", color: "text-emerald-400",    bg: "bg-emerald-500/10 border-emerald-500/20" },
+              ].map(({ icon: Icon, label, color, bg }) => (
                 <div key={label}
-                  className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border
-                             bg-secondary/30 text-center"
+                  className="flex flex-col items-center gap-2 p-3 rounded-xl border border-border bg-secondary text-center"
                 >
-                  <div className={`w-9 h-9 rounded-lg ${bg} flex items-center justify-center`}>
-                    <Icon className={`w-4.5 h-4.5 ${color}`} />
+                  <div className={`w-9 h-9 rounded-lg border flex items-center justify-center ${bg}`}>
+                    <Icon className={`w-4 h-4 ${color}`} />
                   </div>
                   <span className="text-xs text-muted-foreground font-medium leading-tight">{label}</span>
                 </div>
@@ -213,15 +214,13 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════
-            STEP 2 — Profession picker
-        ════════════════════════════════════════════════════ */}
+        {/* ── STEP 2: Profession picker ── */}
         {step === "professions" && (
           <div className="animate-fade-in space-y-6">
             <div>
-              <div className="inline-flex w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20
+              <div className="inline-flex w-10 h-10 rounded-lg bg-primary/10 border border-primary/20
                               items-center justify-center mb-4">
-                <Briefcase className="w-5 h-5 text-[#d97757]" />
+                <Briefcase className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5">
                 What describes you best?
@@ -278,15 +277,13 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════
-            STEP 3 — Instructor picker
-        ════════════════════════════════════════════════════ */}
+        {/* ── STEP 3: Instructor picker ── */}
         {step === "instructors" && (
           <div className="animate-fade-in space-y-6">
             <div>
-              <div className="inline-flex w-10 h-10 rounded-lg bg-orange-500/10 border border-orange-500/20
+              <div className="inline-flex w-10 h-10 rounded-lg bg-primary/10 border border-primary/20
                               items-center justify-center mb-4">
-                <GraduationCap className="w-5 h-5 text-[#d97757]" />
+                <GraduationCap className="w-5 h-5 text-primary" />
               </div>
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground mb-1.5">
                 Follow instructors
@@ -354,13 +351,11 @@ export default function OnboardingClient({
           </div>
         )}
 
-        {/* ════════════════════════════════════════════════════
-            STEP 4 — Done (success screen + auto-redirect)
-        ════════════════════════════════════════════════════ */}
+        {/* ── STEP 4: Done ── */}
         {step === "done" && (
           <div className="text-center animate-fade-in space-y-7">
-            <div className="inline-flex w-20 h-20 rounded-full bg-emerald-500/10 border-2
-                            border-emerald-500/30 items-center justify-center">
+            <div className="inline-flex w-20 h-20 rounded-full bg-emerald-500/10 border border-emerald-500/25
+                            items-center justify-center">
               <CheckCircle2 className="w-10 h-10 text-emerald-400" />
             </div>
 
@@ -368,16 +363,15 @@ export default function OnboardingClient({
               <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-3">
                 You&apos;re all set!
               </h1>
-              <p className="text-muted-foreground text-lg max-w-sm mx-auto leading-relaxed">
+              <p className="text-muted-foreground text-base max-w-sm mx-auto leading-relaxed">
                 Your profile is personalised. Taking you to your dashboard…
               </p>
             </div>
 
-            {/* Summary pills */}
             <div className="flex flex-wrap justify-center gap-2.5 max-w-sm mx-auto">
               {totalProfessions > 0 && (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full
-                                 bg-orange-500/10 border border-orange-500/20 text-[#d97757]
+                                 bg-primary/10 border border-primary/20 text-primary
                                  text-xs font-medium">
                   <Briefcase className="w-3.5 h-3.5" />
                   {totalProfessions} profession{totalProfessions !== 1 ? "s" : ""} selected

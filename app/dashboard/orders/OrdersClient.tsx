@@ -4,6 +4,8 @@ import { useState } from "react";
 import toast from "react-hot-toast";
 import GlassCard from "@/components/GlassCard";
 import { Badge } from "@/components/ui/Badge";
+import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import { isWithinRange, type DateRange } from "@/lib/date-range";
 import { formatDate, cn } from "@/lib/utils";
 import Link from "next/link";
 import {
@@ -79,8 +81,11 @@ function MetaChip({ children, className }: { children: React.ReactNode; classNam
 
 export default function OrdersClient({ initialOrders }: { initialOrders: Order[] }) {
   const [orders,      setOrders]      = useState(initialOrders);
+  const [range,       setRange]       = useState<DateRange>({});
   const [refundModal, setRefundModal] = useState<{ orderId: string; courseTitle: string } | null>(null);
   const [downloading, setDownloading] = useState<Set<string>>(new Set());
+
+  const visibleOrders = orders.filter((o) => isWithinRange(o.createdAt, range));
 
   async function handleDownloadInvoice(orderId: string) {
     setDownloading((prev) => new Set(prev).add(orderId));
@@ -121,8 +126,22 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
 
   return (
     <>
+      <DateRangeFilter value={range} onChange={setRange} className="mb-4" />
+
+      {visibleOrders.length === 0 ? (
+        <GlassCard className="text-center py-12">
+          <Package className="w-10 h-10 text-muted-foreground/25 mx-auto mb-3" />
+          <p className="text-muted-foreground text-sm mb-3">No orders in this date range.</p>
+          <button
+            onClick={() => setRange({})}
+            className="text-primary hover:text-primary/80 text-sm font-medium transition-colors"
+          >
+            Clear dates
+          </button>
+        </GlassCard>
+      ) : (
       <div className="space-y-3">
-        {orders.map((order) => (
+        {visibleOrders.map((order) => (
           <GlassCard key={order.id} padding="sm">
             <div className="flex gap-3 sm:gap-4">
 
@@ -285,6 +304,7 @@ export default function OrdersClient({ initialOrders }: { initialOrders: Order[]
           </GlassCard>
         ))}
       </div>
+      )}
 
       {refundModal && (
         <RefundRequestModal

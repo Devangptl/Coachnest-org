@@ -49,6 +49,8 @@ interface Props {
     user: { name: string; email: string } | null;
     course: { title: string } | null;
   }[];
+  /** True when a dateFrom/dateTo filter is active — totals become range counts. */
+  ranged?: boolean;
 }
 
 export default function AnalyticsDashboard({
@@ -60,6 +62,7 @@ export default function AnalyticsDashboard({
   monthlyEnrollments,
   courseCompletionStats,
   recentOrders,
+  ranged = false,
 }: Props) {
   const { resolvedTheme } = useTheme();
   const isLight = resolvedTheme === "light";
@@ -85,36 +88,35 @@ export default function AnalyticsDashboard({
   const blue        = isLight ? "#3b82f6" : "#60a5fa";
   const emerald     = isLight ? "#10b981" : "#34d399";
   const amber       = isLight ? "#f59e0b" : "#fbbf24";
-  const mutedFill   = isLight ? "#cbd5e1" : "#334155";
 
   const statCards = [
     {
-      label: "Total Users",
+      label: ranged ? "New Users" : "Total Users",
       value: stats.totalUsers.toLocaleString(),
       icon: Users,
       color: "bg-blue-500/20 text-blue-400",
-      sub: `${engagement.activeStudents} active this month`,
+      sub: ranged ? "Joined in range" : `${engagement.activeStudents} active this month`,
     },
     {
-      label: "Published Courses",
+      label: ranged ? "New Courses" : "Published Courses",
       value: stats.totalCourses.toLocaleString(),
       icon: BookOpen,
       color: "bg-orange-500/15 text-[#d97757]",
-      sub: `${engagement.avgCompletionRate}% avg completion`,
+      sub: ranged ? "Published, created in range" : `${engagement.avgCompletionRate}% avg completion`,
     },
     {
-      label: "Total Enrollments",
+      label: ranged ? "Enrollments" : "Total Enrollments",
       value: stats.totalEnrollments.toLocaleString(),
       icon: TrendingUp,
       color: "bg-emerald-500/20 text-emerald-400",
-      sub: `${engagement.totalLessonsCompleted.toLocaleString()} lessons done`,
+      sub: ranged ? "Enrolled in range" : `${engagement.totalLessonsCompleted.toLocaleString()} lessons done`,
     },
     {
-      label: "Total Revenue",
+      label: ranged ? "Revenue" : "Total Revenue",
       value: `₹${stats.totalRevenue.toLocaleString("en-IN")}`,
       icon: DollarSign,
       color: "bg-amber-500/20 text-amber-400",
-      sub: "All-time paid orders",
+      sub: ranged ? "Paid orders in range" : "All-time paid orders",
     },
   ];
 
@@ -147,50 +149,60 @@ export default function AnalyticsDashboard({
   }));
 
   return (
-    <div className="space-y-5 animate-fade-in">
+    <div className="space-y-4 md:space-y-5 animate-fade-in">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-        <p className="text-muted-foreground/70 text-sm mt-1">Platform-wide insights</p>
+        <h1 className="text-xl sm:text-2xl font-bold text-foreground">Analytics</h1>
+        <p className="text-muted-foreground/70 text-xs sm:text-sm mt-0.5 sm:mt-1">Platform-wide insights</p>
       </div>
 
       {/* Primary stat cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 md:gap-3">
         {statCards.map(({ label, value, icon: Icon, color, sub }, i) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.06 }}
-            className="stat-card"
+            className="glass p-2.5 sm:p-3 md:p-4 flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-2.5"
           >
-            <div className={`stat-icon ${color}`}>
-              <Icon className="w-5 h-5" />
+            <div className={`w-7 h-7 sm:w-8 sm:h-8 md:w-9 md:h-9 rounded-md flex items-center justify-center flex-shrink-0 ${color}`}>
+              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
             </div>
-            <div>
-              <p className="text-2xl font-bold text-foreground">{value}</p>
-              <p className="text-muted-foreground/70 text-xs">{label}</p>
-              {sub && <p className="text-muted-foreground/50 text-[11px] mt-0.5">{sub}</p>}
+            <div className="min-w-0">
+              <p className="text-muted-foreground/70 text-[10px] sm:text-[11px] md:text-xs leading-snug truncate">
+                {label}
+              </p>
+              <p className="text-base sm:text-lg md:text-2xl font-bold text-foreground leading-tight truncate">
+                {value}
+              </p>
+              {sub && (
+                <p className="text-muted-foreground/50 text-[10px] md:text-xs mt-0.5 leading-tight truncate">
+                  {sub}
+                </p>
+              )}
             </div>
           </motion.div>
         ))}
       </div>
 
-      {/* Engagement cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+      {/* Engagement cards — 3-up on every breakpoint so they don't waste space on mobile */}
+      <div className="grid grid-cols-3 gap-2 md:gap-3">
         {engagementCards.map(({ label, value, icon: Icon, color }, i) => (
           <motion.div
             key={label}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.25 + i * 0.06 }}
-            className="glass p-4 flex items-center gap-4"
+            className="glass p-2.5 sm:p-3 md:p-4 flex flex-col items-center text-center gap-1 sm:flex-row sm:text-left sm:gap-2.5 md:gap-3"
           >
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
-              <Icon className="w-5 h-5" />
+            <div className={`w-7 h-7 sm:w-9 sm:h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${color}`}>
+              <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5" />
             </div>
-            <div>
-              <p className="text-xl font-bold text-foreground">{value}</p>
-              <p className="text-muted-foreground/70 text-xs">{label}</p>
+            <div className="min-w-0">
+              <p className="text-sm sm:text-lg md:text-xl font-bold text-foreground leading-tight truncate">{value}</p>
+              <p className="text-muted-foreground/70 text-[10px] sm:text-[11px] md:text-xs leading-tight line-clamp-2 sm:line-clamp-none">
+                {label}
+              </p>
             </div>
           </motion.div>
         ))}
@@ -198,22 +210,22 @@ export default function AnalyticsDashboard({
 
       {/* Charts */}
       <Tabs defaultValue="revenue">
-        <div className="overflow-x-auto pb-1 -mb-1">
-          <TabsList className="w-auto min-w-max">
-            <TabsTrigger value="revenue">Revenue</TabsTrigger>
-            <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
-            <TabsTrigger value="users">User Growth</TabsTrigger>
-            <TabsTrigger value="completion">Course Completion</TabsTrigger>
+        <div className="overflow-x-auto pb-1 -mb-1 -mx-1 px-1 scrollbar-hide">
+          <TabsList className="w-auto min-w-max gap-0.5 sm:gap-1">
+            <TabsTrigger value="revenue" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm whitespace-nowrap">Revenue</TabsTrigger>
+            <TabsTrigger value="enrollments" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm whitespace-nowrap">Enrollments</TabsTrigger>
+            <TabsTrigger value="users" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm whitespace-nowrap">User Growth</TabsTrigger>
+            <TabsTrigger value="completion" className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm whitespace-nowrap">Completion</TabsTrigger>
           </TabsList>
         </div>
 
         {/* Revenue trend */}
         <TabsContent value="revenue">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">Monthly Revenue</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <AreaChart data={revenue}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">Monthly Revenue</h3>
+            <p className="text-muted-foreground/60 text-[11px] sm:text-xs mb-3 md:mb-4">Last 6 months</p>
+            <ResponsiveContainer width="100%" height={200} minHeight={180}>
+              <AreaChart data={revenue} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <defs>
                   <linearGradient id="revGrad" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor={primary} stopOpacity={0.4} />
@@ -222,11 +234,12 @@ export default function AnalyticsDashboard({
                   </linearGradient>
                 </defs>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
-                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis
-                  tick={{ fill: tickColor, fontSize: 12 }}
+                  tick={{ fill: tickColor, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
+                  width={42}
                   tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
@@ -241,25 +254,27 @@ export default function AnalyticsDashboard({
 
         {/* Enrollments trend */}
         <TabsContent value="enrollments">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">Monthly Enrollments vs Revenue</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <LineChart data={combinedTrend}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">Monthly Enrollments vs Revenue</h3>
+            <p className="text-muted-foreground/60 text-[11px] sm:text-xs mb-3 md:mb-4">Last 6 months</p>
+            <ResponsiveContainer width="100%" height={220} minHeight={200}>
+              <LineChart data={combinedTrend} margin={{ top: 8, right: 0, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
-                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
                 <YAxis
                   yAxisId="left"
-                  tick={{ fill: tickColor, fontSize: 12 }}
+                  tick={{ fill: tickColor, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
+                  width={32}
                 />
                 <YAxis
                   yAxisId="right"
                   orientation="right"
-                  tick={{ fill: tickColor, fontSize: 12 }}
+                  tick={{ fill: tickColor, fontSize: 11 }}
                   axisLine={false}
                   tickLine={false}
+                  width={42}
                   tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
                 />
                 <Tooltip
@@ -271,7 +286,8 @@ export default function AnalyticsDashboard({
                   }
                 />
                 <Legend
-                  wrapperStyle={{ fontSize: 12, color: tickColor }}
+                  wrapperStyle={{ fontSize: 11, color: tickColor }}
+                  iconSize={10}
                   formatter={(v) => (v === "revenue" ? "Revenue (₹)" : "Enrollments")}
                 />
                 <Line
@@ -298,14 +314,14 @@ export default function AnalyticsDashboard({
 
         {/* User growth */}
         <TabsContent value="users">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">New User Signups</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Last 6 months</p>
-            <ResponsiveContainer width="100%" height={280}>
-              <BarChart data={userGrowth}>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">New User Signups</h3>
+            <p className="text-muted-foreground/60 text-[11px] sm:text-xs mb-3 md:mb-4">Last 6 months</p>
+            <ResponsiveContainer width="100%" height={200} minHeight={180}>
+              <BarChart data={userGrowth} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                 <CartesianGrid stroke={gridColor} strokeDasharray="4 4" />
-                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
-                <YAxis tick={{ fill: tickColor, fontSize: 12 }} axisLine={false} tickLine={false} />
+                <XAxis dataKey="month" tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fill: tickColor, fontSize: 11 }} axisLine={false} tickLine={false} width={28} />
                 <Tooltip {...tooltipStyle} formatter={(v: number) => [v, "New Users"]} />
                 <Bar dataKey="users" radius={[6, 6, 0, 0]}>
                   {userGrowth.map((_, i) => (
@@ -319,105 +335,135 @@ export default function AnalyticsDashboard({
 
         {/* Course completion rates */}
         <TabsContent value="completion">
-          <div className="glass p-4">
-            <h3 className="text-foreground font-semibold mb-1">Course Completion Rates</h3>
-            <p className="text-muted-foreground/60 text-xs mb-4">Top courses by enrollment</p>
-            <ResponsiveContainer width="100%" height={Math.max(300, courseCompletionStats.length * 46)}>
-              <BarChart data={courseCompletionStats} layout="vertical" margin={{ left: 12, right: 24 }}>
-                <CartesianGrid stroke={gridColor} strokeDasharray="4 4" horizontal={false} />
-                <XAxis
-                  type="number"
-                  domain={[0, 100]}
-                  tick={{ fill: tickColor, fontSize: 12 }}
-                  axisLine={false}
-                  tickLine={false}
-                  tickFormatter={(v) => `${v}%`}
-                />
-                <YAxis
-                  type="category"
-                  dataKey="title"
-                  tick={{ fill: tickColor, fontSize: 11 }}
-                  axisLine={false}
-                  tickLine={false}
-                  width={110}
-                />
-                <Tooltip
-                  {...tooltipStyle}
-                  formatter={(v: number, name: string) =>
-                    name === "rate" ? [`${v}%`, "Completion Rate"] : [v, name === "enrolled" ? "Enrolled" : "Completed"]
-                  }
-                />
-                <Bar dataKey="rate" radius={[0, 6, 6, 0]}>
-                  {courseCompletionStats.map((c, i) => (
-                    <Cell
-                      key={i}
-                      fill={c.rate >= 70 ? emerald : c.rate >= 40 ? amber : primary}
-                      opacity={0.85}
-                    />
-                  ))}
-                </Bar>
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="glass p-3 md:p-4">
+            <h3 className="text-foreground font-semibold mb-0.5 text-sm md:text-base">Course Completion Rates</h3>
+            <p className="text-muted-foreground/60 text-[11px] sm:text-xs mb-3 md:mb-4">Top courses by enrollment</p>
+
+            {/* Mobile: progress-bar list (chart labels truncate badly on narrow viewports) */}
+            <ul className="sm:hidden space-y-3">
+              {courseCompletionStats.map((c) => {
+                const barColor = c.rate >= 70 ? "bg-emerald-500" : c.rate >= 40 ? "bg-amber-500" : "bg-[#d97757]";
+                return (
+                  <li key={c.title}>
+                    <div className="flex items-baseline justify-between gap-2 mb-1">
+                      <p className="text-foreground text-xs font-medium truncate flex-1">{c.title}</p>
+                      <span className="text-[11px] font-semibold tabular-nums text-foreground/90 shrink-0">
+                        {c.rate}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 w-full rounded-full bg-secondary overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${barColor}`}
+                        style={{ width: `${Math.min(100, Math.max(0, c.rate))}%` }}
+                      />
+                    </div>
+                    <p className="text-muted-foreground/60 text-[10px] mt-1">
+                      {c.completed}/{c.enrolled} completed
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+
+            {/* sm+: vertical bar chart */}
+            <div className="hidden sm:block">
+              <ResponsiveContainer width="100%" height={Math.max(260, courseCompletionStats.length * 40)}>
+                <BarChart data={courseCompletionStats} layout="vertical" margin={{ left: 4, right: 16, top: 4, bottom: 4 }}>
+                  <CartesianGrid stroke={gridColor} strokeDasharray="4 4" horizontal={false} />
+                  <XAxis
+                    type="number"
+                    domain={[0, 100]}
+                    tick={{ fill: tickColor, fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                    tickFormatter={(v) => `${v}%`}
+                  />
+                  <YAxis
+                    type="category"
+                    dataKey="title"
+                    tick={{ fill: tickColor, fontSize: 11 }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={140}
+                  />
+                  <Tooltip
+                    {...tooltipStyle}
+                    formatter={(v: number, name: string) =>
+                      name === "rate" ? [`${v}%`, "Completion Rate"] : [v, name === "enrolled" ? "Enrolled" : "Completed"]
+                    }
+                  />
+                  <Bar dataKey="rate" radius={[0, 6, 6, 0]}>
+                    {courseCompletionStats.map((c, i) => (
+                      <Cell
+                        key={i}
+                        fill={c.rate >= 70 ? emerald : c.rate >= 40 ? amber : primary}
+                        opacity={0.85}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </TabsContent>
       </Tabs>
 
-      <div className="grid lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
         {/* Top Courses */}
-        <div className="glass p-4">
-          <h3 className="text-foreground font-semibold mb-3">Top Courses</h3>
-          <div className="space-y-4">
+        <div className="glass p-3 md:p-4">
+          <h3 className="text-foreground font-semibold mb-2.5 md:mb-3 text-sm md:text-base">Top Courses</h3>
+          <ul className="space-y-2.5 md:space-y-3">
             {topCourses.map((c, i) => (
-              <div key={c.id} className="flex items-center gap-3">
-                <span className="w-6 h-6 rounded-lg bg-orange-500/15 text-primary text-xs font-bold flex items-center justify-center flex-shrink-0">
+              <li key={c.id} className="flex items-center gap-2 md:gap-3">
+                <span className="w-6 h-6 rounded-md bg-orange-500/15 text-[#d97757] text-[11px] font-bold flex items-center justify-center flex-shrink-0">
                   {i + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground text-sm font-medium truncate">{c.title}</p>
-                  <div className="flex items-center gap-3 mt-1">
-                    <span className="text-muted-foreground/60 text-xs">{c.enrollments} students</span>
-                    <span className="text-emerald-400 text-xs font-medium">
+                  <p className="text-foreground text-xs md:text-sm font-medium truncate">{c.title}</p>
+                  <div className="flex items-center gap-2 md:gap-3 mt-0.5">
+                    <span className="text-muted-foreground/60 text-[10px] md:text-xs">{c.enrollments} students</span>
+                    <span className="text-emerald-400 text-[10px] md:text-xs font-medium tabular-nums">
                       ₹{c.revenue.toLocaleString("en-IN")}
                     </span>
                   </div>
                 </div>
-                <div className="flex items-center gap-1 text-amber-400 text-xs flex-shrink-0">
+                <div className="flex items-center gap-0.5 text-amber-400 text-[11px] md:text-xs flex-shrink-0 tabular-nums">
                   <Star className="w-3 h-3 fill-current" />
                   {c.avgRating || "—"}
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
 
         {/* Recent Orders */}
-        <div className="glass p-4">
-          <h3 className="text-foreground font-semibold mb-3">Recent Orders</h3>
-          <div className="space-y-3">
+        <div className="glass p-3 md:p-4">
+          <h3 className="text-foreground font-semibold mb-2.5 md:mb-3 text-sm md:text-base">Recent Orders</h3>
+          <ul className="space-y-2 md:space-y-3">
             {recentOrders.map((o) => (
-              <div key={o.id} className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-xs font-semibold text-muted-foreground">
+              <li key={o.id} className="flex items-center gap-2 md:gap-3">
+                <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-secondary flex items-center justify-center flex-shrink-0 text-[11px] md:text-xs font-semibold text-muted-foreground">
                   {o.user?.name?.charAt(0)?.toUpperCase() ?? "?"}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-foreground text-sm font-medium truncate">
+                  <p className="text-foreground text-xs md:text-sm font-medium truncate">
                     {o.user?.name ?? "—"}
                   </p>
-                  <p className="text-muted-foreground/70 text-xs truncate">
+                  <p className="text-muted-foreground/70 text-[10px] md:text-xs truncate">
                     {o.course?.title ?? "Subscription"}
                   </p>
                 </div>
                 <div className="text-right flex-shrink-0">
-                  <p className="text-emerald-400 text-sm font-semibold">
+                  <p className="text-emerald-400 text-xs md:text-sm font-semibold tabular-nums">
                     ₹{Number(o.amount).toLocaleString("en-IN")}
                   </p>
-                  <p className="text-muted-foreground/50 text-xs">
+                  <p className="text-muted-foreground/50 text-[10px] md:text-xs">
                     {format(new Date(o.createdAt), "d MMM")}
                   </p>
                 </div>
-              </div>
+              </li>
             ))}
-          </div>
+          </ul>
         </div>
       </div>
     </div>

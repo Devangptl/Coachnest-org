@@ -1,12 +1,10 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["fullTextSearch"]
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
+  provider = "postgresql"
 }
 
 // ─── Enums ────────────────────────────────────────────────────────────────────
@@ -310,6 +308,10 @@ model User {
   courseCollabsAddedByMe CourseCollaborator[]        @relation("CourseCollaboratorAddedBy")
   courseInvitesSent      CourseCollaborationInvite[] @relation("CourseInviteSender")
   courseActivityLogs     CourseActivityLog[]         @relation("CourseActivityLogUser")
+
+  // Whiteboards
+  whiteboardsOwned        Whiteboard[]             @relation("WhiteboardOwner")
+  whiteboardCollaborations WhiteboardCollaborator[]
 
   @@map("users")
 }
@@ -861,6 +863,46 @@ model ContactMessage {
   updatedAt   DateTime  @updatedAt
 
   @@map("contact_messages")
+}
+
+// ─── Demo Requests ─────────────────────────────────────────────────────────────
+
+enum DemoRequestStatus {
+  PENDING
+  CONTACTED
+  SCHEDULED
+  COMPLETED
+  CANCELLED
+}
+
+model DemoRequest {
+  id                String            @id @default(cuid())
+  name              String
+  email             String
+  phone             String?
+  organization      String
+  jobTitle          String?
+  teamSize          String?
+  interests         String[]          @default([])
+  preferredDate     DateTime?
+  preferredTimeSlot String?
+  timezone          String?
+  message           String?           @db.Text
+  source            String?
+  status            DemoRequestStatus @default(PENDING)
+  scheduledAt       DateTime?
+  meetingLink       String?
+  adminNotes        String?           @db.Text
+  handledById       String?
+  contactedAt       DateTime?
+  completedAt       DateTime?
+  cancelledAt       DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  @@index([status, createdAt])
+  @@index([email])
+  @@map("demo_requests")
 }
 
 // ─── Community: Discussion Forums ─────────────────────────────────────────────
@@ -2056,4 +2098,139 @@ model PlatformOffer {
 
   @@index([isActive, priority])
   @@map("platform_offers")
+}
+
+// ─── Whiteboard module ──────────────────────────────────────────────────────
+
+enum WhiteboardScope {
+  LIVE_CLASS
+  COURSE
+  LESSON
+  ASSIGNMENT
+  STUDENT_NOTE
+  GROUP_PROJECT
+  STANDALONE
+}
+
+enum WhiteboardRole {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model Whiteboard {
+  id          String          @id @default(cuid())
+  title       String          @default("Untitled whiteboard")
+  scope       WhiteboardScope @default(STANDALONE)
+  // Default role granted to LMS-context members who are not explicit collaborators.
+  defaultRole WhiteboardRole  @default(VIEWER)
+
+  ownerId String
+  owner   User   @relation("WhiteboardOwner", fields: [ownerId], references: [id], onDelete: Cascade)
+
+  // Polymorphic LMS attachment — only one is set per board depending on scope.
+  // Kept as plain scalar columns (not relations) so the board can attach to any
+  // surface without forcing back-references onto every model.
+  classId      String?
+  courseId     String?
+  lessonId     String?
+  assignmentId String?
+  studyGroupId String?
+
+  pages         WhiteboardPage[]
+  assets        WhiteboardAsset[]
+  collaborators WhiteboardCollaborator[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+  @@index([scope, classId])
+  @@index([scope, courseId])
+  @@index([scope, lessonId])
+  @@index([scope, assignmentId])
+  @@index([scope, studyGroupId])
+  @@map("whiteboards")
+}
+
+model WhiteboardPage {
+  id           String  @id @default(cuid())
+  whiteboardId String
+  title        String  @default("Page 1")
+  order        Int     @default(0)
+  // Excalidraw appState subset (viewBackgroundColor, gridSize, …).
+  appState     Json?
+
+  whiteboard Whiteboard          @relation(fields: [whiteboardId], references: [id], onDelete: Cascade)
+  elements   WhiteboardElement[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([whiteboardId, order])
+  @@map("whiteboard_pages")
+}
+
+model WhiteboardElement {
+  id          String  @id @default(cuid())
+  pageId      String
+  // Excalidraw element id — stable across edits, used for reconciliation.
+  elementId   String
+  type        String
+  // Full serialized Excalidraw element (includes versionNonce for tie-breaks).
+  data        Json
+  // Excalidraw's monotonic version counter — higher wins on conflict.
+  version     Int     @default(0)
+  isDeleted   Boolean @default(false)
+  updatedById String?
+
+  page WhiteboardPage @relation(fields: [pageId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([pageId, elementId])
+  @@index([pageId, isDeleted])
+  @@map("whiteboard_elements")
+}
+
+model WhiteboardAsset {
+  id           String  @id @default(cuid())
+  whiteboardId String
+  uploadedById String?
+  // Excalidraw BinaryFile id — links an image element to its stored asset.
+  fileId       String
+  url          String
+  publicId     String
+  filename     String
+  mimeType     String
+  bytes        Int     @default(0)
+  width        Int?
+  height       Int?
+
+  whiteboard Whiteboard @relation(fields: [whiteboardId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([whiteboardId, fileId])
+  @@index([whiteboardId])
+  @@map("whiteboard_assets")
+}
+
+model WhiteboardCollaborator {
+  id           String         @id @default(cuid())
+  whiteboardId String
+  userId       String
+  role         WhiteboardRole @default(VIEWER)
+  invitedById  String?
+
+  whiteboard Whiteboard @relation(fields: [whiteboardId], references: [id], onDelete: Cascade)
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([whiteboardId, userId])
+  @@index([userId])
+  @@map("whiteboard_collaborators")
 }

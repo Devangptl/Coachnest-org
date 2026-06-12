@@ -4,7 +4,7 @@
  */
 import { prisma } from "@/lib/prisma";
 import { startOfMonth, subMonths, format, parseISO, startOfDay, endOfDay } from "date-fns";
-import { OrderStatus } from "@prisma/client";
+import { OrderStatus } from "@/lib/generated/prisma/client";
 import { buildPaginated, parsePagination, type Paginated, type PaginationParams } from "@/lib/pagination";
 
 // ─── Orders List with Filters ────────────────────────────────────────────

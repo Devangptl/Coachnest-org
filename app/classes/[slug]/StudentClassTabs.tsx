@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import { supabaseClient } from "@/lib/supabase/client";
 import { channels, events } from "@/lib/realtime/channels";
-import { ClipboardList, Megaphone, MessageCircle, MessagesSquare, Video } from "lucide-react";
+import { ClipboardList, Megaphone, MessageCircle, MessagesSquare, PencilRuler, Video } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import ClassChatPanel from "./ClassChatPanel";
 import StudentAssignmentsPanel from "./StudentAssignmentsPanel";
 import ClassDiscussions from "@/components/class/ClassDiscussions";
+import WhiteboardLauncher from "@/components/whiteboard/WhiteboardLauncher";
 
 type Announcement = { id: string; title: string; body: string; createdAt: string; author: { name: string } };
 type LiveSession = { id: string; title: string; scheduledAt: string; meetingUrl: string | null; status: string };
@@ -24,7 +25,7 @@ export default function StudentClassTabs({
   currentUserId?: string;
 }) {
   const [tab, setTab] = useState<
-    "announcements" | "assignments" | "discussion" | "chat" | "live"
+    "announcements" | "assignments" | "discussion" | "chat" | "live" | "whiteboard"
   >("announcements");
 
   return (
@@ -37,6 +38,7 @@ export default function StudentClassTabs({
         )}
         {enableChat && <TabBtn active={tab === "chat"} onClick={() => setTab("chat")} icon={MessageCircle} label="Chat" />}
         <TabBtn active={tab === "live"} onClick={() => setTab("live")} icon={Video} label="Live" />
+        <TabBtn active={tab === "whiteboard"} onClick={() => setTab("whiteboard")} icon={PencilRuler} label="Whiteboard" />
       </div>
       <div className="p-3 sm:p-4">
         {tab === "announcements" && <AnnouncementsPanel classId={classId} />}
@@ -46,6 +48,9 @@ export default function StudentClassTabs({
         )}
         {tab === "chat" && <ClassChatPanel classId={classId} />}
         {tab === "live" && <LivePanel classId={classId} />}
+        {tab === "whiteboard" && (
+          <WhiteboardLauncher resolveUrl={`/api/classes/${classId}/whiteboard`} />
+        )}
       </div>
     </div>
   );

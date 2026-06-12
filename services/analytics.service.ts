@@ -4,18 +4,20 @@
  */
 import { prisma } from "@/lib/prisma";
 import { startOfMonth, startOfWeek, subMonths, subWeeks, format } from "date-fns";
+import { toDateBounds } from "@/lib/date-range";
 import { instructorScopedCourseWhere } from "@/services/collaboration.service";
 
 // ─── Admin-wide analytics ─────────────────────────────────────────────────────
 
-export async function getAdminStats() {
+export async function getAdminStats(filters?: { dateFrom?: string; dateTo?: string }) {
+  const bounds = toDateBounds(filters?.dateFrom, filters?.dateTo);
   const [totalUsers, totalCourses, totalEnrollments, revenueResult] =
     await Promise.all([
-      prisma.user.count(),
-      prisma.course.count({ where: { status: "PUBLISHED" } }),
-      prisma.enrollment.count(),
+      prisma.user.count({ where: bounds ? { createdAt: bounds } : undefined }),
+      prisma.course.count({ where: { status: "PUBLISHED", ...(bounds && { createdAt: bounds }) } }),
+      prisma.enrollment.count({ where: bounds ? { enrolledAt: bounds } : undefined }),
       prisma.order.aggregate({
-        where: { status: "PAID" },
+        where: { status: "PAID", ...(bounds && { createdAt: bounds }) },
         _sum: { amount: true },
       }),
     ]);
@@ -52,16 +54,19 @@ export async function getMonthlyRevenue(months = 6) {
 }
 
 /** Top 5 courses by enrollments. */
-export async function getTopCourses(limit = 5) {
+export async function getTopCourses(limit = 5, filters?: { dateFrom?: string; dateTo?: string }) {
+  const bounds = toDateBounds(filters?.dateFrom, filters?.dateTo);
   const courses = await prisma.course.findMany({
     where: { status: "PUBLISHED" },
     select: {
       id: true,
       title: true,
-      _count: { select: { enrollments: true } },
+      _count: {
+        select: { enrollments: bounds ? { where: { enrolledAt: bounds } } : true },
+      },
       reviews: { select: { rating: true } },
       orders: {
-        where: { status: "PAID" },
+        where: { status: "PAID", ...(bounds && { createdAt: bounds }) },
         select: { amount: true },
       },
     },
@@ -82,9 +87,10 @@ export async function getTopCourses(limit = 5) {
 }
 
 /** Recent orders (last 10). */
-export async function getRecentOrders(limit = 10) {
+export async function getRecentOrders(limit = 10, filters?: { dateFrom?: string; dateTo?: string }) {
+  const bounds = toDateBounds(filters?.dateFrom, filters?.dateTo);
   return prisma.order.findMany({
-    where: { status: "PAID" },
+    where: { status: "PAID", ...(bounds && { createdAt: bounds }) },
     orderBy: { createdAt: "desc" },
     take: limit,
     select: {
@@ -312,9 +318,17 @@ export async function getInstructorQuizStats(instructorId: string) {
 /**
  * Students enrolled in the instructor's courses with per-course progress.
  */
-export async function getInstructorStudentsWithProgress(instructorId: string) {
+export async function getInstructorStudentsWithProgress(
+  instructorId: string,
+  filters?: { dateFrom?: string; dateTo?: string }
+) {
+  const enrolledAt = toDateBounds(filters?.dateFrom, filters?.dateTo);
+
   const enrollments = await prisma.enrollment.findMany({
-    where: { course: instructorScopedCourseWhere(instructorId) },
+    where: {
+      course: instructorScopedCourseWhere(instructorId),
+      ...(enrolledAt && { enrolledAt }),
+    },
     include: {
       user: { select: { id: true, name: true, email: true, avatar: true } },
       course: {
@@ -391,14 +405,20 @@ export async function getEngagementMetrics() {
 }
 
 /** Per-course completion rates for the top N courses (by enrollment). */
-export async function getCourseCompletionStats(limit = 8) {
+export async function getCourseCompletionStats(limit = 8, filters?: { dateFrom?: string; dateTo?: string }) {
+  const bounds = toDateBounds(filters?.dateFrom, filters?.dateTo);
   const courses = await prisma.course.findMany({
     where: { status: "PUBLISHED" },
     select: {
       id: true,
       title: true,
-      _count: { select: { enrollments: true } },
-      enrollments: { where: { completedAt: { not: null } }, select: { id: true } },
+      _count: {
+        select: { enrollments: bounds ? { where: { enrolledAt: bounds } } : true },
+      },
+      enrollments: {
+        where: { completedAt: { not: null }, ...(bounds && { enrolledAt: bounds }) },
+        select: { id: true },
+      },
     },
     orderBy: { enrollments: { _count: "desc" } },
     take: limit,

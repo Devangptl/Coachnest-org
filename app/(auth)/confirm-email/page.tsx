@@ -1,24 +1,22 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { Mail, ArrowRight, CheckCircle2, Loader2, RefreshCw, Clock } from "lucide-react";
+import {
+  Mail, ArrowRight, CheckCircle2, Loader2, RefreshCw, Clock, Check,
+} from "lucide-react";
 import { supabaseClient as supabase } from "@/lib/supabase/client";
-import { Suspense } from "react";
-
-// ── Inner component (needs useSearchParams) ─────────────────────────────────
 
 function ConfirmEmailContent() {
-  const searchParams   = useSearchParams();
-  const email          = searchParams.get("email") ?? "";
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") ?? "";
   const isPendingInstructor = searchParams.get("pending") === "instructor";
 
   const [resendStatus, setResendStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [cooldown, setCooldown]         = useState(0);
-  const [errorMsg, setErrorMsg]         = useState("");
+  const [cooldown, setCooldown] = useState(0);
+  const [errorMsg, setErrorMsg] = useState("");
 
-  // Countdown timer after resend
   useEffect(() => {
     if (cooldown <= 0) return;
     const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
@@ -33,9 +31,7 @@ function ConfirmEmailContent() {
       const { error } = await supabase.auth.resend({
         type: "signup",
         email,
-        options: {
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
+        options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
       });
       if (error) {
         setErrorMsg(error.message);
@@ -43,7 +39,6 @@ function ConfirmEmailContent() {
       } else {
         setResendStatus("sent");
         setCooldown(60);
-        // Reset back to idle after 4 s so the button re-appears
         setTimeout(() => setResendStatus("idle"), 4000);
       }
     } catch {
@@ -63,29 +58,28 @@ function ConfirmEmailContent() {
           </Link>
         </div>
 
-        <div className="rounded-md border border-border bg-card shadow-card p-8 text-center">
+        <div className="p-2 text-center">
 
           {/* Icon */}
-          <div className="w-16 h-16 rounded-full bg-orange-500/10 border border-orange-500/20
-                          flex items-center justify-center mx-auto mb-6">
-            <Mail className="w-8 h-8 text-orange-400" />
+          <div className="w-14 h-14 rounded-full bg-primary/10 border border-primary/20
+                          flex items-center justify-center mx-auto mb-5">
+            <Mail className="w-7 h-7 text-primary" />
           </div>
 
-          <h1 className="text-2xl font-bold text-foreground mb-2 tracking-tight">
+          <h1 className="text-xl font-bold text-foreground mb-2 tracking-tight">
             Check your email
           </h1>
           <p className="text-muted-foreground text-sm leading-relaxed mb-1">
             We sent a confirmation link to
           </p>
           {email && (
-            <p className="text-foreground font-medium text-sm mb-4 break-all">{email}</p>
+            <p className="text-foreground font-semibold text-sm mb-6 break-all">{email}</p>
           )}
-          <p className="text-muted-foreground text-sm leading-relaxed mb-4">
-            Click the link in the email to activate your account. The link expires in&nbsp;24&nbsp;hours.
-          </p>
 
+          {/* Instructor pending banner */}
           {isPendingInstructor && (
-            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/25 rounded-lg px-4 py-3.5 text-left mb-6">
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/25
+                            rounded-md px-4 py-3.5 text-left mb-6">
               <Clock className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
               <div>
                 <p className="text-amber-400 font-semibold text-sm">Application pending approval</p>
@@ -97,10 +91,50 @@ function ConfirmEmailContent() {
             </div>
           )}
 
-          {/* Resend section */}
+          {/* Step indicator */}
+          <div className="flex items-center mb-6">
+            {/* Step 1 — done */}
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <div className="w-7 h-7 rounded-full bg-primary border border-primary/80
+                              flex items-center justify-center">
+                <Check className="w-3.5 h-3.5 text-primary-foreground" strokeWidth={3} />
+              </div>
+              <span className="text-[10px] font-medium text-primary whitespace-nowrap">Signed up</span>
+            </div>
+
+            <div className="flex-1 h-px bg-primary/40 mx-2 mb-4" />
+
+            {/* Step 2 — current */}
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <div className="w-7 h-7 rounded-full border-2 border-primary bg-primary/10
+                              flex items-center justify-center">
+                <span className="text-[11px] font-bold text-primary">2</span>
+              </div>
+              <span className="text-[10px] font-medium text-foreground whitespace-nowrap">Confirm email</span>
+            </div>
+
+            <div className="flex-1 h-px bg-border mx-2 mb-4" />
+
+            {/* Step 3 — upcoming */}
+            <div className="flex flex-col items-center gap-1.5 shrink-0">
+              <div className="w-7 h-7 rounded-full border border-border bg-muted
+                              flex items-center justify-center">
+                <span className="text-[11px] font-medium text-muted-foreground">3</span>
+              </div>
+              <span className="text-[10px] font-medium text-muted-foreground whitespace-nowrap">Get started</span>
+            </div>
+          </div>
+
+          <p className="text-xs text-muted-foreground leading-relaxed mb-6">
+            Click the link in the email to activate your account.
+            The link expires in{" "}
+            <span className="text-foreground font-medium">24 hours</span>.
+          </p>
+
+          {/* Resend */}
           <div className="space-y-3">
             {resendStatus === "sent" ? (
-              <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm font-medium">
+              <div className="flex items-center justify-center gap-2 text-emerald-400 text-sm font-medium py-2">
                 <CheckCircle2 className="w-4 h-4" />
                 Email resent — check your inbox
               </div>
@@ -108,9 +142,7 @@ function ConfirmEmailContent() {
               <button
                 onClick={handleResend}
                 disabled={cooldown > 0 || resendStatus === "sending" || !email}
-                className="inline-flex items-center justify-center gap-2 text-sm
-                           text-orange-500 hover:text-[#d97757] disabled:text-muted-foreground
-                           disabled:cursor-not-allowed transition-colors font-medium"
+                className="btn-secondary w-full justify-center"
               >
                 {resendStatus === "sending" ? (
                   <><Loader2 className="w-3.5 h-3.5 animate-spin" /> Sending…</>
@@ -127,25 +159,24 @@ function ConfirmEmailContent() {
             )}
           </div>
 
-          <div className="flex items-center gap-3 my-6">
+          <div className="flex items-center gap-3 my-5">
             <div className="flex-1 h-px bg-border" />
             <span className="text-xs text-muted-foreground">or</span>
             <div className="flex-1 h-px bg-border" />
           </div>
 
-          <Link
-            href="/login"
-            className="inline-flex items-center gap-1.5 text-sm text-muted-foreground
-                       hover:text-foreground transition-colors"
-          >
+          <Link href="/login" className="btn-primary w-full justify-center group">
             Back to sign in
-            <ArrowRight className="w-3.5 h-3.5" />
+            <ArrowRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
 
-        <p className="text-center text-xs text-muted-foreground mt-6 leading-relaxed">
+        <p className="text-center text-sm text-muted-foreground mt-6">
           Wrong email address?{" "}
-          <Link href="/signup" className="text-orange-500 hover:text-[#d97757] transition-colors">
+          <Link
+            href="/signup"
+            className="text-primary hover:text-primary/80 font-medium transition-colors"
+          >
             Sign up again
           </Link>
         </p>
@@ -154,14 +185,12 @@ function ConfirmEmailContent() {
   );
 }
 
-// ── Page shell ──────────────────────────────────────────────────────────────
-
 export default function ConfirmEmailPage() {
   return (
     <Suspense
       fallback={
         <div className="min-h-screen flex items-center justify-center bg-background">
-          <Loader2 className="w-6 h-6 text-orange-500 animate-spin" />
+          <Loader2 className="w-6 h-6 text-primary animate-spin" />
         </div>
       }
     >

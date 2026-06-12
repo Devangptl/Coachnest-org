@@ -75,7 +75,7 @@ export default async function InstructorDashboard() {
       />
 
       {/* Profile summary */}
-      <GlassCard className="flex items-center gap-4">
+      <GlassCard className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-center sm:text-left">
         <Avatar
           name={session!.name}
           avatar={profile?.avatar}
@@ -108,17 +108,17 @@ export default async function InstructorDashboard() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-3 gap-3 md:gap-4">
         {stats.map((s) => {
           const Icon = s.icon;
           return (
-            <GlassCard key={s.label} className="flex items-center gap-4">
-              <div className={`w-12 h-12 rounded-md ${s.bg} flex items-center justify-center flex-shrink-0`}>
-                <Icon className={`w-6 h-6 ${s.color}`} />
+            <GlassCard key={s.label} className="flex flex-col items-center text-center gap-2 sm:flex-row sm:text-left sm:gap-3 md:gap-4">
+              <div className={`w-9 h-9 sm:w-10 sm:h-10 md:w-12 md:h-12 rounded-md ${s.bg} flex items-center justify-center flex-shrink-0`}>
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 ${s.color}`} />
               </div>
-              <div>
-                <p className="text-2xl font-bold text-foreground">{s.value}</p>
-                <p className="text-muted-foreground text-sm">{s.label}</p>
+              <div className="min-w-0">
+                <p className="text-base sm:text-xl md:text-2xl font-bold text-foreground">{s.value}</p>
+                <p className="text-muted-foreground text-[10px] sm:text-xs md:text-sm leading-tight">{s.label}</p>
               </div>
             </GlassCard>
           );

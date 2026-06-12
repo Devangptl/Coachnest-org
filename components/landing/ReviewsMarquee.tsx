@@ -61,7 +61,7 @@ function ReviewCard({ review }: { review: ReviewItem }) {
     .toUpperCase();
 
   return (
-    <article className="flex-shrink-0 w-[220px] sm:w-[260px] lg:w-[300px] mx-2 sm:mx-3 bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col gap-3 shadow-card">
+    <article className="flex-shrink-0 w-[220px] sm:w-[260px] md:w-[280px] lg:w-[300px] mx-2 sm:mx-3 bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col gap-3 shadow-card">
       <StarRating count={review.rating} />
       <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed flex-1 line-clamp-4">
         &ldquo;{review.text}&rdquo;
@@ -126,9 +126,9 @@ export default function ReviewsMarquee({ reviews = [] }: Props) {
   const track2 = [...row2, ...row2];
 
   return (
-    <section className="py-10 sm:py-14 lg:py-20 overflow-hidden">
+    <section className="py-10 sm:py-14 md:py-16 lg:py-20 overflow-hidden">
       {/* Section header */}
-      <div className="text-center px-4 mb-8 sm:mb-10">
+      <div className="text-center px-4 mb-8 sm:mb-10 md:mb-12">
         <p className="text-xs sm:text-sm uppercase tracking-widest text-muted-foreground font-medium mb-2">
           Learner reviews
         </p>

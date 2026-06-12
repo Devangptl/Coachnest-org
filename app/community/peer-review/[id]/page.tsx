@@ -157,7 +157,7 @@ export default function PeerReviewDetailPage({ params }: { params: Promise<{ id:
       <div className="rounded-md border border-border bg-card p-4 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="flex items-start gap-2 flex-1 min-w-0">
-            <FileText className="w-5 h-5 text-purple-400 flex-shrink-0 mt-0.5" />
+            <FileText className="w-5 h-5 text-emerald-400 flex-shrink-0 mt-0.5" />
             {editing ? (
               <input
                 value={editDraft.title}

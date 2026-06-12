@@ -5,7 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
 import { listBooks, createBook } from "@/services/book.service";
-import type { BookFileFormat, ContentStatus } from "@prisma/client";
+import type { BookFileFormat, ContentStatus } from "@/lib/generated/prisma/client";
 
 export const runtime = "nodejs";
 

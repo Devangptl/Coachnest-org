@@ -40,7 +40,7 @@ export default function RefundPolicyPage() {
               </div>
               <div>
                 <h1 className="text-3xl font-bold text-white">Refund Policy</h1>
-                <p className="text-white/30 text-sm mt-0.5">Last updated: April 19, 2026</p>
+                <p className="text-white/30 text-sm mt-0.5">Last updated: June 8, 2026</p>
               </div>
             </div>
             <p className="text-white/50 text-base leading-relaxed max-w-2xl">
@@ -105,7 +105,7 @@ export default function RefundPolicyPage() {
                   <li>You have not previously received a refund for the same course.</li>
                   <li>The purchase was made directly on Coachnest (not through a third-party bundle or partner site).</li>
                 </ul>
-                <p>Refunds are issued to the original payment method used at checkout.</p>
+                <p>Refunds are issued to the original payment method used at checkout and are processed in INR via Razorpay.</p>
               </Section>
 
               <Section id="ineligible" title="3. Non-Refundable Situations">
@@ -140,13 +140,14 @@ export default function RefundPolicyPage() {
               </Section>
 
               <Section id="timeline" title="5. Refund Timeline">
-                <p>Once your refund request is approved:</p>
+                <p>Once your refund request is approved, we initiate it via Razorpay within 1-2 business days. The time for funds to reach you depends on the payment method used at checkout:</p>
                 <ul>
-                  <li><strong className="text-white/70">Processing time:</strong> Refunds are reviewed and approved within 1-2 business days.</li>
-                  <li><strong className="text-white/70">Credit/Debit card:</strong> 5-10 business days for the amount to appear on your statement, depending on your bank.</li>
-                  <li><strong className="text-white/70">PayPal:</strong> 1-3 business days.</li>
+                  <li><strong className="text-white/70">Credit / Debit card:</strong> 5-7 business days, depending on your card-issuing bank.</li>
+                  <li><strong className="text-white/70">Net Banking:</strong> 3-5 business days.</li>
+                  <li><strong className="text-white/70">UPI:</strong> 2-3 business days.</li>
+                  <li><strong className="text-white/70">Wallets (Paytm, Mobikwik, etc.):</strong> up to 3 business days, credited back to the same wallet.</li>
                 </ul>
-                <p>You will receive an email notification once the refund has been processed. If you have not received your refund after 10 business days, please contact your bank before reaching out to us, as processing times vary.</p>
+                <p>You will receive an email notification once the refund has been initiated. If you have not received your refund after 10 business days, please contact your bank or wallet provider before reaching out to us, as processing times can vary.</p>
               </Section>
 
               <Section id="subscriptions" title="6. Subscription Plans">

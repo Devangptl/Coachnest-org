@@ -6,13 +6,15 @@
  * Run:  npm run db:seed:cybersecurity
  */
 import "dotenv/config";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from "../lib/generated/prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
 import {
   getCybersecurityCourseSeed,
   buildOptions,
 } from "../lib/cybersecurity-course-seed";
 
-const prisma = new PrismaClient();
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
+const prisma = new PrismaClient({ adapter });
 
 const INSTRUCTOR_ID =
   process.env.CYBERSECURITY_SEED_INSTRUCTOR_ID ??

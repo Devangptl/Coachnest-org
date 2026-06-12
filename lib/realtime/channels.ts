@@ -10,6 +10,7 @@ export const channels = {
   classAttendance:   (classId: string) => `class:${classId}:attendance`,
   classLive:         (classId: string) => `class:${classId}:live`,
   classAssignments:  (classId: string) => `class:${classId}:assignments`,
+  whiteboard:        (whiteboardId: string) => `whiteboard:${whiteboardId}`,
 } as const;
 
 export const events = {
@@ -30,6 +31,12 @@ export const events = {
   classAssignmentPublished: "class.assignment.published",
   classAssignmentSubmitted: "class.assignment.submitted",
   classAssignmentGraded:    "class.assignment.graded",
+  // Whiteboard — pointer/scene are broadcast client→client at high frequency;
+  // structural events are emitted server-side after a DB write.
+  whiteboardSceneUpdate:       "whiteboard.scene.update",
+  whiteboardPointerUpdate:     "whiteboard.pointer.update",
+  whiteboardPageChanged:       "whiteboard.page.changed",
+  whiteboardCollaboratorChanged: "whiteboard.collaborator.changed",
 } as const;
 
 export type RealtimeEvent = (typeof events)[keyof typeof events];

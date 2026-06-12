@@ -31,14 +31,14 @@ export default async function InstructorCoursesPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
         <div>
           <h1 className="text-2xl font-bold text-foreground">My Courses</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             {courses.length} course{courses.length !== 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <Link href="/instructor/courses/import" className="btn-secondary flex items-center gap-2 text-sm">
             <FileUp className="w-4 h-4" /> Import from PDF
           </Link>

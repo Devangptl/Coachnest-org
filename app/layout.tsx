@@ -2,7 +2,7 @@
  * Root layout — wraps every page.
  * Provides the global background, font, Navbar, and toast notifications.
  */
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Poppins, Dancing_Script, Anek_Gujarati, Playfair_Display } from "next/font/google";
 import "./globals.css";
 
@@ -44,8 +44,23 @@ import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UIDialogProvider } from "@/components/ui/UIDialogProvider";
+import BottomNavWrapper from "@/components/BottomNavWrapper";
+import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  minimumScale: 1,
+  maximumScale: 5,
+  userScalable: true,
+  themeColor: [
+    { media: "(prefers-color-scheme: dark)",  color: "#1a1a1a" },
+    { media: "(prefers-color-scheme: light)", color: "#fdfaf6" },
+  ],
+  viewportFit: "cover",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
@@ -101,12 +116,20 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Coachnest",
+  },
+  formatDetection: { telephone: false },
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png", sizes: "any" },
+      { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
       { url: "/favicon.ico", type: "image/x-icon" },
     ],
-    apple: [{ url: "/icon.png", type: "image/png" }],
+    apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     shortcut: "/favicon.ico",
   },
 };
@@ -124,10 +147,21 @@ export default function RootLayout({
         <link rel="preconnect" href="https://res.cloudinary.com" />
         <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://res.cloudinary.com" />
+        {/* PWA meta tags */}
+        <meta name="mobile-web-app-capable" content="yes" />
+        <meta name="msapplication-TileColor" content="#1a1a1a" />
+        <meta name="msapplication-TileImage" content="/icons/icon-144x144.png" />
         {/* Prevent flash of wrong theme — runs before React hydrates */}
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){var t=localStorage.getItem('cn-theme')||'system';var r=t==='system'?(window.matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):t;document.documentElement.classList.add(r);})();`,
+          }}
+        />
+        {/* Reset viewport to device-width in case the browser inherited a desktop
+            viewport scale from the Google OAuth redirect chain on mobile. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var m=document.querySelector('meta[name="viewport"]');if(m)m.content='width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=5';})();`,
           }}
         />
       </head>
@@ -142,6 +176,8 @@ export default function RootLayout({
 
             {/* Global toast notifications */}
             <ToasterProvider />
+            <BottomNavWrapper />
+            <PWAInstallPrompt />
           </UIDialogProvider>
         </ThemeProvider>
       </body>

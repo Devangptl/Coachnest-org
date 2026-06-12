@@ -73,7 +73,7 @@ export default function ProfessionPicker({
           placeholder="Search professions…"
           className="w-full bg-secondary border border-border rounded-lg px-4 py-2.5 pl-10
                      text-sm text-foreground placeholder:text-muted-foreground/50
-                     focus:outline-none focus:border-[#d97757]/40 transition-colors"
+                     focus:outline-none focus:border-primary/40 transition-colors"
         />
       </div>
 
@@ -89,11 +89,11 @@ export default function ProfessionPicker({
             return (
               <span key={id}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full
-                           bg-orange-500/10 border border-orange-500/20 text-[#d97757]
+                           bg-primary/10 border border-primary/20 text-primary
                            text-xs font-medium">
                 {p.name}
                 <button type="button" onClick={() => onToggle(id)}
-                  className="hover:text-orange-300 transition-colors">
+                  className="hover:text-primary/70 transition-colors">
                   <X className="w-3 h-3" />
                 </button>
               </span>
@@ -116,7 +116,7 @@ export default function ProfessionPicker({
 
       {/* Profession grid */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-hidden">
           {filtered.map((p) => (
             <ProfessionCard
               key={p.id}
@@ -149,7 +149,7 @@ export default function ProfessionPicker({
             className={cn(
               "flex-1 bg-secondary border border-border rounded-lg px-4 py-2.5",
               "text-sm text-foreground placeholder:text-muted-foreground/50",
-              "focus:outline-none focus:border-[#d97757]/40 transition-colors"
+              "focus:outline-none focus:border-primary/40 transition-colors"
             )}
           />
           <button
@@ -159,7 +159,7 @@ export default function ProfessionPicker({
             className={cn(
               "flex items-center gap-1.5 px-4 py-2.5 rounded-lg text-sm font-medium transition-all",
               customInput.trim() && customNames.length < 5
-                ? "bg-orange-500 hover:bg-[#d97757] text-white"
+                ? "bg-primary hover:bg-primary/90 text-primary-foreground"
                 : "bg-secondary text-muted-foreground cursor-not-allowed"
             )}
           >

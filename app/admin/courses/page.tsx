@@ -22,9 +22,9 @@ export default async function AdminCoursesPage() {
   return (
     <div>
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">All Courses</h1>
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">All Courses</h1>
           <p className="text-muted-foreground text-sm mt-0.5">
             {courses.length} course{courses.length !== 1 ? "s" : ""} total
           </p>

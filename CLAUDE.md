@@ -13,7 +13,7 @@
 | Framework | Next.js 16.2.6 (App Router, RSC) |
 | Language | TypeScript 5 (strict) |
 | UI | React 19, Tailwind CSS 3.4, Radix UI, Framer Motion 11 |
-| ORM | Prisma 5.16 |
+| ORM | Prisma 7 (`@prisma/adapter-pg` driver adapter; CLI config in `prisma.config.ts`; client generated to `lib/generated/prisma`) |
 | Database | PostgreSQL via Supabase (pooled + direct) |
 | Auth | Supabase Auth (`@supabase/ssr` v0.10) |
 | Payments | Razorpay 2.9.6 (NOT Stripe) |

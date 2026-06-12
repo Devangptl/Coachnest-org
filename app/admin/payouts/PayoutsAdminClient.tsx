@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import GlassCard from "@/components/GlassCard";
 import Avatar from "@/components/Avatar";
+import { DateRangeFilter } from "@/components/ui/DateRangeFilter";
+import { isWithinRange, type DateRange } from "@/lib/date-range";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -363,6 +365,7 @@ export default function PayoutsAdminClient() {
   const [error,    setError]    = useState("");
   const [filter,   setFilter]   = useState<FilterStatus>("ALL");
   const [search,   setSearch]   = useState("");
+  const [range,    setRange]    = useState<DateRange>({});
   const [modal,    setModal]    = useState<{ req: PayoutRequest; action: "APPROVE" | "REJECT" | "PROCESS" } | null>(null);
 
   const load = useCallback(async (status?: string) => {
@@ -393,6 +396,7 @@ export default function PayoutsAdminClient() {
   const totalCount     = stats.reduce((s, v) => s + v.count, 0);
 
   const visible = requests.filter((r) => {
+    if (!isWithinRange(r.requestedAt, range)) return false;
     if (!search) return true;
     const q = search.toLowerCase();
     return (
@@ -487,6 +491,8 @@ export default function PayoutsAdminClient() {
         </div>
       </div>
 
+      <DateRangeFilter compact value={range} onChange={setRange} />
+
       {/* Card list */}
       {loading ? (
         <div className="flex justify-center py-12">
@@ -495,7 +501,11 @@ export default function PayoutsAdminClient() {
       ) : visible.length === 0 ? (
         <GlassCard className="text-center py-16">
           <DollarSign className="w-10 h-10 text-muted-foreground/25 mx-auto mb-3" />
-          <p className="text-muted-foreground text-sm">No payout requests found.</p>
+          <p className="text-muted-foreground text-sm">
+            {search || range.from || range.to
+              ? "No payout requests match your filters."
+              : "No payout requests found."}
+          </p>
         </GlassCard>
       ) : (
         <div className="space-y-2.5">

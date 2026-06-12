@@ -20,7 +20,8 @@ const RESOURCES_LINKS = [
 ];
 
 const COMPANY_LINKS = [
-  { label: "About Us",         href: "/about"   },
+  { label: "About Us",         href: "/about"        },
+  { label: "Request a Demo",   href: "/request-demo" },
   // { label: "Careers",          href: "/careers" },
   // { label: "Press & Media",    href: "/press"   },
   { label: "Partners",         href: "/contact" },
@@ -61,7 +62,7 @@ export default function Footer() {
         <div className="absolute -top-40 left-1/2 -translate-x-1/2 w-[600px] h-40 bg-orange-500/[0.04] blur-3xl rounded-full" />
       </div>
 
-      <div className="relative mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="relative mx-auto px-4 sm:px-6 md:px-7 lg:px-8">
 
         {/* ── CTA strip ── */}
         <div className="py-10 sm:py-12 border-b border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-6">
@@ -84,10 +85,10 @@ export default function Footer() {
         </div>
 
         {/* ── Main link grid ── */}
-        <div className="py-12 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 lg:gap-10">
+        <div className="py-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-10">
 
-          {/* Brand column — spans 2 cols on sm */}
-          <div className="col-span-2 sm:col-span-3 lg:col-span-1">
+          {/* Brand column */}
+          <div className="col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-1">
             <Link href="/" className="inline-block mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img

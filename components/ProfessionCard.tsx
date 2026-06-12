@@ -32,7 +32,7 @@ const COLOR_MAP: Record<string, { bg: string; border: string; icon: string; sele
   blue:   { bg: "bg-blue-500/10",   border: "border-blue-500/20",   icon: "text-blue-400",   selectedBg: "bg-blue-500/20",   selectedBorder: "border-blue-400" },
   purple: { bg: "bg-purple-500/10", border: "border-purple-500/20", icon: "text-purple-400", selectedBg: "bg-purple-500/20", selectedBorder: "border-purple-400" },
   green:  { bg: "bg-emerald-500/10",border: "border-emerald-500/20",icon: "text-emerald-400",selectedBg: "bg-emerald-500/20",selectedBorder: "border-emerald-400" },
-  orange: { bg: "bg-orange-500/10", border: "border-orange-500/20", icon: "text-[#d97757]", selectedBg: "bg-orange-500/20", selectedBorder: "border-[#d97757]" },
+  orange: { bg: "bg-primary/10",    border: "border-primary/20",    icon: "text-primary",   selectedBg: "bg-primary/20",    selectedBorder: "border-primary"   },
   amber:  { bg: "bg-amber-500/10",  border: "border-amber-500/20",  icon: "text-amber-400",  selectedBg: "bg-amber-500/20",  selectedBorder: "border-amber-400"  },
   teal:   { bg: "bg-teal-500/10",   border: "border-teal-500/20",   icon: "text-teal-400",   selectedBg: "bg-teal-500/20",   selectedBorder: "border-teal-400"   },
   rose:   { bg: "bg-rose-500/10",   border: "border-rose-500/20",   icon: "text-rose-400",   selectedBg: "bg-rose-500/20",   selectedBorder: "border-rose-400"   },
@@ -66,8 +66,8 @@ export default function ProfessionCard({
       type="button"
       onClick={() => onToggle(profession.id)}
       className={cn(
-        "relative w-full text-left rounded-md border p-4 transition-all duration-200",
-        "hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500",
+        "relative w-full text-left rounded-md border p-3 sm:p-4 transition-all duration-200",
+        "hover:scale-[1.02] active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-primary",
         selected
           ? cn("bg-card", palette.selectedBg, palette.selectedBorder, "shadow-md")
           : "bg-card border-border hover:border-border/80 hover:bg-secondary/50"
@@ -76,26 +76,26 @@ export default function ProfessionCard({
     >
       {/* Check badge */}
       {selected && (
-        <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center">
+        <span className="absolute top-3 right-3 w-5 h-5 rounded-full bg-primary flex items-center justify-center">
           <Check className="w-3 h-3 text-white" strokeWidth={3} />
         </span>
       )}
 
       {/* Icon */}
       <div className={cn(
-        "w-10 h-10 rounded-lg flex items-center justify-center mb-3",
+        "w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center mb-2 sm:mb-3",
         selected ? palette.selectedBg : palette.bg,
         "border",
         selected ? palette.selectedBorder : palette.border,
       )}>
-        <Icon className={cn("w-5 h-5", palette.icon)} />
+        <Icon className={cn("w-4 h-4 sm:w-5 sm:h-5", palette.icon)} />
       </div>
 
       {/* Text */}
-      <p className="text-sm font-semibold text-foreground leading-snug mb-1">
+      <p className="text-xs sm:text-sm font-semibold text-foreground leading-snug mb-0.5 sm:mb-1">
         {profession.name}
       </p>
-      <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+      <p className="text-[10px] sm:text-xs text-muted-foreground leading-relaxed line-clamp-2">
         {profession.description}
       </p>
     </button>

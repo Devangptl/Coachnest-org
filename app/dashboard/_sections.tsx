@@ -81,7 +81,7 @@ export async function EnrollmentSection({ userId }: { userId: string }) {
   return (
     <>
       {/* Stats row */}
-      <div id="tour-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+      <div id="tour-stats" className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
         {[
           { label: "Enrolled", value: enrollments.length, icon: BookOpen, color: "text-[#d97757]" },
           { label: "In Progress", value: inProgress.length, icon: Clock, color: "text-blue-400" },
@@ -90,13 +90,13 @@ export async function EnrollmentSection({ userId }: { userId: string }) {
         ].map((stat) => {
           const Icon = stat.icon;
           return (
-            <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-11 h-11 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
-                <Icon className={`w-5 h-5 ${stat.color}`} />
+            <GlassCard key={stat.label} className="flex flex-col items-center text-center gap-1.5 sm:flex-row sm:text-left sm:gap-3">
+              <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
+                <Icon className={`w-4 h-4 sm:w-5 sm:h-5 ${stat.color}`} />
               </div>
-              <div>
-                <div className="text-xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-muted-foreground text-xs">{stat.label}</div>
+              <div className="min-w-0">
+                <div className="text-lg sm:text-xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-muted-foreground text-[10px] sm:text-xs leading-tight">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -203,11 +203,15 @@ export async function EnrollmentSection({ userId }: { userId: string }) {
 // ── Access panel: course count + community add-on ────────────────────────────
 
 export async function AccessPanel({ userId }: { userId: string }) {
-  const [enrollmentCount, featurePurchases] = await Promise.all([
+  const [enrollmentCount, featurePurchases, communityFeature] = await Promise.all([
     prisma.enrollment.count({ where: { userId } }),
     prisma.featurePurchase.findMany({
       where: { userId },
       include: { feature: { select: { slug: true } } },
+    }),
+    prisma.platformFeature.findUnique({
+      where:  { slug: "community" },
+      select: { price: true },
     }),
   ]);
   const hasCommunityAccess = featurePurchases.some(
@@ -261,7 +265,10 @@ export async function AccessPanel({ userId }: { userId: string }) {
             </div>
             <div>
               <p className="text-foreground font-semibold text-sm">Community Access</p>
-              <p className="text-muted-foreground text-xs">One-time add-on · ₹499</p>
+              <p className="text-muted-foreground text-xs">
+                One-time add-on
+                {communityFeature && ` · ₹${Number(communityFeature.price).toLocaleString("en-IN")}`}
+              </p>
             </div>
           </div>
           <Link href="/features/community" className="btn-primary text-xs py-2 px-3 flex-shrink-0 whitespace-nowrap">

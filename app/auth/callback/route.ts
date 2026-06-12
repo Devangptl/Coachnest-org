@@ -1,12 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase";
 import { prisma } from "@/lib/prisma";
+import { sendWelcomeEmail } from "@/lib/email";
 
 /**
  * GET /auth/callback
- * Supabase redirects here after the user clicks the email confirmation link.
- * Exchanges the one-time code for a session then sends the user to their portal.
+ * Handles email confirmation links and Google OAuth callbacks.
+ * Always redirects — never throws — so the session cookie is always committed.
  */
+
+/**
+ * Returns an HTML page that immediately redirects via JavaScript.
+ * This breaks the Google OAuth redirect chain so mobile browsers (Chrome Android
+ * in particular) re-evaluate the viewport meta tag before landing on the app,
+ * preventing the "desktop site" layout from being shown on mobile.
+ */
+function mobileRedirect(path: string): NextResponse {
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=5">
+  <script>window.location.replace(${JSON.stringify(path)});</script>
+</head>
+<body></body>
+</html>`;
+  return new NextResponse(html, {
+    status: 200,
+    headers: { "Content-Type": "text/html; charset=utf-8" },
+  });
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const code = searchParams.get("code");
@@ -20,44 +45,113 @@ export async function GET(req: NextRequest) {
   const { data, error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error || !data.user) {
-    return NextResponse.redirect(
-      new URL("/login?error=confirmation_failed", req.url)
-    );
+    console.error("[auth/callback] exchangeCodeForSession failed:", error?.message);
+    return NextResponse.redirect(new URL("/login?error=confirmation_failed", req.url));
   }
 
-  const role = (data.user.app_metadata?.role ?? "STUDENT") as string;
+  const user = data.user;
 
-  // Students go to onboarding first unless they've already completed it.
-  if (role === "STUDENT") {
-    if (next) {
-      return NextResponse.redirect(new URL(next, req.url));
-    }
-    const profile = await prisma.user.findUnique({
-      where: { id: data.user.id },
-      select: { hasCompletedOnboarding: true },
+  // Determine role from query param (set by signup page Google button)
+  const rawRole = (searchParams.get("role") ?? "STUDENT").toUpperCase();
+  const role    = rawRole === "INSTRUCTOR" ? "INSTRUCTOR" : "STUDENT";
+
+  // ── Check if this user already exists in the database ────────────────────────
+  let existingProfile: {
+    id: string;
+    hasCompletedOnboarding: boolean;
+    hasCompletedInstructorOnboarding: boolean;
+    instructorStatus: string | null;
+  } | null = null;
+
+  try {
+    existingProfile = await prisma.user.findUnique({
+      where:  { id: user.id },
+      select: {
+        id: true,
+        hasCompletedOnboarding: true,
+        hasCompletedInstructorOnboarding: true,
+        instructorStatus: true,
+      },
     });
-    const destination = profile?.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
-    return NextResponse.redirect(new URL(destination, req.url));
+  } catch (err) {
+    console.error("[auth/callback] profile lookup failed:", err);
+    // Cannot determine user state — send to onboarding as safe default
+    const dest = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
+    return mobileRedirect(dest);
   }
 
-  if (role === "INSTRUCTOR") {
-    if (next) {
-      return NextResponse.redirect(new URL(next, req.url));
+  // ── New user — provision and send to onboarding ───────────────────────────────
+  if (!existingProfile) {
+    // Set role in Supabase app_metadata (non-critical — user is already logged in)
+    try {
+      await supabaseAdmin.auth.admin.updateUserById(user.id, {
+        app_metadata: {
+          role,
+          ...(role === "INSTRUCTOR" ? { instructorStatus: "PENDING" } : {}),
+        },
+      });
+    } catch (adminErr) {
+      console.error("[auth/callback] app_metadata update failed:", adminErr);
     }
-    const profile = await prisma.user.findUnique({
-      where:  { id: data.user.id },
-      select: { hasCompletedInstructorOnboarding: true, instructorStatus: true },
-    });
-    if (!profile?.hasCompletedInstructorOnboarding) {
-      return NextResponse.redirect(new URL("/onboarding/instructor", req.url));
+
+    // Create profile in database
+    try {
+      const name   = (
+        user.user_metadata?.full_name ??
+        user.user_metadata?.name ??
+        user.email!.split("@")[0]
+      ) as string;
+      const avatar = (user.user_metadata?.avatar_url ?? null) as string | null;
+
+      await prisma.user.upsert({
+        where:  { id: user.id },
+        create: {
+          id:     user.id,
+          email:  user.email!,
+          name,
+          avatar,
+          role:   role as "STUDENT" | "INSTRUCTOR",
+          ...(role === "INSTRUCTOR" ? {
+            instructorStatus:    "PENDING",
+            instructorAppliedAt: new Date(),
+          } : {}),
+        },
+        update: {},
+      });
+
+      sendWelcomeEmail(user.email!, name).catch(console.error);
+    } catch (provisionErr) {
+      console.error("[auth/callback] user provisioning failed:", provisionErr);
     }
-    const destination = profile.instructorStatus === "APPROVED" ? "/instructor" : "/instructor/pending";
-    return NextResponse.redirect(new URL(destination, req.url));
+
+    // Always redirect new users to onboarding
+    const destination = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
+    return mobileRedirect(destination);
   }
 
-  if (role === "ADMIN") {
-    return NextResponse.redirect(new URL(next ?? "/admin", req.url));
+  // ── Returning user — route by their existing role ─────────────────────────────
+  const existingRole = (user.app_metadata?.role ?? "STUDENT") as string;
+
+  if (existingRole === "STUDENT") {
+    if (next) return mobileRedirect(next);
+    const destination = existingProfile.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
+    return mobileRedirect(destination);
   }
 
-  return NextResponse.redirect(new URL(next ?? "/dashboard", req.url));
+  if (existingRole === "INSTRUCTOR") {
+    if (next) return mobileRedirect(next);
+    if (!existingProfile.hasCompletedInstructorOnboarding) {
+      return mobileRedirect("/onboarding/instructor");
+    }
+    const destination = existingProfile.instructorStatus === "APPROVED"
+      ? "/instructor"
+      : "/instructor/pending";
+    return mobileRedirect(destination);
+  }
+
+  if (existingRole === "ADMIN") {
+    return mobileRedirect(next ?? "/admin");
+  }
+
+  return mobileRedirect(next ?? "/dashboard");
 }

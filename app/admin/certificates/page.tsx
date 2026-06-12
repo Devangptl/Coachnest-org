@@ -26,9 +26,9 @@ export default async function AdminCertificatesPage({
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-wrap items-start justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Certificates</h1>
+          <h1 className="text-xl sm:text-3xl font-bold text-foreground">Certificates</h1>
           <p className="text-muted-foreground/70 text-sm mt-1">
             {certs.length} certificate{certs.length !== 1 ? "s" : ""} issued
           </p>

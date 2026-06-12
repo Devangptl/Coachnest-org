@@ -107,7 +107,7 @@ export default async function InstructorDetailPage({
       </GlassCard>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-6">
         {[
           { label: "Courses",        value: stats.coursesCount.toString(),      icon: BookOpen, color: "text-blue-400" },
           { label: "Students",       value: stats.studentsCount.toString(),     icon: Users,    color: "text-emerald-400" },
@@ -116,13 +116,13 @@ export default async function InstructorDetailPage({
         ].map((stat) => {
           const Icon = stat.icon;
           return (
-            <GlassCard key={stat.label} className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-md bg-secondary flex items-center justify-center">
-                <Icon className={`w-6 h-6 ${stat.color}`} />
+            <GlassCard key={stat.label} className="flex flex-col items-center text-center gap-2 sm:flex-row sm:text-left sm:gap-3 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-md bg-secondary flex items-center justify-center flex-shrink-0">
+                <Icon className={`w-5 h-5 md:w-6 md:h-6 ${stat.color}`} />
               </div>
-              <div>
-                <div className="text-2xl font-bold text-foreground">{stat.value}</div>
-                <div className="text-muted-foreground text-sm">{stat.label}</div>
+              <div className="min-w-0">
+                <div className="text-xl md:text-2xl font-bold text-foreground">{stat.value}</div>
+                <div className="text-muted-foreground text-[10px] sm:text-xs md:text-sm leading-tight">{stat.label}</div>
               </div>
             </GlassCard>
           );
@@ -136,27 +136,19 @@ export default async function InstructorDetailPage({
           <h2 className="text-lg font-semibold text-foreground">Wallet</h2>
         </div>
         {wallet ? (
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <div className="text-muted-foreground/70 text-xs uppercase tracking-wider mb-1">
-                Balance
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+            {[
+              { label: "Balance",       value: money(wallet.balance),         color: "text-[#d97757]"  },
+              { label: "Total Earned",  value: money(wallet.totalEarned),     color: "text-foreground" },
+              { label: "Withdrawn",     value: money(wallet.totalWithdrawn),  color: "text-foreground" },
+            ].map(({ label, value, color }) => (
+              <div key={label} className="bg-secondary/30 border border-border rounded-lg px-4 py-3 sm:py-4">
+                <div className="text-muted-foreground/70 text-[10px] sm:text-xs uppercase tracking-wider mb-1">
+                  {label}
+                </div>
+                <div className={`text-lg sm:text-xl font-bold ${color}`}>{value}</div>
               </div>
-              <div className="text-xl font-bold text-[#d97757]">{money(wallet.balance)}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground/70 text-xs uppercase tracking-wider mb-1">
-                Total Earned
-              </div>
-              <div className="text-xl font-bold text-foreground">{money(wallet.totalEarned)}</div>
-            </div>
-            <div>
-              <div className="text-muted-foreground/70 text-xs uppercase tracking-wider mb-1">
-                Withdrawn
-              </div>
-              <div className="text-xl font-bold text-foreground">
-                {money(wallet.totalWithdrawn)}
-              </div>
-            </div>
+            ))}
           </div>
         ) : (
           <p className="text-muted-foreground text-sm">No wallet yet.</p>

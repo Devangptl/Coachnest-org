@@ -16,7 +16,7 @@ import GlassCard from "@/components/GlassCard";
 // ─── Purchase data (Courses, Books, & Add-ons) ───────────────────────────────
 
 async function getPurchases(userId: string) {
-  const [enrollments, featurePurchases, bookPurchases] = await Promise.all([
+  const [enrollments, featurePurchases, bookPurchases, communityFeature] = await Promise.all([
     prisma.enrollment.findMany({
       where:   { userId },
       include: { course: { select: { id: true, title: true, thumbnail: true, isFree: true } } },
@@ -39,11 +39,16 @@ async function getPurchases(userId: string) {
       },
       orderBy: { purchasedAt: "desc" },
     }),
+    prisma.platformFeature.findUnique({
+      where:  { slug: "community" },
+      select: { price: true },
+    }),
   ]);
 
   const hasCommunityAccess = featurePurchases.some((fp) => fp.feature.slug === "community");
+  const communityPrice = communityFeature ? Number(communityFeature.price) : null;
 
-  return { enrollments, featurePurchases, bookPurchases, hasCommunityAccess };
+  return { enrollments, featurePurchases, bookPurchases, hasCommunityAccess, communityPrice };
 }
 
 function fmtDate(date: Date | string) {
@@ -55,7 +60,7 @@ function fmtDate(date: Date | string) {
 // ─── Purchases page view ──────────────────────────────────────────────────────
 
 async function PurchasesPage({ userId }: { userId: string }) {
-  const { enrollments, featurePurchases, bookPurchases, hasCommunityAccess } =
+  const { enrollments, featurePurchases, bookPurchases, hasCommunityAccess, communityPrice } =
     await getPurchases(userId);
 
   return (
@@ -217,7 +222,10 @@ async function PurchasesPage({ userId }: { userId: string }) {
               </div>
               <div>
                 <p className="text-foreground font-semibold text-sm">Community Access</p>
-                <p className="text-muted-foreground text-xs">Forums · Study Groups · Peer Review — One-time ₹499</p>
+                <p className="text-muted-foreground text-xs">
+                  Forums · Study Groups · Peer Review
+                  {communityPrice !== null && ` — One-time ₹${communityPrice.toLocaleString("en-IN")}`}
+                </p>
               </div>
             </div>
             <Link

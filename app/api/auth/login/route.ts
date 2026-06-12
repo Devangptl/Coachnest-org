@@ -23,7 +23,20 @@ export async function POST(req: NextRequest) {
       password,
     });
 
-    if (error || !data.user) {
+    if (error) {
+      if (error.code === "email_not_confirmed") {
+        return NextResponse.json(
+          { error: "email_not_confirmed", email },
+          { status: 403 }
+        );
+      }
+      return NextResponse.json(
+        { error: "Invalid email or password." },
+        { status: 401 }
+      );
+    }
+
+    if (!data.user) {
       return NextResponse.json(
         { error: "Invalid email or password." },
         { status: 401 }

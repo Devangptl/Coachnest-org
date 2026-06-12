@@ -25,10 +25,17 @@ export default async function DashboardLayout({
       <Suspense fallback={null}>
         <OnboardingTourGate />
       </Suspense>
-      <div className="pb-4">
-        <div className="flex flex-col lg:flex-row lg:gap-4 lg:min-h-[calc(100vh-4rem)]">
-          <DashboardSidebar />
-          <div className="flex-1 min-w-0 animate-fade-in pt-3">{children}</div>
+      <div className="py-4">
+        <div className="flex flex-col md:flex-row md:gap-4 md:min-h-[calc(100vh-4rem)]">
+          <DashboardSidebar
+            user={{
+              userId: session.userId,
+              name: session.name,
+              email: session.email,
+              avatar: session.avatar,
+            }}
+          />
+          <div className="flex-1 min-w-0 animate-fade-in pt-3 md:pt-0">{children}</div>
         </div>
       </div>
     </>

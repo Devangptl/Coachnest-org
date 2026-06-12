@@ -74,7 +74,7 @@ export default function QuizAttemptsModal({
           ) : (
             <>
               {/* Summary stats */}
-              <div className="grid grid-cols-4 gap-3 mb-6">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
                 {(() => {
                   const avgScore = Math.round(attempts.reduce((s, a) => s + a.score, 0) / attempts.length);
                   const passCount = attempts.filter((a) => a.passed).length;

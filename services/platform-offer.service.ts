@@ -13,7 +13,7 @@
  * by the client.
  */
 import { prisma } from "@/lib/prisma";
-import { DiscountType, OfferScope, Prisma } from "@prisma/client";
+import { DiscountType, OfferScope, Prisma } from "@/lib/generated/prisma/client";
 import {
   buildPaginated,
   parsePagination,

@@ -39,7 +39,7 @@ export default function AdminAccountInfo({
         </div>
       </div>
 
-      <div className="grid grid-cols-3 gap-3">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {[
           { label: "Students", value: stats.students, icon: Users, color: "text-[#d97757]" },
           { label: "Instructors", value: stats.instructors, icon: UserCog, color: "text-emerald-400" },

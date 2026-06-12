@@ -56,9 +56,9 @@ function Cell({ value, highlight }: { value: boolean | string; highlight?: boole
 
 export default function CompareSection() {
   return (
-    <section className="py-20">
+    <section className="py-12 md:py-16 lg:py-20">
 
-      <div className="max-w-3xl mx-auto relative z-10">
+      <div className="max-w-3xl mx-auto relative z-10 px-4 sm:px-6">
 
         {/* ── Heading ── */}
         <motion.div
