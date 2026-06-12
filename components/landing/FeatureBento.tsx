@@ -10,8 +10,8 @@ import {
 
 export default function FeatureBento() {
   return (
-    <section className="py-24 px-4 sm:px-6 md:px-7 lg:px-8">
-      <div className="mx-auto max-w-6xl">
+    <section className="py-24">
+      <div className="mx-auto">
         <FadeInSection>
           <div className="text-center mb-14">
             <span className="inline-flex items-center gap-2 bg-orange-500/[0.07] border border-orange-500/20 text-[#d97757] text-xs font-semibold uppercase tracking-widest px-4 py-1.5 rounded-full mb-4">

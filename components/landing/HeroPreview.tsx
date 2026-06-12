@@ -38,7 +38,7 @@ function DashboardPanel() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-foreground font-semibold text-sm sm:text-base">
-            Welcome back, Priya 👋
+            Welcome back, Devang 👋
           </p>
           <p className="text-muted-foreground text-[11px] sm:text-xs mt-0.5">
             You&apos;re 2 lessons away from your weekly goal.
@@ -317,13 +317,13 @@ function SettingsPanel() {
       </div>
       <div className="flex items-center gap-3 rounded-lg border border-border bg-secondary/30 p-3">
         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#d97757] to-amber-500 flex items-center justify-center text-white text-xs font-bold">
-          PS
+          DP
         </div>
         <div>
-          <p className="text-foreground text-[12px] font-semibold">Priya Sharma</p>
-          <p className="text-muted-foreground text-[10px]">priya@example.com · Student</p>
+          <p className="text-foreground text-[12px] font-semibold">Devang Patel</p>
+          <p className="text-muted-foreground text-[10px]">devang@example.com · Student</p>
         </div>
-        <span className="ml-auto text-[10px] text-[#d97757] font-semibold flex items-center gap-1">
+        <span className="ml-auto text-[10px] text-[#d97757] font-semibold flex items-center gap-1 flex-shrink-0 whitespace-nowrap">
           <User className="w-3 h-3" /> Edit profile
         </span>
       </div>
@@ -401,13 +401,13 @@ export default function HeroPreview() {
             <span className="w-2.5 h-2.5 rounded-full bg-amber-500/60" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500/60" />
           </div>
-          <div className="flex-1 flex justify-center">
-            <div className="flex items-center gap-1.5 bg-background/60 border border-border rounded-md px-3 py-1 text-[11px] text-muted-foreground">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              coachnest.com/{activeTab === "dashboard" ? "dashboard" : activeTab}
+          <div className="flex-1 flex justify-center min-w-0">
+            <div className="flex items-center gap-1.5 bg-background/60 border border-border rounded-md px-3 py-1 text-[11px] text-muted-foreground min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+              <span className="truncate">coachnest.com/{activeTab}</span>
             </div>
           </div>
-          <div className="w-12" />
+          <div className="hidden sm:block w-12" />
         </div>
 
         {/* Mobile tab bar (sidebar is hidden below sm) */}
@@ -466,10 +466,10 @@ export default function HeroPreview() {
             <div className="mt-auto pt-3 border-t border-border">
               <div className="flex items-center gap-2 px-2">
                 <div className="w-6 h-6 rounded-full bg-gradient-to-br from-[#d97757] to-amber-500 flex items-center justify-center text-white text-[8px] font-bold">
-                  PS
+                  DP
                 </div>
                 <div className="min-w-0">
-                  <p className="text-foreground text-[10px] font-semibold truncate">Priya Sharma</p>
+                  <p className="text-foreground text-[10px] font-semibold truncate">Devang Patel</p>
                   <p className="text-muted-foreground text-[9px] flex items-center gap-0.5">
                     <Star className="w-2 h-2 text-amber-400 fill-current" /> Level 5
                   </p>
