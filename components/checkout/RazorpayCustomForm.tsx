@@ -30,7 +30,7 @@ export interface RazorpayOrderInfo {
   amount:          number;   // rupees (not paise)
   currency:        string;
   key:             string;
-  type:            "course" | "books" | "feature";
+  type:            "course" | "books" | "feature" | "org";
 }
 
 interface Props {

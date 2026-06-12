@@ -24,6 +24,7 @@ import { prisma } from "@/lib/prisma";
 import { finalizeCoursePayment } from "@/services/payment.service";
 import { finalizeBookPayment } from "@/services/book-payment.service";
 import { handleFeaturePaymentSuccess } from "@/services/feature.service";
+import { finalizeOrgSubscriptionPayment } from "@/services/org-subscription.service";
 import { createNotification } from "@/lib/notifications";
 
 // ── Webhook events handled ──────────────────────────────────────────────────
@@ -87,9 +88,16 @@ export async function POST(req: NextRequest) {
     const entity = (payload as any)?.refund?.entity;
     const rzpRefundId    = entity?.id            as string | undefined;
     const refundReqId    = entity?.notes?.refundRequestId as string | undefined;
+    const orgTxnId       = entity?.notes?.orgTransactionId as string | undefined;
     if (rzpRefundId && refundReqId) {
       await prisma.refundRequest.updateMany({
         where: { id: refundReqId, status: "PROCESSING" },
+        data:  { razorpayRefundId: rzpRefundId },
+      }).catch(() => null);
+    }
+    if (rzpRefundId && orgTxnId) {
+      await prisma.organizationTransaction.updateMany({
+        where: { id: orgTxnId, refundStatus: "PROCESSING", razorpayRefundId: null },
         data:  { razorpayRefundId: rzpRefundId },
       }).catch(() => null);
     }
@@ -99,12 +107,20 @@ export async function POST(req: NextRequest) {
   if (eventName === "refund.failed") {
     const entity      = (payload as any)?.refund?.entity;
     const refundReqId = entity?.notes?.refundRequestId as string | undefined;
+    const orgTxnId    = entity?.notes?.orgTransactionId as string | undefined;
     if (refundReqId) {
       await prisma.refundRequest.updateMany({
         where: { id: refundReqId, status: "PROCESSING" },
         data:  { status: "FAILED" },
       }).catch(() => null);
       console.warn("[webhook] refund.failed for request", refundReqId, entity?.id);
+    }
+    if (orgTxnId) {
+      await prisma.organizationTransaction.updateMany({
+        where: { id: orgTxnId, refundStatus: "PROCESSING" },
+        data:  { refundStatus: "FAILED" },
+      }).catch(() => null);
+      console.warn("[webhook] refund.failed for org transaction", orgTxnId, entity?.id);
     }
     return OK();
   }
@@ -307,6 +323,18 @@ async function finalizeByRazorpayOrderId(
   if (bookOrder) {
     if (bookOrder.status === "PAID" || bookOrder.status === "REFUNDED") return;
     await finalizeBookPayment(bookOrder.id, rzpPaymentId);
+    return;
+  }
+
+  // 3. Check OrganizationTransaction table (org subscription payments)
+  const orgTxn = await prisma.organizationTransaction.findUnique({
+    where:  { razorpayOrderId: rzpOrderId },
+    select: { id: true, status: true },
+  });
+
+  if (orgTxn) {
+    if (orgTxn.status !== "PENDING") return;
+    await finalizeOrgSubscriptionPayment(orgTxn.id, rzpPaymentId);
     return;
   }
 

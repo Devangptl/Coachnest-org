@@ -1706,3 +1706,136 @@ export async function sendDemoScheduledEmail(opts: {
   }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
 }
 
+
+// ─── Organization subscription emails ─────────────────────────────────────────
+
+export async function sendOrgWelcomeEmail(to: string, orgName: string, orgSlug: string) {
+  const override = await resolveTemplate("org-welcome", { orgName, orgSlug });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `${orgName} is live on Coachnest 🎉`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Organization Active", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Welcome aboard, ${orgName}! 🎉
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Your organization workspace is ready. Invite instructors and students,
+        create courses, and track progress — all from your own portal.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Workspace", orgName)}
+          ${infoRow("Admin portal", `${APP}/org/${orgSlug}/admin`)}
+          ${infoRow("Member login", `${APP}/org/${orgSlug}/login`)}
+        </tbody>
+      </table>
+
+      ${btn("Open Admin Portal", `${APP}/org/${orgSlug}/admin`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+export async function sendOrgPaymentReceiptEmail(
+  to: string,
+  orgName: string,
+  orgSlug: string,
+  amount: number,
+  type: string,
+  periodEnd: Date,
+) {
+  const amt  = amount.toLocaleString("en-IN");
+  const until = periodEnd.toLocaleDateString("en-IN", { year: "numeric", month: "long", day: "numeric" });
+  const override = await resolveTemplate("org-payment-receipt", {
+    orgName, orgSlug, amount: amt, type, periodEnd: until,
+  });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Payment received — ₹${amt} · ${orgName}`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Payment Received", "#22c55e")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Thank you for your payment
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        We've received your ${type.toLowerCase()} payment for
+        <strong style="color:#f97316;">${orgName}</strong>.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Amount", `₹${amt}`)}
+          ${infoRow("Type", type)}
+          ${infoRow("Active until", until)}
+        </tbody>
+      </table>
+
+      ${btn("View Billing", `${APP}/org/${orgSlug}/admin/billing`)}
+      <p style="color:#525252;font-size:12px;margin:20px 0 0;">
+        Your invoice is available for download on the billing page.
+      </p>
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+export async function sendOrgSubscriptionExpiredEmail(to: string, orgName: string, orgSlug: string) {
+  const override = await resolveTemplate("org-subscription-expired", { orgName, orgSlug });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `Your Coachnest subscription has expired — ${orgName}`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Subscription Expired", "#ef4444")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        ${orgName}'s subscription has expired
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        Your members can no longer access the workspace. Renew now to restore
+        access — all your courses, members, and progress are safe.
+      </p>
+
+      ${btn("Renew Subscription", `${APP}/org/${orgSlug}/admin/billing`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
+
+export async function sendOrgMemberInviteEmail(
+  to: string,
+  name: string,
+  orgName: string,
+  orgSlug: string,
+  role: string,
+) {
+  const roleLabel =
+    role === "ORG_ADMIN" ? "Admin" : role === "ORG_INSTRUCTOR" ? "Instructor" : "Student";
+  const override = await resolveTemplate("org-member-invite", { name, orgName, orgSlug, role: roleLabel });
+  return send({
+    from: FROM,
+    to:   resolveRecipient(to),
+    subject: override?.subject ?? `You've been added to ${orgName} on Coachnest`,
+    html: override?.html ?? shell(`
+      <p style="margin:0 0 4px;">${badge("Organization Invite")}</p>
+      <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:12px 0 8px;letter-spacing:-0.5px;">
+        Welcome to ${orgName}, ${name}!
+      </h1>
+      <p style="color:#a3a3a3;font-size:15px;line-height:1.7;margin:0 0 28px;">
+        You've been added as a <strong style="color:#f97316;">${roleLabel}</strong>.
+        Sign in to your organization's portal to get started. If you're new to
+        Coachnest, use the account-setup link sent separately to set your password.
+      </p>
+
+      <table cellpadding="0" cellspacing="0" style="background:#0d0d0d;border:1px solid #1f1f1f;border-radius:10px;width:100%;margin-bottom:28px;">
+        <tbody>
+          ${infoRow("Organization", orgName)}
+          ${infoRow("Your role", roleLabel)}
+          ${infoRow("Sign in at", `${APP}/org/${orgSlug}/login`)}
+        </tbody>
+      </table>
+
+      ${btn("Sign In", `${APP}/org/${orgSlug}/login`)}
+    `),
+  }, override ? { templateId: override.templateId, templateName: override.templateName } : undefined);
+}
