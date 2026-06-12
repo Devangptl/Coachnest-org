@@ -2,11 +2,14 @@
 
 import { usePathname } from "next/navigation";
 
-const HIDE_PREFIXES = ["/login", "/signup", "/forgot-password", "/reset-password", "/onboarding", "/confirm-email"];
+const HIDE_PREFIXES = ["/login", "/signup", "/forgot-password", "/reset-password", "/onboarding", "/confirm-email", "/org/register"];
 
 // The whiteboard hub (/whiteboards) keeps the navbar; only the full-screen
 // editor (/whiteboards/:id) hides it.
 const FULLSCREEN_WHITEBOARD = /^\/whiteboards\/.+/;
+
+// Org workspace login renders its own chrome.
+const ORG_LOGIN = /^\/org\/[^/]+\/login/;
 
 /**
  * Hides its children on auth routes and the full-screen whiteboard editor.
@@ -17,5 +20,6 @@ export default function NavbarWrapper({ children }: { children: React.ReactNode 
   const pathname = usePathname();
   if (HIDE_PREFIXES.some((r) => pathname.startsWith(r))) return null;
   if (FULLSCREEN_WHITEBOARD.test(pathname)) return null;
+  if (ORG_LOGIN.test(pathname)) return null;
   return <>{children}</>;
 }

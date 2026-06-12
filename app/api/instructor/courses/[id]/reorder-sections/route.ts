@@ -12,7 +12,7 @@ type Params = { params: Promise<{ id: string }> };
 
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await getSession();
-  if (!session || (session.role !== "INSTRUCTOR" && session.role !== "ADMIN")) {
+  if (!session) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

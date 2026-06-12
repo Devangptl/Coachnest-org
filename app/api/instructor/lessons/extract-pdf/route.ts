@@ -187,7 +187,10 @@ async function extractPlainHtml(buffer: Buffer): Promise<string> {
 
 export async function POST(req: NextRequest) {
   const session = await getSession();
-  if (!session || (session.role !== "INSTRUCTOR" && session.role !== "ADMIN")) {
+  const isOrgEditor = Object.values(session?.orgs ?? {}).some(
+    (r) => r === "ORG_ADMIN" || r === "ORG_INSTRUCTOR",
+  );
+  if (!session || (session.role !== "INSTRUCTOR" && session.role !== "ADMIN" && !isOrgEditor)) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 

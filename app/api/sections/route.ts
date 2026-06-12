@@ -10,7 +10,7 @@ import { authorizeCourseEdit } from "@/services/collaboration.service";
 export async function POST(req: NextRequest) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "INSTRUCTOR")) {
+    if (!session) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 

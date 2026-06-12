@@ -21,7 +21,7 @@ async function getSectionCourseId(id: string): Promise<string | null> {
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "INSTRUCTOR")) {
+    if (!session) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 
@@ -59,7 +59,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const session = await getSession();
-    if (!session || (session.role !== "ADMIN" && session.role !== "INSTRUCTOR")) {
+    if (!session) {
       return NextResponse.json({ error: "Forbidden." }, { status: 403 });
     }
 

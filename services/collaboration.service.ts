@@ -123,6 +123,29 @@ export async function authorizeCourseEdit(
 ): Promise<boolean> {
   if (!session) return false;
   if (session.role === "ADMIN") return true;
+
+  // Organization courses: ORG_ADMIN edits any org course; ORG_INSTRUCTOR
+  // edits the org courses they created. Org members hold platform role
+  // STUDENT, so this must run before the INSTRUCTOR gate below.
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { organizationId: true, createdById: true },
+  });
+  if (course?.organizationId) {
+    const membership = await prisma.organizationMember.findUnique({
+      where: {
+        userId_organizationId: {
+          userId: session.userId,
+          organizationId: course.organizationId,
+        },
+      },
+      select: { role: true },
+    });
+    if (!membership) return false;
+    if (membership.role === "ORG_ADMIN") return true;
+    return membership.role === "ORG_INSTRUCTOR" && course.createdById === session.userId;
+  }
+
   if (session.role !== "INSTRUCTOR") return false;
   return canEditCourseContent(courseId, session.userId);
 }
