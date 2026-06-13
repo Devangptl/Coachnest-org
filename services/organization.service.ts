@@ -55,6 +55,7 @@ export async function registerOrganization(input: RegisterOrganizationInput) {
 
   // ── Resolve / create the first ORG_ADMIN user ─────────────────────────────
   let adminUserId: string;
+  const createdNewAdmin = !input.admin.useCurrentUser;
   if (input.admin.useCurrentUser) {
     if (!input.currentUserId) throw new Error("Not authenticated");
     adminUserId = input.currentUserId;
@@ -123,7 +124,27 @@ export async function registerOrganization(input: RegisterOrganizationInput) {
   // reach /org/[slug]/admin/billing to complete an abandoned payment.
   await syncOrgMetadata(adminUserId);
 
-  const rzpOrder = await createOrgRazorpayOrder(txn.id, amount);
+  // Create the Razorpay order LAST. If it fails (e.g. bad Razorpay keys),
+  // roll back everything we just created so the slug/email are free to retry
+  // — otherwise a failed attempt would leave a dangling PENDING org.
+  let rzpOrder: { id: string };
+  try {
+    rzpOrder = await createOrgRazorpayOrder(txn.id, amount);
+  } catch (err) {
+    console.error("[registerOrganization] Razorpay order creation failed:", err);
+    // Cascades delete the membership, subscription, and transaction.
+    await prisma.organization.delete({ where: { id: org.id } }).catch(() => null);
+    if (createdNewAdmin) {
+      await prisma.user.delete({ where: { id: adminUserId } }).catch(() => null);
+      await supabaseAdmin.auth.admin.deleteUser(adminUserId).catch(() => null);
+    } else {
+      // Keep the existing user but drop the now-removed org from their claims.
+      await syncOrgMetadata(adminUserId).catch(() => null);
+    }
+    throw new Error(
+      "Could not start the payment. Please verify the Razorpay configuration (RAZORPAY_KEY_ID / RAZORPAY_KEY_SECRET) and try again.",
+    );
+  }
 
   return {
     organizationId: org.id,
