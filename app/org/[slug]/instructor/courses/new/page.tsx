@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
 import CourseForm from "@/components/admin/CourseForm";
 
 export const dynamic = "force-dynamic";
@@ -16,7 +16,7 @@ export default async function OrgNewCoursePage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+  await requireOrgPermission(slug, "course:create");
 
   const categories = await prisma.category.findMany({
     select: { id: true, name: true },

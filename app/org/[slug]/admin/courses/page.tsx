@@ -5,7 +5,7 @@
 import Link from "next/link";
 import { BookOpen, Plus } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
 import { cn } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +23,7 @@ export default async function OrgAdminCoursesPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN"]);
+  const ctx = await requireOrgPermission(slug, "course:view");
 
   const courses = await prisma.course.findMany({
     where: { organizationId: ctx.org.id },

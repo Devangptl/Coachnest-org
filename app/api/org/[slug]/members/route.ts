@@ -1,10 +1,11 @@
 /**
- * GET  /api/org/[slug]/members — list members (ORG_ADMIN)
- * POST /api/org/[slug]/members — add/invite a member (ORG_ADMIN)
+ * GET  /api/org/[slug]/members — list members (members:view)
+ * POST /api/org/[slug]/members — add/invite a member (members:manage)
  */
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgRole, orgAuthErrorResponse } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { addOrgMemberSchema, orgRoleEnum } from "@/lib/validation/org";
+import { canAssignRole } from "@/lib/org-permissions";
 import { listOrgMembers, addOrgMember } from "@/services/organization.service";
 
 type Params = { params: Promise<{ slug: string }> };
@@ -12,7 +13,7 @@ type Params = { params: Promise<{ slug: string }> };
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+    const ctx = await requireOrgPermission(slug, "members:view", { allowExpired: true });
 
     const roleParam = req.nextUrl.searchParams.get("role");
     const role = orgRoleEnum.safeParse(roleParam);
@@ -34,13 +35,20 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"]);
+    const ctx = await requireOrgPermission(slug, "members:manage");
 
     const parsed = addOrgMemberSchema.safeParse(await req.json());
     if (!parsed.success) {
       return NextResponse.json(
         { error: parsed.error.issues[0]?.message ?? "Invalid input" },
         { status: 400 },
+      );
+    }
+
+    if (!ctx.isPlatformAdmin && !canAssignRole(ctx.role, parsed.data.role)) {
+      return NextResponse.json(
+        { error: "You cannot assign that role" },
+        { status: 403 },
       );
     }
 

@@ -19,6 +19,7 @@ import {
   Plus,
 } from "lucide-react";
 import type { SessionPayload, OrgRoleClaim } from "@/lib/auth";
+import { ORG_ADMIN_AREA_ROLES, ORG_AUTHOR_ROLES } from "@/lib/org-permissions";
 import ThemeToggle from "./ThemeToggle";
 import InstructorAvatar from "./InstructorAvatar";
 import { useTheme, type Theme } from "./ThemeProvider";
@@ -61,11 +62,11 @@ function NavAvatar({
 }
 
 /** Portal home segment for each org role claim (slug → role in session.orgs). */
-const ORG_PORTAL: Record<OrgRoleClaim, string> = {
-  ORG_ADMIN: "admin",
-  ORG_INSTRUCTOR: "instructor",
-  ORG_STUDENT: "student",
-};
+function orgPortalSegment(role: OrgRoleClaim): "admin" | "instructor" | "student" {
+  if (ORG_ADMIN_AREA_ROLES.includes(role)) return "admin";
+  if (ORG_AUTHOR_ROLES.includes(role)) return "instructor";
+  return "student";
+}
 
 const ROLE_LABELS: Record<string, { label: string; color: string }> = {
   STUDENT: { label: "Student", color: "bg-blue-500/20 text-blue-300 border-blue-400/30" },
@@ -228,13 +229,13 @@ export default function NavbarClient({ session }: Props) {
                       {Object.entries(session.orgs ?? {}).map(([slug, orgRole]) => (
                         <Link
                           key={slug}
-                          href={`/org/${slug}/${ORG_PORTAL[orgRole] ?? "student"}`}
+                          href={`/org/${slug}/${orgPortalSegment(orgRole)}`}
                           className="flex items-center gap-2.5 px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-secondary transition-colors"
                         >
                           <Building2 className="w-4 h-4" />
                           <span className="truncate">{slug}</span>
                           <span className="ml-auto text-[10px] text-muted-foreground/60 uppercase">
-                            {ORG_PORTAL[orgRole] ?? "member"}
+                            {orgPortalSegment(orgRole)}
                           </span>
                         </Link>
                       ))}

@@ -3,7 +3,7 @@
  */
 import { Users, UserCog, BookOpen, GraduationCap } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
 import { getOrgDashboardStats } from "@/services/org-analytics.service";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export default async function OrgAdminDashboard({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+  const ctx = await requireOrgPermission(slug, "org:view_admin", { allowExpired: true });
 
   const [stats, recentEnrollments] = await Promise.all([
     getOrgDashboardStats(ctx.org.id),

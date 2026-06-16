@@ -43,8 +43,9 @@ function navFor(portal: OrgPortal, slug: string): { title: string; items: NavIte
       {
         title: "People",
         items: [
+          { label: "Members", href: `${base}/members`, icon: Users },
           { label: "Instructors", href: `${base}/instructors`, icon: UserCog },
-          { label: "Students", href: `${base}/students`, icon: Users },
+          { label: "Students", href: `${base}/students`, icon: GraduationCap },
         ],
       },
       {

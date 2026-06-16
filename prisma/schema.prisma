@@ -37,9 +37,13 @@ enum PlanType {
 // Role inside an organization workspace. Independent of the platform Role —
 // a user can hold a platform role and org roles in several orgs at once.
 enum OrgRole {
+  ORG_OWNER
   ORG_ADMIN
+  ORG_MANAGER
   ORG_INSTRUCTOR
+  ORG_TA
   ORG_STUDENT
+  ORG_OBSERVER
 }
 
 enum OrgStatus {

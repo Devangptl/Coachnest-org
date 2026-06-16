@@ -11,6 +11,7 @@ import { supabaseAdmin } from "@/lib/supabase";
 import { getRazorpay } from "@/lib/razorpay";
 import { syncOrgMetadata } from "@/lib/org-metadata";
 import { sendOrgMemberInviteEmail } from "@/lib/email";
+import { seatKindForRole } from "@/lib/org-permissions";
 import type { OrgRole } from "@/lib/generated/prisma/client";
 
 // ─── Registration ─────────────────────────────────────────────────────────────
@@ -95,7 +96,7 @@ export async function registerOrganization(input: RegisterOrganizationInput) {
       },
     });
     await tx.organizationMember.create({
-      data: { organizationId: org.id, userId: adminUserId, role: "ORG_ADMIN" },
+      data: { organizationId: org.id, userId: adminUserId, role: "ORG_OWNER" },
     });
     const subscription = await tx.organizationSubscription.create({
       data: {
@@ -210,7 +211,8 @@ export async function enforcePlanLimit(organizationId: string, kind: LimitKind):
       : await prisma.organizationMember.count({
           where: {
             organizationId,
-            role: kind === "students" ? "ORG_STUDENT" : "ORG_INSTRUCTOR",
+            // TAs share the instructor seat bucket; see seatKindForRole.
+            role: { in: kind === "students" ? ["ORG_STUDENT"] : ["ORG_INSTRUCTOR", "ORG_TA"] },
           },
         });
 
@@ -254,8 +256,9 @@ export async function addOrgMember(
   organizationId: string,
   input: { name: string; email: string; role: OrgRole },
 ) {
-  if (input.role !== "ORG_ADMIN") {
-    await enforcePlanLimit(organizationId, input.role === "ORG_STUDENT" ? "students" : "instructors");
+  const seatKind = seatKindForRole(input.role);
+  if (seatKind) {
+    await enforcePlanLimit(organizationId, seatKind);
   }
 
   const org = await prisma.organization.findUniqueOrThrow({
@@ -304,17 +307,20 @@ export async function updateOrgMemberRole(
   userId: string,
   role: OrgRole,
 ) {
-  if (role === "ORG_ADMIN") {
-    // no limit on admins
-  } else {
-    const current = await prisma.organizationMember.findUnique({
-      where: { userId_organizationId: { userId, organizationId } },
-      select: { role: true },
-    });
-    if (!current) throw new Error("Member not found");
-    if (current.role !== role) {
-      await enforcePlanLimit(organizationId, role === "ORG_STUDENT" ? "students" : "instructors");
-    }
+  const current = await prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId, organizationId } },
+    select: { role: true },
+  });
+  if (!current) throw new Error("Member not found");
+
+  // Demoting the last remaining owner would orphan the org.
+  if (current.role === "ORG_OWNER" && role !== "ORG_OWNER") {
+    await assertNotLastOwner(organizationId, userId);
+  }
+
+  const seatKind = seatKindForRole(role);
+  if (seatKind && current.role !== role) {
+    await enforcePlanLimit(organizationId, seatKind);
   }
 
   const member = await prisma.organizationMember.update({
@@ -331,17 +337,36 @@ export async function removeOrgMember(organizationId: string, userId: string) {
   });
   if (!member) throw new Error("Member not found");
 
-  if (member.role === "ORG_ADMIN") {
-    const adminCount = await prisma.organizationMember.count({
-      where: { organizationId, role: "ORG_ADMIN" },
-    });
-    if (adminCount <= 1) throw new Error("Cannot remove the last organization admin");
+  if (member.role === "ORG_OWNER") {
+    await assertNotLastOwner(organizationId, userId);
   }
 
   await prisma.organizationMember.delete({
     where: { userId_organizationId: { userId, organizationId } },
   });
   await syncOrgMetadata(userId);
+}
+
+/** A member's current org role, or null if they are not a member. */
+export async function getOrgMemberRole(
+  organizationId: string,
+  userId: string,
+): Promise<OrgRole | null> {
+  const member = await prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId, organizationId } },
+    select: { role: true },
+  });
+  return member?.role ?? null;
+}
+
+/** Throws if `userId` is the organization's only ORG_OWNER. */
+async function assertNotLastOwner(organizationId: string, userId: string): Promise<void> {
+  const otherOwners = await prisma.organizationMember.count({
+    where: { organizationId, role: "ORG_OWNER", userId: { not: userId } },
+  });
+  if (otherOwners === 0) {
+    throw new Error("Cannot remove or demote the last organization owner");
+  }
 }
 
 // ─── Org-student enrollment (subscription-covered, no payment) ────────────────

@@ -2,7 +2,7 @@
  * Org admin → Reports. Headline stats, enrollment trend, per-course completion.
  */
 import { Users, UserCog, BookOpen, GraduationCap, CheckCircle2 } from "lucide-react";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
 import {
   getOrgDashboardStats,
   getOrgCourseCompletion,
@@ -18,7 +18,7 @@ export default async function OrgReportsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+  const ctx = await requireOrgPermission(slug, "reports:view", { allowExpired: true });
 
   const [stats, completion, trends] = await Promise.all([
     getOrgDashboardStats(ctx.org.id),

@@ -3,7 +3,7 @@
  * enrollment (covered by the org subscription).
  */
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
 import OrgCatalogClient from "./OrgCatalogClient";
 
 export const dynamic = "force-dynamic";
@@ -14,7 +14,7 @@ export default async function OrgStudentCatalogPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR", "ORG_STUDENT"]);
+  const ctx = await requireOrgPermission(slug, "course:view");
 
   const [courses, enrollments] = await Promise.all([
     prisma.course.findMany({

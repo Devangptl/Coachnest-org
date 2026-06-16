@@ -4,6 +4,8 @@ import { useState, FormEvent } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Loader2, Mail, Lock, ArrowRight, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ORG_ADMIN_AREA_ROLES, ORG_AUTHOR_ROLES } from "@/lib/org-permissions";
+import type { OrgRole } from "@/lib/generated/prisma/client";
 
 interface Props {
   org: { name: string; slug: string; logo: string | null };
@@ -51,8 +53,12 @@ export default function OrgLoginClient({ org }: Props) {
       }
       const me = await meRes.json();
 
-      const portal =
-        me.role === "ORG_ADMIN" ? "admin" : me.role === "ORG_INSTRUCTOR" ? "instructor" : "student";
+      const role = me.role as OrgRole;
+      const portal = ORG_ADMIN_AREA_ROLES.includes(role)
+        ? "admin"
+        : ORG_AUTHOR_ROLES.includes(role)
+          ? "instructor"
+          : "student";
 
       if (me.org.status !== "ACTIVE" && portal !== "admin") {
         router.push(`/org/${org.slug}/expired`);

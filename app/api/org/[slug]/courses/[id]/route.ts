@@ -1,14 +1,15 @@
 /**
- * GET    /api/org/[slug]/courses/[id] — course detail (members)
- * PATCH  /api/org/[slug]/courses/[id] — update (ORG_ADMIN any; ORG_INSTRUCTOR own)
- * DELETE /api/org/[slug]/courses/[id] — delete (ORG_ADMIN any; ORG_INSTRUCTOR own)
+ * GET    /api/org/[slug]/courses/[id] — course detail (course:view)
+ * PATCH  /api/org/[slug]/courses/[id] — update (course:manage_any, or manage_own + creator)
+ * DELETE /api/org/[slug]/courses/[id] — delete (course:manage_any, or manage_own + creator)
  *
  * Every query is compound-scoped ({ id, organizationId }) so ids from other
  * tenants 404.
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole, orgAuthErrorResponse, type OrgContext } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse, type OrgContext } from "@/lib/org-auth";
+import { can } from "@/lib/org-permissions";
 
 type Params = { params: Promise<{ slug: string; id: string }> };
 
@@ -23,14 +24,14 @@ async function findOrgCourse(ctx: OrgContext, id: string) {
 }
 
 function canManage(ctx: OrgContext, createdById: string): boolean {
-  if (ctx.isPlatformAdmin || ctx.role === "ORG_ADMIN") return true;
-  return ctx.role === "ORG_INSTRUCTOR" && createdById === ctx.session.userId;
+  if (ctx.isPlatformAdmin || can(ctx.role, "course:manage_any")) return true;
+  return can(ctx.role, "course:manage_own") && createdById === ctx.session.userId;
 }
 
 export async function GET(_req: NextRequest, { params }: Params) {
   try {
     const { slug, id } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR", "ORG_STUDENT"]);
+    const ctx = await requireOrgPermission(slug, "course:view");
 
     const course = await findOrgCourse(ctx, id);
     if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
@@ -46,7 +47,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
 export async function PATCH(req: NextRequest, { params }: Params) {
   try {
     const { slug, id } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+    const ctx = await requireOrgPermission(slug, "course:view");
 
     const course = await findOrgCourse(ctx, id);
     if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });
@@ -90,7 +91,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   try {
     const { slug, id } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+    const ctx = await requireOrgPermission(slug, "course:view");
 
     const course = await findOrgCourse(ctx, id);
     if (!course) return NextResponse.json({ error: "Course not found" }, { status: 404 });

@@ -2,6 +2,7 @@
  * Zod validation schemas for the multi-tenant Organization module.
  */
 import { z } from "zod";
+import { ORG_ROLES } from "@/lib/org-permissions";
 
 // Static /org/* segments and portal names that can never be org slugs.
 export const RESERVED_ORG_SLUGS = [
@@ -29,7 +30,7 @@ export const orgSlugSchema = z
     message: "This slug is reserved",
   });
 
-export const orgRoleEnum = z.enum(["ORG_ADMIN", "ORG_INSTRUCTOR", "ORG_STUDENT"]);
+export const orgRoleEnum = z.enum(ORG_ROLES);
 export const billingCycleEnum = z.enum(["MONTHLY", "YEARLY"]);
 
 export const registerOrganizationSchema = z.object({

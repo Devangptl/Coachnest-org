@@ -3,7 +3,7 @@
  * SUPER_ADMIN). Blocked entirely while the org subscription is inactive.
  */
 import { redirect } from "next/navigation";
-import { requireOrgRole, OrgAuthError } from "@/lib/org-auth";
+import { requireOrgPermission, OrgAuthError } from "@/lib/org-auth";
 import OrgSidebar from "@/components/org/OrgSidebar";
 
 export default async function OrgInstructorLayout({
@@ -17,7 +17,7 @@ export default async function OrgInstructorLayout({
 
   let ctx;
   try {
-    ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+    ctx = await requireOrgPermission(slug, "course:author_area");
   } catch (err) {
     if (err instanceof OrgAuthError && err.status === 401) redirect(`/org/${slug}/login`);
     if (err instanceof OrgAuthError && err.message.includes("subscription")) {
