@@ -1,46 +1,18 @@
 import Link from "next/link";
-import { Twitter, Github, Linkedin, Youtube, Mail, BookOpen, Shield, Zap } from "lucide-react";
+import { BookOpen, Shield, Zap, Building2 } from "lucide-react";
 import ThemeToggle from "./ThemeToggle";
 
 // ─── Link data ────────────────────────────────────────────────────────────────
 
-const PLATFORM_LINKS = [
-  { label: "Browse Courses",    href: "/courses"  },
-  { label: "Books & Documents", href: "/books"    },
-  { label: "Search",            href: "/search"   },
-  { label: "Blog",              href: "/blog"     },
-  { label: "Become Instructor", href: "/signup"   },
-  { label: "For Organizations", href: "/org/register" },
-];
-
-const RESOURCES_LINKS = [
-  { label: "Help Center",  href: "/contact"   },
-  { label: "Blog",         href: "/blog"      },
-  { label: "Community",    href: "/community" },
-  { label: "Contact Us",   href: "/contact"   },
-];
-
-const COMPANY_LINKS = [
-  { label: "About Us",         href: "/about"        },
-  { label: "Request a Demo",   href: "/request-demo" },
-  // { label: "Careers",          href: "/careers" },
-  // { label: "Press & Media",    href: "/press"   },
-  { label: "Partners",         href: "/contact" },
-  { label: "Affiliate Program",href: "/contact" },
+const ORG_LINKS = [
+  { label: "Create Organization", href: "/org/register" },
+  { label: "Sign In",             href: "/login"        },
 ];
 
 const LEGAL_LINKS = [
   { label: "Privacy Policy",   href: "/legal/privacy-policy"    },
   { label: "Terms of Service", href: "/legal/terms-of-service"  },
-  // { label: "Refund Policy",    href: "/legal/refund-policy"     },
   { label: "Cookie Policy",    href: "/legal/cookie-policy"     },
-];
-
-const SOCIAL_LINKS = [
-  { label: "Twitter / X", href: "#", icon: Twitter  },
-  { label: "GitHub",       href: "#", icon: Github   },
-  { label: "LinkedIn",     href: "#", icon: Linkedin },
-  { label: "YouTube",      href: "#", icon: Youtube  },
 ];
 
 const TRUST_BADGES = [
@@ -69,27 +41,28 @@ export default function Footer() {
         <div className="py-10 sm:py-12 border-b border-white/[0.06] flex flex-col sm:flex-row items-center justify-between gap-6">
           <div>
             <h2 className="text-white font-bold text-xl sm:text-2xl mb-1">
-              Ready to level up your skills?
+              Bring your organization online
             </h2>
             <p className="text-white/40 text-sm">
-              Join thousands of learners already building their future.
+              Launch your own learning workspace in minutes.
             </p>
           </div>
           <div className="flex items-center gap-3 flex-shrink-0">
             <Link
-              href="/courses"
-              className="btn-primary px-5 py-2.5 font-semibold"
+              href="/org/register"
+              className="btn-primary px-5 py-2.5 font-semibold inline-flex items-center gap-2"
             >
-              Explore Courses
+              <Building2 className="w-4 h-4" />
+              Create Organization
             </Link>
           </div>
         </div>
 
         {/* ── Main link grid ── */}
-        <div className="py-12 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-8 lg:gap-10">
+        <div className="py-12 grid grid-cols-2 md:grid-cols-3 gap-8 lg:gap-10">
 
           {/* Brand column */}
-          <div className="col-span-2 sm:col-span-3 md:col-span-2 lg:col-span-1">
+          <div className="col-span-2 md:col-span-1">
             <Link href="/" className="inline-block mb-4">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -99,25 +72,8 @@ export default function Footer() {
               />
             </Link>
             <p className="text-white/35 text-sm leading-relaxed mb-6 max-w-[220px]">
-              The modern learning platform for ambitious developers and designers.
+              Multi-tenant learning workspaces for organizations.
             </p>
-
-            {/* Social links
-              
-              <div className="flex items-center gap-2 mb-6">
-              {SOCIAL_LINKS.map(({ label, href, icon: Icon }) => (
-                <Link
-                  key={label}
-                  href={href}
-                  aria-label={label}
-                  className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-white/30 hover:text-[#d97757] hover:bg-orange-500/10 hover:border-[#d97757]/25 transition-all"
-                >
-                  <Icon className="w-3.5 h-3.5" />
-                </Link>
-              ))}
-            </div>
-              */}
-            
 
             {/* Trust badges */}
             <div className="flex flex-col gap-1.5">
@@ -132,51 +88,13 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Platform */}
+          {/* Organizations */}
           <div>
             <h4 className="text-white/60 font-semibold text-[11px] uppercase tracking-widest mb-5">
-              Platform
+              Organizations
             </h4>
             <ul className="space-y-3">
-              {PLATFORM_LINKS.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-white/35 hover:text-white/70 text-sm transition-colors hover:translate-x-0.5 inline-block"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div>
-            <h4 className="text-white/60 font-semibold text-[11px] uppercase tracking-widest mb-5">
-              Resources
-            </h4>
-            <ul className="space-y-3">
-              {RESOURCES_LINKS.map((link) => (
-                <li key={link.label}>
-                  <Link
-                    href={link.href}
-                    className="text-white/35 hover:text-white/70 text-sm transition-colors hover:translate-x-0.5 inline-block"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {/* Company */}
-          <div>
-            <h4 className="text-white/60 font-semibold text-[11px] uppercase tracking-widest mb-5">
-              Company
-            </h4>
-            <ul className="space-y-3">
-              {COMPANY_LINKS.map((link) => (
+              {ORG_LINKS.map((link) => (
                 <li key={link.label}>
                   <Link
                     href={link.href}
@@ -222,15 +140,6 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-3">
-          
-            <Link
-              href="/contact"
-              className="flex items-center gap-1.5 text-white/20 hover:text-white/50 text-xs transition-colors"
-            >
-              <Mail className="w-3 h-3" />
-              Get in touch
-            </Link>
-            <div className="w-px h-3 bg-white/10" />
             <ThemeToggle />
           </div>
         </div>

@@ -3,25 +3,20 @@
  *
  * Uses @supabase/ssr to refresh the Supabase session token and protect routes.
  *
- * Responsibilities:
- *  0. Launch mode (NEXT_PUBLIC_LAUNCH_MODE=true) — redirect everything to /launch;
- *     when false, /launch itself redirects to /.
+ * This is the organization-only tenant app. Responsibilities:
  *  1. Refresh the Supabase access token if it is near expiry (via getUser).
- *  2. Protect /dashboard, /admin, /instructor routes — redirect to /login if no session.
- *  3. Prevent authenticated users from hitting /login or /signup.
- *  4. Guard /admin for ADMIN only.
- *  5. Guard /instructor for INSTRUCTOR only (ADMIN can visit too).
- *  6. Redirect INSTRUCTOR away from /dashboard → /instructor.
- *  7. Redirect STUDENT away from /admin and /instructor → /dashboard.
- *  8. Guard /org/[slug]/* portals by org-membership claims (app_metadata.orgs);
+ *  2. Guard /org/[slug]/* portals by org-membership claims (app_metadata.orgs);
  *     authoritative checks happen in org layouts + lib/org-auth.ts.
+ *  3. Guard /admin (platform super-admin org management) for ADMIN only, scoped
+ *     by admin sub-role permissions.
+ *  4. Prevent authenticated users from hitting /login.
  */
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import { canAccessAdminPath, type AdminSubRole } from "@/lib/admin-permissions";
 
-const PROTECTED  = ["/dashboard", "/admin", "/instructor", "/onboarding"];
-const AUTH_ONLY  = ["/login", "/signup"];
+const PROTECTED  = ["/admin"];
+const AUTH_ONLY  = ["/login"];
 
 /** Segment-aware prefix match: "/instructor" matches "/instructor" and
  *  "/instructor/x" but NOT the public "/instructors/[id]" page. */
@@ -31,25 +26,6 @@ const underPath = (pathname: string, base: string) =>
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // ── 0. Launch / Coming-Soon mode ─────────────────────────────────────────
-  const LAUNCH_MODE = process.env.NEXT_PUBLIC_LAUNCH_MODE === "true";
-
-  if (LAUNCH_MODE) {
-    // Allow /launch through; redirect everything else to /launch
-    if (!pathname.startsWith("/launch")) {
-      return NextResponse.redirect(new URL("/launch", req.url));
-    }
-    return NextResponse.next({ request: req });
-  }
-
-  // When not in launch mode, block direct access to /launch
-  if (pathname.startsWith("/launch")) {
-    return NextResponse.redirect(new URL("/", req.url));
-  }
-
-  // Expose the current pathname to Server Components / Layouts via a
-  // request header — used by /instructor/layout.tsx to allow STUDENT users
-  // through to /instructor/invitations specifically.
   req.headers.set("x-pathname", pathname);
   let res = NextResponse.next({ request: req });
 
@@ -72,12 +48,8 @@ export async function middleware(req: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const role             = (user?.app_metadata?.role ?? "STUDENT") as string;
-  const adminSubRole     = (user?.app_metadata?.adminSubRole ?? null) as AdminSubRole | null;
-  const instructorStatus = (user?.app_metadata?.instructorStatus ?? null) as string | null;
-  const isInstructorPending =
-    role === "INSTRUCTOR" &&
-    (instructorStatus === "PENDING" || instructorStatus === "REJECTED");
+  const role         = (user?.app_metadata?.role ?? "STUDENT") as string;
+  const adminSubRole = (user?.app_metadata?.adminSubRole ?? null) as AdminSubRole | null;
 
   // ── 0b. Organization workspaces — /org/[slug]/* ────────────────────────────
   // Claims-only checks (Edge has no DB access): org memberships are mirrored
@@ -133,7 +105,7 @@ export async function middleware(req: NextRequest) {
     return res;
   }
 
-  // ── 1. Protect dashboard + admin + instructor ─────────────────────────────
+  // ── 1. Protect /admin (platform super-admin org management) ────────────────
   if (PROTECTED.some((p) => underPath(pathname, p))) {
     if (!user) {
       const loginUrl = req.nextUrl.clone();
@@ -142,57 +114,24 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // /admin — ADMIN only (INSTRUCTOR has their own /instructor portal)
-    if (underPath(pathname, "/admin") && role !== "ADMIN") {
-      const dest = isInstructorPending ? "/instructor/pending" : role === "INSTRUCTOR" ? "/instructor" : "/dashboard";
-      return NextResponse.redirect(new URL(dest, req.url));
+    // /admin — ADMIN only.
+    if (role !== "ADMIN") {
+      return NextResponse.redirect(new URL("/org/register", req.url));
     }
 
     // /admin sub-section — must match the admin's sub-role permissions.
     // Existing admins without a sub-role default to SUPER_ADMIN (full access).
-    if (underPath(pathname, "/admin") && role === "ADMIN") {
-      const effectiveSubRole: AdminSubRole = adminSubRole ?? "SUPER_ADMIN";
-      if (!canAccessAdminPath(effectiveSubRole, pathname)) {
-        return NextResponse.redirect(new URL("/admin", req.url));
-      }
-    }
-
-    // /instructor — INSTRUCTOR and ADMIN only. Exception: any authenticated
-    // user (including STUDENT) must be able to land on /instructor/invitations
-    // so they can accept a collaboration invite — acceptance auto-promotes
-    // them to INSTRUCTOR (see services/collaboration.service.ts acceptInvite).
-    if (
-      underPath(pathname, "/instructor") &&
-      role === "STUDENT" &&
-      !underPath(pathname, "/instructor/invitations")
-    ) {
-      return NextResponse.redirect(new URL("/dashboard", req.url));
-    }
-
-    // /instructor — pending/rejected instructors can only access
-    // /instructor/pending or /instructor/invitations (same reason as above).
-    if (
-      underPath(pathname, "/instructor") &&
-      isInstructorPending &&
-      !underPath(pathname, "/instructor/pending") &&
-      !underPath(pathname, "/instructor/invitations")
-    ) {
-      return NextResponse.redirect(new URL("/instructor/pending", req.url));
-    }
-
-    // /dashboard — STUDENT only (instructors + admins have their own portals)
-    if (underPath(pathname, "/dashboard") && role === "INSTRUCTOR") {
-      const dest = isInstructorPending ? "/instructor/pending" : "/instructor";
-      return NextResponse.redirect(new URL(dest, req.url));
+    const effectiveSubRole: AdminSubRole = adminSubRole ?? "SUPER_ADMIN";
+    if (!canAccessAdminPath(effectiveSubRole, pathname)) {
+      return NextResponse.redirect(new URL("/admin", req.url));
     }
   }
 
   // ── 2. Redirect authenticated users away from auth pages ──────────────────
   if (AUTH_ONLY.includes(pathname) && user) {
-    let dest = "/dashboard";
-    if (role === "INSTRUCTOR") dest = isInstructorPending ? "/instructor/pending" : "/instructor";
-    if (role === "ADMIN")      dest = "/admin";
-    return NextResponse.redirect(new URL(dest, req.url));
+    return NextResponse.redirect(
+      new URL(role === "ADMIN" ? "/admin" : "/org/register", req.url)
+    );
   }
 
   return res;

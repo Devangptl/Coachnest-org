@@ -1,41 +1,27 @@
 /**
  * POST /api/razorpay/webhook
- * Razorpay webhook — safety-net for payments that succeeded but whose
- * in-browser callback or UPI poll never completed (e.g. tab closed early).
+ * Razorpay webhook — safety-net for org subscription payments that succeeded
+ * but whose in-browser callback or UPI poll never completed (e.g. tab closed).
  *
  * Events handled:
  *   payment.captured  — primary: card + UPI payments confirmed by Razorpay
  *   order.paid        — redundant backup; same effect, idempotent
  *   payment.failed    — logs only (no user-facing action needed server-side)
+ *   refund.processed  — confirm razorpayRefundId on OrganizationTransaction
+ *   refund.failed     — mark org transaction refund back to FAILED for retry
  *
  * Security:
  *   Signature = HMAC-SHA256(rawBody, RAZORPAY_WEBHOOK_SECRET)
  *   compared to X-Razorpay-Signature header.
- *   Set RAZORPAY_WEBHOOK_SECRET in Razorpay Dashboard → Settings → Webhooks.
  *
  * Idempotency:
- *   All finalize functions check order.status === "PAID" and return early —
- *   safe to call even if the browser flow already completed the order.
+ *   finalizeOrgSubscriptionPayment checks status === "PENDING" and returns
+ *   early — safe to call even if the browser flow already finalized it.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { revalidatePath } from "next/cache";
 import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
-import { finalizeCoursePayment } from "@/services/payment.service";
-import { finalizeBookPayment } from "@/services/book-payment.service";
-import { handleFeaturePaymentSuccess } from "@/services/feature.service";
 import { finalizeOrgSubscriptionPayment } from "@/services/org-subscription.service";
-import { createNotification } from "@/lib/notifications";
-
-// ── Webhook events handled ──────────────────────────────────────────────────
-// payment.captured      — finalize order (primary safety net)
-// order.paid            — finalize order (redundant backup)
-// payment.failed        — log only
-// refund.processed      — confirm razorpayRefundId on RefundRequest
-// refund.failed         — mark RefundRequest back to FAILED so admin can retry
-// payout_link.processed — payout link claimed; update razorpayTransferStatus
-// transfer.settled      — Route transfer settled to instructor bank; update status
-// transfer.failed       — Route transfer failed; reset PayoutRequest to APPROVED for retry
 
 export const runtime = "nodejs";
 
@@ -83,18 +69,11 @@ export async function POST(req: NextRequest) {
     return OK();
   }
 
-  // ── Refund events ───────────────────────────────────────────────────────
+  // ── Refund events (org subscription transactions) ─────────────────────────
   if (eventName === "refund.processed") {
-    const entity = (payload as any)?.refund?.entity;
-    const rzpRefundId    = entity?.id            as string | undefined;
-    const refundReqId    = entity?.notes?.refundRequestId as string | undefined;
-    const orgTxnId       = entity?.notes?.orgTransactionId as string | undefined;
-    if (rzpRefundId && refundReqId) {
-      await prisma.refundRequest.updateMany({
-        where: { id: refundReqId, status: "PROCESSING" },
-        data:  { razorpayRefundId: rzpRefundId },
-      }).catch(() => null);
-    }
+    const entity      = (payload as any)?.refund?.entity;
+    const rzpRefundId = entity?.id as string | undefined;
+    const orgTxnId    = entity?.notes?.orgTransactionId as string | undefined;
     if (rzpRefundId && orgTxnId) {
       await prisma.organizationTransaction.updateMany({
         where: { id: orgTxnId, refundStatus: "PROCESSING", razorpayRefundId: null },
@@ -105,165 +84,14 @@ export async function POST(req: NextRequest) {
   }
 
   if (eventName === "refund.failed") {
-    const entity      = (payload as any)?.refund?.entity;
-    const refundReqId = entity?.notes?.refundRequestId as string | undefined;
-    const orgTxnId    = entity?.notes?.orgTransactionId as string | undefined;
-    if (refundReqId) {
-      await prisma.refundRequest.updateMany({
-        where: { id: refundReqId, status: "PROCESSING" },
-        data:  { status: "FAILED" },
-      }).catch(() => null);
-      console.warn("[webhook] refund.failed for request", refundReqId, entity?.id);
-    }
+    const entity   = (payload as any)?.refund?.entity;
+    const orgTxnId = entity?.notes?.orgTransactionId as string | undefined;
     if (orgTxnId) {
       await prisma.organizationTransaction.updateMany({
         where: { id: orgTxnId, refundStatus: "PROCESSING" },
         data:  { refundStatus: "FAILED" },
       }).catch(() => null);
       console.warn("[webhook] refund.failed for org transaction", orgTxnId, entity?.id);
-    }
-    return OK();
-  }
-
-  // ── Payout link events ───────────────────────────────────────────────────
-  if (eventName === "payout_link.processed") {
-    const entity       = (payload as any)?.payout_link?.entity;
-    const payoutLinkId = entity?.id as string | undefined;
-    if (payoutLinkId) {
-      await prisma.payoutRequest.updateMany({
-        where: { razorpayTransferId: payoutLinkId },
-        data:  { razorpayTransferStatus: "processed" },
-      }).catch(() => null);
-    }
-    return OK();
-  }
-
-  if (eventName === "payout_link.cancelled" || eventName === "payout_link.expired") {
-    const entity       = (payload as any)?.payout_link?.entity;
-    const payoutLinkId = entity?.id as string | undefined;
-    if (payoutLinkId) {
-      const pr = await prisma.payoutRequest.findFirst({
-        where:   { razorpayTransferId: payoutLinkId },
-        include: { wallet: true },
-      }).catch(() => null);
-
-      if (pr && pr.status === "PROCESSED") {
-        const amount = Number(pr.amount);
-        const state  = eventName.split(".")[1]; // "cancelled" | "expired"
-        await prisma.$transaction([
-          prisma.payoutRequest.update({
-            where: { id: pr.id },
-            data:  { status: "APPROVED", razorpayTransferStatus: state },
-          }),
-          prisma.instructorWallet.update({
-            where: { id: pr.walletId },
-            data:  { balance: { increment: amount }, totalWithdrawn: { decrement: amount } },
-          }),
-          prisma.walletTransaction.create({
-            data: {
-              walletId:    pr.walletId,
-              amount,
-              type:        "CREDIT",
-              description: `Payout link ${state} — ₹${amount.toLocaleString()} returned to wallet`,
-              meta:        { payoutLinkId },
-            },
-          }),
-        ]).catch(() => null);
-
-        createNotification({
-          data: {
-            userId: pr.instructorId,
-            title:  `Payout Link ${state.charAt(0).toUpperCase() + state.slice(1)}`,
-            body:   `Your payout link of ₹${amount.toLocaleString("en-IN")} has ${state}. The amount has been returned to your wallet — please submit a new payout request.`,
-            type:   "SYSTEM",
-            link:   "/instructor/payouts",
-          },
-        }).catch(() => null);
-      }
-    }
-    return OK();
-  }
-
-  // ── Route transfer events ────────────────────────────────────────────────
-  if (eventName === "transfer.settled") {
-    const entity     = (payload as any)?.transfer?.entity;
-    const transferId = entity?.id as string | undefined;
-    if (transferId) {
-      const pr = await prisma.payoutRequest.findUnique({
-        where:  { razorpayTransferId: transferId },
-        select: { id: true, amount: true, instructorId: true },
-      }).catch(() => null);
-
-      if (pr) {
-        await prisma.payoutRequest.update({
-          where: { id: pr.id },
-          data:  { razorpayTransferStatus: "settled" },
-        }).catch(() => null);
-
-        const amt = Number(pr.amount).toLocaleString("en-IN");
-        createNotification({
-          data: {
-            userId: pr.instructorId,
-            title:  "Payout Settled",
-            body:   `Your payout of ₹${amt} has been settled to your bank account.`,
-            type:   "SYSTEM",
-            link:   "/instructor/payouts",
-          },
-        }).catch(() => null);
-      }
-    }
-    return OK();
-  }
-
-  if (eventName === "transfer.failed") {
-    const entity     = (payload as any)?.transfer?.entity;
-    const transferId = entity?.id as string | undefined;
-    if (transferId) {
-      const pr = await prisma.payoutRequest.findUnique({
-        where:   { razorpayTransferId: transferId },
-        include: { wallet: true },
-      }).catch(() => null);
-
-      if (pr && pr.status === "PROCESSED") {
-        const amount = Number(pr.amount);
-        await prisma.$transaction([
-          // Reset to APPROVED so admin can retry PROCESS
-          prisma.payoutRequest.update({
-            where: { id: pr.id },
-            data:  { status: "APPROVED", razorpayTransferStatus: "failed" },
-          }),
-          // Return amount to wallet balance; undo totalWithdrawn increment
-          prisma.instructorWallet.update({
-            where: { id: pr.walletId },
-            data:  {
-              balance:        { increment: amount },
-              totalWithdrawn: { decrement: amount },
-            },
-          }),
-          prisma.walletTransaction.create({
-            data: {
-              walletId:    pr.walletId,
-              amount,
-              type:        "CREDIT",
-              description: `Transfer reversal — Route transfer ${transferId} failed`,
-              meta:        { razorpayTransferId: transferId },
-            },
-          }),
-        ]).catch(() => null);
-
-        const amt = amount.toLocaleString("en-IN");
-        createNotification({
-          data: {
-            userId: pr.instructorId,
-            title:  "Payout Transfer Failed",
-            body:   `Your payout of ₹${amt} could not be transferred. The amount has been returned to your wallet. Please contact support or re-submit the request.`,
-            type:   "SYSTEM",
-            link:   "/instructor/payouts",
-          },
-        }).catch(() => null);
-
-        console.error("[webhook] transfer.failed — payout", pr.id, "transfer", transferId);
-      }
     }
     return OK();
   }
@@ -279,7 +107,18 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      await finalizeByRazorpayOrderId(rzpOrderId, rzpPaymentId);
+      const orgTxn = await prisma.organizationTransaction.findUnique({
+        where:  { razorpayOrderId: rzpOrderId },
+        select: { id: true, status: true },
+      });
+
+      if (orgTxn) {
+        if (orgTxn.status === "PENDING") {
+          await finalizeOrgSubscriptionPayment(orgTxn.id, rzpPaymentId);
+        }
+      } else {
+        console.warn("[webhook] No org transaction found for razorpayOrderId", rzpOrderId);
+      }
     } catch (err) {
       console.error("[webhook] Finalization error for order", rzpOrderId, err);
       // Still return 200 — a 5xx would cause Razorpay to keep retrying
@@ -289,54 +128,4 @@ export async function POST(req: NextRequest) {
 
   // Unrecognised event — acknowledge and ignore
   return OK();
-}
-
-async function finalizeByRazorpayOrderId(
-  rzpOrderId:  string,
-  rzpPaymentId: string,
-) {
-  // 1. Check Order table (courses + features)
-  const order = await prisma.order.findUnique({
-    where:  { razorpayOrderId: rzpOrderId },
-    select: { id: true, featureId: true, courseId: true, status: true },
-  });
-
-  if (order) {
-    // PAID = already finalised; REFUNDED = do not re-process or re-enroll
-    if (order.status === "PAID" || order.status === "REFUNDED") return;
-
-    if (order.featureId) {
-      await handleFeaturePaymentSuccess(order.id, rzpPaymentId);
-    } else {
-      const result = await finalizeCoursePayment(order.id, rzpPaymentId);
-      if (result.courseId) revalidatePath(`/courses/${result.courseId}`);
-    }
-    return;
-  }
-
-  // 2. Check BookOrder table
-  const bookOrder = await prisma.bookOrder.findUnique({
-    where:  { razorpayOrderId: rzpOrderId },
-    select: { id: true, status: true },
-  });
-
-  if (bookOrder) {
-    if (bookOrder.status === "PAID" || bookOrder.status === "REFUNDED") return;
-    await finalizeBookPayment(bookOrder.id, rzpPaymentId);
-    return;
-  }
-
-  // 3. Check OrganizationTransaction table (org subscription payments)
-  const orgTxn = await prisma.organizationTransaction.findUnique({
-    where:  { razorpayOrderId: rzpOrderId },
-    select: { id: true, status: true },
-  });
-
-  if (orgTxn) {
-    if (orgTxn.status !== "PENDING") return;
-    await finalizeOrgSubscriptionPayment(orgTxn.id, rzpPaymentId);
-    return;
-  }
-
-  console.warn("[webhook] No order found for razorpayOrderId", rzpOrderId);
 }

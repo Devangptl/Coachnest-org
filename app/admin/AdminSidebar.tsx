@@ -13,11 +13,7 @@ import { useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, BookOpen, Users, BarChart3, GraduationCap,
-  Ticket, ShoppingCart, HelpCircle, Award, FileText, MessageSquare, Megaphone,
-  Briefcase, Wallet, RotateCcw, UserCog, UserCircle, UserCheck,
-  Mail, ScrollText, ListVideo, Database, ShieldCheck, Library, Users2, Package,
-  MonitorPlay, Building2, Layers,
+  BarChart3, UserCircle, Building2, Layers,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Avatar from "@/components/Avatar";
@@ -36,35 +32,6 @@ interface SidebarUser {
 
 const adminNavSections = [
   {
-    title: "Overview",
-    items: [
-      { label: "Overview",  href: "/admin",           icon: LayoutDashboard },
-      { label: "Analytics", href: "/admin/analytics", icon: BarChart3 },
-    ],
-  },
-  {
-    title: "Content",
-    items: [
-      { label: "All Courses",    href: "/admin/courses",        icon: BookOpen },
-      { label: "Collaborations", href: "/admin/collaborations", icon: Users2 },
-      { label: "All Books",      href: "/admin/books",          icon: Library },
-      { label: "Course Lists",   href: "/admin/playlists",      icon: ListVideo },
-      { label: "Quizzes",        href: "/admin/quizzes",        icon: HelpCircle },
-      { label: "Blog Posts",     href: "/admin/blogs",          icon: FileText },
-      { label: "Certificates",   href: "/admin/certificates",   icon: Award },
-    ],
-  },
-  {
-    title: "People",
-    items: [
-      { label: "Instructors", href: "/admin/instructors",           icon: UserCog },
-      { label: "Approvals",   href: "/admin/instructors/approvals", icon: UserCheck },
-      { label: "Students",    href: "/admin/students",              icon: Users },
-      { label: "Enrollments", href: "/admin/enrollments",           icon: GraduationCap },
-      { label: "Professions", href: "/admin/professions",           icon: Briefcase },
-    ],
-  },
-  {
     title: "Organizations",
     items: [
       { label: "Organizations", href: "/admin/organizations",         icon: Building2 },
@@ -73,30 +40,8 @@ const adminNavSections = [
     ],
   },
   {
-    title: "Commerce",
-    items: [
-      { label: "Coupons",         href: "/admin/coupons",         icon: Ticket },
-      { label: "Platform Offers", href: "/admin/platform-offers", icon: Megaphone },
-      { label: "Add-ons",         href: "/admin/add-ons",         icon: Package },
-      { label: "Orders",          href: "/admin/orders",          icon: ShoppingCart },
-      { label: "Refunds",         href: "/admin/refunds",         icon: RotateCcw },
-      { label: "Payouts",         href: "/admin/payouts",         icon: Wallet },
-    ],
-  },
-  {
-    title: "Communication",
-    items: [
-      { label: "Messages",        href: "/admin/messages",        icon: MessageSquare },
-      { label: "Demo Requests",   href: "/admin/demo-requests",   icon: MonitorPlay },
-      { label: "Email Templates", href: "/admin/email-templates", icon: Mail },
-      { label: "Email Logs",      href: "/admin/email-logs",      icon: ScrollText },
-    ],
-  },
-  {
     title: "System",
     items: [
-      { label: "Admin Roles", href: "/admin/admins",     icon: ShieldCheck },
-      { label: "Migrations",  href: "/admin/migrations", icon: Database },
       { label: "My Profile",  href: "/admin/profile",    icon: UserCircle },
     ],
   },

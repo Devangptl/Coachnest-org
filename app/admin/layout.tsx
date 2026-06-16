@@ -17,8 +17,7 @@ export default async function AdminLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/login");
-  if (session.role === "STUDENT")    redirect("/dashboard");
-  if (session.role === "INSTRUCTOR") redirect("/instructor");
+  if (session.role !== "ADMIN") redirect("/org/register");
 
   // session.adminSubRole defaults to SUPER_ADMIN for any ADMIN whose
   // app_metadata predates this rollout (see lib/auth.ts).

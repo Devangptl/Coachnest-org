@@ -44,7 +44,6 @@ import FooterWrapper from "@/components/FooterWrapper";
 import { ToasterProvider } from "@/components/ToasterProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { UIDialogProvider } from "@/components/ui/UIDialogProvider";
-import BottomNavWrapper from "@/components/BottomNavWrapper";
 import PWAInstallPrompt from "@/components/PWAInstallPrompt";
 
 const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://coachnest.com";
@@ -65,18 +64,16 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "Coachnest — Modern Learning Platform",
+    default: "Coachnest — Learning Workspaces for Organizations",
     template: "%s | Coachnest",
   },
   description:
-    "Master new skills with expert-crafted courses. Interactive quizzes, progress tracking, and verified certificates — everything you need to level up your career.",
+    "Launch a multi-tenant learning workspace for your organization. Manage instructors, students, courses, and subscriptions in one place.",
   keywords: [
-    "online courses",
-    "learn to code",
-    "web development",
-    "e-learning",
-    "certificates",
-    "programming tutorials",
+    "organization learning platform",
+    "multi-tenant LMS",
+    "corporate training",
+    "team learning",
     "Coachnest",
   ],
   authors: [{ name: "Coachnest" }],
@@ -176,7 +173,6 @@ export default function RootLayout({
 
             {/* Global toast notifications */}
             <ToasterProvider />
-            <BottomNavWrapper />
             <PWAInstallPrompt />
           </UIDialogProvider>
         </ThemeProvider>
