@@ -13,7 +13,7 @@ import type { AdminSubRole } from "./admin-permissions";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-export type OrgRoleClaim = "ORG_ADMIN" | "ORG_INSTRUCTOR" | "ORG_STUDENT";
+export type OrgRoleClaim = import("@/lib/generated/prisma/client").OrgRole;
 
 export interface SessionPayload {
   userId: string;

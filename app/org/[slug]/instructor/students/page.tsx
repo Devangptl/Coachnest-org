@@ -3,7 +3,8 @@
  * instructor's own org courses (ORG_ADMIN sees all org courses).
  */
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
+import { can } from "@/lib/org-permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -13,9 +14,9 @@ export default async function OrgInstructorStudentsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+  const ctx = await requireOrgPermission(slug, "students:view");
 
-  const canSeeAll = ctx.isPlatformAdmin || ctx.role === "ORG_ADMIN";
+  const canSeeAll = ctx.isPlatformAdmin || can(ctx.role, "students:manage");
   const enrollments = await prisma.enrollment.findMany({
     where: {
       course: {

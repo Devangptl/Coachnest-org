@@ -1,6 +1,6 @@
 /**
- * GET  /api/org/[slug]/courses — list org courses (any member; students see PUBLISHED only)
- * POST /api/org/[slug]/courses — create an org course (ORG_ADMIN, ORG_INSTRUCTOR)
+ * GET  /api/org/[slug]/courses — list org courses (course:view; non-authors see PUBLISHED only)
+ * POST /api/org/[slug]/courses — create an org course (course:create)
  *
  * organizationId is forced server-side from the org context — org courses are
  * free to members (covered by the org subscription), so price fields are ignored.
@@ -8,23 +8,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import slugify from "slugify";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole, orgAuthErrorResponse } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
+import { can } from "@/lib/org-permissions";
 import { enforcePlanLimit } from "@/services/organization.service";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR", "ORG_STUDENT"]);
+    const ctx = await requireOrgPermission(slug, "course:view");
 
     const mineOnly = req.nextUrl.searchParams.get("mine") === "true";
-    const isStudent = !ctx.isPlatformAdmin && ctx.role === "ORG_STUDENT";
+    // Authors / managers see every status; learners and observers see PUBLISHED only.
+    const seesAllStatuses =
+      ctx.isPlatformAdmin || can(ctx.role, "course:author_area") || can(ctx.role, "course:manage_any");
 
     const courses = await prisma.course.findMany({
       where: {
         organizationId: ctx.org.id,
-        ...(isStudent ? { status: "PUBLISHED" } : {}),
+        ...(seesAllStatuses ? {} : { status: "PUBLISHED" }),
         ...(mineOnly ? { createdById: ctx.session.userId } : {}),
       },
       include: {
@@ -46,7 +50,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+    const ctx = await requireOrgPermission(slug, "course:create");
 
     await enforcePlanLimit(ctx.org.id, "courses");
 
@@ -78,6 +82,16 @@ export async function POST(req: NextRequest, { params }: Params) {
         createdById: ctx.session.userId,
         organizationId: ctx.org.id,
       },
+    });
+
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "course.create",
+      targetType: "course",
+      targetId: course.id,
+      targetLabel: course.title,
     });
 
     return NextResponse.json({ course }, { status: 201 });

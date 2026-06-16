@@ -3,7 +3,7 @@
  * ORG_ADMIN; works while expired (that's the point of renewing).
  */
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgRole, orgAuthErrorResponse } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { createRenewalOrder } from "@/services/org-subscription.service";
 
 export async function POST(
@@ -12,7 +12,7 @@ export async function POST(
 ) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+    const ctx = await requireOrgPermission(slug, "billing:manage", { allowExpired: true });
 
     const result = await createRenewalOrder(ctx.org.id, ctx.session.userId);
     return NextResponse.json({

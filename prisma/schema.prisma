@@ -37,9 +37,13 @@ enum PlanType {
 // Role inside an organization workspace. Independent of the platform Role —
 // a user can hold a platform role and org roles in several orgs at once.
 enum OrgRole {
+  ORG_OWNER
   ORG_ADMIN
+  ORG_MANAGER
   ORG_INSTRUCTOR
+  ORG_TA
   ORG_STUDENT
+  ORG_OBSERVER
 }
 
 enum OrgStatus {
@@ -229,6 +233,7 @@ model Organization {
   payouts       Payout[]
   subscriptions OrganizationSubscription[]
   transactions  OrganizationTransaction[]
+  auditLogs     OrgAuditLog[]
 
   @@index([status])
   @@map("organizations")
@@ -331,6 +336,27 @@ model OrganizationTransaction {
   @@index([organizationId, createdAt])
   @@index([status, type])
   @@map("organization_transactions")
+}
+
+// Append-only record of significant org admin actions (member/role/course
+// changes). actorUserId/targetUserId are plain ids (no FK) so the shared User
+// model is untouched and rows survive user deletion.
+model OrgAuditLog {
+  id             String   @id @default(cuid())
+  organizationId String
+  actorUserId    String // who performed the action
+  actorName      String // snapshot of the actor's name at the time
+  action         String // e.g. "member.invite", "member.role_change", "course.delete"
+  targetType     String? // "member" | "course" | "organization"
+  targetId       String?
+  targetLabel    String? // human-readable target (name/email/title) at the time
+  metadata       Json? // action-specific detail (e.g. { from, to })
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  @@index([organizationId, createdAt])
+  @@map("org_audit_logs")
 }
 
 // ─── User ─────────────────────────────────────────────────────────────────────

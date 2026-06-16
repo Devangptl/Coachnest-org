@@ -1,18 +1,20 @@
 /**
- * GET  /api/org/[slug]/members — list members (ORG_ADMIN)
- * POST /api/org/[slug]/members — add/invite a member (ORG_ADMIN)
+ * GET  /api/org/[slug]/members — list members (members:view)
+ * POST /api/org/[slug]/members — add/invite a member (members:manage)
  */
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgRole, orgAuthErrorResponse } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { addOrgMemberSchema, orgRoleEnum } from "@/lib/validation/org";
+import { canAssignRole } from "@/lib/org-permissions";
 import { listOrgMembers, addOrgMember } from "@/services/organization.service";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string }> };
 
 export async function GET(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+    const ctx = await requireOrgPermission(slug, "members:view", { allowExpired: true });
 
     const roleParam = req.nextUrl.searchParams.get("role");
     const role = orgRoleEnum.safeParse(roleParam);
@@ -34,7 +36,7 @@ export async function GET(req: NextRequest, { params }: Params) {
 export async function POST(req: NextRequest, { params }: Params) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"]);
+    const ctx = await requireOrgPermission(slug, "members:manage");
 
     const parsed = addOrgMemberSchema.safeParse(await req.json());
     if (!parsed.success) {
@@ -44,7 +46,24 @@ export async function POST(req: NextRequest, { params }: Params) {
       );
     }
 
+    if (!ctx.isPlatformAdmin && !canAssignRole(ctx.role, parsed.data.role)) {
+      return NextResponse.json(
+        { error: "You cannot assign that role" },
+        { status: 403 },
+      );
+    }
+
     const member = await addOrgMember(ctx.org.id, parsed.data);
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "member.invite",
+      targetType: "member",
+      targetId: member.userId,
+      targetLabel: `${parsed.data.name} (${parsed.data.email})`,
+      metadata: { role: parsed.data.role },
+    });
     return NextResponse.json({ member }, { status: 201 });
   } catch (error) {
     const res = orgAuthErrorResponse(error);

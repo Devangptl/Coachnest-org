@@ -5,7 +5,7 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole, orgAuthErrorResponse } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { generateOrgInvoicePDF, orgInvoiceNumber } from "@/lib/org-invoice-pdf";
 
 export async function GET(
@@ -14,7 +14,7 @@ export async function GET(
 ) {
   try {
     const { slug, txnId } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+    const ctx = await requireOrgPermission(slug, "billing:view", { allowExpired: true });
 
     const txn = await prisma.organizationTransaction.findFirst({
       where: { id: txnId, organizationId: ctx.org.id },

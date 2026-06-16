@@ -3,7 +3,7 @@
  * ORG_ADMIN; works while expired so the admin can renew.
  */
 import { NextRequest, NextResponse } from "next/server";
-import { requireOrgRole, orgAuthErrorResponse } from "@/lib/org-auth";
+import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { getBillingSummary } from "@/services/org-subscription.service";
 
 export async function GET(
@@ -12,7 +12,7 @@ export async function GET(
 ) {
   try {
     const { slug } = await params;
-    const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+    const ctx = await requireOrgPermission(slug, "billing:view", { allowExpired: true });
     const summary = await getBillingSummary(ctx.org.id);
     return NextResponse.json({ ...summary, orgStatus: ctx.org.status });
   } catch (error) {

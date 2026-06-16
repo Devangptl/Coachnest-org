@@ -14,6 +14,8 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import { canAccessAdminPath, type AdminSubRole } from "@/lib/admin-permissions";
+import { ORG_ADMIN_AREA_ROLES, ORG_AUTHOR_ROLES } from "@/lib/org-permissions";
+import type { OrgRole } from "@/lib/generated/prisma/client";
 
 const PROTECTED  = ["/admin"];
 const AUTH_ONLY  = ["/login"];
@@ -61,13 +63,19 @@ export async function middleware(req: NextRequest) {
   }
   if (underPath(pathname, "/org") && !underPath(pathname, "/org/register")) {
     const [, , slug, portal] = pathname.split("/"); // /org/{slug}/{portal}
-    const orgs    = (user?.app_metadata?.orgs ?? {}) as Record<string, string>;
+    const orgs    = (user?.app_metadata?.orgs ?? {}) as Record<string, OrgRole>;
     const orgRole = slug ? orgs[slug] : undefined;
     const isSuperAdmin =
       !!user && role === "ADMIN" && (adminSubRole ?? "SUPER_ADMIN") === "SUPER_ADMIN";
+
+    // Portal access derives from the role's capabilities, not a fixed role name,
+    // so every admin-area role (owner/admin/manager/observer) and author-area
+    // role (…/instructor/TA) routes correctly.
+    const canAdminArea  = isSuperAdmin || (!!orgRole && ORG_ADMIN_AREA_ROLES.includes(orgRole));
+    const canAuthorArea = isSuperAdmin || (!!orgRole && ORG_AUTHOR_ROLES.includes(orgRole));
     const orgHome =
-      orgRole === "ORG_ADMIN" || isSuperAdmin ? `/org/${slug}/admin` :
-      orgRole === "ORG_INSTRUCTOR"            ? `/org/${slug}/instructor` :
+      canAdminArea  ? `/org/${slug}/admin` :
+      canAuthorArea ? `/org/${slug}/instructor` :
       `/org/${slug}/student`;
 
     if (portal === "login") {
@@ -92,13 +100,10 @@ export async function middleware(req: NextRequest) {
     }
 
     if (!portal) return NextResponse.redirect(new URL(orgHome, req.url));
-    if (portal === "admin" && !(orgRole === "ORG_ADMIN" || isSuperAdmin)) {
+    if (portal === "admin" && !canAdminArea) {
       return NextResponse.redirect(new URL(orgHome, req.url));
     }
-    if (
-      portal === "instructor" &&
-      !(orgRole === "ORG_ADMIN" || orgRole === "ORG_INSTRUCTOR" || isSuperAdmin)
-    ) {
+    if (portal === "instructor" && !canAuthorArea) {
       return NextResponse.redirect(new URL(orgHome, req.url));
     }
     // student portal + expired page: any member

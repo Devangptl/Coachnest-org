@@ -1,4 +1,4 @@
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
 import { prisma } from "@/lib/prisma";
 import OrgSettingsClient from "./OrgSettingsClient";
 
@@ -10,7 +10,7 @@ export default async function OrgSettingsPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+  const ctx = await requireOrgPermission(slug, "org:manage_settings", { allowExpired: true });
 
   const org = await prisma.organization.findUniqueOrThrow({
     where: { id: ctx.org.id },

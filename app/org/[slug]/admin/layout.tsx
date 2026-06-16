@@ -6,7 +6,7 @@
  */
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { requireOrgRole, OrgAuthError } from "@/lib/org-auth";
+import { requireOrgPermission, OrgAuthError } from "@/lib/org-auth";
 import OrgSidebar from "@/components/org/OrgSidebar";
 
 export default async function OrgAdminLayout({
@@ -20,7 +20,7 @@ export default async function OrgAdminLayout({
 
   let ctx;
   try {
-    ctx = await requireOrgRole(slug, ["ORG_ADMIN"], { allowExpired: true });
+    ctx = await requireOrgPermission(slug, "org:view_admin", { allowExpired: true });
   } catch (err) {
     if (err instanceof OrgAuthError && err.status === 401) redirect(`/org/${slug}/login`);
     redirect(`/org/${slug}/login?error=not_member`);

@@ -14,6 +14,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSession, type SessionPayload } from "@/lib/auth";
 import type { OrgRole, OrgStatus } from "@/lib/generated/prisma/client";
+import {
+  ROLE_PERMISSIONS,
+  can as roleCan,
+  orgRoleHome,
+  type OrgPermission,
+} from "@/lib/org-permissions";
 
 export interface OrgContext {
   org: {
@@ -25,7 +31,14 @@ export interface OrgContext {
   };
   role: OrgRole;
   isPlatformAdmin: boolean;
+  /** Capabilities granted by `role`. Use `can()` rather than reading directly. */
+  capabilities: OrgPermission[];
   session: SessionPayload;
+}
+
+/** True when the context's role (platform admins included) grants `permission`. */
+export function ctxCan(ctx: OrgContext, permission: OrgPermission): boolean {
+  return ctx.isPlatformAdmin || ctx.capabilities.includes(permission);
 }
 
 export class OrgAuthError extends Error {
@@ -63,10 +76,14 @@ export const getOrgContext = cache(async (slug: string): Promise<OrgContext | nu
 
   if (!membership && !isPlatformAdmin) return null;
 
+  // Platform SUPER_ADMINs without a membership act as ORG_OWNER (full oversight).
+  const role: OrgRole = membership?.role ?? "ORG_OWNER";
+
   return {
     org,
-    role: membership?.role ?? "ORG_ADMIN",
+    role,
     isPlatformAdmin,
+    capabilities: ROLE_PERMISSIONS[role],
     session,
   };
 });
@@ -85,6 +102,40 @@ export async function requireOrgRole(
   roles: OrgRole[],
   opts?: { allowExpired?: boolean },
 ): Promise<OrgContext> {
+  const ctx = await resolveOrgAccess(slug, opts);
+  if (!ctx.isPlatformAdmin && !roles.includes(ctx.role)) {
+    throw new OrgAuthError(403, "Insufficient role for this organization area");
+  }
+  return ctx;
+}
+
+/**
+ * Capability-based guard — the preferred way to gate org routes/pages.
+ * Pass one permission or several (the caller must hold ALL of them).
+ * Platform SUPER_ADMINs always pass.
+ */
+export async function requireOrgPermission(
+  slug: string,
+  permission: OrgPermission | OrgPermission[],
+  opts?: { allowExpired?: boolean },
+): Promise<OrgContext> {
+  const ctx = await resolveOrgAccess(slug, opts);
+  if (ctx.isPlatformAdmin) return ctx;
+  const required = Array.isArray(permission) ? permission : [permission];
+  if (!required.every((p) => roleCan(ctx.role, p))) {
+    throw new OrgAuthError(403, "Insufficient permissions for this action");
+  }
+  return ctx;
+}
+
+/**
+ * Shared resolution + subscription-status gate for both guards. Throws:
+ *   404 — unknown slug · 401 — no session · 403 — not a member / inactive org
+ */
+async function resolveOrgAccess(
+  slug: string,
+  opts?: { allowExpired?: boolean },
+): Promise<OrgContext> {
   const org = await getOrgBySlug(slug);
   if (!org) throw new OrgAuthError(404, "Organization not found");
 
@@ -93,10 +144,6 @@ export async function requireOrgRole(
 
   const ctx = await getOrgContext(slug);
   if (!ctx) throw new OrgAuthError(403, "Not a member of this organization");
-
-  if (!ctx.isPlatformAdmin && !roles.includes(ctx.role)) {
-    throw new OrgAuthError(403, "Insufficient role for this organization area");
-  }
 
   if (!opts?.allowExpired && !ctx.isPlatformAdmin) {
     if (org.status !== "ACTIVE") {
@@ -147,12 +194,5 @@ export async function canViewOrgCourse(organizationId: string | null): Promise<b
 
 /** Portal home for a given org role — shared by middleware-style redirects. */
 export function orgHomePath(slug: string, role: OrgRole): string {
-  switch (role) {
-    case "ORG_ADMIN":
-      return `/org/${slug}/admin`;
-    case "ORG_INSTRUCTOR":
-      return `/org/${slug}/instructor`;
-    default:
-      return `/org/${slug}/student`;
-  }
+  return orgRoleHome(slug, role);
 }

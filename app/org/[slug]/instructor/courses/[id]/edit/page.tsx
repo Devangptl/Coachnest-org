@@ -8,7 +8,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { prisma } from "@/lib/prisma";
-import { requireOrgRole } from "@/lib/org-auth";
+import { requireOrgPermission } from "@/lib/org-auth";
+import { can } from "@/lib/org-permissions";
 import CourseForm from "@/components/admin/CourseForm";
 import LessonsManager from "@/app/admin/courses/[id]/edit/LessonsManager";
 
@@ -20,7 +21,7 @@ export default async function OrgEditCoursePage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const ctx = await requireOrgRole(slug, ["ORG_ADMIN", "ORG_INSTRUCTOR"]);
+  const ctx = await requireOrgPermission(slug, "course:author_area");
 
   const course = await prisma.course.findFirst({
     where: { id, organizationId: ctx.org.id },
@@ -37,8 +38,8 @@ export default async function OrgEditCoursePage({
 
   const canManage =
     ctx.isPlatformAdmin ||
-    ctx.role === "ORG_ADMIN" ||
-    course.createdById === ctx.session.userId;
+    can(ctx.role, "course:manage_any") ||
+    (can(ctx.role, "course:manage_own") && course.createdById === ctx.session.userId);
   if (!canManage) notFound();
 
   const categories = await prisma.category.findMany({
