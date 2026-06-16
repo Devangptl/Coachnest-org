@@ -9,13 +9,14 @@
  */
 import { useCallback, useEffect, useMemo, useState, FormEvent } from "react";
 import toast from "react-hot-toast";
-import { Loader2, Plus, Trash2, Search, X } from "lucide-react";
+import { Loader2, Plus, Trash2, Search, X, Crown, Upload } from "lucide-react";
 import Avatar from "@/components/Avatar";
 import {
   ORG_ROLES,
   ORG_ROLE_LABEL,
   assignableRoles,
   canManageMember,
+  can,
 } from "@/lib/org-permissions";
 import type { OrgRole } from "@/lib/generated/prisma/client";
 
@@ -59,6 +60,10 @@ export default function OrgMemberManager({
   const [inviteRole, setInviteRole] = useState<OrgRole>("ORG_STUDENT");
   const [saving, setSaving] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [showBulk, setShowBulk] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkSaving, setBulkSaving] = useState(false);
+  const [bulkErrors, setBulkErrors] = useState<{ email: string; error: string }[]>([]);
 
   // Roles this actor may grant (platform admins may grant anything).
   const assignable = useMemo<OrgRole[]>(
@@ -92,9 +97,35 @@ export default function OrgMemberManager({
     return () => clearTimeout(t);
   }, [load, search]);
 
+  const canAssignOwner = isPlatformAdmin || can(actorRole, "members:assign_owner");
+
   function canManage(member: Member): boolean {
     if (member.userId === currentUserId) return false;
     return isPlatformAdmin || canManageMember(actorRole, member.role);
+  }
+
+  async function handleTransferOwnership(member: Member) {
+    if (
+      !confirm(
+        `Make ${member.user.name} the owner of this organization? You will become an Admin.`,
+      )
+    )
+      return;
+    setBusyId(member.userId);
+    try {
+      const res = await fetch(
+        `/api/org/${slug}/members/${member.userId}/transfer-ownership`,
+        { method: "POST" },
+      );
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`${member.user.name} is now the owner`);
+      load();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Failed to transfer ownership");
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function handleAdd(e: FormEvent) {
@@ -137,6 +168,60 @@ export default function OrgMemberManager({
       toast.error(err instanceof Error ? err.message : "Failed to change role");
     } finally {
       setBusyId(null);
+    }
+  }
+
+  function resolveRole(s: string): OrgRole | null {
+    const raw = s.trim();
+    if (!raw) return null;
+    const token = raw.toUpperCase().replace(/\s+/g, "_");
+    const byKey = ORG_ROLES.find((r) => r === token || r === `ORG_${token}`);
+    if (byKey) return byKey;
+    return ORG_ROLES.find((r) => ORG_ROLE_LABEL[r].toUpperCase() === raw.toUpperCase()) ?? null;
+  }
+
+  async function handleBulk(e: FormEvent) {
+    e.preventDefault();
+    // Each line: "Name, email@x.com, Role" (role optional → defaults to selection).
+    const rows = bulkText
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [name = "", email = "", roleStr = ""] = line.split(",").map((c) => c.trim());
+        return { name, email, role: resolveRole(roleStr) ?? inviteRole };
+      })
+      .filter((r) => r.name && r.email);
+
+    if (rows.length === 0) {
+      toast.error("Add at least one line: Name, email, role");
+      return;
+    }
+
+    setBulkSaving(true);
+    setBulkErrors([]);
+    try {
+      const res = await fetch(`/api/org/${slug}/members/bulk`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ members: rows }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error);
+      toast.success(`${data.added}/${data.total} invited`);
+      setBulkErrors(
+        (data.results ?? [])
+          .filter((r: { ok: boolean }) => !r.ok)
+          .map((r: { email: string; error: string }) => ({ email: r.email, error: r.error })),
+      );
+      if (data.added > 0) {
+        setBulkText("");
+        load();
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Bulk invite failed");
+    } finally {
+      setBulkSaving(false);
     }
   }
 
@@ -187,10 +272,28 @@ export default function OrgMemberManager({
           </select>
         </div>
         {canInvite && (
-          <button onClick={() => setShowAdd((s) => !s)} className="btn-primary">
-            {showAdd ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
-            {showAdd ? "Cancel" : "Add member"}
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => {
+                setShowBulk((s) => !s);
+                setShowAdd(false);
+              }}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg border border-border text-sm text-foreground hover:bg-secondary transition-colors"
+            >
+              <Upload className="w-4 h-4" />
+              Bulk add
+            </button>
+            <button
+              onClick={() => {
+                setShowAdd((s) => !s);
+                setShowBulk(false);
+              }}
+              className="btn-primary"
+            >
+              {showAdd ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+              {showAdd ? "Cancel" : "Add member"}
+            </button>
+          </div>
         )}
       </div>
 
@@ -223,6 +326,56 @@ export default function OrgMemberManager({
             {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
             Invite
           </button>
+        </form>
+      )}
+
+      {showBulk && canInvite && (
+        <form
+          onSubmit={handleBulk}
+          className="bg-card border border-border rounded-xl p-4 mb-5 animate-fade-in"
+        >
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+            <label className="text-sm font-medium text-foreground">
+              Paste members — one per line: <span className="text-muted-foreground">Name, email, role</span>
+            </label>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Default role</span>
+              <select
+                value={inviteRole}
+                onChange={(e) => setInviteRole(e.target.value as OrgRole)}
+                className="input-glass text-xs py-1.5"
+                aria-label="Default role for rows without one"
+              >
+                {assignable.map((r) => (
+                  <option key={r} value={r}>
+                    {ORG_ROLE_LABEL[r]}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            rows={5}
+            placeholder={"Jane Doe, jane@company.com, Instructor\nJohn Roe, john@company.com"}
+            className="input-glass w-full font-mono text-xs"
+          />
+          {bulkErrors.length > 0 && (
+            <ul className="mt-2 space-y-0.5 text-xs text-red-400">
+              {bulkErrors.map((er) => (
+                <li key={er.email}>
+                  {er.email}: {er.error}
+                </li>
+              ))}
+            </ul>
+          )}
+          <div className="flex justify-end mt-3">
+            <button type="submit" className="btn-primary" disabled={bulkSaving}>
+              {bulkSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
+              Invite all
+            </button>
+          </div>
         </form>
       )}
 
@@ -281,6 +434,18 @@ export default function OrgMemberManager({
                   <p className="text-xs text-muted-foreground whitespace-nowrap hidden md:block">
                     {new Date(m.joinedAt).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" })}
                   </p>
+
+                  {canAssignOwner && m.role !== "ORG_OWNER" && m.userId !== currentUserId && (
+                    <button
+                      onClick={() => handleTransferOwnership(m)}
+                      disabled={busyId === m.userId}
+                      className="p-2 rounded-lg text-muted-foreground hover:text-orange-400 hover:bg-orange-500/10 transition-colors disabled:opacity-30"
+                      aria-label={`Make ${m.user.name} owner`}
+                      title="Transfer ownership"
+                    >
+                      <Crown className="w-4 h-4" />
+                    </button>
+                  )}
 
                   <button
                     onClick={() => handleRemove(m)}

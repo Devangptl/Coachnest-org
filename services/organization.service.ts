@@ -369,6 +369,38 @@ async function assertNotLastOwner(organizationId: string, userId: string): Promi
   }
 }
 
+/**
+ * Transfer ownership: promote `toUserId` to ORG_OWNER and demote the current
+ * owner (`fromUserId`) to ORG_ADMIN, atomically. Both must be members.
+ */
+export async function transferOrgOwnership(
+  organizationId: string,
+  fromUserId: string,
+  toUserId: string,
+) {
+  if (fromUserId === toUserId) {
+    throw new Error("You already own this organization");
+  }
+  const target = await prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId: toUserId, organizationId } },
+    select: { role: true },
+  });
+  if (!target) throw new Error("Member not found");
+
+  await prisma.$transaction([
+    prisma.organizationMember.update({
+      where: { userId_organizationId: { userId: toUserId, organizationId } },
+      data: { role: "ORG_OWNER" },
+    }),
+    prisma.organizationMember.updateMany({
+      where: { organizationId, userId: fromUserId, role: "ORG_OWNER" },
+      data: { role: "ORG_ADMIN" },
+    }),
+  ]);
+
+  await Promise.all([syncOrgMetadata(toUserId), syncOrgMetadata(fromUserId)]);
+}
+
 // ─── Org-student enrollment (subscription-covered, no payment) ────────────────
 
 export async function enrollOrgStudent(

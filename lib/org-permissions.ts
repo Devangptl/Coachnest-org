@@ -87,6 +87,42 @@ export const ALL_ORG_PERMISSIONS: OrgPermission[] = [
   "learn",
 ];
 
+/** Human-readable label + group for each permission (for the roles viewer). */
+export const ORG_PERMISSION_META: Record<
+  OrgPermission,
+  { label: string; group: string }
+> = {
+  "org:view_admin": { label: "Access admin portal", group: "Organization" },
+  "org:manage_settings": { label: "Edit org settings", group: "Organization" },
+  "org:delete": { label: "Delete organization", group: "Organization" },
+  "billing:view": { label: "View billing & invoices", group: "Billing" },
+  "billing:manage": { label: "Manage plan & refunds", group: "Billing" },
+  "members:view": { label: "View members", group: "Members" },
+  "members:manage": { label: "Invite / re-role / remove members", group: "Members" },
+  "members:assign_owner": { label: "Transfer ownership", group: "Members" },
+  "course:view": { label: "View courses & content", group: "Courses" },
+  "course:create": { label: "Create courses", group: "Courses" },
+  "course:manage_any": { label: "Edit / delete any course", group: "Courses" },
+  "course:manage_own": { label: "Edit / delete own courses", group: "Courses" },
+  "course:author_area": { label: "Access authoring portal", group: "Courses" },
+  "students:view": { label: "View students", group: "Students" },
+  "students:manage": { label: "Manage enrollments", group: "Students" },
+  "reports:view": { label: "View reports & analytics", group: "Reports" },
+  learn: { label: "Enroll & learn", group: "Learning" },
+};
+
+/** Permission groups in display order. */
+export const ORG_PERMISSION_GROUPS = [
+  "Organization",
+  "Billing",
+  "Members",
+  "Courses",
+  "Students",
+  "Reports",
+  "Learning",
+] as const;
+
+
 export const ROLE_PERMISSIONS: Record<OrgRole, OrgPermission[]> = {
   ORG_OWNER: [...ALL_ORG_PERMISSIONS],
   ORG_ADMIN: [

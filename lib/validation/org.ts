@@ -87,6 +87,10 @@ export const updateOrgMemberSchema = z.object({
   role: orgRoleEnum,
 });
 
+export const bulkAddOrgMembersSchema = z.object({
+  members: z.array(addOrgMemberSchema).min(1).max(200),
+});
+
 export const changePlanSchema = z.object({
   planId: z.string().min(1),
   billingCycle: billingCycleEnum,
