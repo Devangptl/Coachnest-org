@@ -6,7 +6,8 @@
  */
 import { NextRequest, NextResponse } from "next/server";
 import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
-import { transferOrgOwnership } from "@/services/organization.service";
+import { transferOrgOwnership, getOrgMemberInfo } from "@/services/organization.service";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string; userId: string }> };
 
@@ -15,7 +16,17 @@ export async function POST(_req: NextRequest, { params }: Params) {
     const { slug, userId } = await params;
     const ctx = await requireOrgPermission(slug, "members:assign_owner");
 
+    const target = await getOrgMemberInfo(ctx.org.id, userId);
     await transferOrgOwnership(ctx.org.id, ctx.session.userId, userId);
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "member.transfer_ownership",
+      targetType: "member",
+      targetId: userId,
+      targetLabel: target?.user?.name ?? userId,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     const res = orgAuthErrorResponse(error);

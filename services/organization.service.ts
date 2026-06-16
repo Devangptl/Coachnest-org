@@ -326,6 +326,7 @@ export async function updateOrgMemberRole(
   const member = await prisma.organizationMember.update({
     where: { userId_organizationId: { userId, organizationId } },
     data: { role },
+    include: { user: { select: { name: true, email: true } } },
   });
   await syncOrgMetadata(userId);
   return member;
@@ -357,6 +358,14 @@ export async function getOrgMemberRole(
     select: { role: true },
   });
   return member?.role ?? null;
+}
+
+/** A member's role + display info, or null if they are not a member. */
+export async function getOrgMemberInfo(organizationId: string, userId: string) {
+  return prisma.organizationMember.findUnique({
+    where: { userId_organizationId: { userId, organizationId } },
+    select: { role: true, user: { select: { name: true, email: true } } },
+  });
 }
 
 /** Throws if `userId` is the organization's only ORG_OWNER. */

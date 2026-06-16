@@ -10,6 +10,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireOrgPermission, orgAuthErrorResponse, type OrgContext } from "@/lib/org-auth";
 import { can } from "@/lib/org-permissions";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string; id: string }> };
 
@@ -79,6 +80,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
       },
     });
 
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "course.update",
+      targetType: "course",
+      targetId: course.id,
+      targetLabel: updated.title,
+    });
+
     return NextResponse.json({ course: updated });
   } catch (error) {
     const res = orgAuthErrorResponse(error);
@@ -100,6 +111,15 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     }
 
     await prisma.course.delete({ where: { id: course.id } });
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "course.delete",
+      targetType: "course",
+      targetId: course.id,
+      targetLabel: course.title,
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     const res = orgAuthErrorResponse(error);

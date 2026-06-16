@@ -11,6 +11,7 @@ import { prisma } from "@/lib/prisma";
 import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { can } from "@/lib/org-permissions";
 import { enforcePlanLimit } from "@/services/organization.service";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -81,6 +82,16 @@ export async function POST(req: NextRequest, { params }: Params) {
         createdById: ctx.session.userId,
         organizationId: ctx.org.id,
       },
+    });
+
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "course.create",
+      targetType: "course",
+      targetId: course.id,
+      targetLabel: course.title,
     });
 
     return NextResponse.json({ course }, { status: 201 });

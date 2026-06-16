@@ -13,7 +13,9 @@ import {
   updateOrgMemberRole,
   removeOrgMember,
   getOrgMemberRole,
+  getOrgMemberInfo,
 } from "@/services/organization.service";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string; userId: string }> };
 
@@ -43,6 +45,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     }
 
     const member = await updateOrgMemberRole(ctx.org.id, userId, newRole);
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "member.role_change",
+      targetType: "member",
+      targetId: userId,
+      targetLabel: member.user?.name ?? userId,
+      metadata: { from: currentRole, to: newRole },
+    });
     return NextResponse.json({ member });
   } catch (error) {
     const res = orgAuthErrorResponse(error);
@@ -71,15 +83,25 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
       return NextResponse.json({ error: "You cannot remove yourself" }, { status: 400 });
     }
 
-    const currentRole = await getOrgMemberRole(ctx.org.id, userId);
-    if (!currentRole) {
+    const info = await getOrgMemberInfo(ctx.org.id, userId);
+    if (!info) {
       return NextResponse.json({ error: "Member not found" }, { status: 404 });
     }
-    if (!ctx.isPlatformAdmin && !canManageMember(ctx.role, currentRole)) {
+    if (!ctx.isPlatformAdmin && !canManageMember(ctx.role, info.role)) {
       return NextResponse.json({ error: "You cannot manage this member" }, { status: 403 });
     }
 
     await removeOrgMember(ctx.org.id, userId);
+    await logOrgAudit({
+      organizationId: ctx.org.id,
+      actorUserId: ctx.session.userId,
+      actorName: ctx.session.name,
+      action: "member.remove",
+      targetType: "member",
+      targetId: userId,
+      targetLabel: info.user?.name ?? userId,
+      metadata: { role: info.role },
+    });
     return NextResponse.json({ success: true });
   } catch (error) {
     const res = orgAuthErrorResponse(error);

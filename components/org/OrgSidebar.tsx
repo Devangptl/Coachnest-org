@@ -9,7 +9,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, UserCog, BarChart3, CreditCard,
-  Settings, GraduationCap, Library, ShieldCheck, type LucideIcon,
+  Settings, GraduationCap, Library, ShieldCheck, ScrollText, type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Avatar from "@/components/Avatar";
@@ -38,6 +38,7 @@ function navFor(portal: OrgPortal, slug: string): { title: string; items: NavIte
         items: [
           { label: "Dashboard", href: base, icon: LayoutDashboard },
           { label: "Reports", href: `${base}/reports`, icon: BarChart3 },
+          { label: "Activity log", href: `${base}/audit`, icon: ScrollText },
         ],
       },
       {

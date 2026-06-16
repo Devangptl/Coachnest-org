@@ -8,6 +8,7 @@ import { requireOrgPermission, orgAuthErrorResponse } from "@/lib/org-auth";
 import { bulkAddOrgMembersSchema } from "@/lib/validation/org";
 import { canAssignRole } from "@/lib/org-permissions";
 import { addOrgMember } from "@/services/organization.service";
+import { logOrgAudit } from "@/services/org-audit.service";
 
 type Params = { params: Promise<{ slug: string }> };
 
@@ -43,6 +44,16 @@ export async function POST(req: NextRequest, { params }: Params) {
     }
 
     const added = results.filter((r) => r.ok).length;
+    if (added > 0) {
+      await logOrgAudit({
+        organizationId: ctx.org.id,
+        actorUserId: ctx.session.userId,
+        actorName: ctx.session.name,
+        action: "member.bulk_invite",
+        targetType: "member",
+        metadata: { added, total: results.length },
+      });
+    }
     return NextResponse.json({ added, total: results.length, results });
   } catch (error) {
     const res = orgAuthErrorResponse(error);
