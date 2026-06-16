@@ -43,6 +43,14 @@ const LESSONS: Array<true | "active" | false> = [
 
 // ── Component ───────────────────────────────────────────────────────────────
 
+/** Only honor app-internal absolute paths — never protocol-relative or external. */
+function safeReturnPath(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  if (raw.startsWith("/login")) return null;
+  return raw;
+}
+
 export default function LoginPage() {
   const router = useRouter();
 
@@ -57,10 +65,14 @@ export default function LoginPage() {
   async function handleGoogleSignIn() {
     setError("");
     setGoogleLoading(true);
+    const from = safeReturnPath(new URLSearchParams(window.location.search).get("from"));
+    const callback = `${window.location.origin}/auth/callback${
+      from ? `?next=${encodeURIComponent(from)}` : ""
+    }`;
     const { error } = await supabaseClient.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: callback,
       },
     });
     if (error) {
@@ -92,11 +104,15 @@ export default function LoginPage() {
       const isPendingInstructor =
         data.role === "INSTRUCTOR" &&
         (data.instructorStatus === "PENDING" || data.instructorStatus === "REJECTED");
-      router.push(
+      const roleHome =
         data.role === "ADMIN"      ? "/admin" :
         data.role === "INSTRUCTOR" ? (isPendingInstructor ? "/instructor/pending" : "/instructor") :
-        "/dashboard",
-      );
+        "/dashboard";
+      // Honor the return path set by middleware (e.g. /org/<slug>/... or any
+      // protected route the user was sent here from); route guards re-validate
+      // access, so an unauthorized target just bounces to the role home.
+      const from = safeReturnPath(new URLSearchParams(window.location.search).get("from"));
+      router.push(from ?? roleHome);
       router.refresh();
     } catch {
       setError("Something went wrong. Please try again.");
