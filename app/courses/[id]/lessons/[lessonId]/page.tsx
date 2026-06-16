@@ -1,5 +1,7 @@
 /**
- * Lesson content page — prerendered via generateStaticParams + 5-min ISR.
+ * Lesson content page — rendered dynamically per request.
+ * Org course access is membership-gated (needs cookies), so the page
+ * cannot be statically prerendered.
  * The sidebar is in the parent layout (persistent, never unmounts).
  * Only the lesson content area re-renders on lesson navigation.
  */
@@ -46,22 +48,7 @@ const getCourseWithLessons = unstable_cache(
   { revalidate: 300, tags: ["course-lessons"] }
 );
 
-// ── Static params — pre-render every lesson at build time ─────────────────────
-
-export async function generateStaticParams() {
-  try {
-    const courses = await prisma.course.findMany({
-      // Org-course lessons render dynamically (membership check needs cookies)
-      where: { status: { not: "ARCHIVED" }, organizationId: null },
-      select: { id: true, lessons: { select: { id: true } } },
-    });
-    return courses.flatMap((c) => c.lessons.map((l) => ({ id: c.id, lessonId: l.id })));
-  } catch {
-    return []; // DB unreachable at build time — ISR handles first-request caching
-  }
-}
-
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 // ── Page ─────────────────────────────────────────────────────────────────────
 
