@@ -10,12 +10,8 @@ export default function robots(): MetadataRoute.Robots {
         allow: ["/"],
         disallow: [
           "/admin/",
-          "/dashboard/",
-          "/instructor/",
           "/api/",
-          "/checkout/",
-          "/reset-password",
-          "/forgot-password",
+          "/courses/",
         ],
       },
     ],
