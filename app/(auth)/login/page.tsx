@@ -101,13 +101,10 @@ export default function LoginPage() {
         }
         return;
       }
-      const isPendingInstructor =
-        data.role === "INSTRUCTOR" &&
-        (data.instructorStatus === "PENDING" || data.instructorStatus === "REJECTED");
-      const roleHome =
-        data.role === "ADMIN"      ? "/admin" :
-        data.role === "INSTRUCTOR" ? (isPendingInstructor ? "/instructor/pending" : "/instructor") :
-        "/dashboard";
+      // Org-only build: the only platform home is /admin (ADMIN) — every other
+      // role lands on /org/register, matching the middleware auth-page guard.
+      // (There is no /dashboard or root /instructor route here.)
+      const roleHome = data.role === "ADMIN" ? "/admin" : "/org/register";
       // Honor the return path set by middleware (e.g. /org/<slug>/... or any
       // protected route the user was sent here from); route guards re-validate
       // access, so an unauthorized target just bounces to the role home.

@@ -32,10 +32,17 @@ function mobileRedirect(path: string): NextResponse {
   });
 }
 
+/** Only honor app-internal absolute paths — never external/protocol-relative. */
+function safeNext(raw: string | null): string | null {
+  if (!raw) return null;
+  if (!raw.startsWith("/") || raw.startsWith("//")) return null;
+  return raw;
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
   const code = searchParams.get("code");
-  const next = searchParams.get("next");
+  const next = safeNext(searchParams.get("next"));
 
   if (!code) {
     return NextResponse.redirect(new URL("/login?error=missing_code", req.url));
@@ -75,9 +82,8 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     console.error("[auth/callback] profile lookup failed:", err);
-    // Cannot determine user state — send to onboarding as safe default
-    const dest = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
-    return mobileRedirect(dest);
+    // Cannot determine user state — fall back to the org-only home.
+    return mobileRedirect(next ?? "/org/register");
   }
 
   // ── New user — provision and send to onboarding ───────────────────────────────
@@ -124,34 +130,18 @@ export async function GET(req: NextRequest) {
       console.error("[auth/callback] user provisioning failed:", provisionErr);
     }
 
-    // Always redirect new users to onboarding
-    const destination = role === "INSTRUCTOR" ? "/onboarding/instructor" : "/onboarding";
-    return mobileRedirect(destination);
+    // New platform users land on the org-only home.
+    return mobileRedirect(next ?? "/org/register");
   }
 
   // ── Returning user — route by their existing role ─────────────────────────────
+  // Org-only build: the only platform home is /admin (ADMIN); every other role
+  // falls back to /org/register. Honor a validated return path when present.
   const existingRole = (user.app_metadata?.role ?? "STUDENT") as string;
-
-  if (existingRole === "STUDENT") {
-    if (next) return mobileRedirect(next);
-    const destination = existingProfile.hasCompletedOnboarding ? "/dashboard" : "/onboarding";
-    return mobileRedirect(destination);
-  }
-
-  if (existingRole === "INSTRUCTOR") {
-    if (next) return mobileRedirect(next);
-    if (!existingProfile.hasCompletedInstructorOnboarding) {
-      return mobileRedirect("/onboarding/instructor");
-    }
-    const destination = existingProfile.instructorStatus === "APPROVED"
-      ? "/instructor"
-      : "/instructor/pending";
-    return mobileRedirect(destination);
-  }
 
   if (existingRole === "ADMIN") {
     return mobileRedirect(next ?? "/admin");
   }
 
-  return mobileRedirect(next ?? "/dashboard");
+  return mobileRedirect(next ?? "/org/register");
 }
