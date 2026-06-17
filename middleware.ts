@@ -15,7 +15,7 @@ import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 import { canAccessAdminPath, type AdminSubRole } from "@/lib/admin-permissions";
 import { ORG_ADMIN_AREA_ROLES, ORG_AUTHOR_ROLES } from "@/lib/org-permissions";
-import { isApexHost, mainHostUrl, tenantSlugFromHost } from "@/lib/domains";
+import { isApexHost, cookieDomainForHost, mainHostUrl, tenantSlugFromHost } from "@/lib/domains";
 import type { OrgRole } from "@/lib/generated/prisma/client";
 
 const PROTECTED  = ["/admin"];
@@ -37,12 +37,24 @@ export async function middleware(req: NextRequest) {
   }
 
   // ── 0b. Tenant subdomain → /org/[slug] route space ─────────────────────────
-  // <slug>.coachnest.in serves an organization workspace. Clean tenant URLs
-  // (/, /login, /admin, …) are rewritten into the existing /org/<slug>/* routes;
-  // paths already under /org/ (the links the app itself emits) pass through
-  // untouched so nothing double-prefixes. On the main host / localhost the slug
-  // is null and routing stays exactly path-based.
+  // <slug>.coachnest.in serves an organization workspace. Two-way mapping:
+  //   • Absolute /org/<slug>/* links the app emits are bounced to their clean,
+  //     prefix-stripped equivalent so the address bar stays tidy.
+  //   • Clean tenant URLs (/, /login, /admin, …) are then rewritten back into
+  //     the canonical /org/<slug>/* routes that actually render.
+  // The two branches are mutually exclusive (one redirects /org/* away, the
+  // other rewrites non-/org/* in), so there is no loop. On the main host /
+  // localhost the slug is null and routing stays exactly path-based.
   const tenantSlug = tenantSlugFromHost(host);
+  if (
+    tenantSlug &&
+    (req.nextUrl.pathname === `/org/${tenantSlug}` ||
+      req.nextUrl.pathname.startsWith(`/org/${tenantSlug}/`))
+  ) {
+    const cleaned = req.nextUrl.clone();
+    cleaned.pathname = req.nextUrl.pathname.slice(`/org/${tenantSlug}`.length) || "/";
+    return NextResponse.redirect(cleaned);
+  }
   const internalUrl = req.nextUrl.clone();
   let rewritten = false;
   if (tenantSlug && !internalUrl.pathname.startsWith("/org/")) {
@@ -52,6 +64,7 @@ export async function middleware(req: NextRequest) {
     rewritten = true;
   }
   const pathname = internalUrl.pathname;
+  const cookieDomain = cookieDomainForHost(host);
 
   req.headers.set("x-pathname", pathname);
   const passthrough = () =>
@@ -64,6 +77,9 @@ export async function middleware(req: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
+      // Share the session across the platform host and all org subdomains in
+      // production; host-scoped (domain undefined) on localhost.
+      cookieOptions: cookieDomain ? { domain: cookieDomain } : undefined,
       cookies: {
         getAll: () => req.cookies.getAll(),
         setAll: (cookiesToSet) => {

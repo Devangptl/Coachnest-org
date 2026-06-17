@@ -5,6 +5,7 @@
  * server-side SSR client to read it during the OAuth callback.
  */
 import { createBrowserClient } from "@supabase/ssr";
+import { cookieDomainForHost } from "@/lib/domains";
 
 type SupabaseClient = ReturnType<typeof createBrowserClient>;
 
@@ -12,9 +13,12 @@ let _client: SupabaseClient | null = null;
 
 function getInstance(): SupabaseClient {
   if (!_client) {
+    const cookieDomain =
+      typeof window !== "undefined" ? cookieDomainForHost(window.location.hostname) : undefined;
     _client = createBrowserClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      cookieDomain ? { cookieOptions: { domain: cookieDomain } } : undefined
     );
   }
   return _client;
