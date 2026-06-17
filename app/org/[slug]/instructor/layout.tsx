@@ -38,6 +38,7 @@ export default async function OrgInstructorLayout({
             email: ctx.session.email,
             avatar: ctx.session.avatar,
           }}
+          role={ctx.role}
           roleLabel="Instructor"
         />
         <div className="flex-1 min-w-0 animate-fade-in mt-3 md:mt-0">{children}</div>

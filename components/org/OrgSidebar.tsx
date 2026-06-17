@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Avatar from "@/components/Avatar";
+import { can, type OrgPermission } from "@/lib/org-permissions";
+import type { OrgRole } from "@/lib/generated/prisma/client";
 
 export type OrgPortal = "admin" | "instructor" | "student";
 
@@ -20,6 +22,7 @@ interface Props {
   portal: OrgPortal;
   org: { name: string; slug: string; logo: string | null };
   user: { userId: string; name: string; email: string; avatar?: string | null };
+  role: OrgRole;
   roleLabel: string;
 }
 
@@ -27,6 +30,8 @@ interface NavItem {
   label: string;
   href: string;
   icon: LucideIcon;
+  /** Capability required to see this item. Omit for items every portal role holds. */
+  permission?: OrgPermission;
 }
 
 function navFor(portal: OrgPortal, slug: string): { title: string; items: NavItem[] }[] {
@@ -36,29 +41,29 @@ function navFor(portal: OrgPortal, slug: string): { title: string; items: NavIte
       {
         title: "Overview",
         items: [
-          { label: "Dashboard", href: base, icon: LayoutDashboard },
-          { label: "Reports", href: `${base}/reports`, icon: BarChart3 },
-          { label: "Activity log", href: `${base}/audit`, icon: ScrollText },
+          { label: "Dashboard", href: base, icon: LayoutDashboard, permission: "org:view_admin" },
+          { label: "Reports", href: `${base}/reports`, icon: BarChart3, permission: "reports:view" },
+          { label: "Activity log", href: `${base}/audit`, icon: ScrollText, permission: "reports:view" },
         ],
       },
       {
         title: "People",
         items: [
-          { label: "Members", href: `${base}/members`, icon: Users },
-          { label: "Roles", href: `${base}/roles`, icon: ShieldCheck },
-          { label: "Instructors", href: `${base}/instructors`, icon: UserCog },
-          { label: "Students", href: `${base}/students`, icon: GraduationCap },
+          { label: "Members", href: `${base}/members`, icon: Users, permission: "members:view" },
+          { label: "Roles", href: `${base}/roles`, icon: ShieldCheck, permission: "members:view" },
+          { label: "Instructors", href: `${base}/instructors`, icon: UserCog, permission: "members:view" },
+          { label: "Students", href: `${base}/students`, icon: GraduationCap, permission: "students:view" },
         ],
       },
       {
         title: "Content",
-        items: [{ label: "Courses", href: `${base}/courses`, icon: BookOpen }],
+        items: [{ label: "Courses", href: `${base}/courses`, icon: BookOpen, permission: "course:view" }],
       },
       {
         title: "Organization",
         items: [
-          { label: "Billing", href: `${base}/billing`, icon: CreditCard },
-          { label: "Settings", href: `${base}/settings`, icon: Settings },
+          { label: "Billing", href: `${base}/billing`, icon: CreditCard, permission: "billing:view" },
+          { label: "Settings", href: `${base}/settings`, icon: Settings, permission: "org:manage_settings" },
         ],
       },
     ];
@@ -86,9 +91,11 @@ function navFor(portal: OrgPortal, slug: string): { title: string; items: NavIte
   ];
 }
 
-export default function OrgSidebar({ portal, org, user, roleLabel }: Props) {
+export default function OrgSidebar({ portal, org, user, role, roleLabel }: Props) {
   const pathname = usePathname();
-  const sections = navFor(portal, org.slug);
+  const sections = navFor(portal, org.slug)
+    .map((s) => ({ ...s, items: s.items.filter((i) => !i.permission || can(role, i.permission)) }))
+    .filter((s) => s.items.length > 0);
   const home = `/org/${org.slug}/${portal}`;
   const allItems = sections.flatMap((s) => s.items);
 
