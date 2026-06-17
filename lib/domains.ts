@@ -75,3 +75,18 @@ export function mainHostUrl(path: string): string {
 export function registerUrl(host: string | null | undefined): string {
   return tenantSlugFromHost(host) ? mainHostUrl("/org/register") : "/org/register";
 }
+
+/**
+ * Cookie `Domain` for the Supabase auth cookies. Returns `.coachnest.in` for
+ * any host under the root domain so the session is shared across the platform
+ * host and every org subdomain; returns undefined on localhost / unrelated
+ * hosts so cookies stay host-scoped in dev (the default behaviour).
+ */
+export function cookieDomainForHost(host: string | null | undefined): string | undefined {
+  const hostname = hostnameOf(host);
+  if (!hostname) return undefined;
+  if (hostname === ROOT_DOMAIN || hostname.endsWith(`.${ROOT_DOMAIN}`)) {
+    return `.${ROOT_DOMAIN}`;
+  }
+  return undefined;
+}
