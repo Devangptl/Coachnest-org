@@ -4,8 +4,10 @@
  * non-members are rejected even with valid platform credentials.
  */
 import { Suspense } from "react";
-import { notFound } from "next/navigation";
+import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { getOrgBySlug } from "@/lib/org-auth";
+import { registerUrl } from "@/lib/domains";
 import OrgLoginClient from "./OrgLoginClient";
 
 export default async function OrgLoginPage({
@@ -15,7 +17,11 @@ export default async function OrgLoginPage({
 }) {
   const { slug } = await params;
   const org = await getOrgBySlug(slug);
-  if (!org) notFound();
+  // Unknown workspace (e.g. an unregistered subdomain) → send to registration.
+  if (!org) {
+    const host = (await headers()).get("host");
+    redirect(registerUrl(host));
+  }
 
   return (
     <Suspense>
