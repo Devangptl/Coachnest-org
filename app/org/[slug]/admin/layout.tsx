@@ -6,7 +6,7 @@
  */
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { requireOrgPermission, OrgAuthError } from "@/lib/org-auth";
+import { requireOrgPermission, ctxCan, OrgAuthError } from "@/lib/org-auth";
 import OrgSidebar from "@/components/org/OrgSidebar";
 
 export default async function OrgAdminLayout({
@@ -27,6 +27,12 @@ export default async function OrgAdminLayout({
   }
 
   if (ctx.org.status !== "ACTIVE") {
+    // Only roles that can act on the subscription get the billing-first
+    // treatment. Everyone else (Manager, Observer) lands on the neutral
+    // expired notice rather than a billing page they can't open.
+    if (!ctxCan(ctx, "billing:view")) {
+      redirect(`/org/${slug}/expired`);
+    }
     const pathname = (await headers()).get("x-pathname") ?? "";
     const allowedWhileInactive = [`/org/${slug}/admin/billing`, `/org/${slug}/admin/settings`];
     if (!allowedWhileInactive.some((p) => pathname === p || pathname.startsWith(p + "/"))) {
