@@ -46,6 +46,7 @@ export default async function OrgAdminLayout({
             email: ctx.session.email,
             avatar: ctx.session.avatar,
           }}
+          role={ctx.role}
           roleLabel={ctx.isPlatformAdmin && ctx.role !== "ORG_ADMIN" ? "Platform Admin" : "Org Admin"}
         />
         <div className="flex-1 min-w-0 animate-fade-in mt-3 md:mt-0">{children}</div>
